@@ -1,0 +1,12 @@
+{
+  "name": "tg-allegro",
+  "scripts": {
+    "bot": "pnpm --filter @tg-allegro/bot",
+    "db": "pnpm --filter @tg-allegro/db",
+    "frontend": "pnpm --filter @tg-allegro/frontend",
+    "api": "pnpm --filter @tg-allegro/api"
+  },
+  "devDependencies": {
+    "@types/node": "^25.3.0"
+  }
+}
