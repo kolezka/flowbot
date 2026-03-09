@@ -10,6 +10,8 @@ import { hydrateReply, parseMode } from '@grammyjs/parse-mode'
 import { sequentialize } from '@grammyjs/runner'
 import { Bot as TelegramBot } from 'grammy'
 import { AdminCacheService } from '../services/admin-cache.js'
+import { AntiSpamService } from '../services/anti-spam.js'
+import { createAntiSpamFeature } from './features/anti-spam.js'
 import { createDeletionFeature } from './features/deletion.js'
 import { createModerationFeature } from './features/moderation.js'
 import { createPermissionsFeature } from './features/permissions.js'
@@ -70,9 +72,10 @@ export function createBot(token: string, dependencies: Dependencies, botConfig?:
   // Admin cache
   const adminCacheService = new AdminCacheService()
   protectedBot.use(adminCache(adminCacheService))
-  // Rate tracker middleware (stub — MB-16)
 
-  // Features
+  // Features — anti-spam runs first
+  const antiSpamService = new AntiSpamService()
+  protectedBot.use(createAntiSpamFeature(antiSpamService))
   protectedBot.use(createPermissionsFeature(prisma))
   protectedBot.use(createModerationFeature(prisma))
   protectedBot.use(createDeletionFeature(prisma))

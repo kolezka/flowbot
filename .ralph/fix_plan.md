@@ -44,7 +44,7 @@ Source docs: `docs/plan/mb-05-tasks.md` (manager-bot), `docs/plan/05-tasks.md` (
 
 - [x] **MB-14**: Mute / Ban / Kick — /mute, /unmute, /ban, /unban, /kick. `src/bot/helpers/time.ts` for duration parsing. Log to ModerationLog.
 
-- [ ] **MB-15**: Message Deletion — `src/bot/features/deletion.ts`: /del (reply-to-delete), /purge N (bulk, max 100, admin+). Auto-delete bot confirmations.
+- [x] **MB-15**: Message Deletion — `src/bot/features/deletion.ts`: /del (reply-to-delete), /purge N (bulk, max 100, admin+). Auto-delete bot confirmations.
 
 - [ ] **MB-16**: Anti-Spam Engine — `src/bot/middlewares/rate-tracker.ts`, `src/services/anti-spam.ts` (in-memory, LRU, flood + duplicate detection). `src/bot/features/anti-spam.ts` running BEFORE other features. Admins bypass.
 
