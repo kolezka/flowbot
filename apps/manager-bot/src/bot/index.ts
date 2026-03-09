@@ -15,6 +15,7 @@ import { logChannelService } from '../services/log-channel.js'
 import { createAntiLinkFeature } from './features/anti-link.js'
 import { createAntiSpamFeature } from './features/anti-spam.js'
 import { createAuditFeature } from './features/audit.js'
+import { createCaptchaFeature } from './features/captcha.js'
 import { createDeletionFeature } from './features/deletion.js'
 import { createFiltersFeature } from './features/filters.js'
 import { createMediaRestrictFeature } from './features/media-restrict.js'
@@ -94,6 +95,7 @@ export function createBot(token: string, dependencies: Dependencies, botConfig?:
   protectedBot.use(createModerationFeature(prisma))
   protectedBot.use(createDeletionFeature(prisma))
   protectedBot.use(createWelcomeFeature(prisma))
+  protectedBot.use(createCaptchaFeature(prisma))
   protectedBot.use(createSetupFeature(prisma))
   protectedBot.use(createMediaRestrictFeature(prisma))
   protectedBot.use(createAuditFeature(prisma))
