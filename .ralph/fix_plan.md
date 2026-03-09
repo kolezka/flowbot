@@ -60,7 +60,7 @@ Source docs: `docs/plan/mb-05-tasks.md` (manager-bot), `docs/plan/05-tasks.md` (
 
 ## Phase 6: Recommended Features (Post-MVP)
 
-- [ ] **MB-21**: Moderation Log Channel — `src/services/log-channel.ts`. /setlogchannel. Forward moderation events to private channel.
+- [x] **MB-21**: Moderation Log Channel — `src/services/log-channel.ts`. /setlogchannel. Forward moderation events to private channel.
 
 - [ ] **MB-22**: Rules System — `src/bot/features/rules.ts`. /rules, /setrules, /pinrules.
 
