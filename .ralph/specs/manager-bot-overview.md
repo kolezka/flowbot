@@ -4,8 +4,9 @@
 
 A Telegram group management bot (`apps/manager-bot`) for community administration. Uses grammY (Bot API) with its own dedicated bot token — completely separate from the existing sales bot (`apps/bot`).
 
-**Sales bot** = private chat, product browsing, cart, e-commerce
-**Manager bot** = group chat, moderation, anti-spam, welcome flows, admin commands
+**Sales bot** (`apps/bot`) = private chat, product browsing, cart, e-commerce
+**Manager bot** (`apps/manager-bot`) = group chat, moderation, anti-spam, welcome flows, admin commands
+**tg-client** (`apps/tg-client`) = MTProto automation client (separate project, see tg-client-overview.md)
 
 ## Feature Scope
 

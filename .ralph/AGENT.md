@@ -18,11 +18,12 @@ docker compose up -d
 pnpm (with workspaces). Root filter shortcuts:
 
 ```bash
-pnpm bot <command>          # apps/bot
-pnpm api <command>          # apps/api
-pnpm frontend <command>     # apps/frontend
-pnpm db <command>           # packages/db
-pnpm manager-bot <command>  # apps/manager-bot (after Task 01)
+pnpm bot <command>          # apps/bot (existing — DO NOT MODIFY)
+pnpm api <command>          # apps/api (existing — DO NOT MODIFY)
+pnpm frontend <command>     # apps/frontend (existing — DO NOT MODIFY)
+pnpm db <command>           # packages/db (shared)
+pnpm manager-bot <command>  # apps/manager-bot (NEW — after MB-01)
+pnpm tg-client <command>    # apps/tg-client (NEW — after TC-01)
 ```
 
 ## Database (Prisma)
@@ -32,6 +33,7 @@ pnpm db prisma:migrate       # Create and run migration
 pnpm db prisma:push          # Push schema without migration file
 pnpm db generate             # Regenerate Prisma Client after schema changes
 pnpm db prisma:studio        # Open Prisma Studio GUI
+pnpm db build                # Compile db package
 ```
 
 After schema changes, ALWAYS run:
@@ -39,33 +41,50 @@ After schema changes, ALWAYS run:
 pnpm db prisma:migrate && pnpm db generate
 ```
 
-## Manager-Bot Commands (available after Task 01)
+## manager-bot Commands (available after MB-01)
 
-### Development
 ```bash
+# Development
 pnpm manager-bot dev          # Watch mode: tsc-watch + tsx auto-restart
-```
 
-### Typecheck
-```bash
+# Typecheck
 pnpm manager-bot typecheck    # tsc --noEmit
-```
 
-### Lint
-```bash
+# Lint
 pnpm manager-bot lint         # ESLint (antfu config)
 pnpm manager-bot format       # ESLint --fix
-```
 
-### Build
-```bash
+# Build
 pnpm manager-bot build        # tsc --noEmit false (compile to dist/)
+
+# Test (available after MB-28)
+pnpm manager-bot test         # Vitest unit tests
+pnpm manager-bot test:watch   # Vitest watch mode
 ```
 
-### Test
+## tg-client Commands (available after TC-01)
+
 ```bash
-pnpm manager-bot test         # Vitest (available after Task 28)
-pnpm manager-bot test:watch   # Vitest watch mode
+# Development
+pnpm tg-client dev            # Watch mode: tsc-watch + tsx auto-restart
+
+# Typecheck
+pnpm tg-client typecheck      # tsc --noEmit
+
+# Lint
+pnpm tg-client lint           # ESLint (antfu config)
+pnpm tg-client format         # ESLint --fix
+
+# Build
+pnpm tg-client build          # tsc --noEmit false (compile to dist/)
+
+# Test (available after TC-20)
+pnpm tg-client test           # Vitest unit tests
+pnpm tg-client test:watch     # Vitest watch mode
+pnpm tg-client test:integration  # Integration tests (needs credentials)
+
+# Auth (available after TC-07)
+pnpm tg-client authenticate   # Interactive first-time MTProto auth
 ```
 
 ## Cross-App Verification
@@ -77,10 +96,16 @@ pnpm bot build                # Must still compile
 pnpm api build                # Must still compile
 ```
 
-## Existing App Commands (reference, do not modify these apps)
+After both apps have packages, also verify each other:
+```bash
+pnpm manager-bot typecheck    # Must still pass
+pnpm tg-client typecheck      # Must still pass
+```
+
+## Existing App Commands (reference only — DO NOT MODIFY these apps)
 
 ```bash
-# Bot (sales bot — DO NOT MODIFY)
+# Bot (sales bot)
 pnpm bot dev                  # Dev mode
 pnpm bot build                # Build
 pnpm bot lint                 # Lint
@@ -96,26 +121,24 @@ pnpm api test:e2e             # E2E tests
 pnpm frontend dev             # Dev mode (port 3001)
 pnpm frontend build           # Build
 pnpm frontend lint            # Lint
-
-# DB
-pnpm db build                 # Compile db package
 ```
 
-## Validation Checklist (run before marking a task complete)
+## Validation Checklist (per-task, per-app)
 
-1. `pnpm manager-bot typecheck` — passes (no type errors)
-2. `pnpm manager-bot lint` — passes (no lint errors)
-3. `pnpm manager-bot build` — passes (compiles to dist/)
+1. `pnpm <app> typecheck` — passes (no type errors)
+2. `pnpm <app> lint` — passes (no lint errors)
+3. `pnpm <app> build` — passes (compiles to dist/)
 4. If Prisma schema was changed:
    - `pnpm db generate` — succeeds
    - `pnpm bot build` — still passes
    - `pnpm api build` — still passes
-5. If tests exist: `pnpm manager-bot test` — passes
+5. If tests exist: `pnpm <app> test` — passes
 
 ## Notes
 
-- The manager-bot package does NOT exist yet. Tasks 01 creates it.
-- Commands marked "(after Task N)" are not available until that task is completed.
-- `pnpm install` must be re-run after adding dependencies.
+- Neither new app exists yet. MB-01 creates manager-bot, TC-01 creates tg-client.
+- Commands marked "(after XX-NN)" are unavailable until that task completes.
+- `pnpm install` must re-run after adding dependencies.
 - Docker Compose must be running for any database operations.
-- There is NO CI/CD pipeline. All validation is manual / Ralph-driven.
+- No CI/CD pipeline exists. All validation is manual / Ralph-driven.
+- tg-client integration tests require real Telegram credentials (gated behind INTEGRATION_TESTS_ENABLED=true).
