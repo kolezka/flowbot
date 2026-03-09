@@ -1,0 +1,28 @@
+{
+  "name": "@tg-allegro/trigger",
+  "type": "module",
+  "version": "0.1.0",
+  "private": true,
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "scripts": {
+    "typecheck": "tsc",
+    "build": "tsc --noEmit false",
+    "dev": "npx trigger.dev@latest dev",
+    "deploy": "npx trigger.dev@latest deploy"
+  },
+  "dependencies": {
+    "@trigger.dev/sdk": "^3.0.0",
+    "@trigger.dev/build": "^3.0.0",
+    "@tg-allegro/telegram-transport": "workspace:*",
+    "@tg-allegro/db": "workspace:*",
+    "telegram": "^2.26.22",
+    "pino": "9.9.0",
+    "pino-pretty": "13.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.15.21",
+    "typescript": "^5.9.2"
+  }
+}
