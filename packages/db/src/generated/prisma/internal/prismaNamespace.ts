@@ -393,7 +393,8 @@ export const ModelName = {
   GroupConfig: 'GroupConfig',
   GroupMember: 'GroupMember',
   Warning: 'Warning',
-  ModerationLog: 'ModerationLog'
+  ModerationLog: 'ModerationLog',
+  ScheduledMessage: 'ScheduledMessage'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -409,7 +410,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "user" | "category" | "product" | "cart" | "cartItem" | "managedGroup" | "groupConfig" | "groupMember" | "warning" | "moderationLog"
+    modelProps: "user" | "category" | "product" | "cart" | "cartItem" | "managedGroup" | "groupConfig" | "groupMember" | "warning" | "moderationLog" | "scheduledMessage"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -1153,6 +1154,80 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    ScheduledMessage: {
+      payload: Prisma.$ScheduledMessagePayload<ExtArgs>
+      fields: Prisma.ScheduledMessageFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.ScheduledMessageFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ScheduledMessagePayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.ScheduledMessageFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ScheduledMessagePayload>
+        }
+        findFirst: {
+          args: Prisma.ScheduledMessageFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ScheduledMessagePayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.ScheduledMessageFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ScheduledMessagePayload>
+        }
+        findMany: {
+          args: Prisma.ScheduledMessageFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ScheduledMessagePayload>[]
+        }
+        create: {
+          args: Prisma.ScheduledMessageCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ScheduledMessagePayload>
+        }
+        createMany: {
+          args: Prisma.ScheduledMessageCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.ScheduledMessageCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ScheduledMessagePayload>[]
+        }
+        delete: {
+          args: Prisma.ScheduledMessageDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ScheduledMessagePayload>
+        }
+        update: {
+          args: Prisma.ScheduledMessageUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ScheduledMessagePayload>
+        }
+        deleteMany: {
+          args: Prisma.ScheduledMessageDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.ScheduledMessageUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.ScheduledMessageUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ScheduledMessagePayload>[]
+        }
+        upsert: {
+          args: Prisma.ScheduledMessageUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ScheduledMessagePayload>
+        }
+        aggregate: {
+          args: Prisma.ScheduledMessageAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateScheduledMessage>
+        }
+        groupBy: {
+          args: Prisma.ScheduledMessageGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.ScheduledMessageGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.ScheduledMessageCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.ScheduledMessageCountAggregateOutputType> | number
+        }
+      }
+    }
   }
 } & {
   other: {
@@ -1369,6 +1444,21 @@ export const ModerationLogScalarFieldEnum = {
 } as const
 
 export type ModerationLogScalarFieldEnum = (typeof ModerationLogScalarFieldEnum)[keyof typeof ModerationLogScalarFieldEnum]
+
+
+export const ScheduledMessageScalarFieldEnum = {
+  id: 'id',
+  groupId: 'groupId',
+  chatId: 'chatId',
+  text: 'text',
+  createdBy: 'createdBy',
+  sendAt: 'sendAt',
+  sent: 'sent',
+  sentAt: 'sentAt',
+  createdAt: 'createdAt'
+} as const
+
+export type ScheduledMessageScalarFieldEnum = (typeof ScheduledMessageScalarFieldEnum)[keyof typeof ScheduledMessageScalarFieldEnum]
 
 
 export const SortOrder = {
@@ -1627,6 +1717,7 @@ export type GlobalOmitConfig = {
   groupMember?: Prisma.GroupMemberOmit
   warning?: Prisma.WarningOmit
   moderationLog?: Prisma.ModerationLogOmit
+  scheduledMessage?: Prisma.ScheduledMessageOmit
 }
 
 /* Types for Logging */

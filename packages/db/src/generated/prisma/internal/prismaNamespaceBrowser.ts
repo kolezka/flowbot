@@ -60,7 +60,8 @@ export const ModelName = {
   GroupConfig: 'GroupConfig',
   GroupMember: 'GroupMember',
   Warning: 'Warning',
-  ModerationLog: 'ModerationLog'
+  ModerationLog: 'ModerationLog',
+  ScheduledMessage: 'ScheduledMessage'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -256,6 +257,21 @@ export const ModerationLogScalarFieldEnum = {
 } as const
 
 export type ModerationLogScalarFieldEnum = (typeof ModerationLogScalarFieldEnum)[keyof typeof ModerationLogScalarFieldEnum]
+
+
+export const ScheduledMessageScalarFieldEnum = {
+  id: 'id',
+  groupId: 'groupId',
+  chatId: 'chatId',
+  text: 'text',
+  createdBy: 'createdBy',
+  sendAt: 'sendAt',
+  sent: 'sent',
+  sentAt: 'sentAt',
+  createdAt: 'createdAt'
+} as const
+
+export type ScheduledMessageScalarFieldEnum = (typeof ScheduledMessageScalarFieldEnum)[keyof typeof ScheduledMessageScalarFieldEnum]
 
 
 export const SortOrder = {

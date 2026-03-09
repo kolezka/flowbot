@@ -67,3 +67,8 @@ export type Warning = Prisma.WarningModel
  * 
  */
 export type ModerationLog = Prisma.ModerationLogModel
+/**
+ * Model ScheduledMessage
+ * 
+ */
+export type ScheduledMessage = Prisma.ScheduledMessageModel

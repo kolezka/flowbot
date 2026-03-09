@@ -139,10 +139,11 @@ model ManagedGroup {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  config         GroupConfig?
-  members        GroupMember[]
-  warnings       Warning[]
-  moderationLogs ModerationLog[]
+  config            GroupConfig?
+  members           GroupMember[]
+  warnings          Warning[]
+  moderationLogs    ModerationLog[]
+  scheduledMessages ScheduledMessage[]
 
   @@index([chatId])
 }
@@ -241,4 +242,20 @@ model ModerationLog {
 
   @@index([groupId, createdAt])
   @@index([targetId])
+}
+
+model ScheduledMessage {
+  id        String       @id @default(cuid())
+  groupId   String
+  group     ManagedGroup @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  chatId    BigInt
+  text      String
+  createdBy BigInt
+  sendAt    DateTime
+  sent      Boolean      @default(false)
+  sentAt    DateTime?
+  createdAt DateTime     @default(now())
+
+  @@index([sendAt, sent])
+  @@index([groupId])
 }

@@ -10,6 +10,7 @@ import { createConfigFromEnvironment } from './config.js'
 import { createDatabase } from './database.js'
 import { createLogger } from './logger.js'
 import { createServer, createServerManager } from './server/index.js'
+import { SchedulerService } from './services/scheduler.js'
 
 const config = createConfigFromEnvironment()
 const logger = createLogger(config)
@@ -18,9 +19,11 @@ const prisma = createDatabase(config)
 async function startPolling(config: PollingConfig) {
   const bot = createBot(config.botToken, { config, logger, prisma })
   let runner: undefined | RunnerHandle
+  const scheduler = new SchedulerService(prisma, bot.api, logger)
 
   onShutdown(async () => {
     logger.info('Shutdown')
+    scheduler.stop()
     await runner?.stop()
   })
 
@@ -37,6 +40,8 @@ async function startPolling(config: PollingConfig) {
     },
   })
 
+  scheduler.start()
+
   logger.info({
     msg: 'Bot running...',
     username: bot.botInfo.username,
@@ -50,9 +55,11 @@ async function startWebhook(config: WebhookConfig) {
     host: config.serverHost,
     port: config.serverPort,
   })
+  const scheduler = new SchedulerService(prisma, bot.api, logger)
 
   onShutdown(async () => {
     logger.info('Shutdown')
+    scheduler.stop()
     await serverManager.stop()
   })
 
@@ -66,6 +73,8 @@ async function startWebhook(config: WebhookConfig) {
     secret_token: config.botWebhookSecret,
   })
   logger.info({ msg: 'Webhook was set', url: config.botWebhook })
+
+  scheduler.start()
 }
 
 try {

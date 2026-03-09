@@ -244,6 +244,7 @@ export type ManagedGroupWhereInput = {
   members?: Prisma.GroupMemberListRelationFilter
   warnings?: Prisma.WarningListRelationFilter
   moderationLogs?: Prisma.ModerationLogListRelationFilter
+  scheduledMessages?: Prisma.ScheduledMessageListRelationFilter
 }
 
 export type ManagedGroupOrderByWithRelationInput = {
@@ -259,6 +260,7 @@ export type ManagedGroupOrderByWithRelationInput = {
   members?: Prisma.GroupMemberOrderByRelationAggregateInput
   warnings?: Prisma.WarningOrderByRelationAggregateInput
   moderationLogs?: Prisma.ModerationLogOrderByRelationAggregateInput
+  scheduledMessages?: Prisma.ScheduledMessageOrderByRelationAggregateInput
 }
 
 export type ManagedGroupWhereUniqueInput = Prisma.AtLeast<{
@@ -277,6 +279,7 @@ export type ManagedGroupWhereUniqueInput = Prisma.AtLeast<{
   members?: Prisma.GroupMemberListRelationFilter
   warnings?: Prisma.WarningListRelationFilter
   moderationLogs?: Prisma.ModerationLogListRelationFilter
+  scheduledMessages?: Prisma.ScheduledMessageListRelationFilter
 }, "id" | "chatId">
 
 export type ManagedGroupOrderByWithAggregationInput = {
@@ -322,6 +325,7 @@ export type ManagedGroupCreateInput = {
   members?: Prisma.GroupMemberCreateNestedManyWithoutGroupInput
   warnings?: Prisma.WarningCreateNestedManyWithoutGroupInput
   moderationLogs?: Prisma.ModerationLogCreateNestedManyWithoutGroupInput
+  scheduledMessages?: Prisma.ScheduledMessageCreateNestedManyWithoutGroupInput
 }
 
 export type ManagedGroupUncheckedCreateInput = {
@@ -337,6 +341,7 @@ export type ManagedGroupUncheckedCreateInput = {
   members?: Prisma.GroupMemberUncheckedCreateNestedManyWithoutGroupInput
   warnings?: Prisma.WarningUncheckedCreateNestedManyWithoutGroupInput
   moderationLogs?: Prisma.ModerationLogUncheckedCreateNestedManyWithoutGroupInput
+  scheduledMessages?: Prisma.ScheduledMessageUncheckedCreateNestedManyWithoutGroupInput
 }
 
 export type ManagedGroupUpdateInput = {
@@ -352,6 +357,7 @@ export type ManagedGroupUpdateInput = {
   members?: Prisma.GroupMemberUpdateManyWithoutGroupNestedInput
   warnings?: Prisma.WarningUpdateManyWithoutGroupNestedInput
   moderationLogs?: Prisma.ModerationLogUpdateManyWithoutGroupNestedInput
+  scheduledMessages?: Prisma.ScheduledMessageUpdateManyWithoutGroupNestedInput
 }
 
 export type ManagedGroupUncheckedUpdateInput = {
@@ -367,6 +373,7 @@ export type ManagedGroupUncheckedUpdateInput = {
   members?: Prisma.GroupMemberUncheckedUpdateManyWithoutGroupNestedInput
   warnings?: Prisma.WarningUncheckedUpdateManyWithoutGroupNestedInput
   moderationLogs?: Prisma.ModerationLogUncheckedUpdateManyWithoutGroupNestedInput
+  scheduledMessages?: Prisma.ScheduledMessageUncheckedUpdateManyWithoutGroupNestedInput
 }
 
 export type ManagedGroupCreateManyInput = {
@@ -504,6 +511,20 @@ export type ManagedGroupUpdateOneRequiredWithoutModerationLogsNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.ManagedGroupUpdateToOneWithWhereWithoutModerationLogsInput, Prisma.ManagedGroupUpdateWithoutModerationLogsInput>, Prisma.ManagedGroupUncheckedUpdateWithoutModerationLogsInput>
 }
 
+export type ManagedGroupCreateNestedOneWithoutScheduledMessagesInput = {
+  create?: Prisma.XOR<Prisma.ManagedGroupCreateWithoutScheduledMessagesInput, Prisma.ManagedGroupUncheckedCreateWithoutScheduledMessagesInput>
+  connectOrCreate?: Prisma.ManagedGroupCreateOrConnectWithoutScheduledMessagesInput
+  connect?: Prisma.ManagedGroupWhereUniqueInput
+}
+
+export type ManagedGroupUpdateOneRequiredWithoutScheduledMessagesNestedInput = {
+  create?: Prisma.XOR<Prisma.ManagedGroupCreateWithoutScheduledMessagesInput, Prisma.ManagedGroupUncheckedCreateWithoutScheduledMessagesInput>
+  connectOrCreate?: Prisma.ManagedGroupCreateOrConnectWithoutScheduledMessagesInput
+  upsert?: Prisma.ManagedGroupUpsertWithoutScheduledMessagesInput
+  connect?: Prisma.ManagedGroupWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.ManagedGroupUpdateToOneWithWhereWithoutScheduledMessagesInput, Prisma.ManagedGroupUpdateWithoutScheduledMessagesInput>, Prisma.ManagedGroupUncheckedUpdateWithoutScheduledMessagesInput>
+}
+
 export type ManagedGroupCreateWithoutConfigInput = {
   id?: string
   chatId: bigint | number
@@ -516,6 +537,7 @@ export type ManagedGroupCreateWithoutConfigInput = {
   members?: Prisma.GroupMemberCreateNestedManyWithoutGroupInput
   warnings?: Prisma.WarningCreateNestedManyWithoutGroupInput
   moderationLogs?: Prisma.ModerationLogCreateNestedManyWithoutGroupInput
+  scheduledMessages?: Prisma.ScheduledMessageCreateNestedManyWithoutGroupInput
 }
 
 export type ManagedGroupUncheckedCreateWithoutConfigInput = {
@@ -530,6 +552,7 @@ export type ManagedGroupUncheckedCreateWithoutConfigInput = {
   members?: Prisma.GroupMemberUncheckedCreateNestedManyWithoutGroupInput
   warnings?: Prisma.WarningUncheckedCreateNestedManyWithoutGroupInput
   moderationLogs?: Prisma.ModerationLogUncheckedCreateNestedManyWithoutGroupInput
+  scheduledMessages?: Prisma.ScheduledMessageUncheckedCreateNestedManyWithoutGroupInput
 }
 
 export type ManagedGroupCreateOrConnectWithoutConfigInput = {
@@ -560,6 +583,7 @@ export type ManagedGroupUpdateWithoutConfigInput = {
   members?: Prisma.GroupMemberUpdateManyWithoutGroupNestedInput
   warnings?: Prisma.WarningUpdateManyWithoutGroupNestedInput
   moderationLogs?: Prisma.ModerationLogUpdateManyWithoutGroupNestedInput
+  scheduledMessages?: Prisma.ScheduledMessageUpdateManyWithoutGroupNestedInput
 }
 
 export type ManagedGroupUncheckedUpdateWithoutConfigInput = {
@@ -574,6 +598,7 @@ export type ManagedGroupUncheckedUpdateWithoutConfigInput = {
   members?: Prisma.GroupMemberUncheckedUpdateManyWithoutGroupNestedInput
   warnings?: Prisma.WarningUncheckedUpdateManyWithoutGroupNestedInput
   moderationLogs?: Prisma.ModerationLogUncheckedUpdateManyWithoutGroupNestedInput
+  scheduledMessages?: Prisma.ScheduledMessageUncheckedUpdateManyWithoutGroupNestedInput
 }
 
 export type ManagedGroupCreateWithoutMembersInput = {
@@ -588,6 +613,7 @@ export type ManagedGroupCreateWithoutMembersInput = {
   config?: Prisma.GroupConfigCreateNestedOneWithoutGroupInput
   warnings?: Prisma.WarningCreateNestedManyWithoutGroupInput
   moderationLogs?: Prisma.ModerationLogCreateNestedManyWithoutGroupInput
+  scheduledMessages?: Prisma.ScheduledMessageCreateNestedManyWithoutGroupInput
 }
 
 export type ManagedGroupUncheckedCreateWithoutMembersInput = {
@@ -602,6 +628,7 @@ export type ManagedGroupUncheckedCreateWithoutMembersInput = {
   config?: Prisma.GroupConfigUncheckedCreateNestedOneWithoutGroupInput
   warnings?: Prisma.WarningUncheckedCreateNestedManyWithoutGroupInput
   moderationLogs?: Prisma.ModerationLogUncheckedCreateNestedManyWithoutGroupInput
+  scheduledMessages?: Prisma.ScheduledMessageUncheckedCreateNestedManyWithoutGroupInput
 }
 
 export type ManagedGroupCreateOrConnectWithoutMembersInput = {
@@ -632,6 +659,7 @@ export type ManagedGroupUpdateWithoutMembersInput = {
   config?: Prisma.GroupConfigUpdateOneWithoutGroupNestedInput
   warnings?: Prisma.WarningUpdateManyWithoutGroupNestedInput
   moderationLogs?: Prisma.ModerationLogUpdateManyWithoutGroupNestedInput
+  scheduledMessages?: Prisma.ScheduledMessageUpdateManyWithoutGroupNestedInput
 }
 
 export type ManagedGroupUncheckedUpdateWithoutMembersInput = {
@@ -646,6 +674,7 @@ export type ManagedGroupUncheckedUpdateWithoutMembersInput = {
   config?: Prisma.GroupConfigUncheckedUpdateOneWithoutGroupNestedInput
   warnings?: Prisma.WarningUncheckedUpdateManyWithoutGroupNestedInput
   moderationLogs?: Prisma.ModerationLogUncheckedUpdateManyWithoutGroupNestedInput
+  scheduledMessages?: Prisma.ScheduledMessageUncheckedUpdateManyWithoutGroupNestedInput
 }
 
 export type ManagedGroupCreateWithoutWarningsInput = {
@@ -660,6 +689,7 @@ export type ManagedGroupCreateWithoutWarningsInput = {
   config?: Prisma.GroupConfigCreateNestedOneWithoutGroupInput
   members?: Prisma.GroupMemberCreateNestedManyWithoutGroupInput
   moderationLogs?: Prisma.ModerationLogCreateNestedManyWithoutGroupInput
+  scheduledMessages?: Prisma.ScheduledMessageCreateNestedManyWithoutGroupInput
 }
 
 export type ManagedGroupUncheckedCreateWithoutWarningsInput = {
@@ -674,6 +704,7 @@ export type ManagedGroupUncheckedCreateWithoutWarningsInput = {
   config?: Prisma.GroupConfigUncheckedCreateNestedOneWithoutGroupInput
   members?: Prisma.GroupMemberUncheckedCreateNestedManyWithoutGroupInput
   moderationLogs?: Prisma.ModerationLogUncheckedCreateNestedManyWithoutGroupInput
+  scheduledMessages?: Prisma.ScheduledMessageUncheckedCreateNestedManyWithoutGroupInput
 }
 
 export type ManagedGroupCreateOrConnectWithoutWarningsInput = {
@@ -704,6 +735,7 @@ export type ManagedGroupUpdateWithoutWarningsInput = {
   config?: Prisma.GroupConfigUpdateOneWithoutGroupNestedInput
   members?: Prisma.GroupMemberUpdateManyWithoutGroupNestedInput
   moderationLogs?: Prisma.ModerationLogUpdateManyWithoutGroupNestedInput
+  scheduledMessages?: Prisma.ScheduledMessageUpdateManyWithoutGroupNestedInput
 }
 
 export type ManagedGroupUncheckedUpdateWithoutWarningsInput = {
@@ -718,6 +750,7 @@ export type ManagedGroupUncheckedUpdateWithoutWarningsInput = {
   config?: Prisma.GroupConfigUncheckedUpdateOneWithoutGroupNestedInput
   members?: Prisma.GroupMemberUncheckedUpdateManyWithoutGroupNestedInput
   moderationLogs?: Prisma.ModerationLogUncheckedUpdateManyWithoutGroupNestedInput
+  scheduledMessages?: Prisma.ScheduledMessageUncheckedUpdateManyWithoutGroupNestedInput
 }
 
 export type ManagedGroupCreateWithoutModerationLogsInput = {
@@ -732,6 +765,7 @@ export type ManagedGroupCreateWithoutModerationLogsInput = {
   config?: Prisma.GroupConfigCreateNestedOneWithoutGroupInput
   members?: Prisma.GroupMemberCreateNestedManyWithoutGroupInput
   warnings?: Prisma.WarningCreateNestedManyWithoutGroupInput
+  scheduledMessages?: Prisma.ScheduledMessageCreateNestedManyWithoutGroupInput
 }
 
 export type ManagedGroupUncheckedCreateWithoutModerationLogsInput = {
@@ -746,6 +780,7 @@ export type ManagedGroupUncheckedCreateWithoutModerationLogsInput = {
   config?: Prisma.GroupConfigUncheckedCreateNestedOneWithoutGroupInput
   members?: Prisma.GroupMemberUncheckedCreateNestedManyWithoutGroupInput
   warnings?: Prisma.WarningUncheckedCreateNestedManyWithoutGroupInput
+  scheduledMessages?: Prisma.ScheduledMessageUncheckedCreateNestedManyWithoutGroupInput
 }
 
 export type ManagedGroupCreateOrConnectWithoutModerationLogsInput = {
@@ -776,6 +811,7 @@ export type ManagedGroupUpdateWithoutModerationLogsInput = {
   config?: Prisma.GroupConfigUpdateOneWithoutGroupNestedInput
   members?: Prisma.GroupMemberUpdateManyWithoutGroupNestedInput
   warnings?: Prisma.WarningUpdateManyWithoutGroupNestedInput
+  scheduledMessages?: Prisma.ScheduledMessageUpdateManyWithoutGroupNestedInput
 }
 
 export type ManagedGroupUncheckedUpdateWithoutModerationLogsInput = {
@@ -790,6 +826,83 @@ export type ManagedGroupUncheckedUpdateWithoutModerationLogsInput = {
   config?: Prisma.GroupConfigUncheckedUpdateOneWithoutGroupNestedInput
   members?: Prisma.GroupMemberUncheckedUpdateManyWithoutGroupNestedInput
   warnings?: Prisma.WarningUncheckedUpdateManyWithoutGroupNestedInput
+  scheduledMessages?: Prisma.ScheduledMessageUncheckedUpdateManyWithoutGroupNestedInput
+}
+
+export type ManagedGroupCreateWithoutScheduledMessagesInput = {
+  id?: string
+  chatId: bigint | number
+  title?: string | null
+  isActive?: boolean
+  joinedAt?: Date | string
+  leftAt?: Date | string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  config?: Prisma.GroupConfigCreateNestedOneWithoutGroupInput
+  members?: Prisma.GroupMemberCreateNestedManyWithoutGroupInput
+  warnings?: Prisma.WarningCreateNestedManyWithoutGroupInput
+  moderationLogs?: Prisma.ModerationLogCreateNestedManyWithoutGroupInput
+}
+
+export type ManagedGroupUncheckedCreateWithoutScheduledMessagesInput = {
+  id?: string
+  chatId: bigint | number
+  title?: string | null
+  isActive?: boolean
+  joinedAt?: Date | string
+  leftAt?: Date | string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  config?: Prisma.GroupConfigUncheckedCreateNestedOneWithoutGroupInput
+  members?: Prisma.GroupMemberUncheckedCreateNestedManyWithoutGroupInput
+  warnings?: Prisma.WarningUncheckedCreateNestedManyWithoutGroupInput
+  moderationLogs?: Prisma.ModerationLogUncheckedCreateNestedManyWithoutGroupInput
+}
+
+export type ManagedGroupCreateOrConnectWithoutScheduledMessagesInput = {
+  where: Prisma.ManagedGroupWhereUniqueInput
+  create: Prisma.XOR<Prisma.ManagedGroupCreateWithoutScheduledMessagesInput, Prisma.ManagedGroupUncheckedCreateWithoutScheduledMessagesInput>
+}
+
+export type ManagedGroupUpsertWithoutScheduledMessagesInput = {
+  update: Prisma.XOR<Prisma.ManagedGroupUpdateWithoutScheduledMessagesInput, Prisma.ManagedGroupUncheckedUpdateWithoutScheduledMessagesInput>
+  create: Prisma.XOR<Prisma.ManagedGroupCreateWithoutScheduledMessagesInput, Prisma.ManagedGroupUncheckedCreateWithoutScheduledMessagesInput>
+  where?: Prisma.ManagedGroupWhereInput
+}
+
+export type ManagedGroupUpdateToOneWithWhereWithoutScheduledMessagesInput = {
+  where?: Prisma.ManagedGroupWhereInput
+  data: Prisma.XOR<Prisma.ManagedGroupUpdateWithoutScheduledMessagesInput, Prisma.ManagedGroupUncheckedUpdateWithoutScheduledMessagesInput>
+}
+
+export type ManagedGroupUpdateWithoutScheduledMessagesInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  chatId?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
+  title?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  joinedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  leftAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  config?: Prisma.GroupConfigUpdateOneWithoutGroupNestedInput
+  members?: Prisma.GroupMemberUpdateManyWithoutGroupNestedInput
+  warnings?: Prisma.WarningUpdateManyWithoutGroupNestedInput
+  moderationLogs?: Prisma.ModerationLogUpdateManyWithoutGroupNestedInput
+}
+
+export type ManagedGroupUncheckedUpdateWithoutScheduledMessagesInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  chatId?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
+  title?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  joinedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  leftAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  config?: Prisma.GroupConfigUncheckedUpdateOneWithoutGroupNestedInput
+  members?: Prisma.GroupMemberUncheckedUpdateManyWithoutGroupNestedInput
+  warnings?: Prisma.WarningUncheckedUpdateManyWithoutGroupNestedInput
+  moderationLogs?: Prisma.ModerationLogUncheckedUpdateManyWithoutGroupNestedInput
 }
 
 
@@ -801,12 +914,14 @@ export type ManagedGroupCountOutputType = {
   members: number
   warnings: number
   moderationLogs: number
+  scheduledMessages: number
 }
 
 export type ManagedGroupCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   members?: boolean | ManagedGroupCountOutputTypeCountMembersArgs
   warnings?: boolean | ManagedGroupCountOutputTypeCountWarningsArgs
   moderationLogs?: boolean | ManagedGroupCountOutputTypeCountModerationLogsArgs
+  scheduledMessages?: boolean | ManagedGroupCountOutputTypeCountScheduledMessagesArgs
 }
 
 /**
@@ -840,6 +955,13 @@ export type ManagedGroupCountOutputTypeCountModerationLogsArgs<ExtArgs extends r
   where?: Prisma.ModerationLogWhereInput
 }
 
+/**
+ * ManagedGroupCountOutputType without action
+ */
+export type ManagedGroupCountOutputTypeCountScheduledMessagesArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.ScheduledMessageWhereInput
+}
+
 
 export type ManagedGroupSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
@@ -854,6 +976,7 @@ export type ManagedGroupSelect<ExtArgs extends runtime.Types.Extensions.Internal
   members?: boolean | Prisma.ManagedGroup$membersArgs<ExtArgs>
   warnings?: boolean | Prisma.ManagedGroup$warningsArgs<ExtArgs>
   moderationLogs?: boolean | Prisma.ManagedGroup$moderationLogsArgs<ExtArgs>
+  scheduledMessages?: boolean | Prisma.ManagedGroup$scheduledMessagesArgs<ExtArgs>
   _count?: boolean | Prisma.ManagedGroupCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["managedGroup"]>
 
@@ -896,6 +1019,7 @@ export type ManagedGroupInclude<ExtArgs extends runtime.Types.Extensions.Interna
   members?: boolean | Prisma.ManagedGroup$membersArgs<ExtArgs>
   warnings?: boolean | Prisma.ManagedGroup$warningsArgs<ExtArgs>
   moderationLogs?: boolean | Prisma.ManagedGroup$moderationLogsArgs<ExtArgs>
+  scheduledMessages?: boolean | Prisma.ManagedGroup$scheduledMessagesArgs<ExtArgs>
   _count?: boolean | Prisma.ManagedGroupCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type ManagedGroupIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {}
@@ -908,6 +1032,7 @@ export type $ManagedGroupPayload<ExtArgs extends runtime.Types.Extensions.Intern
     members: Prisma.$GroupMemberPayload<ExtArgs>[]
     warnings: Prisma.$WarningPayload<ExtArgs>[]
     moderationLogs: Prisma.$ModerationLogPayload<ExtArgs>[]
+    scheduledMessages: Prisma.$ScheduledMessagePayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
@@ -1316,6 +1441,7 @@ export interface Prisma__ManagedGroupClient<T, Null = never, ExtArgs extends run
   members<T extends Prisma.ManagedGroup$membersArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.ManagedGroup$membersArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$GroupMemberPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   warnings<T extends Prisma.ManagedGroup$warningsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.ManagedGroup$warningsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$WarningPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   moderationLogs<T extends Prisma.ManagedGroup$moderationLogsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.ManagedGroup$moderationLogsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ModerationLogPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  scheduledMessages<T extends Prisma.ManagedGroup$scheduledMessagesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.ManagedGroup$scheduledMessagesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ScheduledMessagePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -1829,6 +1955,30 @@ export type ManagedGroup$moderationLogsArgs<ExtArgs extends runtime.Types.Extens
   take?: number
   skip?: number
   distinct?: Prisma.ModerationLogScalarFieldEnum | Prisma.ModerationLogScalarFieldEnum[]
+}
+
+/**
+ * ManagedGroup.scheduledMessages
+ */
+export type ManagedGroup$scheduledMessagesArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the ScheduledMessage
+   */
+  select?: Prisma.ScheduledMessageSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the ScheduledMessage
+   */
+  omit?: Prisma.ScheduledMessageOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.ScheduledMessageInclude<ExtArgs> | null
+  where?: Prisma.ScheduledMessageWhereInput
+  orderBy?: Prisma.ScheduledMessageOrderByWithRelationInput | Prisma.ScheduledMessageOrderByWithRelationInput[]
+  cursor?: Prisma.ScheduledMessageWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.ScheduledMessageScalarFieldEnum | Prisma.ScheduledMessageScalarFieldEnum[]
 }
 
 /**
