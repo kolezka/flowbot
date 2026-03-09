@@ -3,7 +3,6 @@ import process from 'node:process'
 import * as readline from 'node:readline'
 import { TelegramClient } from 'telegram'
 import { loadSession } from '../client/session.js'
-import { createConfigFromEnvironment } from '../config.js'
 
 function prompt(question: string): Promise<string> {
   const rl = readline.createInterface({
@@ -20,10 +19,24 @@ function prompt(question: string): Promise<string> {
 }
 
 async function main() {
-  const config = createConfigFromEnvironment()
-  const session = loadSession()
+  try {
+    process.loadEnvFile()
+  }
+  catch {
+    // No .env file found
+  }
 
-  const client = new TelegramClient(session, config.tgClientApiId, config.tgClientApiHash, {
+  const apiId = Number(process.env.TG_CLIENT_API_ID)
+  const apiHash = process.env.TG_CLIENT_API_HASH
+
+  if (!apiId || !apiHash) {
+    console.error('TG_CLIENT_API_ID and TG_CLIENT_API_HASH environment variables are required')
+    process.exit(1)
+  }
+
+  const session = loadSession(process.env.TG_CLIENT_SESSION)
+
+  const client = new TelegramClient(session, apiId, apiHash, {
     connectionRetries: 5,
   })
 
