@@ -13,6 +13,7 @@ import { AdminCacheService } from '../services/admin-cache.js'
 import { AiClassifierService } from '../services/ai-classifier.js'
 import { AntiSpamService } from '../services/anti-spam.js'
 import { logChannelService } from '../services/log-channel.js'
+import { createAiModerationFeature } from './features/ai-moderation.js'
 import { createAntiLinkFeature } from './features/anti-link.js'
 import { createAntiSpamFeature } from './features/anti-spam.js'
 import { createAuditFeature } from './features/audit.js'
@@ -110,6 +111,7 @@ export function createBot(token: string, dependencies: Dependencies, botConfig?:
   protectedBot.use(createWelcomeFeature(prisma))
   protectedBot.use(createCaptchaFeature(prisma))
   protectedBot.use(createSetupFeature(prisma))
+  protectedBot.use(createAiModerationFeature(prisma))
   protectedBot.use(createMediaRestrictFeature(prisma))
   protectedBot.use(createAuditFeature(prisma))
   protectedBot.use(createRulesFeature(prisma))

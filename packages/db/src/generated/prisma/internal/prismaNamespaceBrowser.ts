@@ -206,6 +206,8 @@ export const GroupConfigScalarFieldEnum = {
   silentMode: 'silentMode',
   keywordFiltersEnabled: 'keywordFiltersEnabled',
   keywordFilters: 'keywordFilters',
+  aiModEnabled: 'aiModEnabled',
+  aiModThreshold: 'aiModThreshold',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const

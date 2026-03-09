@@ -186,6 +186,9 @@ model GroupConfig {
   keywordFiltersEnabled Boolean  @default(false)
   keywordFilters        String[]
 
+  aiModEnabled   Boolean @default(false)
+  aiModThreshold Float   @default(0.8)
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }

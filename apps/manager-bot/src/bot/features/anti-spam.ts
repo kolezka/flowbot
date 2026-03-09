@@ -96,11 +96,9 @@ export function createAntiSpamFeature(antiSpamService: AntiSpamService, prisma: 
     // Message passed rule-based checks — check AI if enabled and configured
     // AI classification is non-blocking for normal flow: if AI is not available, skip
     if (antiSpamService.hasAiClassifier && hasSuspiciousPatterns(text)) {
-      // Check if AI moderation is enabled for this group
-      // aiModEnabled/aiModThreshold may not exist in GroupConfig yet (MB-35)
-      // Use config from env as global fallback
-      const aiEnabled = ctx.config.aiModEnabled
-      const aiThreshold = DEFAULT_AI_THRESHOLD
+      // Check if AI moderation is enabled for this group (per-group config)
+      const aiEnabled = config.aiModEnabled
+      const aiThreshold = config.aiModThreshold ?? DEFAULT_AI_THRESHOLD
 
       if (aiEnabled) {
         // Fire AI check without blocking message processing

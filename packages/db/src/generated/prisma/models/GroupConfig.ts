@@ -38,6 +38,7 @@ export type GroupConfigAvgAggregateOutputType = {
   autoDeleteCommandsS: number | null
   captchaTimeoutS: number | null
   quarantineDurationS: number | null
+  aiModThreshold: number | null
 }
 
 export type GroupConfigSumAggregateOutputType = {
@@ -52,6 +53,7 @@ export type GroupConfigSumAggregateOutputType = {
   autoDeleteCommandsS: number | null
   captchaTimeoutS: number | null
   quarantineDurationS: number | null
+  aiModThreshold: number | null
 }
 
 export type GroupConfigMinAggregateOutputType = {
@@ -78,6 +80,8 @@ export type GroupConfigMinAggregateOutputType = {
   quarantineDurationS: number | null
   silentMode: boolean | null
   keywordFiltersEnabled: boolean | null
+  aiModEnabled: boolean | null
+  aiModThreshold: number | null
   createdAt: Date | null
   updatedAt: Date | null
 }
@@ -106,6 +110,8 @@ export type GroupConfigMaxAggregateOutputType = {
   quarantineDurationS: number | null
   silentMode: boolean | null
   keywordFiltersEnabled: boolean | null
+  aiModEnabled: boolean | null
+  aiModThreshold: number | null
   createdAt: Date | null
   updatedAt: Date | null
 }
@@ -136,6 +142,8 @@ export type GroupConfigCountAggregateOutputType = {
   silentMode: number
   keywordFiltersEnabled: number
   keywordFilters: number
+  aiModEnabled: number
+  aiModThreshold: number
   createdAt: number
   updatedAt: number
   _all: number
@@ -154,6 +162,7 @@ export type GroupConfigAvgAggregateInputType = {
   autoDeleteCommandsS?: true
   captchaTimeoutS?: true
   quarantineDurationS?: true
+  aiModThreshold?: true
 }
 
 export type GroupConfigSumAggregateInputType = {
@@ -168,6 +177,7 @@ export type GroupConfigSumAggregateInputType = {
   autoDeleteCommandsS?: true
   captchaTimeoutS?: true
   quarantineDurationS?: true
+  aiModThreshold?: true
 }
 
 export type GroupConfigMinAggregateInputType = {
@@ -194,6 +204,8 @@ export type GroupConfigMinAggregateInputType = {
   quarantineDurationS?: true
   silentMode?: true
   keywordFiltersEnabled?: true
+  aiModEnabled?: true
+  aiModThreshold?: true
   createdAt?: true
   updatedAt?: true
 }
@@ -222,6 +234,8 @@ export type GroupConfigMaxAggregateInputType = {
   quarantineDurationS?: true
   silentMode?: true
   keywordFiltersEnabled?: true
+  aiModEnabled?: true
+  aiModThreshold?: true
   createdAt?: true
   updatedAt?: true
 }
@@ -252,6 +266,8 @@ export type GroupConfigCountAggregateInputType = {
   silentMode?: true
   keywordFiltersEnabled?: true
   keywordFilters?: true
+  aiModEnabled?: true
+  aiModThreshold?: true
   createdAt?: true
   updatedAt?: true
   _all?: true
@@ -369,6 +385,8 @@ export type GroupConfigGroupByOutputType = {
   silentMode: boolean
   keywordFiltersEnabled: boolean
   keywordFilters: string[]
+  aiModEnabled: boolean
+  aiModThreshold: number
   createdAt: Date
   updatedAt: Date
   _count: GroupConfigCountAggregateOutputType | null
@@ -422,6 +440,8 @@ export type GroupConfigWhereInput = {
   silentMode?: Prisma.BoolFilter<"GroupConfig"> | boolean
   keywordFiltersEnabled?: Prisma.BoolFilter<"GroupConfig"> | boolean
   keywordFilters?: Prisma.StringNullableListFilter<"GroupConfig">
+  aiModEnabled?: Prisma.BoolFilter<"GroupConfig"> | boolean
+  aiModThreshold?: Prisma.FloatFilter<"GroupConfig"> | number
   createdAt?: Prisma.DateTimeFilter<"GroupConfig"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"GroupConfig"> | Date | string
   group?: Prisma.XOR<Prisma.ManagedGroupScalarRelationFilter, Prisma.ManagedGroupWhereInput>
@@ -453,6 +473,8 @@ export type GroupConfigOrderByWithRelationInput = {
   silentMode?: Prisma.SortOrder
   keywordFiltersEnabled?: Prisma.SortOrder
   keywordFilters?: Prisma.SortOrder
+  aiModEnabled?: Prisma.SortOrder
+  aiModThreshold?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   group?: Prisma.ManagedGroupOrderByWithRelationInput
@@ -487,6 +509,8 @@ export type GroupConfigWhereUniqueInput = Prisma.AtLeast<{
   silentMode?: Prisma.BoolFilter<"GroupConfig"> | boolean
   keywordFiltersEnabled?: Prisma.BoolFilter<"GroupConfig"> | boolean
   keywordFilters?: Prisma.StringNullableListFilter<"GroupConfig">
+  aiModEnabled?: Prisma.BoolFilter<"GroupConfig"> | boolean
+  aiModThreshold?: Prisma.FloatFilter<"GroupConfig"> | number
   createdAt?: Prisma.DateTimeFilter<"GroupConfig"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"GroupConfig"> | Date | string
   group?: Prisma.XOR<Prisma.ManagedGroupScalarRelationFilter, Prisma.ManagedGroupWhereInput>
@@ -518,6 +542,8 @@ export type GroupConfigOrderByWithAggregationInput = {
   silentMode?: Prisma.SortOrder
   keywordFiltersEnabled?: Prisma.SortOrder
   keywordFilters?: Prisma.SortOrder
+  aiModEnabled?: Prisma.SortOrder
+  aiModThreshold?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   _count?: Prisma.GroupConfigCountOrderByAggregateInput
@@ -556,6 +582,8 @@ export type GroupConfigScalarWhereWithAggregatesInput = {
   silentMode?: Prisma.BoolWithAggregatesFilter<"GroupConfig"> | boolean
   keywordFiltersEnabled?: Prisma.BoolWithAggregatesFilter<"GroupConfig"> | boolean
   keywordFilters?: Prisma.StringNullableListFilter<"GroupConfig">
+  aiModEnabled?: Prisma.BoolWithAggregatesFilter<"GroupConfig"> | boolean
+  aiModThreshold?: Prisma.FloatWithAggregatesFilter<"GroupConfig"> | number
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"GroupConfig"> | Date | string
   updatedAt?: Prisma.DateTimeWithAggregatesFilter<"GroupConfig"> | Date | string
 }
@@ -585,6 +613,8 @@ export type GroupConfigCreateInput = {
   silentMode?: boolean
   keywordFiltersEnabled?: boolean
   keywordFilters?: Prisma.GroupConfigCreatekeywordFiltersInput | string[]
+  aiModEnabled?: boolean
+  aiModThreshold?: number
   createdAt?: Date | string
   updatedAt?: Date | string
   group: Prisma.ManagedGroupCreateNestedOneWithoutConfigInput
@@ -616,6 +646,8 @@ export type GroupConfigUncheckedCreateInput = {
   silentMode?: boolean
   keywordFiltersEnabled?: boolean
   keywordFilters?: Prisma.GroupConfigCreatekeywordFiltersInput | string[]
+  aiModEnabled?: boolean
+  aiModThreshold?: number
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -645,6 +677,8 @@ export type GroupConfigUpdateInput = {
   silentMode?: Prisma.BoolFieldUpdateOperationsInput | boolean
   keywordFiltersEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
   keywordFilters?: Prisma.GroupConfigUpdatekeywordFiltersInput | string[]
+  aiModEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  aiModThreshold?: Prisma.FloatFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   group?: Prisma.ManagedGroupUpdateOneRequiredWithoutConfigNestedInput
@@ -676,6 +710,8 @@ export type GroupConfigUncheckedUpdateInput = {
   silentMode?: Prisma.BoolFieldUpdateOperationsInput | boolean
   keywordFiltersEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
   keywordFilters?: Prisma.GroupConfigUpdatekeywordFiltersInput | string[]
+  aiModEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  aiModThreshold?: Prisma.FloatFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -706,6 +742,8 @@ export type GroupConfigCreateManyInput = {
   silentMode?: boolean
   keywordFiltersEnabled?: boolean
   keywordFilters?: Prisma.GroupConfigCreatekeywordFiltersInput | string[]
+  aiModEnabled?: boolean
+  aiModThreshold?: number
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -735,6 +773,8 @@ export type GroupConfigUpdateManyMutationInput = {
   silentMode?: Prisma.BoolFieldUpdateOperationsInput | boolean
   keywordFiltersEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
   keywordFilters?: Prisma.GroupConfigUpdatekeywordFiltersInput | string[]
+  aiModEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  aiModThreshold?: Prisma.FloatFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -765,6 +805,8 @@ export type GroupConfigUncheckedUpdateManyInput = {
   silentMode?: Prisma.BoolFieldUpdateOperationsInput | boolean
   keywordFiltersEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
   keywordFilters?: Prisma.GroupConfigUpdatekeywordFiltersInput | string[]
+  aiModEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  aiModThreshold?: Prisma.FloatFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -800,6 +842,8 @@ export type GroupConfigCountOrderByAggregateInput = {
   silentMode?: Prisma.SortOrder
   keywordFiltersEnabled?: Prisma.SortOrder
   keywordFilters?: Prisma.SortOrder
+  aiModEnabled?: Prisma.SortOrder
+  aiModThreshold?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -816,6 +860,7 @@ export type GroupConfigAvgOrderByAggregateInput = {
   autoDeleteCommandsS?: Prisma.SortOrder
   captchaTimeoutS?: Prisma.SortOrder
   quarantineDurationS?: Prisma.SortOrder
+  aiModThreshold?: Prisma.SortOrder
 }
 
 export type GroupConfigMaxOrderByAggregateInput = {
@@ -842,6 +887,8 @@ export type GroupConfigMaxOrderByAggregateInput = {
   quarantineDurationS?: Prisma.SortOrder
   silentMode?: Prisma.SortOrder
   keywordFiltersEnabled?: Prisma.SortOrder
+  aiModEnabled?: Prisma.SortOrder
+  aiModThreshold?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -870,6 +917,8 @@ export type GroupConfigMinOrderByAggregateInput = {
   quarantineDurationS?: Prisma.SortOrder
   silentMode?: Prisma.SortOrder
   keywordFiltersEnabled?: Prisma.SortOrder
+  aiModEnabled?: Prisma.SortOrder
+  aiModThreshold?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -886,6 +935,7 @@ export type GroupConfigSumOrderByAggregateInput = {
   autoDeleteCommandsS?: Prisma.SortOrder
   captchaTimeoutS?: Prisma.SortOrder
   quarantineDurationS?: Prisma.SortOrder
+  aiModThreshold?: Prisma.SortOrder
 }
 
 export type GroupConfigCreateNestedOneWithoutGroupInput = {
@@ -938,6 +988,14 @@ export type GroupConfigUpdatekeywordFiltersInput = {
   push?: string | string[]
 }
 
+export type FloatFieldUpdateOperationsInput = {
+  set?: number
+  increment?: number
+  decrement?: number
+  multiply?: number
+  divide?: number
+}
+
 export type GroupConfigCreateWithoutGroupInput = {
   id?: string
   welcomeEnabled?: boolean
@@ -963,6 +1021,8 @@ export type GroupConfigCreateWithoutGroupInput = {
   silentMode?: boolean
   keywordFiltersEnabled?: boolean
   keywordFilters?: Prisma.GroupConfigCreatekeywordFiltersInput | string[]
+  aiModEnabled?: boolean
+  aiModThreshold?: number
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -992,6 +1052,8 @@ export type GroupConfigUncheckedCreateWithoutGroupInput = {
   silentMode?: boolean
   keywordFiltersEnabled?: boolean
   keywordFilters?: Prisma.GroupConfigCreatekeywordFiltersInput | string[]
+  aiModEnabled?: boolean
+  aiModThreshold?: number
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -1037,6 +1099,8 @@ export type GroupConfigUpdateWithoutGroupInput = {
   silentMode?: Prisma.BoolFieldUpdateOperationsInput | boolean
   keywordFiltersEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
   keywordFilters?: Prisma.GroupConfigUpdatekeywordFiltersInput | string[]
+  aiModEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  aiModThreshold?: Prisma.FloatFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -1066,6 +1130,8 @@ export type GroupConfigUncheckedUpdateWithoutGroupInput = {
   silentMode?: Prisma.BoolFieldUpdateOperationsInput | boolean
   keywordFiltersEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
   keywordFilters?: Prisma.GroupConfigUpdatekeywordFiltersInput | string[]
+  aiModEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  aiModThreshold?: Prisma.FloatFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -1098,6 +1164,8 @@ export type GroupConfigSelect<ExtArgs extends runtime.Types.Extensions.InternalA
   silentMode?: boolean
   keywordFiltersEnabled?: boolean
   keywordFilters?: boolean
+  aiModEnabled?: boolean
+  aiModThreshold?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   group?: boolean | Prisma.ManagedGroupDefaultArgs<ExtArgs>
@@ -1129,6 +1197,8 @@ export type GroupConfigSelectCreateManyAndReturn<ExtArgs extends runtime.Types.E
   silentMode?: boolean
   keywordFiltersEnabled?: boolean
   keywordFilters?: boolean
+  aiModEnabled?: boolean
+  aiModThreshold?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   group?: boolean | Prisma.ManagedGroupDefaultArgs<ExtArgs>
@@ -1160,6 +1230,8 @@ export type GroupConfigSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.E
   silentMode?: boolean
   keywordFiltersEnabled?: boolean
   keywordFilters?: boolean
+  aiModEnabled?: boolean
+  aiModThreshold?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   group?: boolean | Prisma.ManagedGroupDefaultArgs<ExtArgs>
@@ -1191,11 +1263,13 @@ export type GroupConfigSelectScalar = {
   silentMode?: boolean
   keywordFiltersEnabled?: boolean
   keywordFilters?: boolean
+  aiModEnabled?: boolean
+  aiModThreshold?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }
 
-export type GroupConfigOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "groupId" | "welcomeEnabled" | "welcomeMessage" | "rulesText" | "warnThresholdMute" | "warnThresholdBan" | "warnDecayDays" | "defaultMuteDurationS" | "antiSpamEnabled" | "antiSpamMaxMessages" | "antiSpamWindowSeconds" | "antiLinkEnabled" | "antiLinkWhitelist" | "slowModeDelay" | "logChannelId" | "autoDeleteCommandsS" | "captchaEnabled" | "captchaMode" | "captchaTimeoutS" | "quarantineEnabled" | "quarantineDurationS" | "silentMode" | "keywordFiltersEnabled" | "keywordFilters" | "createdAt" | "updatedAt", ExtArgs["result"]["groupConfig"]>
+export type GroupConfigOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "groupId" | "welcomeEnabled" | "welcomeMessage" | "rulesText" | "warnThresholdMute" | "warnThresholdBan" | "warnDecayDays" | "defaultMuteDurationS" | "antiSpamEnabled" | "antiSpamMaxMessages" | "antiSpamWindowSeconds" | "antiLinkEnabled" | "antiLinkWhitelist" | "slowModeDelay" | "logChannelId" | "autoDeleteCommandsS" | "captchaEnabled" | "captchaMode" | "captchaTimeoutS" | "quarantineEnabled" | "quarantineDurationS" | "silentMode" | "keywordFiltersEnabled" | "keywordFilters" | "aiModEnabled" | "aiModThreshold" | "createdAt" | "updatedAt", ExtArgs["result"]["groupConfig"]>
 export type GroupConfigInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   group?: boolean | Prisma.ManagedGroupDefaultArgs<ExtArgs>
 }
@@ -1237,6 +1311,8 @@ export type $GroupConfigPayload<ExtArgs extends runtime.Types.Extensions.Interna
     silentMode: boolean
     keywordFiltersEnabled: boolean
     keywordFilters: string[]
+    aiModEnabled: boolean
+    aiModThreshold: number
     createdAt: Date
     updatedAt: Date
   }, ExtArgs["result"]["groupConfig"]>
@@ -1688,6 +1764,8 @@ export interface GroupConfigFieldRefs {
   readonly silentMode: Prisma.FieldRef<"GroupConfig", 'Boolean'>
   readonly keywordFiltersEnabled: Prisma.FieldRef<"GroupConfig", 'Boolean'>
   readonly keywordFilters: Prisma.FieldRef<"GroupConfig", 'String[]'>
+  readonly aiModEnabled: Prisma.FieldRef<"GroupConfig", 'Boolean'>
+  readonly aiModThreshold: Prisma.FieldRef<"GroupConfig", 'Float'>
   readonly createdAt: Prisma.FieldRef<"GroupConfig", 'DateTime'>
   readonly updatedAt: Prisma.FieldRef<"GroupConfig", 'DateTime'>
 }
