@@ -1,6 +1,15 @@
 import { NestFactory } from '@nestjs/core';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
+import { configure } from '@trigger.dev/sdk/v3';
 import { AppModule } from './app.module';
+
+// Configure Trigger.dev SDK for self-hosted instance
+if (process.env.TRIGGER_SECRET_KEY) {
+  configure({
+    secretKey: process.env.TRIGGER_SECRET_KEY,
+    baseURL: process.env.TRIGGER_API_URL,
+  });
+}
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);

@@ -1,4 +1,5 @@
 import type { PrismaClient } from '@tg-allegro/db'
+import type { Api } from 'grammy'
 import type { Bot } from '../bot/index.js'
 import type { WebhookConfig } from '../config.js'
 import type { Logger } from '../logger.js'
@@ -7,19 +8,20 @@ import { serve } from '@hono/node-server'
 import { webhookCallback } from 'grammy'
 import { Hono } from 'hono'
 
-interface Dependencies {
-  bot: Bot
-  config: WebhookConfig
+interface ApiDependencies {
+  botApi: Api
   logger: Logger
   prisma: PrismaClient
 }
 
+interface WebhookDependencies extends ApiDependencies {
+  bot: Bot
+  config: WebhookConfig
+}
+
 const startedAt = Date.now()
 
-export function createServer(dependencies: Dependencies) {
-  const { bot, config, logger, prisma } = dependencies
-  const server = new Hono()
-
+function addApiRoutes(server: Hono, { botApi, logger, prisma }: ApiDependencies) {
   server.get('/health', async (c) => {
     const uptime = Math.floor((Date.now() - startedAt) / 1000)
 
@@ -38,10 +40,6 @@ export function createServer(dependencies: Dependencies) {
     return c.json({
       status,
       uptime,
-      bot: {
-        username: bot.botInfo.username,
-        mode: config.isWebhookMode ? 'webhook' : 'polling',
-      },
       database: dbStatus,
       groups: groupCount,
       memory: {
@@ -52,6 +50,35 @@ export function createServer(dependencies: Dependencies) {
     }, status === 'ok' ? 200 : 503)
   })
 
+  server.post('/api/send-message', async (c) => {
+    try {
+      const body = await c.req.json<{ chatId: string, text: string }>()
+      if (!body.chatId || !body.text) {
+        return c.json({ success: false, error: 'chatId and text are required' }, 400)
+      }
+
+      const msg = await botApi.sendMessage(body.chatId, body.text, { parse_mode: 'HTML' })
+      return c.json({ success: true, messageId: msg.message_id })
+    }
+    catch (error) {
+      const message = error instanceof Error ? error.message : 'Unknown error'
+      logger.error({ err: error }, 'Failed to send message via API')
+      return c.json({ success: false, error: message }, 500)
+    }
+  })
+
+  server.onError((error, c) => {
+    logger.error({ err: error, path: c.req.path })
+    return c.json({ error: 'Internal server error' }, 500)
+  })
+}
+
+export function createServer(dependencies: WebhookDependencies) {
+  const { bot, config } = dependencies
+  const server = new Hono()
+
+  addApiRoutes(server, dependencies)
+
   server.post(
     '/webhook',
     webhookCallback(bot, 'hono', {
@@ -59,15 +86,16 @@ export function createServer(dependencies: Dependencies) {
     }),
   )
 
-  server.onError((error, c) => {
-    logger.error({ err: error, path: c.req.path })
-    return c.json({ error: 'Internal server error' }, 500)
-  })
-
   return server
 }
 
-export function createServerManager(server: ReturnType<typeof createServer>, options: { host: string, port: number }) {
+export function createApiServer(dependencies: ApiDependencies) {
+  const server = new Hono()
+  addApiRoutes(server, dependencies)
+  return server
+}
+
+export function createServerManager(server: Hono, options: { host: string, port: number }) {
   let handle: undefined | ReturnType<typeof serve>
   return {
     start() {

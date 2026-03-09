@@ -21,6 +21,10 @@ const baseConfigSchema = v.object({
   anthropicApiKey: v.optional(v.string()),
   aiModEnabled: v.optional(v.pipe(v.string(), v.transform(val => val === 'true'), v.boolean()), 'false'),
   salesBotUsername: v.optional(v.string()),
+  triggerSecretKey: v.optional(v.string()),
+  triggerApiUrl: v.optional(v.string()),
+  apiServerHost: v.optional(v.string(), '0.0.0.0'),
+  apiServerPort: v.optional(v.pipe(v.string(), v.transform(Number), v.number()), '3001'),
 })
 
 const configSchema = v.variant('botMode', [

@@ -31,6 +31,7 @@
     "@grammyjs/types": "3.20.0",
     "@hono/node-server": "1.14.2",
     "@tg-allegro/db": "workspace:*",
+    "@trigger.dev/sdk": "^3.3.17",
     "callback-data": "1.1.1",
     "grammy": "1.36.1",
     "hono": "4.10.3",

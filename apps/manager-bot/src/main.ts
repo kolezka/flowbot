@@ -5,15 +5,24 @@ import type { RunnerHandle } from '@grammyjs/runner'
 import type { PollingConfig, WebhookConfig } from './config.js'
 import process from 'node:process'
 import { run } from '@grammyjs/runner'
+import { configure } from '@trigger.dev/sdk/v3'
 import { createBot } from './bot/index.js'
 import { createConfigFromEnvironment } from './config.js'
 import { createDatabase } from './database.js'
 import { createLogger } from './logger.js'
-import { createServer, createServerManager } from './server/index.js'
+import { createApiServer, createServer, createServerManager } from './server/index.js'
 import { AnalyticsService } from './services/analytics.js'
 import { SchedulerService } from './services/scheduler.js'
 
 const config = createConfigFromEnvironment()
+
+// Configure Trigger.dev SDK for self-hosted instance
+if (config.triggerSecretKey) {
+  configure({
+    secretKey: config.triggerSecretKey,
+    baseURL: config.triggerApiUrl,
+  })
+}
 const logger = createLogger(config)
 const prisma = createDatabase(config)
 
@@ -23,11 +32,19 @@ async function startPolling(config: PollingConfig) {
   const scheduler = new SchedulerService(prisma, bot.api, logger)
   const analytics = new AnalyticsService(prisma, logger)
 
+  // Start API server for health checks and Trigger.dev send-message endpoint
+  const apiServer = createApiServer({ botApi: bot.api, logger, prisma })
+  const apiServerManager = createServerManager(apiServer, {
+    host: config.apiServerHost,
+    port: config.apiServerPort,
+  })
+
   onShutdown(async () => {
     logger.info('Shutdown')
     analytics.stop()
     scheduler.stop()
     await runner?.stop()
+    await apiServerManager.stop()
   })
 
   await Promise.all([
@@ -43,6 +60,9 @@ async function startPolling(config: PollingConfig) {
     },
   })
 
+  const apiInfo = await apiServerManager.start()
+  logger.info({ msg: 'API server started', url: apiInfo.url })
+
   scheduler.start()
   analytics.start()
 
@@ -54,7 +74,7 @@ async function startPolling(config: PollingConfig) {
 
 async function startWebhook(config: WebhookConfig) {
   const bot = createBot(config.botToken, { config, logger, prisma })
-  const server = createServer({ bot, config, logger, prisma })
+  const server = createServer({ bot, config, logger, prisma, botApi: bot.api })
   const serverManager = createServerManager(server, {
     host: config.serverHost,
     port: config.serverPort,
