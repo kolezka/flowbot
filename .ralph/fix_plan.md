@@ -42,7 +42,7 @@ Source docs: `docs/plan/mb-05-tasks.md` (manager-bot), `docs/plan/05-tasks.md` (
 
 - [x] **MB-13**: Warning System — /warn, /unwarn, /warnings in `src/bot/features/moderation.ts`. WarningRepository. ModerationService with escalation (configurable thresholds). Warning decay via expiresAt. Log to ModerationLog.
 
-- [ ] **MB-14**: Mute / Ban / Kick — /mute, /unmute, /ban, /unban, /kick. `src/bot/helpers/time.ts` for duration parsing. Log to ModerationLog.
+- [x] **MB-14**: Mute / Ban / Kick — /mute, /unmute, /ban, /unban, /kick. `src/bot/helpers/time.ts` for duration parsing. Log to ModerationLog.
 
 - [ ] **MB-15**: Message Deletion — `src/bot/features/deletion.ts`: /del (reply-to-delete), /purge N (bulk, max 100, admin+). Auto-delete bot confirmations.
 
