@@ -10,7 +10,7 @@ Source docs: `docs/plan/mb-05-tasks.md` (manager-bot), `docs/plan/05-tasks.md` (
 
 ## Phase 1: Foundation
 
-- [ ] **MB-01**: Package Scaffolding — Create `apps/manager-bot` workspace: package.json (`@tg-allegro/manager-bot`, ESM), tsconfig.json, root package.json script, root tsconfig.json reference. Dependencies: grammy, grammY plugins (auto-retry, hydrate, parse-mode, runner, ratelimiter, transformer-throttler), hono, @hono/node-server, pino, pino-pretty, valibot, callback-data, @tg-allegro/db. DevDeps: typescript, tsc-watch, tsx, @antfu/eslint-config, eslint, vitest. Verify: `pnpm manager-bot typecheck` passes.
+- [x] **MB-01**: Package Scaffolding — Create `apps/manager-bot` workspace: package.json (`@tg-allegro/manager-bot`, ESM), tsconfig.json, root package.json script, root tsconfig.json reference. Dependencies: grammy, grammY plugins (auto-retry, hydrate, parse-mode, runner, ratelimiter, transformer-throttler), hono, @hono/node-server, pino, pino-pretty, valibot, callback-data, @tg-allegro/db. DevDeps: typescript, tsc-watch, tsx, @antfu/eslint-config, eslint, vitest. Verify: `pnpm manager-bot typecheck` passes.
 
 - [ ] **MB-02**: Configuration Module — `src/config.ts` with Valibot schema (polling/webhook discriminated union). Required: BOT_TOKEN, DATABASE_URL. Optional: BOT_MODE, BOT_ADMINS, LOG_LEVEL, DEBUG, BOT_ALLOWED_UPDATES (default includes chat_member, my_chat_member). Verify: unit test covers valid/invalid/missing.
 
