@@ -18,6 +18,8 @@ const baseConfigSchema = v.object({
   botAllowedUpdates: v.optional(v.pipe(v.string(), v.transform(JSON.parse), v.array(v.picklist(API_CONSTANTS.ALL_UPDATE_TYPES))), DEFAULT_ALLOWED_UPDATES),
   botAdmins: v.optional(v.pipe(v.string(), v.transform(JSON.parse), v.array(v.number())), '[]'),
   databaseUrl: v.string(),
+  anthropicApiKey: v.optional(v.string()),
+  aiModEnabled: v.optional(v.pipe(v.string(), v.transform(val => val === 'true'), v.boolean()), 'false'),
 })
 
 const configSchema = v.variant('botMode', [
