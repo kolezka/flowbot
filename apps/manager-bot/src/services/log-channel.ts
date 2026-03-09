@@ -13,6 +13,7 @@ const ACTION_ICONS: Record<string, string> = {
   denylink: '🔗',
   config_change: '⚙️',
   promotion: '📢',
+  ai_spam_detected: '🤖',
 }
 
 export interface LogChannelEvent {

@@ -1,3 +1,4 @@
+import type { AiClassifierService, Classification } from './ai-classifier.js'
 import { createHash } from 'node:crypto'
 
 interface UserActivity {
@@ -8,12 +9,40 @@ interface UserActivity {
 
 export type SpamVerdict = 'clean' | 'flood' | 'duplicate'
 
+export interface AiSpamResult {
+  isSpam: boolean
+  classification: Classification
+}
+
 const MAX_USERS_PER_GROUP = 1000
 const DUPLICATE_THRESHOLD = 3
 const DUPLICATE_WINDOW_MS = 60000
 
 export class AntiSpamService {
   private groups = new Map<string, Map<string, UserActivity>>()
+  private aiClassifier: AiClassifierService | undefined
+
+  setAiClassifier(classifier: AiClassifierService) {
+    this.aiClassifier = classifier
+  }
+
+  get hasAiClassifier(): boolean {
+    return this.aiClassifier !== undefined
+  }
+
+  async checkWithAi(text: string, threshold: number): Promise<AiSpamResult> {
+    if (!this.aiClassifier) {
+      return { isSpam: false, classification: { label: 'safe', confidence: 0, reason: 'ai not configured' } }
+    }
+
+    const classification = await this.aiClassifier.classifyContent(text)
+
+    const isSpam = classification.label !== 'safe'
+      && classification.label !== 'off-topic'
+      && classification.confidence >= threshold
+
+    return { isSpam, classification }
+  }
 
   checkMessage(
     chatId: string,

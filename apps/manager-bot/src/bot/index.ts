@@ -10,6 +10,7 @@ import { hydrateReply, parseMode } from '@grammyjs/parse-mode'
 import { sequentialize } from '@grammyjs/runner'
 import { Bot as TelegramBot } from 'grammy'
 import { AdminCacheService } from '../services/admin-cache.js'
+import { AiClassifierService } from '../services/ai-classifier.js'
 import { AntiSpamService } from '../services/anti-spam.js'
 import { logChannelService } from '../services/log-channel.js'
 import { createAntiLinkFeature } from './features/anti-link.js'
@@ -92,7 +93,15 @@ export function createBot(token: string, dependencies: Dependencies, botConfig?:
 
   // Features — anti-spam runs first
   const antiSpamService = new AntiSpamService()
-  protectedBot.use(createAntiSpamFeature(antiSpamService))
+
+  // Wire AI classifier if configured
+  if (config.anthropicApiKey && config.aiModEnabled) {
+    const aiClassifier = new AiClassifierService(config.anthropicApiKey, logger)
+    antiSpamService.setAiClassifier(aiClassifier)
+    logger.info('AI classifier enabled for anti-spam')
+  }
+
+  protectedBot.use(createAntiSpamFeature(antiSpamService, prisma))
   protectedBot.use(createAntiLinkFeature(prisma))
   protectedBot.use(createFiltersFeature(prisma))
   protectedBot.use(createPermissionsFeature(prisma))
