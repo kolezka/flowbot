@@ -1,6 +1,7 @@
 import type { PrismaClient } from '@tg-allegro/db'
 import type { Context } from '../context.js'
 import { Composer } from 'grammy'
+import { tasks } from '@trigger.dev/sdk/v3'
 import { CrossPostTemplateRepository } from '../../repositories/CrossPostTemplateRepository.js'
 import { ModerationLogRepository } from '../../repositories/ModerationLogRepository.js'
 import { logHandle } from '../helpers/logging.js'
@@ -135,27 +136,44 @@ export function createCrossPostFeature(prisma: PrismaClient) {
       return
     }
 
-    // TODO: Trigger.dev integration — dispatch cross-post job instead of executing directly.
-    // For now, log the intent and notify the admin.
     const group = await prisma.managedGroup.findUnique({ where: { chatId: BigInt(ctx.chat.id) } })
-    if (group) {
-      await modLogRepo.create({
-        groupId: group.id,
-        action: 'crosspost_execute',
-        actorId: BigInt(ctx.from!.id),
-        details: {
-          templateName: template.name,
-          templateId: template.id,
-          targetCount: template.targetChatIds.length,
-          note: 'Trigger.dev job placeholder — cross-post not yet dispatched',
-        },
-      })
-    }
 
-    await ctx.reply(
-      `Cross-post "<b>${template.name}</b>" queued for ${template.targetChatIds.length} target(s).\n\n`
-      + `<i>Note: Trigger.dev integration pending. Cross-post logged but not yet dispatched.</i>`,
-    )
+    try {
+      await tasks.trigger('cross-post', {
+        templateId: template.id,
+        messageText: template.messageText,
+        targetChatIds: template.targetChatIds.map((id: bigint) => id.toString()),
+      })
+
+      if (group) {
+        await modLogRepo.create({
+          groupId: group.id,
+          action: 'crosspost_execute',
+          actorId: BigInt(ctx.from!.id),
+          details: {
+            templateName: template.name,
+            templateId: template.id,
+            targetCount: template.targetChatIds.length,
+          },
+        })
+      }
+
+      await ctx.reply(
+        `Cross-post "<b>${template.name}</b>" dispatched to ${template.targetChatIds.length} target(s).`,
+      )
+    }
+    catch (error) {
+      const errorMsg = error instanceof Error ? error.message : 'Unknown error'
+      if (group) {
+        await modLogRepo.create({
+          groupId: group.id,
+          action: 'crosspost_execute_failed',
+          actorId: BigInt(ctx.from!.id),
+          details: { templateName: template.name, error: errorMsg },
+        })
+      }
+      await ctx.reply(`Failed to dispatch cross-post: ${errorMsg}`)
+    }
   })
 
   return feature

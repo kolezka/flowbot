@@ -77,6 +77,17 @@ export class OrderEventDto {
   createdAt!: Date;
 }
 
+export class CreateOrderEventDto {
+  @ApiProperty({ description: 'Event type (e.g. order_placed, order_shipped)' })
+  eventType!: string;
+
+  @ApiProperty({ description: 'Order data JSON' })
+  orderData!: Record<string, unknown>;
+
+  @ApiProperty({ type: [String], description: 'Target chat IDs for notifications' })
+  targetChatIds!: string[];
+}
+
 export class OrderEventListResponseDto {
   @ApiProperty({ type: [OrderEventDto] })
   data!: OrderEventDto[];

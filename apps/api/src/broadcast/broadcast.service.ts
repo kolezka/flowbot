@@ -4,6 +4,7 @@ import {
   BadRequestException,
   Logger,
 } from '@nestjs/common';
+import { tasks } from '@trigger.dev/sdk/v3';
 import { PrismaService } from '../prisma/prisma.service';
 import {
   BroadcastDto,
@@ -64,6 +65,13 @@ export class BroadcastService {
     });
 
     this.logger.log(`Broadcast created: ${broadcast.id}`);
+
+    try {
+      await tasks.trigger('broadcast', { broadcastId: broadcast.id });
+      this.logger.log(`Broadcast task triggered: ${broadcast.id}`);
+    } catch (error) {
+      this.logger.warn(`Failed to trigger broadcast task: ${error}`);
+    }
 
     return this.mapToDto(broadcast);
   }
@@ -127,6 +135,14 @@ export class BroadcastService {
     });
 
     this.logger.log(`Broadcast retried: ${id} -> ${newBroadcast.id}`);
+
+    try {
+      await tasks.trigger('broadcast', { broadcastId: newBroadcast.id });
+      this.logger.log(`Broadcast retry task triggered: ${newBroadcast.id}`);
+    } catch (error) {
+      this.logger.warn(`Failed to trigger broadcast retry task: ${error}`);
+    }
+
     return this.mapToDto(newBroadcast);
   }
 

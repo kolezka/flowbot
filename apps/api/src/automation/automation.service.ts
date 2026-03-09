@@ -1,4 +1,5 @@
 import { Injectable, NotFoundException, Logger } from '@nestjs/common';
+import { tasks } from '@trigger.dev/sdk/v3';
 import { PrismaService } from '../prisma/prisma.service';
 import {
   AutomationJobDto,
@@ -6,6 +7,7 @@ import {
   AutomationStatsDto,
   ClientLogDto,
   ClientLogListResponseDto,
+  CreateOrderEventDto,
   OrderEventDto,
   OrderEventListResponseDto,
 } from './dto';
@@ -122,6 +124,28 @@ export class AutomationService {
       limit,
       totalPages: Math.ceil(total / limit),
     };
+  }
+
+  async createOrderEvent(dto: CreateOrderEventDto): Promise<OrderEventDto> {
+    const event = await this.prisma.orderEvent.create({
+      data: {
+        eventType: dto.eventType,
+        orderData: dto.orderData as any,
+        targetChatIds: dto.targetChatIds.map(id => BigInt(id)),
+        processed: false,
+      },
+    });
+
+    this.logger.log(`OrderEvent created: ${event.id}`);
+
+    try {
+      await tasks.trigger('order-notification', { orderEventId: event.id });
+      this.logger.log(`Order notification task triggered: ${event.id}`);
+    } catch (error) {
+      this.logger.warn(`Failed to trigger order notification task: ${error}`);
+    }
+
+    return this.mapOrderEventToDto(event);
   }
 
   async getOrderEvents(

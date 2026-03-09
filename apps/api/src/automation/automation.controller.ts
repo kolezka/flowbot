@@ -1,6 +1,8 @@
 import {
   Controller,
   Get,
+  Post,
+  Body,
   Param,
   Query,
   ParseIntPipe,
@@ -20,6 +22,8 @@ import {
   AutomationJobListResponseDto,
   AutomationStatsDto,
   ClientLogListResponseDto,
+  CreateOrderEventDto,
+  OrderEventDto,
   OrderEventListResponseDto,
 } from './dto';
 
@@ -99,6 +103,19 @@ export class AutomationController {
     @Query('level') level?: string,
   ): Promise<ClientLogListResponseDto> {
     return this.automationService.getLogs(page, limit, level);
+  }
+
+  @Post('order-events')
+  @ApiOperation({ summary: 'Create an order event and trigger notification' })
+  @ApiResponse({
+    status: HttpStatus.CREATED,
+    description: 'Order event created and notification triggered',
+    type: OrderEventDto,
+  })
+  async createOrderEvent(
+    @Body() dto: CreateOrderEventDto,
+  ): Promise<OrderEventDto> {
+    return this.automationService.createOrderEvent(dto);
   }
 
   @Get('order-events')
