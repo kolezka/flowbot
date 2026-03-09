@@ -2,301 +2,287 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { api, User, StatsResponse, UsersResponse } from "@/lib/api";
+import {
+  api,
+  StatsResponse,
+  AnalyticsOverview,
+  AutomationStats,
+  WarningStats,
+  ModerationLog,
+  ModerationLogsResponse,
+} from "@/lib/api";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Search, Users as UsersIcon, UserCheck, Ban, UserPlus, Filter, X } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import {
+  Users, Shield, Zap, AlertTriangle, Activity,
+  ArrowRight, Layers, Package, Trophy, BarChart3,
+  Radio, Eye,
+} from "lucide-react";
 
-export default function DashboardPage() {
-  const [stats, setStats] = useState<StatsResponse | null>(null);
-  const [users, setUsers] = useState<User[]>([]);
-  const [totalUsers, setTotalUsers] = useState(0);
-  const [page, setPage] = useState(1);
-  const [search, setSearch] = useState("");
-  const [bannedFilter, setBannedFilter] = useState<boolean | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const pageSize = 10;
-
-  useEffect(() => {
-    loadStats();
-    loadUsers();
-  }, [page, search, bannedFilter]);
-
-  const loadStats = async () => {
-    try {
-      const data = await api.getStats();
-      setStats(data);
-    } catch (err) {
-      console.error("Failed to load stats:", err);
-    }
-  };
-
-  const loadUsers = async () => {
-    setLoading(true);
-    setError(null);
-    try {
-      const data = await api.getUsers(page, pageSize, search || undefined);
-      let filteredUsers = data.data;
-
-      if (bannedFilter !== null) {
-        filteredUsers = filteredUsers.filter(user => user.isBanned === bannedFilter);
-      }
-
-      setUsers(filteredUsers);
-      setTotalUsers(data.total);
-    } catch (err: any) {
-      setError(err.message || "Failed to load users");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleSearch = (value: string) => {
-    setSearch(value);
-    setPage(1);
-  };
-
-  const handleBannedFilter = (filter: boolean | null) => {
-    setBannedFilter(filter);
-    setPage(1);
-  };
-
-  const totalPages = Math.ceil(totalUsers / pageSize);
-
-  return (
-    <div className="space-y-8">
-      {/* Stats Cards */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        <StatCard
-          title="Total Users"
-          value={stats?.totalUsers ?? 0}
-          icon={<UsersIcon className="h-4 w-4" />}
-          description="All registered users"
-        />
-        <StatCard
-          title="Active Users"
-          value={stats?.activeUsers ?? 0}
-          icon={<UserCheck className="h-4 w-4" />}
-          description="Users active in last 7 days"
-        />
-        <StatCard
-          title="Banned Users"
-          value={stats?.bannedUsers ?? 0}
-          icon={<Ban className="h-4 w-4" />}
-          description="Currently banned users"
-          variant="destructive"
-        />
-        <StatCard
-          title="New Today"
-          value={stats?.newUsersToday ?? 0}
-          icon={<UserPlus className="h-4 w-4" />}
-          description="Users joined today"
-          variant="secondary"
-        />
-      </div>
-
-      {/* Users Table */}
-      <Card>
-        <CardHeader>
-          <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-            <CardTitle>Users</CardTitle>
-            <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
-              <div className="relative w-full sm:w-64">
-                <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-                <Input
-                  type="search"
-                  placeholder="Search by username..."
-                  className="pl-8"
-                  value={search}
-                  onChange={(e) => handleSearch(e.target.value)}
-                />
-              </div>
-              <div className="flex gap-1">
-                <Button
-                  variant={bannedFilter === null ? "default" : "outline"}
-                  size="sm"
-                  onClick={() => handleBannedFilter(null)}
-                  title="Show all users"
-                >
-                  All
-                </Button>
-                <Button
-                  variant={bannedFilter === false ? "default" : "outline"}
-                  size="sm"
-                  onClick={() => handleBannedFilter(false)}
-                  title="Show active users"
-                >
-                  Active
-                </Button>
-                <Button
-                  variant={bannedFilter === true ? "destructive" : "outline"}
-                  size="sm"
-                  onClick={() => handleBannedFilter(true)}
-                  title="Show banned users"
-                >
-                  Banned
-                </Button>
-              </div>
-            </div>
-          </div>
-        </CardHeader>
-        <CardContent>
-          {error && (
-            <div className="mb-4 rounded-lg bg-destructive/10 p-4 text-destructive">
-              {error}
-            </div>
-          )}
-
-          <div className="rounded-md border">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>User</TableHead>
-                  <TableHead className="hidden sm:table-cell">Telegram ID</TableHead>
-                  <TableHead className="hidden md:table-cell">Messages</TableHead>
-                  <TableHead className="hidden lg:table-cell">Last Seen</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead></TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {loading ? (
-                  <TableRow>
-                    <TableCell colSpan={6} className="h-24 text-center">
-                      Loading...
-                    </TableCell>
-                  </TableRow>
-                ) : users.length === 0 ? (
-                  <TableRow>
-                    <TableCell colSpan={6} className="h-24 text-center text-muted-foreground">
-                      No users found
-                    </TableCell>
-                  </TableRow>
-                ) : (
-                  users.map((user) => (
-                    <TableRow key={user.id} className="group cursor-pointer transition-colors">
-                      <TableCell>
-                        <div>
-                          <div className="font-medium">
-                            {user.firstName} {user.lastName}
-                          </div>
-                          {user.username && (
-                            <div className="text-sm text-muted-foreground">@{user.username}</div>
-                          )}
-                        </div>
-                      </TableCell>
-                      <TableCell className="hidden sm:table-cell text-muted-foreground">
-                        {user.telegramId}
-                      </TableCell>
-                      <TableCell className="hidden md:table-cell">
-                        {user.messageCount}
-                      </TableCell>
-                      <TableCell className="hidden lg:table-cell text-muted-foreground">
-                        {user.lastSeenAt
-                          ? new Date(user.lastSeenAt).toLocaleDateString()
-                          : "Never"}
-                      </TableCell>
-                      <TableCell>
-                        {user.isBanned ? (
-                          <Badge variant="destructive">Banned</Badge>
-                        ) : (
-                          <Badge variant="default">Active</Badge>
-                        )}
-                      </TableCell>
-                      <TableCell className="text-right">
-                        <Link href={`/dashboard/users/${user.id}`}>
-                          <Button variant="ghost" size="sm" className="opacity-0 group-hover:opacity-100 transition-opacity">
-                            View
-                          </Button>
-                        </Link>
-                      </TableCell>
-                    </TableRow>
-                  ))
-                )}
-              </TableBody>
-            </Table>
-          </div>
-
-          {/* Pagination */}
-          {totalPages > 1 && (
-            <div className="flex items-center justify-between mt-4">
-              <div className="text-sm text-muted-foreground">
-                Showing {((page - 1) * pageSize) + 1} to {Math.min(page * pageSize, totalUsers)} of {totalUsers} users
-              </div>
-              <div className="flex gap-2">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setPage(p => Math.max(1, p - 1))}
-                  disabled={page === 1}
-                >
-                  Previous
-                </Button>
-                <div className="flex items-center gap-1">
-                  {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
-                    const pageNum = totalPages <= 5
-                      ? i + 1
-                      : page <= 3
-                        ? i + 1
-                        : page >= totalPages - 2
-                          ? totalPages - 4 + i
-                          : page - 2 + i;
-
-                    return (
-                      <Button
-                        key={pageNum}
-                        variant={page === pageNum ? "default" : "outline"}
-                        size="sm"
-                        onClick={() => setPage(pageNum)}
-                        className="w-9"
-                      >
-                        {pageNum}
-                      </Button>
-                    );
-                  })}
-                </div>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setPage(p => Math.min(totalPages, p + 1))}
-                  disabled={page === totalPages}
-                >
-                  Next
-                </Button>
-              </div>
-            </div>
-          )}
-        </CardContent>
-      </Card>
-    </div>
-  );
+function timeAgo(dateStr: string): string {
+  const seconds = Math.floor((Date.now() - new Date(dateStr).getTime()) / 1000);
+  if (seconds < 60) return `${seconds}s ago`;
+  const minutes = Math.floor(seconds / 60);
+  if (minutes < 60) return `${minutes}m ago`;
+  const hours = Math.floor(minutes / 60);
+  if (hours < 24) return `${hours}h ago`;
+  const days = Math.floor(hours / 24);
+  return `${days}d ago`;
 }
 
-interface StatCardProps {
+function actionBadgeVariant(action: string): "secondary" | "outline" | "destructive" | "default" {
+  switch (action) {
+    case "warn":
+      return "secondary";
+    case "mute":
+      return "outline";
+    case "ban":
+    case "kick":
+      return "destructive";
+    case "unban":
+      return "default";
+    default:
+      return "default";
+  }
+}
+
+interface KpiCardProps {
   title: string;
   value: number;
   icon: React.ReactNode;
   description: string;
-  variant?: "default" | "destructive" | "secondary";
 }
 
-function StatCard({ title, value, icon, description, variant = "default" }: StatCardProps) {
+function KpiCard({ title, value, icon, description }: KpiCardProps) {
   return (
     <Card>
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
         <CardTitle className="text-sm font-medium">{title}</CardTitle>
-        <div className={variant === "destructive" ? "text-destructive" : variant === "secondary" ? "text-muted-foreground" : "text-primary"}>
-          {icon}
-        </div>
+        <div className="text-primary">{icon}</div>
       </CardHeader>
       <CardContent>
         <div className="text-2xl font-bold">{value.toLocaleString()}</div>
         <p className="text-xs text-muted-foreground">{description}</p>
       </CardContent>
     </Card>
+  );
+}
+
+export default function DashboardPage() {
+  const [stats, setStats] = useState<StatsResponse | null>(null);
+  const [overview, setOverview] = useState<AnalyticsOverview | null>(null);
+  const [automationStats, setAutomationStats] = useState<AutomationStats | null>(null);
+  const [warningStats, setWarningStats] = useState<WarningStats | null>(null);
+  const [recentLogs, setRecentLogs] = useState<ModerationLog[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function fetchAll() {
+      setLoading(true);
+      const results = await Promise.allSettled([
+        api.getStats(),
+        api.getAnalyticsOverview(),
+        api.getAutomationStats(),
+        api.getWarningStats(),
+        api.getModerationLogs({ limit: 10 }),
+      ]);
+
+      if (results[0]?.status === "fulfilled") setStats(results[0].value);
+      if (results[1]?.status === "fulfilled") setOverview(results[1].value);
+      if (results[2]?.status === "fulfilled") setAutomationStats(results[2].value);
+      if (results[3]?.status === "fulfilled") setWarningStats(results[3].value);
+      if (results[4]?.status === "fulfilled") setRecentLogs(results[4].value.data);
+
+      setLoading(false);
+    }
+
+    fetchAll();
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <p className="text-muted-foreground">Loading dashboard...</p>
+      </div>
+    );
+  }
+
+  const topGroups = overview?.groups
+    ?.slice()
+    .sort((a, b) => b.moderationToday - a.moderationToday)
+    .slice(0, 3) ?? [];
+
+  return (
+    <div className="space-y-8">
+      {/* KPI Cards Row */}
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+        <KpiCard
+          title="Total Users"
+          value={stats?.totalUsers ?? 0}
+          icon={<Users className="h-4 w-4" />}
+          description="All registered users"
+        />
+        <KpiCard
+          title="Active Groups"
+          value={overview?.totalGroups ?? 0}
+          icon={<Layers className="h-4 w-4" />}
+          description="Managed groups"
+        />
+        <KpiCard
+          title="Messages Today"
+          value={overview?.totalMessagesToday ?? 0}
+          icon={<Activity className="h-4 w-4" />}
+          description="Across all groups"
+        />
+        <KpiCard
+          title="Active Warnings"
+          value={warningStats?.activeWarnings ?? 0}
+          icon={<AlertTriangle className="h-4 w-4" />}
+          description="Currently active"
+        />
+        <KpiCard
+          title="Pending Jobs"
+          value={automationStats?.pending ?? 0}
+          icon={<Zap className="h-4 w-4" />}
+          description="Awaiting processing"
+        />
+      </div>
+
+      {/* Two-column layout */}
+      <div className="grid gap-6 lg:grid-cols-3">
+        {/* Left column - Recent Moderation Activity */}
+        <Card className="lg:col-span-2">
+          <CardHeader>
+            <CardTitle>Recent Moderation Activity</CardTitle>
+          </CardHeader>
+          <CardContent>
+            {recentLogs.length === 0 ? (
+              <p className="text-sm text-muted-foreground">No recent moderation activity.</p>
+            ) : (
+              <div className="rounded-md border">
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="border-b bg-muted/50">
+                      <th className="px-3 py-2 text-left font-medium">Action</th>
+                      <th className="px-3 py-2 text-left font-medium">Actor ID</th>
+                      <th className="px-3 py-2 text-left font-medium">Target ID</th>
+                      <th className="px-3 py-2 text-left font-medium hidden md:table-cell">Group</th>
+                      <th className="px-3 py-2 text-left font-medium">Time</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {recentLogs.map((log) => (
+                      <tr key={log.id} className="border-b last:border-0">
+                        <td className="px-3 py-2">
+                          <Badge variant={actionBadgeVariant(log.action)}>
+                            {log.action}
+                          </Badge>
+                        </td>
+                        <td className="px-3 py-2 text-muted-foreground font-mono text-xs">
+                          {log.actorId}
+                        </td>
+                        <td className="px-3 py-2 text-muted-foreground font-mono text-xs">
+                          {log.targetId ?? "-"}
+                        </td>
+                        <td className="px-3 py-2 text-muted-foreground hidden md:table-cell">
+                          {log.group?.title ?? "-"}
+                        </td>
+                        <td className="px-3 py-2 text-muted-foreground text-xs">
+                          {timeAgo(log.createdAt)}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+            <div className="mt-4">
+              <Link href="/dashboard/moderation/logs">
+                <Button variant="outline" size="sm">
+                  View all logs <ArrowRight className="ml-1 h-3 w-3" />
+                </Button>
+              </Link>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Right column */}
+        <div className="flex flex-col gap-6">
+          {/* Group Health */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Group Health</CardTitle>
+            </CardHeader>
+            <CardContent>
+              {topGroups.length === 0 ? (
+                <p className="text-sm text-muted-foreground">No group data available.</p>
+              ) : (
+                <div className="space-y-4">
+                  {topGroups.map((group) => (
+                    <div key={group.groupId} className="space-y-1">
+                      <div className="font-medium text-sm">{group.title}</div>
+                      <div className="flex flex-wrap gap-2 text-xs">
+                        <Badge variant="outline">{group.memberCount} members</Badge>
+                        <Badge variant="secondary">{group.spamToday} spam</Badge>
+                        <Badge variant="secondary">{group.moderationToday} mod actions</Badge>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+              <div className="mt-4">
+                <Link href="/dashboard/moderation/groups">
+                  <Button variant="outline" size="sm">
+                    All groups <ArrowRight className="ml-1 h-3 w-3" />
+                  </Button>
+                </Link>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Quick Links */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Quick Links</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-2 gap-2">
+                <Link href="/dashboard/moderation/groups">
+                  <Button variant="outline" size="sm" className="w-full justify-start gap-2">
+                    <Layers className="h-3 w-3" /> Groups
+                  </Button>
+                </Link>
+                <Link href="/dashboard/products">
+                  <Button variant="outline" size="sm" className="w-full justify-start gap-2">
+                    <Package className="h-3 w-3" /> Products
+                  </Button>
+                </Link>
+                <Link href="/dashboard/moderation/analytics">
+                  <Button variant="outline" size="sm" className="w-full justify-start gap-2">
+                    <BarChart3 className="h-3 w-3" /> Analytics
+                  </Button>
+                </Link>
+                <Link href="/dashboard/broadcast">
+                  <Button variant="outline" size="sm" className="w-full justify-start gap-2">
+                    <Radio className="h-3 w-3" /> Broadcast
+                  </Button>
+                </Link>
+                <Link href="/dashboard/automation/jobs">
+                  <Button variant="outline" size="sm" className="w-full justify-start gap-2">
+                    <Zap className="h-3 w-3" /> Jobs
+                  </Button>
+                </Link>
+                <Link href="/dashboard/community/reputation">
+                  <Button variant="outline" size="sm" className="w-full justify-start gap-2">
+                    <Trophy className="h-3 w-3" /> Reputation
+                  </Button>
+                </Link>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+    </div>
   );
 }

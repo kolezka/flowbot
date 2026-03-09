@@ -188,6 +188,33 @@ export class AnalyticsService {
     };
   }
 
+  async getTimeSeriesForExport(
+    groupId: string,
+    from?: string,
+    to?: string,
+  ): Promise<any[]> {
+    const group = await this.prisma.managedGroup.findUnique({
+      where: { id: groupId },
+    });
+    if (!group) {
+      throw new NotFoundException(`Group with ID ${groupId} not found`);
+    }
+
+    const where: any = { groupId };
+    if (from || to) {
+      where.date = {};
+      if (from) where.date.gte = new Date(from);
+      if (to) where.date.lte = new Date(to);
+    }
+
+    return this.prisma.groupAnalyticsSnapshot.findMany({
+      where,
+      take: 10_000,
+      orderBy: { date: 'asc' },
+      include: { group: { select: { title: true } } },
+    });
+  }
+
   private aggregateByGranularity(snapshots: any[], granularity: Granularity) {
     if (granularity === Granularity.DAY) {
       return snapshots;

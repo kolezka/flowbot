@@ -1,3 +1,5 @@
+import { getToken, clearToken } from './auth';
+
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
 
 export interface User {
@@ -244,17 +246,52 @@ export interface ManagedGroup {
 }
 
 export interface GroupConfig {
-  maxWarnings: number;
-  warningExpiry: number;
-  muteOnWarn: boolean;
-  muteDuration: number;
-  antiSpam: boolean;
-  antiFlood: boolean;
-  floodLimit: number;
-  floodWindow: number;
+  // Welcome & Rules
   welcomeEnabled: boolean;
   welcomeMessage?: string;
+  rulesText?: string;
+
+  // Warning System
+  warnThresholdMute: number;
+  warnThresholdBan: number;
+  warnDecayDays: number;
+  defaultMuteDurationS: number;
+
+  // Anti-Spam
+  antiSpamEnabled: boolean;
+  antiSpamMaxMessages: number;
+  antiSpamWindowSeconds: number;
+
+  // Anti-Link
+  antiLinkEnabled: boolean;
+  antiLinkWhitelist: string[];
+
+  // Moderation & Logging
+  slowModeDelay: number;
   logChannelId?: string;
+  autoDeleteCommandsS: number;
+
+  // CAPTCHA
+  captchaEnabled: boolean;
+  captchaMode: string;
+  captchaTimeoutS: number;
+
+  // Quarantine
+  quarantineEnabled: boolean;
+  quarantineDurationS: number;
+
+  // Content Filtering
+  silentMode: boolean;
+  keywordFiltersEnabled: boolean;
+  keywordFilters: string[];
+  aiModEnabled: boolean;
+  aiModThreshold: number;
+
+  // Notifications & Pipeline
+  notificationEvents: string[];
+  pipelineEnabled: boolean;
+  pipelineDmTemplate?: string;
+  pipelineDeeplink?: string;
 }
 
 export interface GroupsResponse {
@@ -333,6 +370,8 @@ export interface GroupMember {
   messageCount: number;
   lastSeenAt: string;
   warningCount: number;
+  isQuarantined: boolean;
+  quarantineExpiresAt?: string;
 }
 
 export interface GroupMembersResponse {
@@ -401,6 +440,180 @@ export interface AnalyticsOverview {
   groups: GroupOverviewItem[];
 }
 
+// Scheduled Messages interfaces
+export interface ScheduledMessage {
+  id: string;
+  groupId: string;
+  groupTitle?: string;
+  chatId: string;
+  text: string;
+  createdBy: string;
+  sendAt: string;
+  sent: boolean;
+  sentAt?: string;
+  createdAt: string;
+}
+
+export interface ScheduledMessageListResponse {
+  data: ScheduledMessage[];
+  total: number;
+  page: number;
+  limit: number;
+  totalPages: number;
+}
+
+// CrossPost Templates interfaces
+export interface CrossPostTemplate {
+  id: string;
+  name: string;
+  messageText: string;
+  targetChatIds: string[];
+  targetGroupNames: string[];
+  isActive: boolean;
+  createdBy: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CrossPostTemplateListResponse {
+  data: CrossPostTemplate[];
+  total: number;
+  page: number;
+  limit: number;
+  totalPages: number;
+}
+
+// Automation interfaces
+export interface AutomationJob {
+  id: string;
+  status: string;
+  text: string;
+  targetChatIds: string[];
+  results?: any;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface AutomationJobListResponse {
+  data: AutomationJob[];
+  total: number;
+  page: number;
+  limit: number;
+  totalPages: number;
+}
+
+export interface AutomationStats {
+  total: number;
+  pending: number;
+  completed: number;
+  failed: number;
+}
+
+export interface ClientLog {
+  id: string;
+  level: string;
+  message: string;
+  details?: any;
+  createdAt: string;
+}
+
+export interface ClientLogListResponse {
+  data: ClientLog[];
+  total: number;
+  page: number;
+  limit: number;
+  totalPages: number;
+}
+
+// Reputation Leaderboard interfaces
+export interface LeaderboardEntry {
+  rank: number;
+  telegramId: string;
+  username?: string;
+  firstName?: string;
+  totalScore: number;
+  messageFactor: number;
+  tenureFactor: number;
+  warningPenalty: number;
+  moderationBonus: number;
+}
+
+export interface LeaderboardStats {
+  averageScore: number;
+  medianScore: number;
+}
+
+export interface LeaderboardResponse {
+  entries: LeaderboardEntry[];
+  total: number;
+  stats: LeaderboardStats;
+}
+
+// Order Event interfaces
+export interface OrderEvent {
+  id: string;
+  eventType: string;
+  orderData: any;
+  targetChatIds: string[];
+  jobId?: string;
+  processed: boolean;
+  createdAt: string;
+}
+
+export interface OrderEventListResponse {
+  data: OrderEvent[];
+  total: number;
+  page: number;
+  limit: number;
+  totalPages: number;
+}
+
+// Health Dashboard interfaces
+export interface TgClientHealth {
+  reachable: boolean;
+  status?: string;
+  transport?: string;
+  sessionValid?: boolean;
+  uptime?: number;
+  lastAction?: string;
+  memoryUsage?: any;
+}
+
+export interface JobMetrics {
+  last1h: { completed: number; failed: number; total: number };
+  last24h: { completed: number; failed: number; total: number };
+  successRate1h: number;
+  successRate24h: number;
+}
+
+export interface HealthResponse {
+  status: 'healthy' | 'degraded' | 'unreachable';
+  tgClient: TgClientHealth;
+  jobMetrics: JobMetrics;
+  session: {
+    exists: boolean;
+    updatedAt?: string;
+    isActive?: boolean;
+    lastUsedAt?: string;
+  } | null;
+  lastChecked: string;
+}
+
+// System Status interfaces
+export interface SystemComponent {
+  name: string;
+  status: 'up' | 'degraded' | 'down' | 'unreachable';
+  uptime?: number;
+  lastChecked: string;
+  error?: string;
+}
+
+export interface SystemStatus {
+  overall: 'up' | 'degraded' | 'down';
+  components: SystemComponent[];
+  lastChecked: string;
+}
+
 export interface ApiError {
   message: string;
   status?: number;
@@ -419,14 +632,34 @@ class ApiClient {
   ): Promise<T> {
     const url = `${this.baseUrl}${endpoint}`;
 
+    const headers: Record<string, string> = {
+      'Content-Type': 'application/json',
+      ...(options?.headers as Record<string, string>),
+    };
+
+    const token = getToken();
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
+    }
+
     try {
       const response = await fetch(url, {
         ...options,
-        headers: {
-          'Content-Type': 'application/json',
-          ...options?.headers,
-        },
+        headers,
       });
+
+      if (response.status === 401) {
+        // Clear invalid token and redirect to login
+        clearToken();
+        if (typeof window !== 'undefined' && !endpoint.includes('/api/auth/')) {
+          window.location.href = '/login';
+        }
+        const error: ApiError = {
+          message: 'Unauthorized',
+          status: 401,
+        };
+        throw error;
+      }
 
       if (!response.ok) {
         const error: ApiError = {
@@ -443,6 +676,19 @@ class ApiClient {
       }
       throw error;
     }
+  }
+
+  async login(password: string): Promise<{ token: string }> {
+    return this.request<{ token: string }>('/api/auth/login', {
+      method: 'POST',
+      body: JSON.stringify({ password }),
+    });
+  }
+
+  async verifyToken(): Promise<{ valid: boolean }> {
+    return this.request<{ valid: boolean }>('/api/auth/verify', {
+      method: 'POST',
+    });
   }
 
   async getStats(): Promise<StatsResponse> {
@@ -627,6 +873,25 @@ class ApiClient {
     });
   }
 
+  async updateBroadcast(id: string, data: { text?: string; targetChatIds?: string[] }): Promise<Broadcast> {
+    return this.request<Broadcast>(`/api/broadcast/${id}`, {
+      method: 'PATCH',
+      body: JSON.stringify(data),
+    });
+  }
+
+  async deleteBroadcast(id: string): Promise<void> {
+    await this.request<void>(`/api/broadcast/${id}`, {
+      method: 'DELETE',
+    });
+  }
+
+  async retryBroadcast(id: string): Promise<Broadcast> {
+    return this.request<Broadcast>(`/api/broadcast/${id}/retry`, {
+      method: 'POST',
+    });
+  }
+
   // Moderation - Groups
   async getGroups(params?: { page?: number; limit?: number; search?: string; isActive?: boolean }): Promise<GroupsResponse> {
     const searchParams = new URLSearchParams();
@@ -702,19 +967,61 @@ class ApiClient {
 
   // Moderation - Group Members
   async getGroupMembers(groupId: string, params?: {
-    page?: number; limit?: number; search?: string; role?: string;
+    page?: number; limit?: number; search?: string; role?: string; isQuarantined?: boolean;
   }): Promise<GroupMembersResponse> {
     const searchParams = new URLSearchParams();
     if (params?.page !== undefined) searchParams.append('page', params.page.toString());
     if (params?.limit !== undefined) searchParams.append('limit', params.limit.toString());
     if (params?.search) searchParams.append('search', params.search);
     if (params?.role) searchParams.append('role', params.role);
+    if (params?.isQuarantined !== undefined) searchParams.append('isQuarantined', params.isQuarantined.toString());
     const qs = searchParams.toString();
     return this.request<GroupMembersResponse>(`/api/moderation/groups/${groupId}/members${qs ? `?${qs}` : ''}`);
   }
 
+  async releaseMember(groupId: string, memberId: string): Promise<GroupMember> {
+    return this.request<GroupMember>(`/api/moderation/groups/${groupId}/members/${memberId}/release`, {
+      method: 'POST',
+    });
+  }
+
   async getGroupMember(groupId: string, memberId: string): Promise<GroupMember> {
     return this.request<GroupMember>(`/api/moderation/groups/${groupId}/members/${memberId}`);
+  }
+
+  async updateMemberRole(groupId: string, memberId: string, role: string): Promise<GroupMember> {
+    return this.request<GroupMember>(`/api/moderation/groups/${groupId}/members/${memberId}/role`, {
+      method: 'PATCH',
+      body: JSON.stringify({ role }),
+    });
+  }
+
+  async warnMember(groupId: string, memberId: string, data?: { reason?: string }): Promise<void> {
+    await this.request<void>(`/api/moderation/groups/${groupId}/members/${memberId}/warn`, {
+      method: 'POST',
+      body: JSON.stringify(data || {}),
+    });
+  }
+
+  async muteMember(groupId: string, memberId: string, data: { duration: number; reason?: string }): Promise<void> {
+    await this.request<void>(`/api/moderation/groups/${groupId}/members/${memberId}/mute`, {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  }
+
+  async banMember(groupId: string, memberId: string, data?: { reason?: string }): Promise<void> {
+    await this.request<void>(`/api/moderation/groups/${groupId}/members/${memberId}/ban`, {
+      method: 'POST',
+      body: JSON.stringify(data || {}),
+    });
+  }
+
+  async unbanMember(groupId: string, memberId: string): Promise<void> {
+    await this.request<void>(`/api/moderation/groups/${groupId}/members/${memberId}/unban`, {
+      method: 'POST',
+      body: JSON.stringify({}),
+    });
   }
 
   // Analytics
@@ -735,6 +1042,139 @@ class ApiClient {
 
   async getAnalyticsSummary(groupId: string): Promise<AnalyticsSummary> {
     return this.request<AnalyticsSummary>(`/api/analytics/groups/${groupId}/summary`);
+  }
+
+  // Scheduled Messages
+  async getScheduledMessages(params?: {
+    page?: number; limit?: number; groupId?: string; sent?: boolean;
+  }): Promise<ScheduledMessageListResponse> {
+    const searchParams = new URLSearchParams();
+    if (params?.page !== undefined) searchParams.append('page', params.page.toString());
+    if (params?.limit !== undefined) searchParams.append('limit', params.limit.toString());
+    if (params?.groupId) searchParams.append('groupId', params.groupId);
+    if (params?.sent !== undefined) searchParams.append('sent', params.sent.toString());
+    const qs = searchParams.toString();
+    return this.request<ScheduledMessageListResponse>(
+      `/api/moderation/scheduled-messages${qs ? `?${qs}` : ''}`
+    );
+  }
+
+  async createScheduledMessage(data: {
+    groupId: string; text: string; sendAt: string;
+  }): Promise<ScheduledMessage> {
+    return this.request<ScheduledMessage>('/api/moderation/scheduled-messages', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  }
+
+  async deleteScheduledMessage(id: string): Promise<void> {
+    await this.request<void>(`/api/moderation/scheduled-messages/${id}`, {
+      method: 'DELETE',
+    });
+  }
+
+  // CrossPost Templates
+  async getCrossPostTemplates(params?: {
+    page?: number; limit?: number; isActive?: boolean;
+  }): Promise<CrossPostTemplateListResponse> {
+    const searchParams = new URLSearchParams();
+    if (params?.page !== undefined) searchParams.append('page', params.page.toString());
+    if (params?.limit !== undefined) searchParams.append('limit', params.limit.toString());
+    if (params?.isActive !== undefined) searchParams.append('isActive', params.isActive.toString());
+    const qs = searchParams.toString();
+    return this.request<CrossPostTemplateListResponse>(
+      `/api/moderation/crosspost-templates${qs ? `?${qs}` : ''}`
+    );
+  }
+
+  async createCrossPostTemplate(data: {
+    name: string; messageText: string; targetChatIds: string[]; isActive?: boolean;
+  }): Promise<CrossPostTemplate> {
+    return this.request<CrossPostTemplate>('/api/moderation/crosspost-templates', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  }
+
+  async updateCrossPostTemplate(id: string, data: {
+    name?: string; messageText?: string; targetChatIds?: string[]; isActive?: boolean;
+  }): Promise<CrossPostTemplate> {
+    return this.request<CrossPostTemplate>(`/api/moderation/crosspost-templates/${id}`, {
+      method: 'PATCH',
+      body: JSON.stringify(data),
+    });
+  }
+
+  async deleteCrossPostTemplate(id: string): Promise<void> {
+    await this.request<void>(`/api/moderation/crosspost-templates/${id}`, {
+      method: 'DELETE',
+    });
+  }
+
+  // Automation
+  async getAutomationJobs(params?: {
+    page?: number; limit?: number; status?: string;
+  }): Promise<AutomationJobListResponse> {
+    const searchParams = new URLSearchParams();
+    if (params?.page !== undefined) searchParams.append('page', params.page.toString());
+    if (params?.limit !== undefined) searchParams.append('limit', params.limit.toString());
+    if (params?.status) searchParams.append('status', params.status);
+    const qs = searchParams.toString();
+    return this.request<AutomationJobListResponse>(`/api/automation/jobs${qs ? `?${qs}` : ''}`);
+  }
+
+  async getAutomationJob(id: string): Promise<AutomationJob> {
+    return this.request<AutomationJob>(`/api/automation/jobs/${id}`);
+  }
+
+  async getAutomationStats(): Promise<AutomationStats> {
+    return this.request<AutomationStats>('/api/automation/jobs/stats');
+  }
+
+  async getAutomationLogs(params?: {
+    page?: number; limit?: number; level?: string;
+  }): Promise<ClientLogListResponse> {
+    const searchParams = new URLSearchParams();
+    if (params?.page !== undefined) searchParams.append('page', params.page.toString());
+    if (params?.limit !== undefined) searchParams.append('limit', params.limit.toString());
+    if (params?.level) searchParams.append('level', params.level);
+    const qs = searchParams.toString();
+    return this.request<ClientLogListResponse>(`/api/automation/logs${qs ? `?${qs}` : ''}`);
+  }
+
+  // Order Events
+  async getOrderEvents(params?: {
+    page?: number; limit?: number; processed?: boolean; eventType?: string;
+  }): Promise<OrderEventListResponse> {
+    const searchParams = new URLSearchParams();
+    if (params?.page !== undefined) searchParams.append('page', params.page.toString());
+    if (params?.limit !== undefined) searchParams.append('limit', params.limit.toString());
+    if (params?.processed !== undefined) searchParams.append('processed', params.processed.toString());
+    if (params?.eventType) searchParams.append('eventType', params.eventType);
+    const qs = searchParams.toString();
+    return this.request<OrderEventListResponse>(`/api/automation/order-events${qs ? `?${qs}` : ''}`);
+  }
+
+  // Automation Health
+  async getAutomationHealth(): Promise<HealthResponse> {
+    return this.request<HealthResponse>('/api/automation/health');
+  }
+
+  // System Status
+  async getSystemStatus(): Promise<SystemStatus> {
+    return this.request<SystemStatus>('/api/system/status');
+  }
+
+  // Reputation Leaderboard
+  async getReputationLeaderboard(params?: {
+    limit?: number; groupId?: string;
+  }): Promise<LeaderboardResponse> {
+    const searchParams = new URLSearchParams();
+    if (params?.limit !== undefined) searchParams.append('limit', params.limit.toString());
+    if (params?.groupId) searchParams.append('groupId', params.groupId);
+    const qs = searchParams.toString();
+    return this.request<LeaderboardResponse>(`/api/reputation/leaderboard${qs ? `?${qs}` : ''}`);
   }
 }
 

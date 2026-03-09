@@ -11,6 +11,7 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { ExportButton } from "@/components/export-button";
 
 function PeriodTable({ period, label }: { period: AggregatedPeriod; label: string }) {
   return (
@@ -235,9 +236,15 @@ export default function AnalyticsPage() {
       {selectedGroupId && (
         <Card>
           <CardHeader>
-            <CardTitle>
-              {summary ? summary.groupTitle : "Loading..."} — Detailed Summary
-            </CardTitle>
+            <div className="flex items-center justify-between">
+              <CardTitle>
+                {summary ? summary.groupTitle : "Loading..."} — Detailed Summary
+              </CardTitle>
+              <ExportButton
+                endpoint={`/api/analytics/groups/${selectedGroupId}/export`}
+                filename={`analytics-${selectedGroupId}-${new Date().toISOString().slice(0, 10)}`}
+              />
+            </div>
           </CardHeader>
           <CardContent>
             {summaryLoading ? (

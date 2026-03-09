@@ -11,6 +11,7 @@ import { AnalyticsModule } from './analytics/analytics.module';
 import { BroadcastModule } from './broadcast/broadcast.module';
 import { ModerationModule } from './moderation/moderation.module';
 import { ReputationModule } from './reputation/reputation.module';
+import { SystemModule } from './system/system.module';
 
 @Global()
 @Module({
@@ -27,6 +28,7 @@ import { ReputationModule } from './reputation/reputation.module';
     BroadcastModule,
     ModerationModule,
     ReputationModule,
+    SystemModule,
   ],
   controllers: [AppController],
   providers: [AppService],

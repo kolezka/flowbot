@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { AntiSpamService } from '../services/anti-spam.js'
 
-describe('AntiSpamService', () => {
+describe('antiSpamService', () => {
   describe('flood detection', () => {
     it('returns clean when under the limit', () => {
       const service = new AntiSpamService()

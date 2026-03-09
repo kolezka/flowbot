@@ -2,6 +2,8 @@ import {
   Controller,
   Get,
   Post,
+  Patch,
+  Delete,
   Param,
   Query,
   Body,
@@ -21,6 +23,7 @@ import {
   BroadcastDto,
   BroadcastListResponseDto,
   CreateBroadcastDto,
+  UpdateBroadcastDto,
 } from './dto';
 
 @ApiTags('broadcast')
@@ -69,5 +72,63 @@ export class BroadcastController {
   })
   async create(@Body() createBroadcastDto: CreateBroadcastDto): Promise<BroadcastDto> {
     return this.broadcastService.create(createBroadcastDto);
+  }
+
+  @Patch(':id')
+  @ApiOperation({ summary: 'Update a pending broadcast' })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'Broadcast updated successfully',
+    type: BroadcastDto,
+  })
+  @ApiResponse({
+    status: HttpStatus.NOT_FOUND,
+    description: 'Broadcast not found',
+  })
+  @ApiResponse({
+    status: HttpStatus.BAD_REQUEST,
+    description: 'Only pending broadcasts can be edited',
+  })
+  @ApiParam({ name: 'id', description: 'Broadcast ID' })
+  async update(
+    @Param('id') id: string,
+    @Body() updateBroadcastDto: UpdateBroadcastDto,
+  ): Promise<BroadcastDto> {
+    return this.broadcastService.update(id, updateBroadcastDto);
+  }
+
+  @Delete(':id')
+  @ApiOperation({ summary: 'Delete a broadcast' })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'Broadcast deleted successfully',
+  })
+  @ApiResponse({
+    status: HttpStatus.NOT_FOUND,
+    description: 'Broadcast not found',
+  })
+  @ApiParam({ name: 'id', description: 'Broadcast ID' })
+  async remove(@Param('id') id: string) {
+    return this.broadcastService.remove(id);
+  }
+
+  @Post(':id/retry')
+  @ApiOperation({ summary: 'Retry a failed broadcast' })
+  @ApiResponse({
+    status: HttpStatus.CREATED,
+    description: 'Broadcast retried successfully (new broadcast created)',
+    type: BroadcastDto,
+  })
+  @ApiResponse({
+    status: HttpStatus.NOT_FOUND,
+    description: 'Broadcast not found',
+  })
+  @ApiResponse({
+    status: HttpStatus.BAD_REQUEST,
+    description: 'Only failed broadcasts can be retried',
+  })
+  @ApiParam({ name: 'id', description: 'Broadcast ID' })
+  async retry(@Param('id') id: string): Promise<BroadcastDto> {
+    return this.broadcastService.retry(id);
   }
 }

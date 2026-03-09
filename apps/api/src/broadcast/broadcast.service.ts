@@ -1,6 +1,16 @@
-import { Injectable, NotFoundException, Logger } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  BadRequestException,
+  Logger,
+} from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
-import { BroadcastDto, BroadcastListResponseDto, CreateBroadcastDto } from './dto';
+import {
+  BroadcastDto,
+  BroadcastListResponseDto,
+  CreateBroadcastDto,
+  UpdateBroadcastDto,
+} from './dto';
 
 @Injectable()
 export class BroadcastService {
@@ -56,6 +66,68 @@ export class BroadcastService {
     this.logger.log(`Broadcast created: ${broadcast.id}`);
 
     return this.mapToDto(broadcast);
+  }
+
+  async update(id: string, dto: UpdateBroadcastDto): Promise<BroadcastDto> {
+    const broadcast = await this.prisma.broadcastMessage.findUnique({
+      where: { id },
+    });
+    if (!broadcast) {
+      throw new NotFoundException(`Broadcast ${id} not found`);
+    }
+    if (broadcast.status !== 'pending') {
+      throw new BadRequestException('Only pending broadcasts can be edited');
+    }
+
+    const updateData: any = {};
+    if (dto.text !== undefined) updateData.text = dto.text;
+    if (dto.targetChatIds !== undefined) {
+      updateData.targetChatIds = dto.targetChatIds.map((cid) => BigInt(cid));
+    }
+
+    const updated = await this.prisma.broadcastMessage.update({
+      where: { id },
+      data: updateData,
+    });
+
+    this.logger.log(`Broadcast updated: ${id}`);
+    return this.mapToDto(updated);
+  }
+
+  async remove(id: string): Promise<{ deleted: boolean }> {
+    const broadcast = await this.prisma.broadcastMessage.findUnique({
+      where: { id },
+    });
+    if (!broadcast) {
+      throw new NotFoundException(`Broadcast ${id} not found`);
+    }
+
+    await this.prisma.broadcastMessage.delete({ where: { id } });
+    this.logger.log(`Broadcast deleted: ${id}`);
+    return { deleted: true };
+  }
+
+  async retry(id: string): Promise<BroadcastDto> {
+    const broadcast = await this.prisma.broadcastMessage.findUnique({
+      where: { id },
+    });
+    if (!broadcast) {
+      throw new NotFoundException(`Broadcast ${id} not found`);
+    }
+    if (broadcast.status !== 'failed') {
+      throw new BadRequestException('Only failed broadcasts can be retried');
+    }
+
+    const newBroadcast = await this.prisma.broadcastMessage.create({
+      data: {
+        text: broadcast.text,
+        targetChatIds: broadcast.targetChatIds,
+        status: 'pending',
+      },
+    });
+
+    this.logger.log(`Broadcast retried: ${id} -> ${newBroadcast.id}`);
+    return this.mapToDto(newBroadcast);
   }
 
   private mapToDto(broadcast: any): BroadcastDto {

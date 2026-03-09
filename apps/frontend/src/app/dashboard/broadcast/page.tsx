@@ -13,17 +13,31 @@ export default function BroadcastPage() {
   const [page, setPage] = useState(1);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [actionFeedback, setActionFeedback] = useState<string | null>(null);
 
-  // Form state
+  // Create form state
   const [text, setText] = useState("");
   const [targetChatIds, setTargetChatIds] = useState("");
   const [submitting, setSubmitting] = useState(false);
+
+  // Edit form state
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editText, setEditText] = useState("");
+  const [editTargetChatIds, setEditTargetChatIds] = useState("");
+  const [editSubmitting, setEditSubmitting] = useState(false);
 
   const pageSize = 10;
 
   useEffect(() => {
     loadBroadcasts();
   }, [page]);
+
+  useEffect(() => {
+    if (actionFeedback) {
+      const timer = setTimeout(() => setActionFeedback(null), 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [actionFeedback]);
 
   const loadBroadcasts = async () => {
     setLoading(true);
@@ -53,11 +67,73 @@ export default function BroadcastPage() {
       await api.createBroadcast({ text: text.trim(), targetChatIds: chatIds });
       setText("");
       setTargetChatIds("");
+      setActionFeedback("Broadcast created successfully");
       loadBroadcasts();
     } catch (err: any) {
       alert(err.message || "Failed to create broadcast");
     } finally {
       setSubmitting(false);
+    }
+  };
+
+  const startEdit = (broadcast: Broadcast) => {
+    setEditingId(broadcast.id);
+    setEditText(broadcast.text);
+    setEditTargetChatIds(broadcast.targetChatIds.join(", "));
+  };
+
+  const cancelEdit = () => {
+    setEditingId(null);
+    setEditText("");
+    setEditTargetChatIds("");
+  };
+
+  const handleEditSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingId || !editText.trim() || !editTargetChatIds.trim()) return;
+
+    setEditSubmitting(true);
+    try {
+      const chatIds = editTargetChatIds
+        .split(",")
+        .map((id) => id.trim())
+        .filter(Boolean);
+
+      await api.updateBroadcast(editingId, {
+        text: editText.trim(),
+        targetChatIds: chatIds,
+      });
+      cancelEdit();
+      setActionFeedback("Broadcast updated successfully");
+      loadBroadcasts();
+    } catch (err: any) {
+      alert(err.message || "Failed to update broadcast");
+    } finally {
+      setEditSubmitting(false);
+    }
+  };
+
+  const handleDelete = async (id: string) => {
+    if (!window.confirm("Are you sure you want to delete this broadcast?")) return;
+
+    try {
+      await api.deleteBroadcast(id);
+      setActionFeedback("Broadcast deleted successfully");
+      loadBroadcasts();
+    } catch (err: any) {
+      alert(err.message || "Failed to delete broadcast");
+    }
+  };
+
+  const handleRetry = async (id: string) => {
+    if (!window.confirm("Retry this broadcast? A new pending broadcast will be created.")) return;
+
+    try {
+      await api.retryBroadcast(id);
+      setActionFeedback("Broadcast retried - new pending broadcast created");
+      loadBroadcasts();
+    } catch (err: any) {
+      alert(err.message || "Failed to retry broadcast");
     }
   };
 
@@ -78,6 +154,12 @@ export default function BroadcastPage() {
 
   return (
     <div className="space-y-6">
+      {actionFeedback && (
+        <div className="rounded-lg bg-green-50 border border-green-200 p-4 text-green-800 dark:bg-green-950 dark:border-green-800 dark:text-green-200">
+          {actionFeedback}
+        </div>
+      )}
+
       {/* Create Broadcast Form */}
       <Card>
         <CardHeader>
@@ -136,18 +218,19 @@ export default function BroadcastPage() {
                   <TableHead>Targets</TableHead>
                   <TableHead>Status</TableHead>
                   <TableHead>Created</TableHead>
+                  <TableHead>Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {loading ? (
                   <TableRow>
-                    <TableCell colSpan={5} className="h-24 text-center">
+                    <TableCell colSpan={6} className="h-24 text-center">
                       Loading...
                     </TableCell>
                   </TableRow>
                 ) : broadcasts.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={5} className="h-24 text-center text-muted-foreground">
+                    <TableCell colSpan={6} className="h-24 text-center text-muted-foreground">
                       No broadcasts found
                     </TableCell>
                   </TableRow>
@@ -158,9 +241,42 @@ export default function BroadcastPage() {
                         {broadcast.id.slice(0, 8)}
                       </TableCell>
                       <TableCell>
-                        <div className="max-w-[300px] truncate">
-                          {broadcast.text}
-                        </div>
+                        {editingId === broadcast.id ? (
+                          <form onSubmit={handleEditSubmit} className="space-y-2">
+                            <textarea
+                              className="w-full min-h-[80px] rounded-md border border-input bg-background px-3 py-2 text-sm"
+                              value={editText}
+                              onChange={(e) => setEditText(e.target.value)}
+                              required
+                            />
+                            <input
+                              type="text"
+                              className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                              placeholder="Chat IDs (comma-separated)"
+                              value={editTargetChatIds}
+                              onChange={(e) => setEditTargetChatIds(e.target.value)}
+                              required
+                            />
+                            <div className="flex gap-2">
+                              <Button type="submit" size="sm" disabled={editSubmitting}>
+                                {editSubmitting ? "Saving..." : "Save"}
+                              </Button>
+                              <Button
+                                type="button"
+                                variant="outline"
+                                size="sm"
+                                onClick={cancelEdit}
+                                disabled={editSubmitting}
+                              >
+                                Cancel
+                              </Button>
+                            </div>
+                          </form>
+                        ) : (
+                          <div className="max-w-[300px] truncate">
+                            {broadcast.text}
+                          </div>
+                        )}
                       </TableCell>
                       <TableCell>{broadcast.targetChatIds.length} groups</TableCell>
                       <TableCell>
@@ -170,6 +286,37 @@ export default function BroadcastPage() {
                       </TableCell>
                       <TableCell className="text-muted-foreground text-sm">
                         {new Date(broadcast.createdAt).toLocaleString()}
+                      </TableCell>
+                      <TableCell>
+                        {editingId !== broadcast.id && (
+                          <div className="flex gap-1">
+                            {broadcast.status === "pending" && (
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => startEdit(broadcast)}
+                              >
+                                Edit
+                              </Button>
+                            )}
+                            {broadcast.status === "failed" && (
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => handleRetry(broadcast.id)}
+                              >
+                                Retry
+                              </Button>
+                            )}
+                            <Button
+                              variant="destructive"
+                              size="sm"
+                              onClick={() => handleDelete(broadcast.id)}
+                            >
+                              Delete
+                            </Button>
+                          </div>
+                        )}
                       </TableCell>
                     </TableRow>
                   ))

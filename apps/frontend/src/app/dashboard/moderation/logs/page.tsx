@@ -13,6 +13,7 @@ import { Label } from "@/components/ui/label";
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
+import { ExportButton } from "@/components/export-button";
 
 const ACTION_TYPES = [
   "warn", "mute", "unmute", "kick", "ban", "unban",
@@ -171,6 +172,15 @@ export default function ModerationLogsPage() {
             >
               Clear Filters
             </Button>
+            <ExportButton
+              endpoint="/api/moderation/logs/export"
+              filename={`moderation-logs-${new Date().toISOString().slice(0, 10)}`}
+              filters={{
+                action: actionFilter || undefined,
+                startDate: startDate || undefined,
+                endDate: endDate || undefined,
+              }}
+            />
           </div>
         </CardContent>
       </Card>

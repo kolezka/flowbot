@@ -3,9 +3,11 @@ import { GroupsModule } from './groups/groups.module';
 import { LogsModule } from './logs/logs.module';
 import { WarningsModule } from './warnings/warnings.module';
 import { MembersModule } from './members/members.module';
+import { ScheduledMessagesModule } from './scheduled-messages/scheduled-messages.module';
+import { CrossPostModule } from './crosspost/crosspost.module';
 
 @Module({
-  imports: [GroupsModule, LogsModule, WarningsModule, MembersModule],
-  exports: [GroupsModule, LogsModule, WarningsModule, MembersModule],
+  imports: [GroupsModule, LogsModule, WarningsModule, MembersModule, ScheduledMessagesModule, CrossPostModule],
+  exports: [GroupsModule, LogsModule, WarningsModule, MembersModule, ScheduledMessagesModule, CrossPostModule],
 })
 export class ModerationModule {}

@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
-import { ReputationResponseDto } from './dto';
+import { ReputationResponseDto, LeaderboardResponseDto } from './dto';
 
 @Injectable()
 export class ReputationService {
@@ -37,6 +37,103 @@ export class ReputationService {
       warningPenalty: score.warningPenalty,
       moderationBonus: score.moderationBonus,
       lastCalculated: score.lastCalculated.toISOString(),
+    };
+  }
+
+  async getLeaderboard(
+    limit: number,
+    groupId?: string,
+  ): Promise<LeaderboardResponseDto> {
+    // If groupId is provided, filter by members of that group
+    let telegramIdFilter: bigint[] | undefined;
+    if (groupId) {
+      const members = await this.prisma.groupMember.findMany({
+        where: { groupId },
+        select: { telegramId: true },
+      });
+      telegramIdFilter = members.map((m) => m.telegramId);
+
+      if (telegramIdFilter.length === 0) {
+        return {
+          entries: [],
+          total: 0,
+          stats: { averageScore: 0, medianScore: 0 },
+        };
+      }
+    }
+
+    const where = telegramIdFilter
+      ? { telegramId: { in: telegramIdFilter } }
+      : {};
+
+    const [scores, totalCount] = await Promise.all([
+      this.prisma.reputationScore.findMany({
+        where,
+        orderBy: { totalScore: 'desc' },
+        take: limit,
+      }),
+      this.prisma.reputationScore.count({ where }),
+    ]);
+
+    // Collect all telegramIds to look up display names
+    const telegramIds = scores.map((s) => s.telegramId);
+
+    // Try GroupMember first for username/firstName
+    const members = await this.prisma.groupMember.findMany({
+      where: { telegramId: { in: telegramIds } },
+      select: { telegramId: true },
+    });
+
+    // Also try User table for display names
+    const users = await this.prisma.user.findMany({
+      where: { telegramId: { in: telegramIds } },
+      select: { telegramId: true, username: true, firstName: true },
+    });
+
+    const userMap = new Map(
+      users.map((u) => [u.telegramId.toString(), u]),
+    );
+
+    const entries = scores.map((score, index) => {
+      const user = userMap.get(score.telegramId.toString());
+      return {
+        rank: index + 1,
+        telegramId: score.telegramId.toString(),
+        username: user?.username ?? undefined,
+        firstName: user?.firstName ?? undefined,
+        totalScore: score.totalScore,
+        messageFactor: score.messageFactor,
+        tenureFactor: score.tenureFactor,
+        warningPenalty: score.warningPenalty,
+        moderationBonus: score.moderationBonus,
+      };
+    });
+
+    // Calculate stats from all matching scores (not just the page)
+    const allScores = await this.prisma.reputationScore.findMany({
+      where,
+      select: { totalScore: true },
+      orderBy: { totalScore: 'asc' },
+    });
+
+    let averageScore = 0;
+    let medianScore = 0;
+
+    if (allScores.length > 0) {
+      const sum = allScores.reduce((acc, s) => acc + s.totalScore, 0);
+      averageScore = Math.round((sum / allScores.length) * 10) / 10;
+
+      const mid = Math.floor(allScores.length / 2);
+      medianScore =
+        allScores.length % 2 === 0
+          ? Math.round(((allScores[mid - 1]!.totalScore + allScores[mid]!.totalScore) / 2) * 10) / 10
+          : allScores[mid]!.totalScore;
+    }
+
+    return {
+      entries,
+      total: totalCount,
+      stats: { averageScore, medianScore },
     };
   }
 

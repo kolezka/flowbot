@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
 import {
   MemberDto,
@@ -16,6 +16,7 @@ export class MembersService {
     page: number = 1,
     limit: number = 20,
     role?: string,
+    isQuarantined?: boolean,
   ): Promise<MemberListResponseDto> {
     const group = await this.prisma.managedGroup.findUnique({
       where: { id: groupId },
@@ -30,6 +31,10 @@ export class MembersService {
 
     if (role) {
       where.role = role;
+    }
+
+    if (isQuarantined !== undefined) {
+      where.isQuarantined = isQuarantined;
     }
 
     const [members, total] = await Promise.all([
@@ -71,6 +76,66 @@ export class MembersService {
       ...this.mapToDto(member),
       warnings: member.warnings.map((w) => this.mapWarningToDto(w)),
     };
+  }
+
+  async releaseMember(groupId: string, memberId: string): Promise<MemberDto> {
+    const member = await this.prisma.groupMember.findFirst({
+      where: { id: memberId, groupId },
+    });
+    if (!member) {
+      throw new NotFoundException(
+        `Member ${memberId} not found in group ${groupId}`,
+      );
+    }
+    if (!member.isQuarantined) {
+      throw new BadRequestException('Member is not quarantined');
+    }
+
+    const updated = await this.prisma.groupMember.update({
+      where: { id: memberId },
+      data: { isQuarantined: false, quarantineExpiresAt: null },
+    });
+
+    // Create moderation log entry
+    await this.prisma.moderationLog.create({
+      data: {
+        groupId,
+        action: 'quarantine_release',
+        actorId: BigInt(0),
+        targetId: member.telegramId,
+        reason: 'Released from quarantine via dashboard',
+        details: { source: 'dashboard' },
+        automated: false,
+      },
+    });
+
+    return this.mapToDto(updated);
+  }
+
+  async findAllForExport(
+    groupId: string,
+    role?: string,
+  ): Promise<MemberDto[]> {
+    const group = await this.prisma.managedGroup.findUnique({
+      where: { id: groupId },
+    });
+
+    if (!group) {
+      throw new NotFoundException(`Group with ID ${groupId} not found`);
+    }
+
+    const where: any = { groupId };
+    if (role) {
+      where.role = role;
+    }
+
+    const members = await this.prisma.groupMember.findMany({
+      where,
+      take: 10_000,
+      orderBy: { lastSeenAt: 'desc' },
+    });
+
+    return members.map((m) => this.mapToDto(m));
   }
 
   private mapToDto(member: any): MemberDto {

@@ -8,7 +8,7 @@ export default function setup() {
     console.log(
       '\n⏭ Skipping integration tests: set INTEGRATION_TESTS_ENABLED=1 to run them.\n',
     )
-    // eslint-disable-next-line node/prefer-global/process
+
     process.exit(0)
   }
 }

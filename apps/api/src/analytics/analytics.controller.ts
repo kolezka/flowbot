@@ -3,6 +3,7 @@ import {
   Get,
   Param,
   Query,
+  Res,
   HttpStatus,
 } from '@nestjs/common';
 import {
@@ -12,6 +13,7 @@ import {
   ApiParam,
   ApiQuery,
 } from '@nestjs/swagger';
+import type { Response } from 'express';
 import { AnalyticsService } from './analytics.service';
 import {
   AnalyticsTimeSeriesDto,
@@ -19,6 +21,7 @@ import {
   AnalyticsOverviewDto,
   Granularity,
 } from './dto';
+import { toCsv } from '../common/csv.util';
 
 @ApiTags('analytics')
 @Controller('api/analytics')
@@ -55,6 +58,87 @@ export class AnalyticsController {
     @Query('granularity') granularity?: Granularity,
   ): Promise<AnalyticsTimeSeriesDto> {
     return this.analyticsService.getTimeSeries(id, from, to, granularity);
+  }
+
+  @Get('groups/:id/export')
+  @ApiOperation({ summary: 'Export analytics time series as CSV or JSON' })
+  @ApiParam({ name: 'id', description: 'Group ID' })
+  @ApiQuery({ name: 'format', required: false, enum: ['csv', 'json'] })
+  @ApiQuery({ name: 'from', required: false, type: String })
+  @ApiQuery({ name: 'to', required: false, type: String })
+  async exportTimeSeries(
+    @Param('id') id: string,
+    @Query('format') format: string = 'csv',
+    @Query('from') from?: string,
+    @Query('to') to?: string,
+    @Res({ passthrough: true }) res?: Response,
+  ) {
+    const snapshots = await this.analyticsService.getTimeSeriesForExport(
+      id,
+      from,
+      to,
+    );
+
+    const dateStr = new Date().toISOString().slice(0, 10);
+
+    if (format === 'json') {
+      res.header('Content-Type', 'application/json');
+      res.header(
+        'Content-Disposition',
+        `attachment; filename="analytics-${id}-${dateStr}.json"`,
+      );
+      return snapshots.map((s: any) => ({
+        date: s.date instanceof Date ? s.date.toISOString() : s.date,
+        groupTitle: s.group?.title ?? '',
+        memberCount: s.memberCount,
+        newMembers: s.newMembers,
+        leftMembers: s.leftMembers,
+        messageCount: s.messageCount,
+        spamDetected: s.spamDetected,
+        linksBlocked: s.linksBlocked,
+        warningsIssued: s.warningsIssued,
+        mutesIssued: s.mutesIssued,
+        bansIssued: s.bansIssued,
+        deletedMessages: s.deletedMessages,
+      }));
+    }
+
+    const headers = [
+      'Date',
+      'Group',
+      'Member Count',
+      'New Members',
+      'Left Members',
+      'Messages',
+      'Spam Detected',
+      'Links Blocked',
+      'Warnings',
+      'Mutes',
+      'Bans',
+      'Deleted Messages',
+    ];
+    const rows = snapshots.map((s: any) => [
+      s.date instanceof Date ? s.date.toISOString().slice(0, 10) : s.date,
+      s.group?.title ?? '',
+      s.memberCount,
+      s.newMembers,
+      s.leftMembers,
+      s.messageCount,
+      s.spamDetected,
+      s.linksBlocked,
+      s.warningsIssued,
+      s.mutesIssued,
+      s.bansIssued,
+      s.deletedMessages,
+    ]);
+
+    const csv = toCsv(headers, rows);
+    res.header('Content-Type', 'text/csv');
+    res.header(
+      'Content-Disposition',
+      `attachment; filename="analytics-${id}-${dateStr}.csv"`,
+    );
+    return csv;
   }
 
   @Get('groups/:id/summary')
