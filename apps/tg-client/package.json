@@ -15,7 +15,8 @@
     "start": "tsc && tsx ./src/main.ts",
     "start:force": "tsx ./src/main.ts",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "authenticate": "tsx ./src/scripts/authenticate.ts"
   },
   "dependencies": {
     "@hono/node-server": "1.14.2",
