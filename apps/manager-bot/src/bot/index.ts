@@ -10,6 +10,7 @@ import { hydrateReply, parseMode } from '@grammyjs/parse-mode'
 import { sequentialize } from '@grammyjs/runner'
 import { Bot as TelegramBot } from 'grammy'
 import { AdminCacheService } from '../services/admin-cache.js'
+import { createPermissionsFeature } from './features/permissions.js'
 import { unhandledFeature } from './features/unhandled.js'
 import { errorHandler } from './handlers/error.js'
 import { adminCache } from './middlewares/admin-cache.js'
@@ -70,6 +71,7 @@ export function createBot(token: string, dependencies: Dependencies, botConfig?:
   // Rate tracker middleware (stub — MB-16)
 
   // Features
+  protectedBot.use(createPermissionsFeature(prisma))
   protectedBot.use(unhandledFeature)
 
   return bot
