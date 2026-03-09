@@ -9,8 +9,10 @@ import { hydrate } from '@grammyjs/hydrate'
 import { hydrateReply, parseMode } from '@grammyjs/parse-mode'
 import { sequentialize } from '@grammyjs/runner'
 import { Bot as TelegramBot } from 'grammy'
+import { AdminCacheService } from '../services/admin-cache.js'
 import { unhandledFeature } from './features/unhandled.js'
 import { errorHandler } from './handlers/error.js'
+import { adminCache } from './middlewares/admin-cache.js'
 import { groupData } from './middlewares/group-data.js'
 import { session } from './middlewares/session.js'
 import { updateLogger } from './middlewares/update-logger.js'
@@ -62,7 +64,9 @@ export function createBot(token: string, dependencies: Dependencies, botConfig?:
   // Group data
   protectedBot.use(groupData(prisma))
 
-  // Admin cache middleware (stub — MB-11)
+  // Admin cache
+  const adminCacheService = new AdminCacheService()
+  protectedBot.use(adminCache(adminCacheService))
   // Rate tracker middleware (stub — MB-16)
 
   // Features

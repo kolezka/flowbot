@@ -32,7 +32,7 @@ Source docs: `docs/plan/mb-05-tasks.md` (manager-bot), `docs/plan/05-tasks.md` (
 
 ## Phase 3: Permission System
 
-- [ ] **MB-10**: Group Data Middleware — `src/bot/middlewares/group-data.ts`. Upsert ManagedGroup + GroupConfig per group update. GroupRepository and GroupConfigRepository. Store config in ctx.session.groupConfig.
+- [x] **MB-10**: Group Data Middleware — `src/bot/middlewares/group-data.ts`. Upsert ManagedGroup + GroupConfig per group update. GroupRepository and GroupConfigRepository. Store config in ctx.session.groupConfig.
 
 - [ ] **MB-11**: Admin Cache Middleware — `src/services/admin-cache.ts` (in-memory Map, 5-min TTL). Invalidate on chat_member admin changes. Populate ctx.session.adminIds.
 
