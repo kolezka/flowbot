@@ -8,6 +8,7 @@ import { ProductsModule } from './products/products.module';
 import { CategoriesModule } from './categories/categories.module';
 import { CartModule } from './cart/cart.module';
 import { BroadcastModule } from './broadcast/broadcast.module';
+import { ModerationModule } from './moderation/moderation.module';
 
 @Global()
 @Module({
@@ -21,6 +22,7 @@ import { BroadcastModule } from './broadcast/broadcast.module';
     CategoriesModule,
     CartModule,
     BroadcastModule,
+    ModerationModule,
   ],
   controllers: [AppController],
   providers: [AppService],
