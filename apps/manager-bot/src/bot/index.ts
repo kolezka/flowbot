@@ -23,6 +23,7 @@ import { createFiltersFeature } from './features/filters.js'
 import { createMediaRestrictFeature } from './features/media-restrict.js'
 import { createModerationFeature } from './features/moderation.js'
 import { createPermissionsFeature } from './features/permissions.js'
+import { createPipelineFeature } from './features/pipeline.js'
 import { createPromoteFeature } from './features/promote.js'
 import { createRulesFeature } from './features/rules.js'
 import { createScheduleFeature } from './features/schedule.js'
@@ -117,6 +118,7 @@ export function createBot(token: string, dependencies: Dependencies, botConfig?:
   protectedBot.use(createAuditFeature(prisma))
   protectedBot.use(createRulesFeature(prisma))
   protectedBot.use(createScheduleFeature(prisma))
+  protectedBot.use(createPipelineFeature(prisma))
   protectedBot.use(createPromoteFeature(prisma))
   protectedBot.use(unhandledFeature)
 

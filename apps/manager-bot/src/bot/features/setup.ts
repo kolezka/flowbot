@@ -30,6 +30,7 @@ const CONFIGURABLE_FIELDS: ConfigField[] = [
   { key: 'quarantineEnabled', label: 'Quarantine new members', type: 'boolean' },
   { key: 'quarantineDurationS', label: 'Quarantine duration (seconds)', type: 'int' },
   { key: 'silentMode', label: 'Silent mode', type: 'boolean' },
+  { key: 'pipelineEnabled', label: 'Member→Customer pipeline', type: 'boolean' },
 ]
 
 function formatValue(value: unknown): string {

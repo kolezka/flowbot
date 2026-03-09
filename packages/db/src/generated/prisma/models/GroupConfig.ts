@@ -82,6 +82,9 @@ export type GroupConfigMinAggregateOutputType = {
   keywordFiltersEnabled: boolean | null
   aiModEnabled: boolean | null
   aiModThreshold: number | null
+  pipelineEnabled: boolean | null
+  pipelineDmTemplate: string | null
+  pipelineDeeplink: string | null
   createdAt: Date | null
   updatedAt: Date | null
 }
@@ -112,6 +115,9 @@ export type GroupConfigMaxAggregateOutputType = {
   keywordFiltersEnabled: boolean | null
   aiModEnabled: boolean | null
   aiModThreshold: number | null
+  pipelineEnabled: boolean | null
+  pipelineDmTemplate: string | null
+  pipelineDeeplink: string | null
   createdAt: Date | null
   updatedAt: Date | null
 }
@@ -144,6 +150,9 @@ export type GroupConfigCountAggregateOutputType = {
   keywordFilters: number
   aiModEnabled: number
   aiModThreshold: number
+  pipelineEnabled: number
+  pipelineDmTemplate: number
+  pipelineDeeplink: number
   createdAt: number
   updatedAt: number
   _all: number
@@ -206,6 +215,9 @@ export type GroupConfigMinAggregateInputType = {
   keywordFiltersEnabled?: true
   aiModEnabled?: true
   aiModThreshold?: true
+  pipelineEnabled?: true
+  pipelineDmTemplate?: true
+  pipelineDeeplink?: true
   createdAt?: true
   updatedAt?: true
 }
@@ -236,6 +248,9 @@ export type GroupConfigMaxAggregateInputType = {
   keywordFiltersEnabled?: true
   aiModEnabled?: true
   aiModThreshold?: true
+  pipelineEnabled?: true
+  pipelineDmTemplate?: true
+  pipelineDeeplink?: true
   createdAt?: true
   updatedAt?: true
 }
@@ -268,6 +283,9 @@ export type GroupConfigCountAggregateInputType = {
   keywordFilters?: true
   aiModEnabled?: true
   aiModThreshold?: true
+  pipelineEnabled?: true
+  pipelineDmTemplate?: true
+  pipelineDeeplink?: true
   createdAt?: true
   updatedAt?: true
   _all?: true
@@ -387,6 +405,9 @@ export type GroupConfigGroupByOutputType = {
   keywordFilters: string[]
   aiModEnabled: boolean
   aiModThreshold: number
+  pipelineEnabled: boolean
+  pipelineDmTemplate: string | null
+  pipelineDeeplink: string | null
   createdAt: Date
   updatedAt: Date
   _count: GroupConfigCountAggregateOutputType | null
@@ -442,6 +463,9 @@ export type GroupConfigWhereInput = {
   keywordFilters?: Prisma.StringNullableListFilter<"GroupConfig">
   aiModEnabled?: Prisma.BoolFilter<"GroupConfig"> | boolean
   aiModThreshold?: Prisma.FloatFilter<"GroupConfig"> | number
+  pipelineEnabled?: Prisma.BoolFilter<"GroupConfig"> | boolean
+  pipelineDmTemplate?: Prisma.StringNullableFilter<"GroupConfig"> | string | null
+  pipelineDeeplink?: Prisma.StringNullableFilter<"GroupConfig"> | string | null
   createdAt?: Prisma.DateTimeFilter<"GroupConfig"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"GroupConfig"> | Date | string
   group?: Prisma.XOR<Prisma.ManagedGroupScalarRelationFilter, Prisma.ManagedGroupWhereInput>
@@ -475,6 +499,9 @@ export type GroupConfigOrderByWithRelationInput = {
   keywordFilters?: Prisma.SortOrder
   aiModEnabled?: Prisma.SortOrder
   aiModThreshold?: Prisma.SortOrder
+  pipelineEnabled?: Prisma.SortOrder
+  pipelineDmTemplate?: Prisma.SortOrderInput | Prisma.SortOrder
+  pipelineDeeplink?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   group?: Prisma.ManagedGroupOrderByWithRelationInput
@@ -511,6 +538,9 @@ export type GroupConfigWhereUniqueInput = Prisma.AtLeast<{
   keywordFilters?: Prisma.StringNullableListFilter<"GroupConfig">
   aiModEnabled?: Prisma.BoolFilter<"GroupConfig"> | boolean
   aiModThreshold?: Prisma.FloatFilter<"GroupConfig"> | number
+  pipelineEnabled?: Prisma.BoolFilter<"GroupConfig"> | boolean
+  pipelineDmTemplate?: Prisma.StringNullableFilter<"GroupConfig"> | string | null
+  pipelineDeeplink?: Prisma.StringNullableFilter<"GroupConfig"> | string | null
   createdAt?: Prisma.DateTimeFilter<"GroupConfig"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"GroupConfig"> | Date | string
   group?: Prisma.XOR<Prisma.ManagedGroupScalarRelationFilter, Prisma.ManagedGroupWhereInput>
@@ -544,6 +574,9 @@ export type GroupConfigOrderByWithAggregationInput = {
   keywordFilters?: Prisma.SortOrder
   aiModEnabled?: Prisma.SortOrder
   aiModThreshold?: Prisma.SortOrder
+  pipelineEnabled?: Prisma.SortOrder
+  pipelineDmTemplate?: Prisma.SortOrderInput | Prisma.SortOrder
+  pipelineDeeplink?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   _count?: Prisma.GroupConfigCountOrderByAggregateInput
@@ -584,6 +617,9 @@ export type GroupConfigScalarWhereWithAggregatesInput = {
   keywordFilters?: Prisma.StringNullableListFilter<"GroupConfig">
   aiModEnabled?: Prisma.BoolWithAggregatesFilter<"GroupConfig"> | boolean
   aiModThreshold?: Prisma.FloatWithAggregatesFilter<"GroupConfig"> | number
+  pipelineEnabled?: Prisma.BoolWithAggregatesFilter<"GroupConfig"> | boolean
+  pipelineDmTemplate?: Prisma.StringNullableWithAggregatesFilter<"GroupConfig"> | string | null
+  pipelineDeeplink?: Prisma.StringNullableWithAggregatesFilter<"GroupConfig"> | string | null
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"GroupConfig"> | Date | string
   updatedAt?: Prisma.DateTimeWithAggregatesFilter<"GroupConfig"> | Date | string
 }
@@ -615,6 +651,9 @@ export type GroupConfigCreateInput = {
   keywordFilters?: Prisma.GroupConfigCreatekeywordFiltersInput | string[]
   aiModEnabled?: boolean
   aiModThreshold?: number
+  pipelineEnabled?: boolean
+  pipelineDmTemplate?: string | null
+  pipelineDeeplink?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   group: Prisma.ManagedGroupCreateNestedOneWithoutConfigInput
@@ -648,6 +687,9 @@ export type GroupConfigUncheckedCreateInput = {
   keywordFilters?: Prisma.GroupConfigCreatekeywordFiltersInput | string[]
   aiModEnabled?: boolean
   aiModThreshold?: number
+  pipelineEnabled?: boolean
+  pipelineDmTemplate?: string | null
+  pipelineDeeplink?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -679,6 +721,9 @@ export type GroupConfigUpdateInput = {
   keywordFilters?: Prisma.GroupConfigUpdatekeywordFiltersInput | string[]
   aiModEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
   aiModThreshold?: Prisma.FloatFieldUpdateOperationsInput | number
+  pipelineEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  pipelineDmTemplate?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  pipelineDeeplink?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   group?: Prisma.ManagedGroupUpdateOneRequiredWithoutConfigNestedInput
@@ -712,6 +757,9 @@ export type GroupConfigUncheckedUpdateInput = {
   keywordFilters?: Prisma.GroupConfigUpdatekeywordFiltersInput | string[]
   aiModEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
   aiModThreshold?: Prisma.FloatFieldUpdateOperationsInput | number
+  pipelineEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  pipelineDmTemplate?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  pipelineDeeplink?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -744,6 +792,9 @@ export type GroupConfigCreateManyInput = {
   keywordFilters?: Prisma.GroupConfigCreatekeywordFiltersInput | string[]
   aiModEnabled?: boolean
   aiModThreshold?: number
+  pipelineEnabled?: boolean
+  pipelineDmTemplate?: string | null
+  pipelineDeeplink?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -775,6 +826,9 @@ export type GroupConfigUpdateManyMutationInput = {
   keywordFilters?: Prisma.GroupConfigUpdatekeywordFiltersInput | string[]
   aiModEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
   aiModThreshold?: Prisma.FloatFieldUpdateOperationsInput | number
+  pipelineEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  pipelineDmTemplate?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  pipelineDeeplink?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -807,6 +861,9 @@ export type GroupConfigUncheckedUpdateManyInput = {
   keywordFilters?: Prisma.GroupConfigUpdatekeywordFiltersInput | string[]
   aiModEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
   aiModThreshold?: Prisma.FloatFieldUpdateOperationsInput | number
+  pipelineEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  pipelineDmTemplate?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  pipelineDeeplink?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -844,6 +901,9 @@ export type GroupConfigCountOrderByAggregateInput = {
   keywordFilters?: Prisma.SortOrder
   aiModEnabled?: Prisma.SortOrder
   aiModThreshold?: Prisma.SortOrder
+  pipelineEnabled?: Prisma.SortOrder
+  pipelineDmTemplate?: Prisma.SortOrder
+  pipelineDeeplink?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -889,6 +949,9 @@ export type GroupConfigMaxOrderByAggregateInput = {
   keywordFiltersEnabled?: Prisma.SortOrder
   aiModEnabled?: Prisma.SortOrder
   aiModThreshold?: Prisma.SortOrder
+  pipelineEnabled?: Prisma.SortOrder
+  pipelineDmTemplate?: Prisma.SortOrder
+  pipelineDeeplink?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -919,6 +982,9 @@ export type GroupConfigMinOrderByAggregateInput = {
   keywordFiltersEnabled?: Prisma.SortOrder
   aiModEnabled?: Prisma.SortOrder
   aiModThreshold?: Prisma.SortOrder
+  pipelineEnabled?: Prisma.SortOrder
+  pipelineDmTemplate?: Prisma.SortOrder
+  pipelineDeeplink?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -1023,6 +1089,9 @@ export type GroupConfigCreateWithoutGroupInput = {
   keywordFilters?: Prisma.GroupConfigCreatekeywordFiltersInput | string[]
   aiModEnabled?: boolean
   aiModThreshold?: number
+  pipelineEnabled?: boolean
+  pipelineDmTemplate?: string | null
+  pipelineDeeplink?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -1054,6 +1123,9 @@ export type GroupConfigUncheckedCreateWithoutGroupInput = {
   keywordFilters?: Prisma.GroupConfigCreatekeywordFiltersInput | string[]
   aiModEnabled?: boolean
   aiModThreshold?: number
+  pipelineEnabled?: boolean
+  pipelineDmTemplate?: string | null
+  pipelineDeeplink?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -1101,6 +1173,9 @@ export type GroupConfigUpdateWithoutGroupInput = {
   keywordFilters?: Prisma.GroupConfigUpdatekeywordFiltersInput | string[]
   aiModEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
   aiModThreshold?: Prisma.FloatFieldUpdateOperationsInput | number
+  pipelineEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  pipelineDmTemplate?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  pipelineDeeplink?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -1132,6 +1207,9 @@ export type GroupConfigUncheckedUpdateWithoutGroupInput = {
   keywordFilters?: Prisma.GroupConfigUpdatekeywordFiltersInput | string[]
   aiModEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
   aiModThreshold?: Prisma.FloatFieldUpdateOperationsInput | number
+  pipelineEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  pipelineDmTemplate?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  pipelineDeeplink?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -1166,6 +1244,9 @@ export type GroupConfigSelect<ExtArgs extends runtime.Types.Extensions.InternalA
   keywordFilters?: boolean
   aiModEnabled?: boolean
   aiModThreshold?: boolean
+  pipelineEnabled?: boolean
+  pipelineDmTemplate?: boolean
+  pipelineDeeplink?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   group?: boolean | Prisma.ManagedGroupDefaultArgs<ExtArgs>
@@ -1199,6 +1280,9 @@ export type GroupConfigSelectCreateManyAndReturn<ExtArgs extends runtime.Types.E
   keywordFilters?: boolean
   aiModEnabled?: boolean
   aiModThreshold?: boolean
+  pipelineEnabled?: boolean
+  pipelineDmTemplate?: boolean
+  pipelineDeeplink?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   group?: boolean | Prisma.ManagedGroupDefaultArgs<ExtArgs>
@@ -1232,6 +1316,9 @@ export type GroupConfigSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.E
   keywordFilters?: boolean
   aiModEnabled?: boolean
   aiModThreshold?: boolean
+  pipelineEnabled?: boolean
+  pipelineDmTemplate?: boolean
+  pipelineDeeplink?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   group?: boolean | Prisma.ManagedGroupDefaultArgs<ExtArgs>
@@ -1265,11 +1352,14 @@ export type GroupConfigSelectScalar = {
   keywordFilters?: boolean
   aiModEnabled?: boolean
   aiModThreshold?: boolean
+  pipelineEnabled?: boolean
+  pipelineDmTemplate?: boolean
+  pipelineDeeplink?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }
 
-export type GroupConfigOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "groupId" | "welcomeEnabled" | "welcomeMessage" | "rulesText" | "warnThresholdMute" | "warnThresholdBan" | "warnDecayDays" | "defaultMuteDurationS" | "antiSpamEnabled" | "antiSpamMaxMessages" | "antiSpamWindowSeconds" | "antiLinkEnabled" | "antiLinkWhitelist" | "slowModeDelay" | "logChannelId" | "autoDeleteCommandsS" | "captchaEnabled" | "captchaMode" | "captchaTimeoutS" | "quarantineEnabled" | "quarantineDurationS" | "silentMode" | "keywordFiltersEnabled" | "keywordFilters" | "aiModEnabled" | "aiModThreshold" | "createdAt" | "updatedAt", ExtArgs["result"]["groupConfig"]>
+export type GroupConfigOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "groupId" | "welcomeEnabled" | "welcomeMessage" | "rulesText" | "warnThresholdMute" | "warnThresholdBan" | "warnDecayDays" | "defaultMuteDurationS" | "antiSpamEnabled" | "antiSpamMaxMessages" | "antiSpamWindowSeconds" | "antiLinkEnabled" | "antiLinkWhitelist" | "slowModeDelay" | "logChannelId" | "autoDeleteCommandsS" | "captchaEnabled" | "captchaMode" | "captchaTimeoutS" | "quarantineEnabled" | "quarantineDurationS" | "silentMode" | "keywordFiltersEnabled" | "keywordFilters" | "aiModEnabled" | "aiModThreshold" | "pipelineEnabled" | "pipelineDmTemplate" | "pipelineDeeplink" | "createdAt" | "updatedAt", ExtArgs["result"]["groupConfig"]>
 export type GroupConfigInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   group?: boolean | Prisma.ManagedGroupDefaultArgs<ExtArgs>
 }
@@ -1313,6 +1403,9 @@ export type $GroupConfigPayload<ExtArgs extends runtime.Types.Extensions.Interna
     keywordFilters: string[]
     aiModEnabled: boolean
     aiModThreshold: number
+    pipelineEnabled: boolean
+    pipelineDmTemplate: string | null
+    pipelineDeeplink: string | null
     createdAt: Date
     updatedAt: Date
   }, ExtArgs["result"]["groupConfig"]>
@@ -1766,6 +1859,9 @@ export interface GroupConfigFieldRefs {
   readonly keywordFilters: Prisma.FieldRef<"GroupConfig", 'String[]'>
   readonly aiModEnabled: Prisma.FieldRef<"GroupConfig", 'Boolean'>
   readonly aiModThreshold: Prisma.FieldRef<"GroupConfig", 'Float'>
+  readonly pipelineEnabled: Prisma.FieldRef<"GroupConfig", 'Boolean'>
+  readonly pipelineDmTemplate: Prisma.FieldRef<"GroupConfig", 'String'>
+  readonly pipelineDeeplink: Prisma.FieldRef<"GroupConfig", 'String'>
   readonly createdAt: Prisma.FieldRef<"GroupConfig", 'DateTime'>
   readonly updatedAt: Prisma.FieldRef<"GroupConfig", 'DateTime'>
 }

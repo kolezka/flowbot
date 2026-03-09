@@ -189,6 +189,10 @@ model GroupConfig {
   aiModEnabled   Boolean @default(false)
   aiModThreshold Float   @default(0.8)
 
+  pipelineEnabled    Boolean @default(false)
+  pipelineDmTemplate String?
+  pipelineDeeplink   String?
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }

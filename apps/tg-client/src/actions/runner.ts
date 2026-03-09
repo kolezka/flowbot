@@ -1,6 +1,6 @@
 import type { Logger } from '../logger.js'
 import type { ITelegramTransport } from '../transport/ITelegramTransport.js'
-import type { Action, ForwardMessagePayload, SendMessagePayload } from './types.js'
+import type { Action, ForwardMessagePayload, SendMessagePayload, SendWelcomeDmPayload } from './types.js'
 
 import { FloodWaitError } from 'telegram/errors'
 
@@ -8,6 +8,7 @@ import { calculateBackoff, sleep } from '../errors/backoff.js'
 import { classifyError, ErrorCategory } from '../errors/classifier.js'
 import { executeForwardMessage } from './forward-message.js'
 import { executeSendMessage } from './send-message.js'
+import { executeSendWelcomeDm } from './send-welcome-dm.js'
 import { ActionType } from './types.js'
 
 export interface ActionResult {
@@ -158,6 +159,12 @@ export class ActionRunner {
         return executeForwardMessage(
           this.transport,
           action.payload as ForwardMessagePayload,
+          this.logger,
+        )
+      case ActionType.SEND_WELCOME_DM:
+        return executeSendWelcomeDm(
+          this.transport,
+          action.payload as SendWelcomeDmPayload,
           this.logger,
         )
       default:

@@ -3,6 +3,7 @@ import * as v from 'valibot'
 export enum ActionType {
   SEND_MESSAGE = 'SEND_MESSAGE',
   FORWARD_MESSAGE = 'FORWARD_MESSAGE',
+  SEND_WELCOME_DM = 'SEND_WELCOME_DM',
 }
 
 export interface SendMessagePayload {
@@ -21,7 +22,13 @@ export interface ForwardMessagePayload {
   dropAuthor?: boolean
 }
 
-export type ActionPayload = SendMessagePayload | ForwardMessagePayload
+export interface SendWelcomeDmPayload {
+  peer: string
+  text: string
+  deeplink?: string
+}
+
+export type ActionPayload = SendMessagePayload | ForwardMessagePayload | SendWelcomeDmPayload
 
 export interface Action {
   type: ActionType
@@ -45,6 +52,12 @@ export const ForwardMessagePayloadSchema = v.object({
   dropAuthor: v.optional(v.boolean()),
 })
 
+export const SendWelcomeDmPayloadSchema = v.object({
+  peer: v.string(),
+  text: v.string(),
+  deeplink: v.optional(v.string()),
+})
+
 export const ActionSchema = v.variant('type', [
   v.object({
     type: v.literal(ActionType.SEND_MESSAGE),
@@ -54,6 +67,11 @@ export const ActionSchema = v.variant('type', [
   v.object({
     type: v.literal(ActionType.FORWARD_MESSAGE),
     payload: ForwardMessagePayloadSchema,
+    idempotencyKey: v.optional(v.string()),
+  }),
+  v.object({
+    type: v.literal(ActionType.SEND_WELCOME_DM),
+    payload: SendWelcomeDmPayloadSchema,
     idempotencyKey: v.optional(v.string()),
   }),
 ])

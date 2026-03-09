@@ -1545,6 +1545,9 @@ export const GroupConfigScalarFieldEnum = {
   keywordFilters: 'keywordFilters',
   aiModEnabled: 'aiModEnabled',
   aiModThreshold: 'aiModThreshold',
+  pipelineEnabled: 'pipelineEnabled',
+  pipelineDmTemplate: 'pipelineDmTemplate',
+  pipelineDeeplink: 'pipelineDeeplink',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const

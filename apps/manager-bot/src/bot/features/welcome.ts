@@ -2,6 +2,7 @@ import type { PrismaClient } from '@tg-allegro/db'
 import type { Context } from '../context.js'
 import { Composer } from 'grammy'
 import { GroupConfigRepository } from '../../repositories/GroupConfigRepository.js'
+import { ModerationLogRepository } from '../../repositories/ModerationLogRepository.js'
 import { logHandle } from '../helpers/logging.js'
 import { requirePermission } from '../helpers/permissions.js'
 
@@ -43,6 +44,7 @@ function escapeHtml(text: string): string {
 export function createWelcomeFeature(prisma: PrismaClient) {
   const feature = new Composer<Context>()
   const configRepo = new GroupConfigRepository(prisma)
+  const modLogRepo = new ModerationLogRepository(prisma)
 
   // Handle chat_member updates for new joins
   feature.on('chat_member', async (ctx, next) => {
@@ -85,6 +87,35 @@ export function createWelcomeFeature(prisma: PrismaClient) {
     })
 
     await ctx.api.sendMessage(ctx.chat.id, message, { parse_mode: 'HTML' })
+
+    // Pipeline: emit log entry for Trigger.dev to pick up later
+    if (config.pipelineEnabled) {
+      const group = await prisma.managedGroup.findUnique({ where: { chatId: BigInt(ctx.chat.id) } })
+      if (group) {
+        const dmTemplate = config.pipelineDmTemplate || 'Welcome! Check out our shop.'
+        const deeplink = config.pipelineDeeplink || ''
+
+        await modLogRepo.create({
+          groupId: group.id,
+          action: 'pipeline_trigger',
+          actorId: BigInt(newMember.id),
+          targetId: BigInt(newMember.id),
+          automated: true,
+          details: {
+            userId: newMember.id,
+            username: newMember.username,
+            firstName: newMember.first_name,
+            text: dmTemplate,
+            deeplink,
+          },
+        })
+
+        ctx.logger.info(
+          { userId: newMember.id, groupId: group.id },
+          'Pipeline trigger logged for new member',
+        )
+      }
+    }
   })
 
   // Handle my_chat_member — bot added/removed from group
