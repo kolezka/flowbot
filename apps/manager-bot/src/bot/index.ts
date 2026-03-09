@@ -16,6 +16,7 @@ import { createAntiLinkFeature } from './features/anti-link.js'
 import { createAntiSpamFeature } from './features/anti-spam.js'
 import { createAuditFeature } from './features/audit.js'
 import { createDeletionFeature } from './features/deletion.js'
+import { createFiltersFeature } from './features/filters.js'
 import { createModerationFeature } from './features/moderation.js'
 import { createPermissionsFeature } from './features/permissions.js'
 import { createRulesFeature } from './features/rules.js'
@@ -86,6 +87,7 @@ export function createBot(token: string, dependencies: Dependencies, botConfig?:
   const antiSpamService = new AntiSpamService()
   protectedBot.use(createAntiSpamFeature(antiSpamService))
   protectedBot.use(createAntiLinkFeature(prisma))
+  protectedBot.use(createFiltersFeature(prisma))
   protectedBot.use(createPermissionsFeature(prisma))
   protectedBot.use(createModerationFeature(prisma))
   protectedBot.use(createDeletionFeature(prisma))

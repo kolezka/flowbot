@@ -203,6 +203,8 @@ export const GroupConfigScalarFieldEnum = {
   quarantineEnabled: 'quarantineEnabled',
   quarantineDurationS: 'quarantineDurationS',
   silentMode: 'silentMode',
+  keywordFiltersEnabled: 'keywordFiltersEnabled',
+  keywordFilters: 'keywordFilters',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const
