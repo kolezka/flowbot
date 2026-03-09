@@ -22,7 +22,7 @@ Source docs: `docs/plan/mb-05-tasks.md` (manager-bot), `docs/plan/05-tasks.md` (
 
 ## Phase 2: Bot Core
 
-- [ ] **MB-06**: Context Type and Session — `src/bot/context.ts` with SessionData (groupConfig, adminIds, adminCacheExpiry). Flavor stack: ParseMode, Hydrate, Default, Extended, Session, AutoChatAction. Session keyed by chat ID. `src/bot/middlewares/session.ts`.
+- [x] **MB-06**: Context Type and Session — `src/bot/context.ts` with SessionData (groupConfig, adminIds, adminCacheExpiry). Flavor stack: ParseMode, Hydrate, Default, Extended, Session, AutoChatAction. Session keyed by chat ID. `src/bot/middlewares/session.ts`.
 
 - [ ] **MB-07**: Bot Factory — `src/bot/index.ts` with `createBot()`. Middleware order: context enrichment → error boundary → API config (parseMode, autoRetry, throttler) → sequentialize → update logger → hydrate → ratelimiter → session → group-data (stub) → admin-cache (stub) → rate-tracker (stub) → features → unhandled.
 
