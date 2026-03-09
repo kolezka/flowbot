@@ -9,7 +9,19 @@
 * 🟢 You can import this file directly.
 */
 
+export const JobType = {
+  SEND_MESSAGE: 'SEND_MESSAGE',
+  FORWARD_MESSAGE: 'FORWARD_MESSAGE'
+} as const
+
+export type JobType = (typeof JobType)[keyof typeof JobType]
 
 
-// This file is empty because there are no enums in the schema.
-export {}
+export const JobStatus = {
+  PENDING: 'PENDING',
+  CLAIMED: 'CLAIMED',
+  COMPLETED: 'COMPLETED',
+  FAILED: 'FAILED'
+} as const
+
+export type JobStatus = (typeof JobStatus)[keyof typeof JobStatus]

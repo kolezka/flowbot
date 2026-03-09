@@ -262,3 +262,57 @@ model ScheduledMessage {
   @@index([sendAt, sent])
   @@index([groupId])
 }
+
+// ==========================================
+// Automation / Client Models
+// ==========================================
+
+enum JobType {
+  SEND_MESSAGE
+  FORWARD_MESSAGE
+}
+
+enum JobStatus {
+  PENDING
+  CLAIMED
+  COMPLETED
+  FAILED
+}
+
+model AutomationJob {
+  id          String    @id @default(cuid())
+  type        JobType
+  status      JobStatus @default(PENDING)
+  payload     Json
+  result      Json?
+  attempts    Int       @default(0)
+  maxAttempts Int       @default(3)
+  claimedAt   DateTime?
+  completedAt DateTime?
+  failedAt    DateTime?
+  errorMsg    String?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@index([status, createdAt])
+  @@index([type])
+}
+
+model ClientLog {
+  id        String   @id @default(cuid())
+  level     String
+  message   String
+  details   Json?
+  createdAt DateTime @default(now())
+
+  @@index([createdAt])
+}
+
+model ClientSession {
+  id            String   @id @default(cuid())
+  sessionString String
+  isActive      Boolean  @default(true)
+  lastUsedAt    DateTime @default(now())
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}

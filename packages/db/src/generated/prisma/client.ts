@@ -94,3 +94,18 @@ export type ModerationLog = Prisma.ModerationLogModel
  * 
  */
 export type ScheduledMessage = Prisma.ScheduledMessageModel
+/**
+ * Model AutomationJob
+ * 
+ */
+export type AutomationJob = Prisma.AutomationJobModel
+/**
+ * Model ClientLog
+ * 
+ */
+export type ClientLog = Prisma.ClientLogModel
+/**
+ * Model ClientSession
+ * 
+ */
+export type ClientSession = Prisma.ClientSessionModel
