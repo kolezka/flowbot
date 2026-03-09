@@ -395,6 +395,7 @@ export const ModelName = {
   Warning: 'Warning',
   ModerationLog: 'ModerationLog',
   ScheduledMessage: 'ScheduledMessage',
+  CrossPostTemplate: 'CrossPostTemplate',
   ClientLog: 'ClientLog',
   ClientSession: 'ClientSession'
 } as const
@@ -412,7 +413,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "user" | "category" | "product" | "cart" | "cartItem" | "managedGroup" | "groupConfig" | "groupMember" | "warning" | "moderationLog" | "scheduledMessage" | "clientLog" | "clientSession"
+    modelProps: "user" | "category" | "product" | "cart" | "cartItem" | "managedGroup" | "groupConfig" | "groupMember" | "warning" | "moderationLog" | "scheduledMessage" | "crossPostTemplate" | "clientLog" | "clientSession"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -1230,6 +1231,80 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    CrossPostTemplate: {
+      payload: Prisma.$CrossPostTemplatePayload<ExtArgs>
+      fields: Prisma.CrossPostTemplateFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.CrossPostTemplateFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CrossPostTemplatePayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.CrossPostTemplateFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CrossPostTemplatePayload>
+        }
+        findFirst: {
+          args: Prisma.CrossPostTemplateFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CrossPostTemplatePayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.CrossPostTemplateFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CrossPostTemplatePayload>
+        }
+        findMany: {
+          args: Prisma.CrossPostTemplateFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CrossPostTemplatePayload>[]
+        }
+        create: {
+          args: Prisma.CrossPostTemplateCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CrossPostTemplatePayload>
+        }
+        createMany: {
+          args: Prisma.CrossPostTemplateCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.CrossPostTemplateCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CrossPostTemplatePayload>[]
+        }
+        delete: {
+          args: Prisma.CrossPostTemplateDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CrossPostTemplatePayload>
+        }
+        update: {
+          args: Prisma.CrossPostTemplateUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CrossPostTemplatePayload>
+        }
+        deleteMany: {
+          args: Prisma.CrossPostTemplateDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.CrossPostTemplateUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.CrossPostTemplateUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CrossPostTemplatePayload>[]
+        }
+        upsert: {
+          args: Prisma.CrossPostTemplateUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CrossPostTemplatePayload>
+        }
+        aggregate: {
+          args: Prisma.CrossPostTemplateAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateCrossPostTemplate>
+        }
+        groupBy: {
+          args: Prisma.CrossPostTemplateGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.CrossPostTemplateGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.CrossPostTemplateCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.CrossPostTemplateCountAggregateOutputType> | number
+        }
+      }
+    }
     ClientLog: {
       payload: Prisma.$ClientLogPayload<ExtArgs>
       fields: Prisma.ClientLogFieldRefs
@@ -1616,6 +1691,20 @@ export const ScheduledMessageScalarFieldEnum = {
 export type ScheduledMessageScalarFieldEnum = (typeof ScheduledMessageScalarFieldEnum)[keyof typeof ScheduledMessageScalarFieldEnum]
 
 
+export const CrossPostTemplateScalarFieldEnum = {
+  id: 'id',
+  name: 'name',
+  messageText: 'messageText',
+  targetChatIds: 'targetChatIds',
+  isActive: 'isActive',
+  createdBy: 'createdBy',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type CrossPostTemplateScalarFieldEnum = (typeof CrossPostTemplateScalarFieldEnum)[keyof typeof CrossPostTemplateScalarFieldEnum]
+
+
 export const ClientLogScalarFieldEnum = {
   id: 'id',
   level: 'level',
@@ -1896,6 +1985,7 @@ export type GlobalOmitConfig = {
   warning?: Prisma.WarningOmit
   moderationLog?: Prisma.ModerationLogOmit
   scheduledMessage?: Prisma.ScheduledMessageOmit
+  crossPostTemplate?: Prisma.CrossPostTemplateOmit
   clientLog?: Prisma.ClientLogOmit
   clientSession?: Prisma.ClientSessionOmit
 }

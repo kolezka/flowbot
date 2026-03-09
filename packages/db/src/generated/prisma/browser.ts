@@ -73,6 +73,11 @@ export type ModerationLog = Prisma.ModerationLogModel
  */
 export type ScheduledMessage = Prisma.ScheduledMessageModel
 /**
+ * Model CrossPostTemplate
+ * 
+ */
+export type CrossPostTemplate = Prisma.CrossPostTemplateModel
+/**
  * Model ClientLog
  * 
  */

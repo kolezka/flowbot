@@ -4,6 +4,7 @@ export enum ActionType {
   SEND_MESSAGE = 'SEND_MESSAGE',
   FORWARD_MESSAGE = 'FORWARD_MESSAGE',
   SEND_WELCOME_DM = 'SEND_WELCOME_DM',
+  CROSS_POST = 'CROSS_POST',
 }
 
 export interface SendMessagePayload {
@@ -28,7 +29,14 @@ export interface SendWelcomeDmPayload {
   deeplink?: string
 }
 
-export type ActionPayload = SendMessagePayload | ForwardMessagePayload | SendWelcomeDmPayload
+export interface CrossPostPayload {
+  text: string
+  targetChatIds: string[]
+  parseMode?: string
+  silent?: boolean
+}
+
+export type ActionPayload = SendMessagePayload | ForwardMessagePayload | SendWelcomeDmPayload | CrossPostPayload
 
 export interface Action {
   type: ActionType
@@ -58,6 +66,13 @@ export const SendWelcomeDmPayloadSchema = v.object({
   deeplink: v.optional(v.string()),
 })
 
+export const CrossPostPayloadSchema = v.object({
+  text: v.string(),
+  targetChatIds: v.array(v.string()),
+  parseMode: v.optional(v.string()),
+  silent: v.optional(v.boolean()),
+})
+
 export const ActionSchema = v.variant('type', [
   v.object({
     type: v.literal(ActionType.SEND_MESSAGE),
@@ -72,6 +87,11 @@ export const ActionSchema = v.variant('type', [
   v.object({
     type: v.literal(ActionType.SEND_WELCOME_DM),
     payload: SendWelcomeDmPayloadSchema,
+    idempotencyKey: v.optional(v.string()),
+  }),
+  v.object({
+    type: v.literal(ActionType.CROSS_POST),
+    payload: CrossPostPayloadSchema,
     idempotencyKey: v.optional(v.string()),
   }),
 ])

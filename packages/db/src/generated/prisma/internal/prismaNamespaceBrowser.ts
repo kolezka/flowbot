@@ -62,6 +62,7 @@ export const ModelName = {
   Warning: 'Warning',
   ModerationLog: 'ModerationLog',
   ScheduledMessage: 'ScheduledMessage',
+  CrossPostTemplate: 'CrossPostTemplate',
   ClientLog: 'ClientLog',
   ClientSession: 'ClientSession'
 } as const
@@ -279,6 +280,20 @@ export const ScheduledMessageScalarFieldEnum = {
 } as const
 
 export type ScheduledMessageScalarFieldEnum = (typeof ScheduledMessageScalarFieldEnum)[keyof typeof ScheduledMessageScalarFieldEnum]
+
+
+export const CrossPostTemplateScalarFieldEnum = {
+  id: 'id',
+  name: 'name',
+  messageText: 'messageText',
+  targetChatIds: 'targetChatIds',
+  isActive: 'isActive',
+  createdBy: 'createdBy',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type CrossPostTemplateScalarFieldEnum = (typeof CrossPostTemplateScalarFieldEnum)[keyof typeof CrossPostTemplateScalarFieldEnum]
 
 
 export const ClientLogScalarFieldEnum = {

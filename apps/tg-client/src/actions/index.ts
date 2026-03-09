@@ -1,3 +1,4 @@
+export { type CrossPostResult, executeCrossPost } from './cross-post.js'
 export { executeForwardMessage } from './forward-message.js'
 export { type ActionResult, ActionRunner } from './runner.js'
 export { executeSendMessage } from './send-message.js'
@@ -7,6 +8,8 @@ export {
   type ActionPayload,
   ActionSchema,
   ActionType,
+  type CrossPostPayload,
+  CrossPostPayloadSchema,
   type ForwardMessagePayload,
   ForwardMessagePayloadSchema,
   type SendMessagePayload,

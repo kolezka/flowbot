@@ -1,11 +1,12 @@
 import type { Logger } from '../logger.js'
 import type { ITelegramTransport } from '../transport/ITelegramTransport.js'
-import type { Action, ForwardMessagePayload, SendMessagePayload, SendWelcomeDmPayload } from './types.js'
+import type { Action, CrossPostPayload, ForwardMessagePayload, SendMessagePayload, SendWelcomeDmPayload } from './types.js'
 
 import { FloodWaitError } from 'telegram/errors'
 
 import { calculateBackoff, sleep } from '../errors/backoff.js'
 import { classifyError, ErrorCategory } from '../errors/classifier.js'
+import { executeCrossPost } from './cross-post.js'
 import { executeForwardMessage } from './forward-message.js'
 import { executeSendMessage } from './send-message.js'
 import { executeSendWelcomeDm } from './send-welcome-dm.js'
@@ -165,6 +166,12 @@ export class ActionRunner {
         return executeSendWelcomeDm(
           this.transport,
           action.payload as SendWelcomeDmPayload,
+          this.logger,
+        )
+      case ActionType.CROSS_POST:
+        return executeCrossPost(
+          this.transport,
+          action.payload as CrossPostPayload,
           this.logger,
         )
       default:

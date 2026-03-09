@@ -18,6 +18,7 @@ import { createAntiLinkFeature } from './features/anti-link.js'
 import { createAntiSpamFeature } from './features/anti-spam.js'
 import { createAuditFeature } from './features/audit.js'
 import { createCaptchaFeature } from './features/captcha.js'
+import { createCrossPostFeature } from './features/crosspost.js'
 import { createDeletionFeature } from './features/deletion.js'
 import { createFiltersFeature } from './features/filters.js'
 import { createMediaRestrictFeature } from './features/media-restrict.js'
@@ -120,6 +121,7 @@ export function createBot(token: string, dependencies: Dependencies, botConfig?:
   protectedBot.use(createScheduleFeature(prisma))
   protectedBot.use(createPipelineFeature(prisma))
   protectedBot.use(createPromoteFeature(prisma))
+  protectedBot.use(createCrossPostFeature(prisma))
   protectedBot.use(unhandledFeature)
 
   return bot
