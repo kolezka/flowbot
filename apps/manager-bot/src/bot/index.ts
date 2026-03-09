@@ -1,3 +1,4 @@
+import type { PrismaClient } from '@tg-allegro/db'
 import type { BotConfig } from 'grammy'
 import type { Config } from '../config.js'
 import type { Logger } from '../logger.js'
@@ -10,12 +11,14 @@ import { sequentialize } from '@grammyjs/runner'
 import { Bot as TelegramBot } from 'grammy'
 import { unhandledFeature } from './features/unhandled.js'
 import { errorHandler } from './handlers/error.js'
+import { groupData } from './middlewares/group-data.js'
 import { session } from './middlewares/session.js'
 import { updateLogger } from './middlewares/update-logger.js'
 
 interface Dependencies {
   config: Config
   logger: Logger
+  prisma: PrismaClient
 }
 
 function getSessionKey(ctx: Omit<Context, 'session'>) {
@@ -23,7 +26,7 @@ function getSessionKey(ctx: Omit<Context, 'session'>) {
 }
 
 export function createBot(token: string, dependencies: Dependencies, botConfig?: BotConfig<Context>) {
-  const { config, logger } = dependencies
+  const { config, logger, prisma } = dependencies
 
   const bot = new TelegramBot<Context>(token, botConfig)
 
@@ -56,7 +59,9 @@ export function createBot(token: string, dependencies: Dependencies, botConfig?:
   protectedBot.use(hydrate())
   protectedBot.use(session())
 
-  // Group data middleware (stub — MB-10)
+  // Group data
+  protectedBot.use(groupData(prisma))
+
   // Admin cache middleware (stub — MB-11)
   // Rate tracker middleware (stub — MB-16)
 

@@ -28,7 +28,7 @@ Source docs: `docs/plan/mb-05-tasks.md` (manager-bot), `docs/plan/05-tasks.md` (
 
 - [x] **MB-08**: Error Handler — `src/bot/handlers/error.ts` and `src/bot/helpers/logging.ts` (logHandle, getUpdateInfo). Structured error logging, no rethrow.
 
-- [ ] **MB-09**: Server and Main Entrypoint — `src/server/` (Hono health + webhook), `src/main.ts` (dual-mode polling/webhook, graceful shutdown). allowed_updates includes chat_member, my_chat_member, edited_message, chat_join_request. Verify: `pnpm manager-bot dev` starts.
+- [x] **MB-09**: Server and Main Entrypoint — `src/server/` (Hono health + webhook), `src/main.ts` (dual-mode polling/webhook, graceful shutdown). allowed_updates includes chat_member, my_chat_member, edited_message, chat_join_request. Verify: `pnpm manager-bot dev` starts.
 
 ## Phase 3: Permission System
 

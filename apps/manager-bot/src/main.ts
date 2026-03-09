@@ -7,14 +7,16 @@ import process from 'node:process'
 import { run } from '@grammyjs/runner'
 import { createBot } from './bot/index.js'
 import { createConfigFromEnvironment } from './config.js'
+import { createDatabase } from './database.js'
 import { createLogger } from './logger.js'
 import { createServer, createServerManager } from './server/index.js'
 
 const config = createConfigFromEnvironment()
 const logger = createLogger(config)
+const prisma = createDatabase(config)
 
 async function startPolling(config: PollingConfig) {
-  const bot = createBot(config.botToken, { config, logger })
+  const bot = createBot(config.botToken, { config, logger, prisma })
   let runner: undefined | RunnerHandle
 
   onShutdown(async () => {
@@ -42,7 +44,7 @@ async function startPolling(config: PollingConfig) {
 }
 
 async function startWebhook(config: WebhookConfig) {
-  const bot = createBot(config.botToken, { config, logger })
+  const bot = createBot(config.botToken, { config, logger, prisma })
   const server = createServer({ bot, config, logger })
   const serverManager = createServerManager(server, {
     host: config.serverHost,
