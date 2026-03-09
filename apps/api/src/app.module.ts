@@ -7,6 +7,7 @@ import { UsersModule } from './users/users.module';
 import { ProductsModule } from './products/products.module';
 import { CategoriesModule } from './categories/categories.module';
 import { CartModule } from './cart/cart.module';
+import { AnalyticsModule } from './analytics/analytics.module';
 import { BroadcastModule } from './broadcast/broadcast.module';
 import { ModerationModule } from './moderation/moderation.module';
 
@@ -21,6 +22,7 @@ import { ModerationModule } from './moderation/moderation.module';
     ProductsModule,
     CategoriesModule,
     CartModule,
+    AnalyticsModule,
     BroadcastModule,
     ModerationModule,
   ],

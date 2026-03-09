@@ -63,6 +63,7 @@ export const ModelName = {
   Warning: 'Warning',
   ModerationLog: 'ModerationLog',
   ScheduledMessage: 'ScheduledMessage',
+  GroupAnalyticsSnapshot: 'GroupAnalyticsSnapshot',
   CrossPostTemplate: 'CrossPostTemplate',
   BroadcastMessage: 'BroadcastMessage',
   OrderEvent: 'OrderEvent',
@@ -296,6 +297,27 @@ export const ScheduledMessageScalarFieldEnum = {
 } as const
 
 export type ScheduledMessageScalarFieldEnum = (typeof ScheduledMessageScalarFieldEnum)[keyof typeof ScheduledMessageScalarFieldEnum]
+
+
+export const GroupAnalyticsSnapshotScalarFieldEnum = {
+  id: 'id',
+  groupId: 'groupId',
+  date: 'date',
+  memberCount: 'memberCount',
+  newMembers: 'newMembers',
+  leftMembers: 'leftMembers',
+  messageCount: 'messageCount',
+  spamDetected: 'spamDetected',
+  linksBlocked: 'linksBlocked',
+  warningsIssued: 'warningsIssued',
+  mutesIssued: 'mutesIssued',
+  bansIssued: 'bansIssued',
+  deletedMessages: 'deletedMessages',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type GroupAnalyticsSnapshotScalarFieldEnum = (typeof GroupAnalyticsSnapshotScalarFieldEnum)[keyof typeof GroupAnalyticsSnapshotScalarFieldEnum]
 
 
 export const CrossPostTemplateScalarFieldEnum = {

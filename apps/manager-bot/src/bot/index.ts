@@ -29,6 +29,7 @@ import { createPipelineFeature } from './features/pipeline.js'
 import { createPromoteFeature } from './features/promote.js'
 import { createRulesFeature } from './features/rules.js'
 import { createScheduleFeature } from './features/schedule.js'
+import { createStatsFeature } from './features/stats.js'
 import { createSetupFeature } from './features/setup.js'
 import { unhandledFeature } from './features/unhandled.js'
 import { createWelcomeFeature } from './features/welcome.js'
@@ -122,6 +123,7 @@ export function createBot(token: string, dependencies: Dependencies, botConfig?:
   protectedBot.use(createScheduleFeature(prisma))
   protectedBot.use(createPipelineFeature(prisma))
   protectedBot.use(createPromoteFeature(prisma))
+  protectedBot.use(createStatsFeature(prisma))
   protectedBot.use(createCrossPostFeature(prisma))
   protectedBot.use(createNotificationsFeature(prisma))
   protectedBot.use(unhandledFeature)

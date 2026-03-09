@@ -343,6 +343,64 @@ export interface GroupMembersResponse {
   totalPages: number;
 }
 
+// Analytics interfaces
+export interface AnalyticsSnapshot {
+  date: string;
+  memberCount: number;
+  newMembers: number;
+  leftMembers: number;
+  messageCount: number;
+  spamDetected: number;
+  linksBlocked: number;
+  warningsIssued: number;
+  mutesIssued: number;
+  bansIssued: number;
+  deletedMessages: number;
+}
+
+export interface AnalyticsTimeSeries {
+  groupId: string;
+  data: AnalyticsSnapshot[];
+}
+
+export interface AggregatedPeriod {
+  totalMessages: number;
+  totalSpam: number;
+  totalLinksBlocked: number;
+  totalWarnings: number;
+  totalMutes: number;
+  totalBans: number;
+  totalDeleted: number;
+  memberGrowth: number;
+}
+
+export interface AnalyticsSummary {
+  groupId: string;
+  groupTitle: string;
+  currentMemberCount: number;
+  last7d: AggregatedPeriod;
+  last30d: AggregatedPeriod;
+  allTime: AggregatedPeriod;
+}
+
+export interface GroupOverviewItem {
+  groupId: string;
+  title: string;
+  memberCount: number;
+  messagesToday: number;
+  spamToday: number;
+  moderationToday: number;
+}
+
+export interface AnalyticsOverview {
+  totalGroups: number;
+  totalMembers: number;
+  totalMessagesToday: number;
+  totalSpamToday: number;
+  totalModerationToday: number;
+  groups: GroupOverviewItem[];
+}
+
 export interface ApiError {
   message: string;
   status?: number;
@@ -657,6 +715,26 @@ class ApiClient {
 
   async getGroupMember(groupId: string, memberId: string): Promise<GroupMember> {
     return this.request<GroupMember>(`/api/moderation/groups/${groupId}/members/${memberId}`);
+  }
+
+  // Analytics
+  async getAnalyticsOverview(): Promise<AnalyticsOverview> {
+    return this.request<AnalyticsOverview>('/api/analytics/overview');
+  }
+
+  async getAnalyticsTimeSeries(groupId: string, params?: {
+    from?: string; to?: string; granularity?: string;
+  }): Promise<AnalyticsTimeSeries> {
+    const searchParams = new URLSearchParams();
+    if (params?.from) searchParams.append('from', params.from);
+    if (params?.to) searchParams.append('to', params.to);
+    if (params?.granularity) searchParams.append('granularity', params.granularity);
+    const qs = searchParams.toString();
+    return this.request<AnalyticsTimeSeries>(`/api/analytics/groups/${groupId}${qs ? `?${qs}` : ''}`);
+  }
+
+  async getAnalyticsSummary(groupId: string): Promise<AnalyticsSummary> {
+    return this.request<AnalyticsSummary>(`/api/analytics/groups/${groupId}/summary`);
   }
 }
 

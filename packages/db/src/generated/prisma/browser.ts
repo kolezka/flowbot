@@ -78,6 +78,11 @@ export type ModerationLog = Prisma.ModerationLogModel
  */
 export type ScheduledMessage = Prisma.ScheduledMessageModel
 /**
+ * Model GroupAnalyticsSnapshot
+ * 
+ */
+export type GroupAnalyticsSnapshot = Prisma.GroupAnalyticsSnapshotModel
+/**
  * Model CrossPostTemplate
  * 
  */

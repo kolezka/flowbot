@@ -15,6 +15,7 @@ export default function ModerationLayout({
     { href: "/dashboard/moderation", label: "Overview" },
     { href: "/dashboard/moderation/groups", label: "Groups" },
     { href: "/dashboard/moderation/logs", label: "Logs" },
+    { href: "/dashboard/moderation/analytics", label: "Analytics" },
   ];
 
   return (

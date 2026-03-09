@@ -396,6 +396,7 @@ export const ModelName = {
   Warning: 'Warning',
   ModerationLog: 'ModerationLog',
   ScheduledMessage: 'ScheduledMessage',
+  GroupAnalyticsSnapshot: 'GroupAnalyticsSnapshot',
   CrossPostTemplate: 'CrossPostTemplate',
   BroadcastMessage: 'BroadcastMessage',
   OrderEvent: 'OrderEvent',
@@ -416,7 +417,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "user" | "category" | "product" | "cart" | "cartItem" | "userIdentity" | "managedGroup" | "groupConfig" | "groupMember" | "warning" | "moderationLog" | "scheduledMessage" | "crossPostTemplate" | "broadcastMessage" | "orderEvent" | "clientLog" | "clientSession"
+    modelProps: "user" | "category" | "product" | "cart" | "cartItem" | "userIdentity" | "managedGroup" | "groupConfig" | "groupMember" | "warning" | "moderationLog" | "scheduledMessage" | "groupAnalyticsSnapshot" | "crossPostTemplate" | "broadcastMessage" | "orderEvent" | "clientLog" | "clientSession"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -1308,6 +1309,80 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    GroupAnalyticsSnapshot: {
+      payload: Prisma.$GroupAnalyticsSnapshotPayload<ExtArgs>
+      fields: Prisma.GroupAnalyticsSnapshotFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.GroupAnalyticsSnapshotFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$GroupAnalyticsSnapshotPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.GroupAnalyticsSnapshotFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$GroupAnalyticsSnapshotPayload>
+        }
+        findFirst: {
+          args: Prisma.GroupAnalyticsSnapshotFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$GroupAnalyticsSnapshotPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.GroupAnalyticsSnapshotFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$GroupAnalyticsSnapshotPayload>
+        }
+        findMany: {
+          args: Prisma.GroupAnalyticsSnapshotFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$GroupAnalyticsSnapshotPayload>[]
+        }
+        create: {
+          args: Prisma.GroupAnalyticsSnapshotCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$GroupAnalyticsSnapshotPayload>
+        }
+        createMany: {
+          args: Prisma.GroupAnalyticsSnapshotCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.GroupAnalyticsSnapshotCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$GroupAnalyticsSnapshotPayload>[]
+        }
+        delete: {
+          args: Prisma.GroupAnalyticsSnapshotDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$GroupAnalyticsSnapshotPayload>
+        }
+        update: {
+          args: Prisma.GroupAnalyticsSnapshotUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$GroupAnalyticsSnapshotPayload>
+        }
+        deleteMany: {
+          args: Prisma.GroupAnalyticsSnapshotDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.GroupAnalyticsSnapshotUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.GroupAnalyticsSnapshotUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$GroupAnalyticsSnapshotPayload>[]
+        }
+        upsert: {
+          args: Prisma.GroupAnalyticsSnapshotUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$GroupAnalyticsSnapshotPayload>
+        }
+        aggregate: {
+          args: Prisma.GroupAnalyticsSnapshotAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateGroupAnalyticsSnapshot>
+        }
+        groupBy: {
+          args: Prisma.GroupAnalyticsSnapshotGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.GroupAnalyticsSnapshotGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.GroupAnalyticsSnapshotCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.GroupAnalyticsSnapshotCountAggregateOutputType> | number
+        }
+      }
+    }
     CrossPostTemplate: {
       payload: Prisma.$CrossPostTemplatePayload<ExtArgs>
       fields: Prisma.CrossPostTemplateFieldRefs
@@ -1929,6 +2004,27 @@ export const ScheduledMessageScalarFieldEnum = {
 export type ScheduledMessageScalarFieldEnum = (typeof ScheduledMessageScalarFieldEnum)[keyof typeof ScheduledMessageScalarFieldEnum]
 
 
+export const GroupAnalyticsSnapshotScalarFieldEnum = {
+  id: 'id',
+  groupId: 'groupId',
+  date: 'date',
+  memberCount: 'memberCount',
+  newMembers: 'newMembers',
+  leftMembers: 'leftMembers',
+  messageCount: 'messageCount',
+  spamDetected: 'spamDetected',
+  linksBlocked: 'linksBlocked',
+  warningsIssued: 'warningsIssued',
+  mutesIssued: 'mutesIssued',
+  bansIssued: 'bansIssued',
+  deletedMessages: 'deletedMessages',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type GroupAnalyticsSnapshotScalarFieldEnum = (typeof GroupAnalyticsSnapshotScalarFieldEnum)[keyof typeof GroupAnalyticsSnapshotScalarFieldEnum]
+
+
 export const CrossPostTemplateScalarFieldEnum = {
   id: 'id',
   name: 'name',
@@ -2257,6 +2353,7 @@ export type GlobalOmitConfig = {
   warning?: Prisma.WarningOmit
   moderationLog?: Prisma.ModerationLogOmit
   scheduledMessage?: Prisma.ScheduledMessageOmit
+  groupAnalyticsSnapshot?: Prisma.GroupAnalyticsSnapshotOmit
   crossPostTemplate?: Prisma.CrossPostTemplateOmit
   broadcastMessage?: Prisma.BroadcastMessageOmit
   orderEvent?: Prisma.OrderEventOmit
