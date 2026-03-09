@@ -1,4 +1,5 @@
 export { executeForwardMessage } from './forward-message.js'
+export { type ActionResult, ActionRunner } from './runner.js'
 export { executeSendMessage } from './send-message.js'
 export {
   type Action,
