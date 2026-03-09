@@ -5,6 +5,7 @@
     { "path": "./apps/frontend" },
     { "path": "./apps/bot" },
     { "path": "./packages/db" },
-    { "path": "./apps/manager-bot" }
+    { "path": "./apps/manager-bot" },
+    { "path": "./apps/tg-client" }
   ]
 }
