@@ -31,6 +31,9 @@ export default function DashboardLayout({
             <Link href="/dashboard/broadcast">
               <Button variant="ghost">Broadcast</Button>
             </Link>
+            <Link href="/dashboard/moderation">
+              <Button variant="ghost">Moderation</Button>
+            </Link>
           </nav>
         </div>
       </header>

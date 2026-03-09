@@ -229,6 +229,120 @@ export interface ModerationLogEntry {
   groupTitle?: string;
 }
 
+// Moderation interfaces
+export interface ManagedGroup {
+  id: string;
+  chatId: string;
+  title?: string;
+  type: string;
+  joinedAt: string;
+  isActive: boolean;
+  memberCount: number;
+  config: GroupConfig;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface GroupConfig {
+  maxWarnings: number;
+  warningExpiry: number;
+  muteOnWarn: boolean;
+  muteDuration: number;
+  antiSpam: boolean;
+  antiFlood: boolean;
+  floodLimit: number;
+  floodWindow: number;
+  welcomeEnabled: boolean;
+  welcomeMessage?: string;
+  logChannelId?: string;
+}
+
+export interface GroupsResponse {
+  data: ManagedGroup[];
+  total: number;
+  page: number;
+  limit: number;
+  totalPages: number;
+}
+
+export interface ModerationLog {
+  id: string;
+  groupId: string;
+  action: string;
+  actorId: string;
+  targetId?: string;
+  reason?: string;
+  details?: Record<string, unknown>;
+  automated: boolean;
+  createdAt: string;
+  group?: { title?: string };
+}
+
+export interface ModerationLogsResponse {
+  data: ModerationLog[];
+  total: number;
+  page: number;
+  limit: number;
+  totalPages: number;
+}
+
+export interface ModerationLogStats {
+  totalActions: number;
+  actionsByType: Record<string, number>;
+  recentActions: number;
+  automatedCount: number;
+}
+
+export interface Warning {
+  id: string;
+  groupId: string;
+  userId: string;
+  issuerId: string;
+  reason?: string;
+  isActive: boolean;
+  expiresAt?: string;
+  deactivatedAt?: string;
+  createdAt: string;
+  group?: { title?: string };
+}
+
+export interface WarningsResponse {
+  data: Warning[];
+  total: number;
+  page: number;
+  limit: number;
+  totalPages: number;
+}
+
+export interface WarningStats {
+  totalWarnings: number;
+  activeWarnings: number;
+  expiredWarnings: number;
+  deactivatedWarnings: number;
+}
+
+export interface GroupMember {
+  id: string;
+  groupId: string;
+  telegramId: string;
+  username?: string;
+  firstName?: string;
+  lastName?: string;
+  role: string;
+  joinedAt: string;
+  messageCount: number;
+  lastSeenAt: string;
+  warningCount: number;
+}
+
+export interface GroupMembersResponse {
+  data: GroupMember[];
+  total: number;
+  page: number;
+  limit: number;
+  totalPages: number;
+}
+
 export interface ApiError {
   message: string;
   status?: number;
@@ -453,6 +567,96 @@ class ApiClient {
       method: 'POST',
       body: JSON.stringify(data),
     });
+  }
+
+  // Moderation - Groups
+  async getGroups(params?: { page?: number; limit?: number; search?: string; isActive?: boolean }): Promise<GroupsResponse> {
+    const searchParams = new URLSearchParams();
+    if (params?.page !== undefined) searchParams.append('page', params.page.toString());
+    if (params?.limit !== undefined) searchParams.append('limit', params.limit.toString());
+    if (params?.search) searchParams.append('search', params.search);
+    if (params?.isActive !== undefined) searchParams.append('isActive', params.isActive.toString());
+    const qs = searchParams.toString();
+    return this.request<GroupsResponse>(`/api/moderation/groups${qs ? `?${qs}` : ''}`);
+  }
+
+  async getGroup(id: string): Promise<ManagedGroup> {
+    return this.request<ManagedGroup>(`/api/moderation/groups/${id}`);
+  }
+
+  async updateGroupConfig(id: string, data: Partial<GroupConfig>): Promise<ManagedGroup> {
+    return this.request<ManagedGroup>(`/api/moderation/groups/${id}/config`, {
+      method: 'PATCH',
+      body: JSON.stringify(data),
+    });
+  }
+
+  // Moderation - Logs
+  async getModerationLogs(params?: {
+    page?: number; limit?: number; groupId?: string; action?: string;
+    actorId?: string; targetId?: string; startDate?: string; endDate?: string;
+  }): Promise<ModerationLogsResponse> {
+    const searchParams = new URLSearchParams();
+    if (params?.page !== undefined) searchParams.append('page', params.page.toString());
+    if (params?.limit !== undefined) searchParams.append('limit', params.limit.toString());
+    if (params?.groupId) searchParams.append('groupId', params.groupId);
+    if (params?.action) searchParams.append('action', params.action);
+    if (params?.actorId) searchParams.append('actorId', params.actorId);
+    if (params?.targetId) searchParams.append('targetId', params.targetId);
+    if (params?.startDate) searchParams.append('startDate', params.startDate);
+    if (params?.endDate) searchParams.append('endDate', params.endDate);
+    const qs = searchParams.toString();
+    return this.request<ModerationLogsResponse>(`/api/moderation/logs${qs ? `?${qs}` : ''}`);
+  }
+
+  async getModerationLogStats(params?: { groupId?: string; startDate?: string; endDate?: string }): Promise<ModerationLogStats> {
+    const searchParams = new URLSearchParams();
+    if (params?.groupId) searchParams.append('groupId', params.groupId);
+    if (params?.startDate) searchParams.append('startDate', params.startDate);
+    if (params?.endDate) searchParams.append('endDate', params.endDate);
+    const qs = searchParams.toString();
+    return this.request<ModerationLogStats>(`/api/moderation/logs/stats${qs ? `?${qs}` : ''}`);
+  }
+
+  // Moderation - Warnings
+  async getWarnings(params?: {
+    page?: number; limit?: number; groupId?: string; userId?: string; isActive?: boolean;
+  }): Promise<WarningsResponse> {
+    const searchParams = new URLSearchParams();
+    if (params?.page !== undefined) searchParams.append('page', params.page.toString());
+    if (params?.limit !== undefined) searchParams.append('limit', params.limit.toString());
+    if (params?.groupId) searchParams.append('groupId', params.groupId);
+    if (params?.userId) searchParams.append('userId', params.userId);
+    if (params?.isActive !== undefined) searchParams.append('isActive', params.isActive.toString());
+    const qs = searchParams.toString();
+    return this.request<WarningsResponse>(`/api/moderation/warnings${qs ? `?${qs}` : ''}`);
+  }
+
+  async deactivateWarning(id: string): Promise<Warning> {
+    return this.request<Warning>(`/api/moderation/warnings/${id}/deactivate`, {
+      method: 'PATCH',
+    });
+  }
+
+  async getWarningStats(): Promise<WarningStats> {
+    return this.request<WarningStats>('/api/moderation/warnings/stats');
+  }
+
+  // Moderation - Group Members
+  async getGroupMembers(groupId: string, params?: {
+    page?: number; limit?: number; search?: string; role?: string;
+  }): Promise<GroupMembersResponse> {
+    const searchParams = new URLSearchParams();
+    if (params?.page !== undefined) searchParams.append('page', params.page.toString());
+    if (params?.limit !== undefined) searchParams.append('limit', params.limit.toString());
+    if (params?.search) searchParams.append('search', params.search);
+    if (params?.role) searchParams.append('role', params.role);
+    const qs = searchParams.toString();
+    return this.request<GroupMembersResponse>(`/api/moderation/groups/${groupId}/members${qs ? `?${qs}` : ''}`);
+  }
+
+  async getGroupMember(groupId: string, memberId: string): Promise<GroupMember> {
+    return this.request<GroupMember>(`/api/moderation/groups/${groupId}/members/${memberId}`);
   }
 }
 
