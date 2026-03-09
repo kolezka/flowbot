@@ -50,7 +50,7 @@ async function startPolling(config: PollingConfig) {
 
 async function startWebhook(config: WebhookConfig) {
   const bot = createBot(config.botToken, { config, logger, prisma })
-  const server = createServer({ bot, config, logger })
+  const server = createServer({ bot, config, logger, prisma })
   const serverManager = createServerManager(server, {
     host: config.serverHost,
     port: config.serverPort,
