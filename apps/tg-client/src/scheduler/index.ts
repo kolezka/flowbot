@@ -1,8 +1,7 @@
-import type { AutomationJob } from '@tg-allegro/db'
 import type { ActionRunner } from '../actions/runner.js'
 import type { Action } from '../actions/types.js'
 import type { Logger } from '../logger.js'
-import type { JobRepository } from '../repositories/JobRepository.js'
+import type { AutomationJob, JobRepository } from '../repositories/JobRepository.js'
 
 import { ActionType } from '../actions/types.js'
 

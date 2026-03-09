@@ -1,56 +1,48 @@
-import type { AutomationJob, Prisma, PrismaClient } from '@tg-allegro/db'
+import type { Prisma, PrismaClient } from '@tg-allegro/db'
+
+// Local type definitions — AutomationJob model removed from Prisma schema.
+// Job system will be replaced by Trigger.dev in a future milestone.
+
+export type JobType = 'SEND_MESSAGE' | 'FORWARD_MESSAGE'
+
+export type JobStatus = 'PENDING' | 'CLAIMED' | 'COMPLETED' | 'FAILED'
+
+export interface AutomationJob {
+  id: string
+  type: JobType
+  status: JobStatus
+  payload: Prisma.JsonValue
+  result: Prisma.JsonValue | null
+  attempts: number
+  maxAttempts: number
+  claimedAt: Date | null
+  completedAt: Date | null
+  failedAt: Date | null
+  errorMsg: string | null
+  createdAt: Date
+  updatedAt: Date
+}
 
 export class JobRepository {
-  constructor(private prisma: PrismaClient) {}
+  constructor(private _prisma: PrismaClient) {}
 
-  async findPendingJobs(limit = 10): Promise<AutomationJob[]> {
-    return this.prisma.automationJob.findMany({
-      where: { status: 'PENDING' },
-      orderBy: { createdAt: 'asc' },
-      take: limit,
-    })
+  async findPendingJobs(_limit = 10): Promise<AutomationJob[]> {
+    // AutomationJob table removed — Trigger.dev will replace this.
+    return []
   }
 
-  async claimJob(id: string): Promise<AutomationJob | null> {
-    try {
-      return await this.prisma.automationJob.update({
-        where: { id, status: 'PENDING' },
-        data: {
-          status: 'CLAIMED',
-          claimedAt: new Date(),
-          attempts: { increment: 1 },
-        },
-      })
-    }
-    catch {
-      // Record not found or status no longer PENDING — another worker claimed it
-      return null
-    }
+  async claimJob(_id: string): Promise<AutomationJob | null> {
+    // AutomationJob table removed — Trigger.dev will replace this.
+    return null
   }
 
-  async completeJob(id: string, result?: Prisma.InputJsonValue): Promise<AutomationJob> {
-    return this.prisma.automationJob.update({
-      where: { id },
-      data: {
-        status: 'COMPLETED',
-        completedAt: new Date(),
-        result: result ?? undefined,
-      },
-    })
+  async completeJob(_id: string, _result?: Prisma.InputJsonValue): Promise<AutomationJob | null> {
+    // AutomationJob table removed — Trigger.dev will replace this.
+    return null
   }
 
-  async failJob(id: string, errorMsg: string): Promise<AutomationJob> {
-    const job = await this.prisma.automationJob.findUniqueOrThrow({ where: { id } })
-
-    const shouldRetry = job.attempts < job.maxAttempts
-
-    return this.prisma.automationJob.update({
-      where: { id },
-      data: {
-        status: shouldRetry ? 'PENDING' : 'FAILED',
-        failedAt: new Date(),
-        errorMsg,
-      },
-    })
+  async failJob(_id: string, _errorMsg: string): Promise<AutomationJob | null> {
+    // AutomationJob table removed — Trigger.dev will replace this.
+    return null
   }
 }

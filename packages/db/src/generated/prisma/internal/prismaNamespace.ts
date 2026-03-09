@@ -395,7 +395,6 @@ export const ModelName = {
   Warning: 'Warning',
   ModerationLog: 'ModerationLog',
   ScheduledMessage: 'ScheduledMessage',
-  AutomationJob: 'AutomationJob',
   ClientLog: 'ClientLog',
   ClientSession: 'ClientSession'
 } as const
@@ -413,7 +412,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "user" | "category" | "product" | "cart" | "cartItem" | "managedGroup" | "groupConfig" | "groupMember" | "warning" | "moderationLog" | "scheduledMessage" | "automationJob" | "clientLog" | "clientSession"
+    modelProps: "user" | "category" | "product" | "cart" | "cartItem" | "managedGroup" | "groupConfig" | "groupMember" | "warning" | "moderationLog" | "scheduledMessage" | "clientLog" | "clientSession"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -1231,80 +1230,6 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
-    AutomationJob: {
-      payload: Prisma.$AutomationJobPayload<ExtArgs>
-      fields: Prisma.AutomationJobFieldRefs
-      operations: {
-        findUnique: {
-          args: Prisma.AutomationJobFindUniqueArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$AutomationJobPayload> | null
-        }
-        findUniqueOrThrow: {
-          args: Prisma.AutomationJobFindUniqueOrThrowArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$AutomationJobPayload>
-        }
-        findFirst: {
-          args: Prisma.AutomationJobFindFirstArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$AutomationJobPayload> | null
-        }
-        findFirstOrThrow: {
-          args: Prisma.AutomationJobFindFirstOrThrowArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$AutomationJobPayload>
-        }
-        findMany: {
-          args: Prisma.AutomationJobFindManyArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$AutomationJobPayload>[]
-        }
-        create: {
-          args: Prisma.AutomationJobCreateArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$AutomationJobPayload>
-        }
-        createMany: {
-          args: Prisma.AutomationJobCreateManyArgs<ExtArgs>
-          result: BatchPayload
-        }
-        createManyAndReturn: {
-          args: Prisma.AutomationJobCreateManyAndReturnArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$AutomationJobPayload>[]
-        }
-        delete: {
-          args: Prisma.AutomationJobDeleteArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$AutomationJobPayload>
-        }
-        update: {
-          args: Prisma.AutomationJobUpdateArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$AutomationJobPayload>
-        }
-        deleteMany: {
-          args: Prisma.AutomationJobDeleteManyArgs<ExtArgs>
-          result: BatchPayload
-        }
-        updateMany: {
-          args: Prisma.AutomationJobUpdateManyArgs<ExtArgs>
-          result: BatchPayload
-        }
-        updateManyAndReturn: {
-          args: Prisma.AutomationJobUpdateManyAndReturnArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$AutomationJobPayload>[]
-        }
-        upsert: {
-          args: Prisma.AutomationJobUpsertArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$AutomationJobPayload>
-        }
-        aggregate: {
-          args: Prisma.AutomationJobAggregateArgs<ExtArgs>
-          result: runtime.Types.Utils.Optional<Prisma.AggregateAutomationJob>
-        }
-        groupBy: {
-          args: Prisma.AutomationJobGroupByArgs<ExtArgs>
-          result: runtime.Types.Utils.Optional<Prisma.AutomationJobGroupByOutputType>[]
-        }
-        count: {
-          args: Prisma.AutomationJobCountArgs<ExtArgs>
-          result: runtime.Types.Utils.Optional<Prisma.AutomationJobCountAggregateOutputType> | number
-        }
-      }
-    }
     ClientLog: {
       payload: Prisma.$ClientLogPayload<ExtArgs>
       fields: Prisma.ClientLogFieldRefs
@@ -1688,25 +1613,6 @@ export const ScheduledMessageScalarFieldEnum = {
 export type ScheduledMessageScalarFieldEnum = (typeof ScheduledMessageScalarFieldEnum)[keyof typeof ScheduledMessageScalarFieldEnum]
 
 
-export const AutomationJobScalarFieldEnum = {
-  id: 'id',
-  type: 'type',
-  status: 'status',
-  payload: 'payload',
-  result: 'result',
-  attempts: 'attempts',
-  maxAttempts: 'maxAttempts',
-  claimedAt: 'claimedAt',
-  completedAt: 'completedAt',
-  failedAt: 'failedAt',
-  errorMsg: 'errorMsg',
-  createdAt: 'createdAt',
-  updatedAt: 'updatedAt'
-} as const
-
-export type AutomationJobScalarFieldEnum = (typeof AutomationJobScalarFieldEnum)[keyof typeof AutomationJobScalarFieldEnum]
-
-
 export const ClientLogScalarFieldEnum = {
   id: 'id',
   level: 'level',
@@ -1744,13 +1650,6 @@ export const NullableJsonNullValueInput = {
 } as const
 
 export type NullableJsonNullValueInput = (typeof NullableJsonNullValueInput)[keyof typeof NullableJsonNullValueInput]
-
-
-export const JsonNullValueInput = {
-  JsonNull: JsonNull
-} as const
-
-export type JsonNullValueInput = (typeof JsonNullValueInput)[keyof typeof JsonNullValueInput]
 
 
 export const QueryMode = {
@@ -1888,34 +1787,6 @@ export type JsonFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'J
 export type EnumQueryModeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'QueryMode'>
     
 
-
-/**
- * Reference to a field of type 'JobType'
- */
-export type EnumJobTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'JobType'>
-    
-
-
-/**
- * Reference to a field of type 'JobType[]'
- */
-export type ListEnumJobTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'JobType[]'>
-    
-
-
-/**
- * Reference to a field of type 'JobStatus'
- */
-export type EnumJobStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'JobStatus'>
-    
-
-
-/**
- * Reference to a field of type 'JobStatus[]'
- */
-export type ListEnumJobStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'JobStatus[]'>
-    
-
 /**
  * Batch Payload for updateMany & deleteMany & createMany
  */
@@ -2022,7 +1893,6 @@ export type GlobalOmitConfig = {
   warning?: Prisma.WarningOmit
   moderationLog?: Prisma.ModerationLogOmit
   scheduledMessage?: Prisma.ScheduledMessageOmit
-  automationJob?: Prisma.AutomationJobOmit
   clientLog?: Prisma.ClientLogOmit
   clientSession?: Prisma.ClientSessionOmit
 }

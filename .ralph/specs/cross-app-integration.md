@@ -4,16 +4,16 @@
 
 All apps remain independently deployable. Cross-app communication flows through the **shared PostgreSQL database** — never via direct imports, HTTP calls between apps, or shared runtime state.
 
-The existing `AutomationJob` table (added by TC-12) is the primary coordination mechanism. New integration features extend it with additional job types and payload schemas.
+The `AutomationJob` table (previously added by TC-12) has been removed from the Prisma schema. Cross-app job orchestration will be replaced by **Trigger.dev** for durable, observable, and retryable background tasks. Until Trigger.dev is integrated, tg-client's scheduler returns no-op stubs. The job type definitions below are retained for planning purposes.
 
 ## Communication Patterns
 
-### Pattern 1: Event → Job → Execution
+### Pattern 1: Event → Job → Execution (future: Trigger.dev)
 ```
-App A writes a row (AutomationJob or domain event table)
-  → tg-client scheduler polls and claims
+App A enqueues a Trigger.dev task (or writes a domain event row)
+  → Trigger.dev invokes tg-client action
   → tg-client executes via MTProto
-  → tg-client updates status
+  → Trigger.dev records result + enables observability
 ```
 
 ### Pattern 2: Shared Read (DB as API)
@@ -23,12 +23,12 @@ App A writes data to a shared Prisma model
   → No coordination needed (eventual consistency is acceptable)
 ```
 
-### Pattern 3: API-Orchestrated
+### Pattern 3: API-Orchestrated (future: Trigger.dev)
 ```
 Dashboard user triggers action via API
-  → API writes AutomationJob row
-  → tg-client picks up and executes
-  → API polls job status for UI feedback
+  → API enqueues Trigger.dev task
+  → Trigger.dev invokes tg-client action
+  → API queries Trigger.dev for task status / UI feedback
 ```
 
 ## New Job Types (extend TC-09 ActionType enum)
@@ -129,8 +129,8 @@ User joins managed group (chat_member event)
   → manager-bot welcome.ts handler fires
   → If pipeline enabled in GroupConfig:
     1. Send group welcome message (existing MB-18)
-    2. Write AutomationJob(SEND_WELCOME_DM) with userId + template
-  → tg-client picks up job
+    2. Enqueue Trigger.dev task (SEND_WELCOME_DM) with userId + template
+  → Trigger.dev invokes tg-client
   → Sends DM to user with product recommendations + deeplinks
 ```
 

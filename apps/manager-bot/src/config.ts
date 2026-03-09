@@ -20,6 +20,7 @@ const baseConfigSchema = v.object({
   databaseUrl: v.string(),
   anthropicApiKey: v.optional(v.string()),
   aiModEnabled: v.optional(v.pipe(v.string(), v.transform(val => val === 'true'), v.boolean()), 'false'),
+  salesBotUsername: v.optional(v.string()),
 })
 
 const configSchema = v.variant('botMode', [
