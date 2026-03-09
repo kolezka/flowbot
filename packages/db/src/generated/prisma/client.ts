@@ -105,6 +105,11 @@ export type ScheduledMessage = Prisma.ScheduledMessageModel
  */
 export type GroupAnalyticsSnapshot = Prisma.GroupAnalyticsSnapshotModel
 /**
+ * Model ReputationScore
+ * 
+ */
+export type ReputationScore = Prisma.ReputationScoreModel
+/**
  * Model CrossPostTemplate
  * 
  */

@@ -10,6 +10,7 @@ import { CartModule } from './cart/cart.module';
 import { AnalyticsModule } from './analytics/analytics.module';
 import { BroadcastModule } from './broadcast/broadcast.module';
 import { ModerationModule } from './moderation/moderation.module';
+import { ReputationModule } from './reputation/reputation.module';
 
 @Global()
 @Module({
@@ -25,6 +26,7 @@ import { ModerationModule } from './moderation/moderation.module';
     AnalyticsModule,
     BroadcastModule,
     ModerationModule,
+    ReputationModule,
   ],
   controllers: [AppController],
   providers: [AppService],

@@ -64,6 +64,7 @@ export const ModelName = {
   ModerationLog: 'ModerationLog',
   ScheduledMessage: 'ScheduledMessage',
   GroupAnalyticsSnapshot: 'GroupAnalyticsSnapshot',
+  ReputationScore: 'ReputationScore',
   CrossPostTemplate: 'CrossPostTemplate',
   BroadcastMessage: 'BroadcastMessage',
   OrderEvent: 'OrderEvent',
@@ -318,6 +319,22 @@ export const GroupAnalyticsSnapshotScalarFieldEnum = {
 } as const
 
 export type GroupAnalyticsSnapshotScalarFieldEnum = (typeof GroupAnalyticsSnapshotScalarFieldEnum)[keyof typeof GroupAnalyticsSnapshotScalarFieldEnum]
+
+
+export const ReputationScoreScalarFieldEnum = {
+  id: 'id',
+  telegramId: 'telegramId',
+  totalScore: 'totalScore',
+  messageFactor: 'messageFactor',
+  tenureFactor: 'tenureFactor',
+  warningPenalty: 'warningPenalty',
+  moderationBonus: 'moderationBonus',
+  lastCalculated: 'lastCalculated',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type ReputationScoreScalarFieldEnum = (typeof ReputationScoreScalarFieldEnum)[keyof typeof ReputationScoreScalarFieldEnum]
 
 
 export const CrossPostTemplateScalarFieldEnum = {

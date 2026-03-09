@@ -397,6 +397,7 @@ export const ModelName = {
   ModerationLog: 'ModerationLog',
   ScheduledMessage: 'ScheduledMessage',
   GroupAnalyticsSnapshot: 'GroupAnalyticsSnapshot',
+  ReputationScore: 'ReputationScore',
   CrossPostTemplate: 'CrossPostTemplate',
   BroadcastMessage: 'BroadcastMessage',
   OrderEvent: 'OrderEvent',
@@ -417,7 +418,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "user" | "category" | "product" | "cart" | "cartItem" | "userIdentity" | "managedGroup" | "groupConfig" | "groupMember" | "warning" | "moderationLog" | "scheduledMessage" | "groupAnalyticsSnapshot" | "crossPostTemplate" | "broadcastMessage" | "orderEvent" | "clientLog" | "clientSession"
+    modelProps: "user" | "category" | "product" | "cart" | "cartItem" | "userIdentity" | "managedGroup" | "groupConfig" | "groupMember" | "warning" | "moderationLog" | "scheduledMessage" | "groupAnalyticsSnapshot" | "reputationScore" | "crossPostTemplate" | "broadcastMessage" | "orderEvent" | "clientLog" | "clientSession"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -1383,6 +1384,80 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    ReputationScore: {
+      payload: Prisma.$ReputationScorePayload<ExtArgs>
+      fields: Prisma.ReputationScoreFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.ReputationScoreFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ReputationScorePayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.ReputationScoreFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ReputationScorePayload>
+        }
+        findFirst: {
+          args: Prisma.ReputationScoreFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ReputationScorePayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.ReputationScoreFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ReputationScorePayload>
+        }
+        findMany: {
+          args: Prisma.ReputationScoreFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ReputationScorePayload>[]
+        }
+        create: {
+          args: Prisma.ReputationScoreCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ReputationScorePayload>
+        }
+        createMany: {
+          args: Prisma.ReputationScoreCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.ReputationScoreCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ReputationScorePayload>[]
+        }
+        delete: {
+          args: Prisma.ReputationScoreDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ReputationScorePayload>
+        }
+        update: {
+          args: Prisma.ReputationScoreUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ReputationScorePayload>
+        }
+        deleteMany: {
+          args: Prisma.ReputationScoreDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.ReputationScoreUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.ReputationScoreUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ReputationScorePayload>[]
+        }
+        upsert: {
+          args: Prisma.ReputationScoreUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ReputationScorePayload>
+        }
+        aggregate: {
+          args: Prisma.ReputationScoreAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateReputationScore>
+        }
+        groupBy: {
+          args: Prisma.ReputationScoreGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.ReputationScoreGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.ReputationScoreCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.ReputationScoreCountAggregateOutputType> | number
+        }
+      }
+    }
     CrossPostTemplate: {
       payload: Prisma.$CrossPostTemplatePayload<ExtArgs>
       fields: Prisma.CrossPostTemplateFieldRefs
@@ -2025,6 +2100,22 @@ export const GroupAnalyticsSnapshotScalarFieldEnum = {
 export type GroupAnalyticsSnapshotScalarFieldEnum = (typeof GroupAnalyticsSnapshotScalarFieldEnum)[keyof typeof GroupAnalyticsSnapshotScalarFieldEnum]
 
 
+export const ReputationScoreScalarFieldEnum = {
+  id: 'id',
+  telegramId: 'telegramId',
+  totalScore: 'totalScore',
+  messageFactor: 'messageFactor',
+  tenureFactor: 'tenureFactor',
+  warningPenalty: 'warningPenalty',
+  moderationBonus: 'moderationBonus',
+  lastCalculated: 'lastCalculated',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type ReputationScoreScalarFieldEnum = (typeof ReputationScoreScalarFieldEnum)[keyof typeof ReputationScoreScalarFieldEnum]
+
+
 export const CrossPostTemplateScalarFieldEnum = {
   id: 'id',
   name: 'name',
@@ -2354,6 +2445,7 @@ export type GlobalOmitConfig = {
   moderationLog?: Prisma.ModerationLogOmit
   scheduledMessage?: Prisma.ScheduledMessageOmit
   groupAnalyticsSnapshot?: Prisma.GroupAnalyticsSnapshotOmit
+  reputationScore?: Prisma.ReputationScoreOmit
   crossPostTemplate?: Prisma.CrossPostTemplateOmit
   broadcastMessage?: Prisma.BroadcastMessageOmit
   orderEvent?: Prisma.OrderEventOmit
