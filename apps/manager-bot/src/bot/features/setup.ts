@@ -123,5 +123,40 @@ export function createSetupFeature(prisma: PrismaClient) {
     await ctx.reply(`✅ <b>${field.label}</b> set to ${formatValue(parsed)}.`)
   })
 
+  // /setlogchannel — set or clear the moderation log channel
+  feature.command('setlogchannel', requirePermission('admin', prisma), logHandle('cmd:setlogchannel'), async (ctx) => {
+    const config = ctx.session.groupConfig
+    if (!config)
+      return
+
+    const arg = ctx.match?.toString().trim()
+
+    // /setlogchannel off — clear log channel
+    if (arg === 'off' || arg === 'none') {
+      await configRepo.updateConfig(config.groupId, { logChannelId: null })
+      ctx.session.groupConfig = { ...config, logChannelId: null }
+      await ctx.reply('✅ Log channel cleared. Moderation events will not be forwarded.')
+      return
+    }
+
+    // /setlogchannel (no args) — use current chat as log channel
+    const channelId = arg ? BigInt(arg) : BigInt(ctx.chat.id)
+
+    await configRepo.updateConfig(config.groupId, { logChannelId: channelId })
+    ctx.session.groupConfig = { ...config, logChannelId: channelId }
+
+    const group = await prisma.managedGroup.findUnique({ where: { chatId: BigInt(ctx.chat.id) } })
+    if (group) {
+      await modLogRepo.create({
+        groupId: group.id,
+        action: 'config_change',
+        actorId: BigInt(ctx.from!.id),
+        details: { key: 'logChannelId', newValue: channelId.toString() },
+      })
+    }
+
+    await ctx.reply(`✅ Log channel set to <code>${channelId}</code>. Moderation events will be forwarded there.`)
+  })
+
   return feature
 }

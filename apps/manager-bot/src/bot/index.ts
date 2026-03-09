@@ -11,6 +11,7 @@ import { sequentialize } from '@grammyjs/runner'
 import { Bot as TelegramBot } from 'grammy'
 import { AdminCacheService } from '../services/admin-cache.js'
 import { AntiSpamService } from '../services/anti-spam.js'
+import { logChannelService } from '../services/log-channel.js'
 import { createAntiLinkFeature } from './features/anti-link.js'
 import { createAntiSpamFeature } from './features/anti-spam.js'
 import { createAuditFeature } from './features/audit.js'
@@ -49,6 +50,9 @@ export function createBot(token: string, dependencies: Dependencies, botConfig?:
     })
     await next()
   })
+
+  // Wire log channel service with bot API
+  logChannelService.setApi(bot.api)
 
   const protectedBot = bot.errorBoundary(errorHandler)
 

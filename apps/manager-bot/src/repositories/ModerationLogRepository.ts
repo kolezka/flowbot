@@ -1,4 +1,5 @@
 import type { ModerationLog, Prisma, PrismaClient } from '@tg-allegro/db'
+import { logChannelService } from '../services/log-channel.js'
 
 export class ModerationLogRepository {
   constructor(private prisma: PrismaClient) {}
@@ -12,7 +13,26 @@ export class ModerationLogRepository {
     details?: Prisma.InputJsonValue
     automated?: boolean
   }): Promise<ModerationLog> {
-    return this.prisma.moderationLog.create({ data })
+    const log = await this.prisma.moderationLog.create({ data })
+
+    // Forward to log channel if configured
+    const config = await this.prisma.groupConfig.findUnique({
+      where: { groupId: data.groupId },
+      select: { logChannelId: true },
+    })
+    if (config?.logChannelId) {
+      const group = await this.prisma.managedGroup.findUnique({ where: { id: data.groupId } })
+      logChannelService.sendLogEvent(config.logChannelId, {
+        action: data.action,
+        actorId: data.actorId,
+        targetId: data.targetId,
+        reason: data.reason,
+        automated: data.automated,
+        groupTitle: group?.title ?? undefined,
+      }).catch(() => {}) // fire-and-forget
+    }
+
+    return log
   }
 
   async findByGroup(groupId: string, limit = 20): Promise<ModerationLog[]> {
