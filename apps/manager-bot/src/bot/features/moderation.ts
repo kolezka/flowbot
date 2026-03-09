@@ -7,6 +7,7 @@ import { WarningRepository } from '../../repositories/WarningRepository.js'
 import { checkEscalation } from '../../services/moderation.js'
 import { logHandle } from '../helpers/logging.js'
 import { requirePermission } from '../helpers/permissions.js'
+import { formatDuration, parseDuration } from '../helpers/time.js'
 
 export function createModerationFeature(prisma: PrismaClient) {
   const feature = new Composer<Context>()
@@ -166,6 +167,183 @@ export function createModerationFeature(prisma: PrismaClient) {
     await ctx.reply(
       `<b>Warnings for ${name}</b> (${activeCount} active):\n${lines.join('\n')}`,
     )
+  })
+
+  // /mute — restrict a user
+  feature.command('mute', requirePermission('moderator', prisma), logHandle('cmd:mute'), async (ctx) => {
+    const replyTo = ctx.message?.reply_to_message
+    const targetUser = replyTo?.from
+    if (!targetUser || targetUser.is_bot) {
+      await ctx.reply('Reply to a user\'s message to mute them.')
+      return
+    }
+
+    const group = await prisma.managedGroup.findUnique({ where: { chatId: BigInt(ctx.chat.id) } })
+    if (!group)
+      return
+
+    const args = ctx.match?.toString().trim().split(/\s+/) ?? []
+    let durationS = ctx.session.groupConfig?.defaultMuteDurationS ?? 3600
+    let reason: string | undefined
+
+    if (args.length > 0 && args[0]) {
+      const parsed = parseDuration(args[0])
+      if (parsed !== null) {
+        durationS = parsed
+        reason = args.slice(1).join(' ') || undefined
+      }
+      else {
+        reason = args.join(' ') || undefined
+      }
+    }
+
+    await ctx.restrictChatMember(targetUser.id, { can_send_messages: false }, {
+      until_date: Math.floor(Date.now() / 1000) + durationS,
+    })
+
+    await modLogRepo.create({
+      groupId: group.id,
+      action: 'mute',
+      actorId: BigInt(ctx.from!.id),
+      targetId: BigInt(targetUser.id),
+      reason,
+      details: { duration: durationS },
+    })
+
+    const name = targetUser.username ? `@${targetUser.username}` : targetUser.first_name
+    let reply = `🔇 <b>${name}</b> muted for ${formatDuration(durationS)}.`
+    if (reason)
+      reply += `\nReason: ${reason}`
+    await ctx.reply(reply)
+  })
+
+  // /unmute — lift restrictions
+  feature.command('unmute', requirePermission('moderator', prisma), logHandle('cmd:unmute'), async (ctx) => {
+    const replyTo = ctx.message?.reply_to_message
+    const targetUser = replyTo?.from
+    if (!targetUser) {
+      await ctx.reply('Reply to a user\'s message to unmute them.')
+      return
+    }
+
+    const group = await prisma.managedGroup.findUnique({ where: { chatId: BigInt(ctx.chat.id) } })
+    if (!group)
+      return
+
+    await ctx.restrictChatMember(targetUser.id, {
+      can_send_messages: true,
+      can_send_audios: true,
+      can_send_documents: true,
+      can_send_photos: true,
+      can_send_videos: true,
+      can_send_video_notes: true,
+      can_send_voice_notes: true,
+      can_send_polls: true,
+      can_send_other_messages: true,
+      can_add_web_page_previews: true,
+      can_invite_users: true,
+    })
+
+    await modLogRepo.create({
+      groupId: group.id,
+      action: 'unmute',
+      actorId: BigInt(ctx.from!.id),
+      targetId: BigInt(targetUser.id),
+    })
+
+    const name = targetUser.username ? `@${targetUser.username}` : targetUser.first_name
+    await ctx.reply(`🔊 <b>${name}</b> unmuted.`)
+  })
+
+  // /ban — ban a user
+  feature.command('ban', requirePermission('moderator', prisma), logHandle('cmd:ban'), async (ctx) => {
+    const replyTo = ctx.message?.reply_to_message
+    const targetUser = replyTo?.from
+    if (!targetUser || targetUser.is_bot) {
+      await ctx.reply('Reply to a user\'s message to ban them.')
+      return
+    }
+
+    const group = await prisma.managedGroup.findUnique({ where: { chatId: BigInt(ctx.chat.id) } })
+    if (!group)
+      return
+
+    const reason = ctx.match?.toString().trim() || undefined
+
+    await ctx.banChatMember(targetUser.id)
+
+    await modLogRepo.create({
+      groupId: group.id,
+      action: 'ban',
+      actorId: BigInt(ctx.from!.id),
+      targetId: BigInt(targetUser.id),
+      reason,
+    })
+
+    const name = targetUser.username ? `@${targetUser.username}` : targetUser.first_name
+    let reply = `🚫 <b>${name}</b> banned.`
+    if (reason)
+      reply += `\nReason: ${reason}`
+    await ctx.reply(reply)
+  })
+
+  // /unban — unban a user
+  feature.command('unban', requirePermission('moderator', prisma), logHandle('cmd:unban'), async (ctx) => {
+    const replyTo = ctx.message?.reply_to_message
+    const targetUser = replyTo?.from
+    if (!targetUser) {
+      await ctx.reply('Reply to a user\'s message to unban them.')
+      return
+    }
+
+    const group = await prisma.managedGroup.findUnique({ where: { chatId: BigInt(ctx.chat.id) } })
+    if (!group)
+      return
+
+    await ctx.api.unbanChatMember(ctx.chat.id, targetUser.id, { only_if_banned: true })
+
+    await modLogRepo.create({
+      groupId: group.id,
+      action: 'unban',
+      actorId: BigInt(ctx.from!.id),
+      targetId: BigInt(targetUser.id),
+    })
+
+    const name = targetUser.username ? `@${targetUser.username}` : targetUser.first_name
+    await ctx.reply(`✅ <b>${name}</b> unbanned.`)
+  })
+
+  // /kick — remove user without permanent ban
+  feature.command('kick', requirePermission('moderator', prisma), logHandle('cmd:kick'), async (ctx) => {
+    const replyTo = ctx.message?.reply_to_message
+    const targetUser = replyTo?.from
+    if (!targetUser || targetUser.is_bot) {
+      await ctx.reply('Reply to a user\'s message to kick them.')
+      return
+    }
+
+    const group = await prisma.managedGroup.findUnique({ where: { chatId: BigInt(ctx.chat.id) } })
+    if (!group)
+      return
+
+    const reason = ctx.match?.toString().trim() || undefined
+
+    await ctx.banChatMember(targetUser.id)
+    await ctx.api.unbanChatMember(ctx.chat.id, targetUser.id, { only_if_banned: true })
+
+    await modLogRepo.create({
+      groupId: group.id,
+      action: 'kick',
+      actorId: BigInt(ctx.from!.id),
+      targetId: BigInt(targetUser.id),
+      reason,
+    })
+
+    const name = targetUser.username ? `@${targetUser.username}` : targetUser.first_name
+    let reply = `👢 <b>${name}</b> kicked.`
+    if (reason)
+      reply += `\nReason: ${reason}`
+    await ctx.reply(reply)
   })
 
   return feature

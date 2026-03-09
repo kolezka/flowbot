@@ -40,7 +40,7 @@ Source docs: `docs/plan/mb-05-tasks.md` (manager-bot), `docs/plan/05-tasks.md` (
 
 ## Phase 4: Core Moderation
 
-- [ ] **MB-13**: Warning System — /warn, /unwarn, /warnings in `src/bot/features/moderation.ts`. WarningRepository. ModerationService with escalation (configurable thresholds). Warning decay via expiresAt. Log to ModerationLog.
+- [x] **MB-13**: Warning System — /warn, /unwarn, /warnings in `src/bot/features/moderation.ts`. WarningRepository. ModerationService with escalation (configurable thresholds). Warning decay via expiresAt. Log to ModerationLog.
 
 - [ ] **MB-14**: Mute / Ban / Kick — /mute, /unmute, /ban, /unban, /kick. `src/bot/helpers/time.ts` for duration parsing. Log to ModerationLog.
 
