@@ -14,7 +14,7 @@ Source docs: `docs/plan/mb-05-tasks.md` (manager-bot), `docs/plan/05-tasks.md` (
 
 - [x] **MB-02**: Configuration Module — `src/config.ts` with Valibot schema (polling/webhook discriminated union). Required: BOT_TOKEN, DATABASE_URL. Optional: BOT_MODE, BOT_ADMINS, LOG_LEVEL, DEBUG, BOT_ALLOWED_UPDATES (default includes chat_member, my_chat_member). Verify: unit test covers valid/invalid/missing.
 
-- [ ] **MB-03**: Logger Module — `src/logger.ts` using Pino. pino-pretty in debug, pino/file in production. Match `apps/bot/src/logger.ts` pattern.
+- [x] **MB-03**: Logger Module — `src/logger.ts` using Pino. pino-pretty in debug, pino/file in production. Match `apps/bot/src/logger.ts` pattern.
 
 - [ ] **MB-04**: Database Module — `src/database.ts` two-line singleton via `createPrismaClient(config.databaseUrl)` from `@tg-allegro/db`.
 
