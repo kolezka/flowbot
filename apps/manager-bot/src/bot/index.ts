@@ -13,6 +13,7 @@ import { AdminCacheService } from '../services/admin-cache.js'
 import { AntiSpamService } from '../services/anti-spam.js'
 import { createAntiLinkFeature } from './features/anti-link.js'
 import { createAntiSpamFeature } from './features/anti-spam.js'
+import { createAuditFeature } from './features/audit.js'
 import { createDeletionFeature } from './features/deletion.js'
 import { createModerationFeature } from './features/moderation.js'
 import { createPermissionsFeature } from './features/permissions.js'
@@ -85,6 +86,7 @@ export function createBot(token: string, dependencies: Dependencies, botConfig?:
   protectedBot.use(createDeletionFeature(prisma))
   protectedBot.use(createWelcomeFeature(prisma))
   protectedBot.use(createSetupFeature(prisma))
+  protectedBot.use(createAuditFeature(prisma))
   protectedBot.use(unhandledFeature)
 
   return bot

@@ -54,7 +54,7 @@ Source docs: `docs/plan/mb-05-tasks.md` (manager-bot), `docs/plan/05-tasks.md` (
 
 - [x] **MB-18**: Welcome Messages — `src/bot/features/welcome.ts`. chat_member join events, template variables, /setwelcome, /welcome on|off, /testwelcome. Handle my_chat_member for bot add/remove.
 
-- [ ] **MB-19**: Group Config Commands — `src/bot/features/setup.ts`. /settings (display), /config key value (change). Log changes to ModerationLog.
+- [x] **MB-19**: Group Config Commands — `src/bot/features/setup.ts`. /settings (display), /config key value (change). Log changes to ModerationLog.
 
 - [ ] **MB-20**: Audit Log Commands — `src/bot/features/audit.ts`. /modlog [N], /modlog @user. ModerationLogRepository.
 
