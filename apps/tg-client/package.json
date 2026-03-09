@@ -16,6 +16,7 @@
     "start:force": "tsx ./src/main.ts",
     "test": "vitest run",
     "test:watch": "vitest",
+    "test:integration": "vitest run --config vitest.integration.config.ts",
     "authenticate": "tsx ./src/scripts/authenticate.ts"
   },
   "dependencies": {
