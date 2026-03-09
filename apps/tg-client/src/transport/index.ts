@@ -1,3 +1,5 @@
+export { TransportError } from './errors.js'
 export { FakeTelegramTransport } from './FakeTelegramTransport.js'
 export type { ForwardedMessage, SentMessage } from './FakeTelegramTransport.js'
+export { GramJsTransport } from './GramJsTransport.js'
 export type { ForwardOptions, ITelegramTransport, MessageResult, PeerInfo, SendOptions } from './ITelegramTransport.js'
