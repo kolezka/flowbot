@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException, Logger } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
-import { UserDto, UserListResponseDto, UserStatsDto } from './dto';
+import { UserDto, UserListResponseDto, UserStatsDto, UnifiedProfileDto } from './dto';
 
 @Injectable()
 export class UsersService {
@@ -121,6 +121,102 @@ export class UsersService {
     this.logger.log(`User ${id} ban status set to ${isBanned}${banReason ? ` (reason: ${banReason})` : ''}`);
 
     return this.mapToDto(updatedUser);
+  }
+
+  async getUnifiedProfile(telegramId: string): Promise<UnifiedProfileDto> {
+    const tgId = BigInt(telegramId);
+
+    // Resolve or create identity
+    let identity = await this.prisma.userIdentity.findUnique({
+      where: { telegramId: tgId },
+      include: { user: true },
+    });
+
+    if (!identity) {
+      // Auto-link if user exists
+      const user = await this.prisma.user.findUnique({
+        where: { telegramId: tgId },
+        select: { id: true },
+      });
+
+      identity = await this.prisma.userIdentity.create({
+        data: {
+          telegramId: tgId,
+          userId: user?.id ?? undefined,
+        },
+        include: { user: true },
+      });
+    }
+
+    // Get group memberships with active warnings
+    const memberships = await this.prisma.groupMember.findMany({
+      where: { telegramId: tgId },
+      include: {
+        group: { select: { id: true, chatId: true, title: true } },
+        warnings: {
+          where: { isActive: true },
+          orderBy: { createdAt: 'desc' },
+        },
+      },
+    });
+
+    // Get moderation logs
+    const moderationLogs = await this.prisma.moderationLog.findMany({
+      where: { targetId: tgId },
+      orderBy: { createdAt: 'desc' },
+      take: 50,
+      include: {
+        group: { select: { id: true, chatId: true, title: true } },
+      },
+    });
+
+    return {
+      telegramId: identity.telegramId.toString(),
+      reputationScore: identity.reputationScore,
+      firstSeenAt: identity.firstSeenAt,
+      user: identity.user
+        ? {
+            id: identity.user.id,
+            username: identity.user.username ?? undefined,
+            firstName: identity.user.firstName ?? undefined,
+            lastName: identity.user.lastName ?? undefined,
+            languageCode: identity.user.languageCode ?? undefined,
+            isBanned: identity.user.isBanned,
+            banReason: identity.user.banReason ?? undefined,
+            messageCount: identity.user.messageCount,
+            commandCount: identity.user.commandCount,
+            verifiedAt: identity.user.verifiedAt ?? undefined,
+            createdAt: identity.user.createdAt,
+          }
+        : undefined,
+      memberships: memberships.map((m) => ({
+        groupId: m.group.id,
+        chatId: m.group.chatId.toString(),
+        title: m.group.title ?? undefined,
+        role: m.role,
+        joinedAt: m.joinedAt,
+        messageCount: m.messageCount,
+        lastSeenAt: m.lastSeenAt,
+        activeWarnings: m.warnings.map((w) => ({
+          id: w.id,
+          reason: w.reason ?? undefined,
+          issuerId: w.issuerId.toString(),
+          isActive: w.isActive,
+          expiresAt: w.expiresAt ?? undefined,
+          createdAt: w.createdAt,
+        })),
+      })),
+      moderationLogs: moderationLogs.map((log) => ({
+        id: log.id,
+        action: log.action,
+        actorId: log.actorId.toString(),
+        reason: log.reason ?? undefined,
+        details: log.details ?? undefined,
+        automated: log.automated,
+        createdAt: log.createdAt,
+        groupTitle: log.group.title ?? undefined,
+      })),
+    };
   }
 
   private mapToDto(user: any): UserDto {

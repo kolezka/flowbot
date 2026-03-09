@@ -343,6 +343,7 @@ export type UserWhereInput = {
   referredBy?: Prisma.XOR<Prisma.UserNullableScalarRelationFilter, Prisma.UserWhereInput> | null
   referrals?: Prisma.UserListRelationFilter
   cart?: Prisma.XOR<Prisma.CartNullableScalarRelationFilter, Prisma.CartWhereInput> | null
+  identity?: Prisma.XOR<Prisma.UserIdentityNullableScalarRelationFilter, Prisma.UserIdentityWhereInput> | null
 }
 
 export type UserOrderByWithRelationInput = {
@@ -368,6 +369,7 @@ export type UserOrderByWithRelationInput = {
   referredBy?: Prisma.UserOrderByWithRelationInput
   referrals?: Prisma.UserOrderByRelationAggregateInput
   cart?: Prisma.CartOrderByWithRelationInput
+  identity?: Prisma.UserIdentityOrderByWithRelationInput
 }
 
 export type UserWhereUniqueInput = Prisma.AtLeast<{
@@ -396,6 +398,7 @@ export type UserWhereUniqueInput = Prisma.AtLeast<{
   referredBy?: Prisma.XOR<Prisma.UserNullableScalarRelationFilter, Prisma.UserWhereInput> | null
   referrals?: Prisma.UserListRelationFilter
   cart?: Prisma.XOR<Prisma.CartNullableScalarRelationFilter, Prisma.CartWhereInput> | null
+  identity?: Prisma.XOR<Prisma.UserIdentityNullableScalarRelationFilter, Prisma.UserIdentityWhereInput> | null
 }, "id" | "telegramId" | "referralCode">
 
 export type UserOrderByWithAggregationInput = {
@@ -472,6 +475,7 @@ export type UserCreateInput = {
   referredBy?: Prisma.UserCreateNestedOneWithoutReferralsInput
   referrals?: Prisma.UserCreateNestedManyWithoutReferredByInput
   cart?: Prisma.CartCreateNestedOneWithoutUserInput
+  identity?: Prisma.UserIdentityCreateNestedOneWithoutUserInput
 }
 
 export type UserUncheckedCreateInput = {
@@ -496,6 +500,7 @@ export type UserUncheckedCreateInput = {
   updatedAt?: Date | string
   referrals?: Prisma.UserUncheckedCreateNestedManyWithoutReferredByInput
   cart?: Prisma.CartUncheckedCreateNestedOneWithoutUserInput
+  identity?: Prisma.UserIdentityUncheckedCreateNestedOneWithoutUserInput
 }
 
 export type UserUpdateInput = {
@@ -520,6 +525,7 @@ export type UserUpdateInput = {
   referredBy?: Prisma.UserUpdateOneWithoutReferralsNestedInput
   referrals?: Prisma.UserUpdateManyWithoutReferredByNestedInput
   cart?: Prisma.CartUpdateOneWithoutUserNestedInput
+  identity?: Prisma.UserIdentityUpdateOneWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateInput = {
@@ -544,6 +550,7 @@ export type UserUncheckedUpdateInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   referrals?: Prisma.UserUncheckedUpdateManyWithoutReferredByNestedInput
   cart?: Prisma.CartUncheckedUpdateOneWithoutUserNestedInput
+  identity?: Prisma.UserIdentityUncheckedUpdateOneWithoutUserNestedInput
 }
 
 export type UserCreateManyInput = {
@@ -827,6 +834,22 @@ export type UserUpdateOneRequiredWithoutCartNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.UserUpdateToOneWithWhereWithoutCartInput, Prisma.UserUpdateWithoutCartInput>, Prisma.UserUncheckedUpdateWithoutCartInput>
 }
 
+export type UserCreateNestedOneWithoutIdentityInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutIdentityInput, Prisma.UserUncheckedCreateWithoutIdentityInput>
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutIdentityInput
+  connect?: Prisma.UserWhereUniqueInput
+}
+
+export type UserUpdateOneWithoutIdentityNestedInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutIdentityInput, Prisma.UserUncheckedCreateWithoutIdentityInput>
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutIdentityInput
+  upsert?: Prisma.UserUpsertWithoutIdentityInput
+  disconnect?: Prisma.UserWhereInput | boolean
+  delete?: Prisma.UserWhereInput | boolean
+  connect?: Prisma.UserWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.UserUpdateToOneWithWhereWithoutIdentityInput, Prisma.UserUpdateWithoutIdentityInput>, Prisma.UserUncheckedUpdateWithoutIdentityInput>
+}
+
 export type UserCreateWithoutReferralsInput = {
   id?: string
   telegramId: bigint | number
@@ -848,6 +871,7 @@ export type UserCreateWithoutReferralsInput = {
   updatedAt?: Date | string
   referredBy?: Prisma.UserCreateNestedOneWithoutReferralsInput
   cart?: Prisma.CartCreateNestedOneWithoutUserInput
+  identity?: Prisma.UserIdentityCreateNestedOneWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutReferralsInput = {
@@ -871,6 +895,7 @@ export type UserUncheckedCreateWithoutReferralsInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   cart?: Prisma.CartUncheckedCreateNestedOneWithoutUserInput
+  identity?: Prisma.UserIdentityUncheckedCreateNestedOneWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutReferralsInput = {
@@ -899,6 +924,7 @@ export type UserCreateWithoutReferredByInput = {
   updatedAt?: Date | string
   referrals?: Prisma.UserCreateNestedManyWithoutReferredByInput
   cart?: Prisma.CartCreateNestedOneWithoutUserInput
+  identity?: Prisma.UserIdentityCreateNestedOneWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutReferredByInput = {
@@ -922,6 +948,7 @@ export type UserUncheckedCreateWithoutReferredByInput = {
   updatedAt?: Date | string
   referrals?: Prisma.UserUncheckedCreateNestedManyWithoutReferredByInput
   cart?: Prisma.CartUncheckedCreateNestedOneWithoutUserInput
+  identity?: Prisma.UserIdentityUncheckedCreateNestedOneWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutReferredByInput = {
@@ -966,6 +993,7 @@ export type UserUpdateWithoutReferralsInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   referredBy?: Prisma.UserUpdateOneWithoutReferralsNestedInput
   cart?: Prisma.CartUpdateOneWithoutUserNestedInput
+  identity?: Prisma.UserIdentityUpdateOneWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutReferralsInput = {
@@ -989,6 +1017,7 @@ export type UserUncheckedUpdateWithoutReferralsInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   cart?: Prisma.CartUncheckedUpdateOneWithoutUserNestedInput
+  identity?: Prisma.UserIdentityUncheckedUpdateOneWithoutUserNestedInput
 }
 
 export type UserUpsertWithWhereUniqueWithoutReferredByInput = {
@@ -1053,6 +1082,7 @@ export type UserCreateWithoutCartInput = {
   updatedAt?: Date | string
   referredBy?: Prisma.UserCreateNestedOneWithoutReferralsInput
   referrals?: Prisma.UserCreateNestedManyWithoutReferredByInput
+  identity?: Prisma.UserIdentityCreateNestedOneWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutCartInput = {
@@ -1076,6 +1106,7 @@ export type UserUncheckedCreateWithoutCartInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   referrals?: Prisma.UserUncheckedCreateNestedManyWithoutReferredByInput
+  identity?: Prisma.UserIdentityUncheckedCreateNestedOneWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutCartInput = {
@@ -1115,6 +1146,7 @@ export type UserUpdateWithoutCartInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   referredBy?: Prisma.UserUpdateOneWithoutReferralsNestedInput
   referrals?: Prisma.UserUpdateManyWithoutReferredByNestedInput
+  identity?: Prisma.UserIdentityUpdateOneWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutCartInput = {
@@ -1138,6 +1170,119 @@ export type UserUncheckedUpdateWithoutCartInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   referrals?: Prisma.UserUncheckedUpdateManyWithoutReferredByNestedInput
+  identity?: Prisma.UserIdentityUncheckedUpdateOneWithoutUserNestedInput
+}
+
+export type UserCreateWithoutIdentityInput = {
+  id?: string
+  telegramId: bigint | number
+  username?: string | null
+  firstName?: string | null
+  lastName?: string | null
+  languageCode?: string | null
+  lastChatId?: bigint | number | null
+  lastSeenAt?: Date | string | null
+  lastMessageAt?: Date | string | null
+  verifiedAt?: Date | string | null
+  isBanned?: boolean
+  bannedAt?: Date | string | null
+  banReason?: string | null
+  messageCount?: number
+  commandCount?: number
+  referralCode?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  referredBy?: Prisma.UserCreateNestedOneWithoutReferralsInput
+  referrals?: Prisma.UserCreateNestedManyWithoutReferredByInput
+  cart?: Prisma.CartCreateNestedOneWithoutUserInput
+}
+
+export type UserUncheckedCreateWithoutIdentityInput = {
+  id?: string
+  telegramId: bigint | number
+  username?: string | null
+  firstName?: string | null
+  lastName?: string | null
+  languageCode?: string | null
+  lastChatId?: bigint | number | null
+  lastSeenAt?: Date | string | null
+  lastMessageAt?: Date | string | null
+  verifiedAt?: Date | string | null
+  isBanned?: boolean
+  bannedAt?: Date | string | null
+  banReason?: string | null
+  messageCount?: number
+  commandCount?: number
+  referralCode?: string | null
+  referredByUserId?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  referrals?: Prisma.UserUncheckedCreateNestedManyWithoutReferredByInput
+  cart?: Prisma.CartUncheckedCreateNestedOneWithoutUserInput
+}
+
+export type UserCreateOrConnectWithoutIdentityInput = {
+  where: Prisma.UserWhereUniqueInput
+  create: Prisma.XOR<Prisma.UserCreateWithoutIdentityInput, Prisma.UserUncheckedCreateWithoutIdentityInput>
+}
+
+export type UserUpsertWithoutIdentityInput = {
+  update: Prisma.XOR<Prisma.UserUpdateWithoutIdentityInput, Prisma.UserUncheckedUpdateWithoutIdentityInput>
+  create: Prisma.XOR<Prisma.UserCreateWithoutIdentityInput, Prisma.UserUncheckedCreateWithoutIdentityInput>
+  where?: Prisma.UserWhereInput
+}
+
+export type UserUpdateToOneWithWhereWithoutIdentityInput = {
+  where?: Prisma.UserWhereInput
+  data: Prisma.XOR<Prisma.UserUpdateWithoutIdentityInput, Prisma.UserUncheckedUpdateWithoutIdentityInput>
+}
+
+export type UserUpdateWithoutIdentityInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  telegramId?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
+  username?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  firstName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  lastName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  languageCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  lastChatId?: Prisma.NullableBigIntFieldUpdateOperationsInput | bigint | number | null
+  lastSeenAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  lastMessageAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  verifiedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  isBanned?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  bannedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  banReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  messageCount?: Prisma.IntFieldUpdateOperationsInput | number
+  commandCount?: Prisma.IntFieldUpdateOperationsInput | number
+  referralCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  referredBy?: Prisma.UserUpdateOneWithoutReferralsNestedInput
+  referrals?: Prisma.UserUpdateManyWithoutReferredByNestedInput
+  cart?: Prisma.CartUpdateOneWithoutUserNestedInput
+}
+
+export type UserUncheckedUpdateWithoutIdentityInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  telegramId?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
+  username?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  firstName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  lastName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  languageCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  lastChatId?: Prisma.NullableBigIntFieldUpdateOperationsInput | bigint | number | null
+  lastSeenAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  lastMessageAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  verifiedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  isBanned?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  bannedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  banReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  messageCount?: Prisma.IntFieldUpdateOperationsInput | number
+  commandCount?: Prisma.IntFieldUpdateOperationsInput | number
+  referralCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  referredByUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  referrals?: Prisma.UserUncheckedUpdateManyWithoutReferredByNestedInput
+  cart?: Prisma.CartUncheckedUpdateOneWithoutUserNestedInput
 }
 
 export type UserCreateManyReferredByInput = {
@@ -1182,6 +1327,7 @@ export type UserUpdateWithoutReferredByInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   referrals?: Prisma.UserUpdateManyWithoutReferredByNestedInput
   cart?: Prisma.CartUpdateOneWithoutUserNestedInput
+  identity?: Prisma.UserIdentityUpdateOneWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutReferredByInput = {
@@ -1205,6 +1351,7 @@ export type UserUncheckedUpdateWithoutReferredByInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   referrals?: Prisma.UserUncheckedUpdateManyWithoutReferredByNestedInput
   cart?: Prisma.CartUncheckedUpdateOneWithoutUserNestedInput
+  identity?: Prisma.UserIdentityUncheckedUpdateOneWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateManyWithoutReferredByInput = {
@@ -1282,6 +1429,7 @@ export type UserSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = r
   referredBy?: boolean | Prisma.User$referredByArgs<ExtArgs>
   referrals?: boolean | Prisma.User$referralsArgs<ExtArgs>
   cart?: boolean | Prisma.User$cartArgs<ExtArgs>
+  identity?: boolean | Prisma.User$identityArgs<ExtArgs>
   _count?: boolean | Prisma.UserCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["user"]>
 
@@ -1358,6 +1506,7 @@ export type UserInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = 
   referredBy?: boolean | Prisma.User$referredByArgs<ExtArgs>
   referrals?: boolean | Prisma.User$referralsArgs<ExtArgs>
   cart?: boolean | Prisma.User$cartArgs<ExtArgs>
+  identity?: boolean | Prisma.User$identityArgs<ExtArgs>
   _count?: boolean | Prisma.UserCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type UserIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -1373,6 +1522,7 @@ export type $UserPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs =
     referredBy: Prisma.$UserPayload<ExtArgs> | null
     referrals: Prisma.$UserPayload<ExtArgs>[]
     cart: Prisma.$CartPayload<ExtArgs> | null
+    identity: Prisma.$UserIdentityPayload<ExtArgs> | null
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
@@ -1791,6 +1941,7 @@ export interface Prisma__UserClient<T, Null = never, ExtArgs extends runtime.Typ
   referredBy<T extends Prisma.User$referredByArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$referredByArgs<ExtArgs>>): Prisma.Prisma__UserClient<runtime.Types.Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
   referrals<T extends Prisma.User$referralsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$referralsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   cart<T extends Prisma.User$cartArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$cartArgs<ExtArgs>>): Prisma.Prisma__CartClient<runtime.Types.Result.GetResult<Prisma.$CartPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+  identity<T extends Prisma.User$identityArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$identityArgs<ExtArgs>>): Prisma.Prisma__UserIdentityClient<runtime.Types.Result.GetResult<Prisma.$UserIdentityPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -2294,6 +2445,25 @@ export type User$cartArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs 
    */
   include?: Prisma.CartInclude<ExtArgs> | null
   where?: Prisma.CartWhereInput
+}
+
+/**
+ * User.identity
+ */
+export type User$identityArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the UserIdentity
+   */
+  select?: Prisma.UserIdentitySelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the UserIdentity
+   */
+  omit?: Prisma.UserIdentityOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.UserIdentityInclude<ExtArgs> | null
+  where?: Prisma.UserIdentityWhereInput
 }
 
 /**

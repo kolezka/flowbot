@@ -24,6 +24,7 @@ import {
   UserStatsDto,
   PaginationDto,
   BanUserDto,
+  UnifiedProfileDto,
 } from './dto';
 
 @ApiTags('users')
@@ -81,6 +82,24 @@ export class UsersController {
   })
   async getStats(): Promise<UserStatsDto> {
     return this.usersService.getStats();
+  }
+
+  @Get(':telegramId/profile')
+  @ApiOperation({ summary: 'Get unified cross-app profile by Telegram ID' })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'Returns unified profile with sales bot data, group memberships, warnings, and moderation logs',
+    type: UnifiedProfileDto,
+  })
+  @ApiParam({
+    name: 'telegramId',
+    description: 'Telegram user ID',
+    example: '123456789',
+  })
+  async getUnifiedProfile(
+    @Param('telegramId') telegramId: string,
+  ): Promise<UnifiedProfileDto> {
+    return this.usersService.getUnifiedProfile(telegramId);
   }
 
   @Get(':id')

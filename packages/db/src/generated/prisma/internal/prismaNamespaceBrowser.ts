@@ -56,6 +56,7 @@ export const ModelName = {
   Product: 'Product',
   Cart: 'Cart',
   CartItem: 'CartItem',
+  UserIdentity: 'UserIdentity',
   ManagedGroup: 'ManagedGroup',
   GroupConfig: 'GroupConfig',
   GroupMember: 'GroupMember',
@@ -169,6 +170,18 @@ export const CartItemScalarFieldEnum = {
 } as const
 
 export type CartItemScalarFieldEnum = (typeof CartItemScalarFieldEnum)[keyof typeof CartItemScalarFieldEnum]
+
+
+export const UserIdentityScalarFieldEnum = {
+  id: 'id',
+  telegramId: 'telegramId',
+  userId: 'userId',
+  reputationScore: 'reputationScore',
+  firstSeenAt: 'firstSeenAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type UserIdentityScalarFieldEnum = (typeof UserIdentityScalarFieldEnum)[keyof typeof UserIdentityScalarFieldEnum]
 
 
 export const ManagedGroupScalarFieldEnum = {

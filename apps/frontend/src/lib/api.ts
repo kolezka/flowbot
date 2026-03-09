@@ -176,6 +176,59 @@ export interface CreateBroadcastDto {
   targetChatIds: string[];
 }
 
+// Unified profile interfaces
+export interface UnifiedProfile {
+  telegramId: string;
+  reputationScore: number;
+  firstSeenAt: string;
+  user?: {
+    id: string;
+    username?: string;
+    firstName?: string;
+    lastName?: string;
+    languageCode?: string;
+    isBanned: boolean;
+    banReason?: string;
+    messageCount: number;
+    commandCount: number;
+    verifiedAt?: string;
+    createdAt: string;
+  };
+  memberships: GroupMembership[];
+  moderationLogs: ModerationLogEntry[];
+}
+
+export interface GroupMembership {
+  groupId: string;
+  chatId: string;
+  title?: string;
+  role: string;
+  joinedAt: string;
+  messageCount: number;
+  lastSeenAt: string;
+  activeWarnings: ProfileWarning[];
+}
+
+export interface ProfileWarning {
+  id: string;
+  reason?: string;
+  issuerId: string;
+  isActive: boolean;
+  expiresAt?: string;
+  createdAt: string;
+}
+
+export interface ModerationLogEntry {
+  id: string;
+  action: string;
+  actorId: string;
+  reason?: string;
+  details?: any;
+  automated: boolean;
+  createdAt: string;
+  groupTitle?: string;
+}
+
 export interface ApiError {
   message: string;
   status?: number;
@@ -239,6 +292,10 @@ class ApiClient {
 
   async getUser(id: string): Promise<User> {
     return this.request<User>(`/api/users/${id}`);
+  }
+
+  async getUnifiedProfile(telegramId: string): Promise<UnifiedProfile> {
+    return this.request<UnifiedProfile>(`/api/users/${telegramId}/profile`);
   }
 
   async setBanStatus(id: string, isBanned: boolean, banReason?: string): Promise<User> {
