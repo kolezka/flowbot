@@ -286,42 +286,42 @@ Design: `docs/plans/2026-03-09-trigger-dev-integration-design.md`
 
 ### 11B — Create apps/trigger
 
-- [ ] **TD-04**: Trigger App Scaffolding — Create `apps/trigger` workspace: package.json (`@tg-allegro/trigger`, ESM), tsconfig.json, trigger.config.ts. Dependencies: @trigger.dev/sdk, @trigger.dev/build, @tg-allegro/telegram-transport, @tg-allegro/db. Add to root package.json and tsconfig.json. Run `pnpm install`.
+- [x] **TD-04**: Trigger App Scaffolding — Create `apps/trigger` workspace: package.json (`@tg-allegro/trigger`, ESM), tsconfig.json, trigger.config.ts. Dependencies: @trigger.dev/sdk, @trigger.dev/build, @tg-allegro/telegram-transport, @tg-allegro/db. Add to root package.json and tsconfig.json. Run `pnpm install`.
 
-- [ ] **TD-05**: Lib Helpers — Create `apps/trigger/src/lib/telegram.ts` (lazy GramJS singleton with CircuitBreaker), `src/lib/prisma.ts` (shared Prisma client), `src/lib/manager-bot.ts` (HTTP client for manager-bot send-message endpoint).
+- [x] **TD-05**: Lib Helpers — Create `apps/trigger/src/lib/telegram.ts` (lazy GramJS singleton with CircuitBreaker), `src/lib/prisma.ts` (shared Prisma client), `src/lib/manager-bot.ts` (HTTP client for manager-bot send-message endpoint).
 
-- [ ] **TD-06**: Broadcast Task — Create `apps/trigger/src/trigger/broadcast.ts`. Queue: telegram, concurrency: 1. Payload: `{ broadcastId }`. Reads BroadcastMessage, delivers via GramJS transport with 200ms stagger, updates status to completed/failed with per-target results JSON.
+- [x] **TD-06**: Broadcast Task — Create `apps/trigger/src/trigger/broadcast.ts`. Queue: telegram, concurrency: 1. Payload: `{ broadcastId }`. Reads BroadcastMessage, delivers via GramJS transport with 200ms stagger, updates status to completed/failed with per-target results JSON.
 
-- [ ] **TD-07**: Order Notification Task — Create `apps/trigger/src/trigger/order-notification.ts`. Queue: telegram, concurrency: 1. Payload: `{ orderEventId }`. Reads OrderEvent, formats social-proof message, delivers to target groups, marks processed=true.
+- [x] **TD-07**: Order Notification Task — Create `apps/trigger/src/trigger/order-notification.ts`. Queue: telegram, concurrency: 1. Payload: `{ orderEventId }`. Reads OrderEvent, formats social-proof message, delivers to target groups, marks processed=true.
 
-- [ ] **TD-08**: Cross-Post Task — Create `apps/trigger/src/trigger/cross-post.ts`. Queue: telegram, concurrency: 1. Payload: `{ templateId, messageText, targetChatIds }`. Delivers to all targets with 100ms stagger.
+- [x] **TD-08**: Cross-Post Task — Create `apps/trigger/src/trigger/cross-post.ts`. Queue: telegram, concurrency: 1. Payload: `{ templateId, messageText, targetChatIds }`. Delivers to all targets with 100ms stagger.
 
-- [ ] **TD-09**: Scheduled Message Task — Create `apps/trigger/src/trigger/scheduled-message.ts`. Queue: ops, cron: every 1 minute. Queries ScheduledMessage WHERE sent=false AND sendAt<=now(). For each due message, calls manager-bot HTTP POST /api/send-message. Marks sent=true.
+- [x] **TD-09**: Scheduled Message Task — Create `apps/trigger/src/trigger/scheduled-message.ts`. Queue: ops, cron: every 1 minute. Queries ScheduledMessage WHERE sent=false AND sendAt<=now(). For each due message, calls manager-bot HTTP POST /api/send-message. Marks sent=true.
 
-- [ ] **TD-10**: Analytics Snapshot Task — Create `apps/trigger/src/trigger/analytics-snapshot.ts`. Queue: ops, cron: `0 2 * * *`. For each active ManagedGroup, computes daily aggregates from ModerationLog + GroupMember counts, upserts GroupAnalyticsSnapshot.
+- [x] **TD-10**: Analytics Snapshot Task — Create `apps/trigger/src/trigger/analytics-snapshot.ts`. Queue: ops, cron: `0 2 * * *`. For each active ManagedGroup, computes daily aggregates from ModerationLog + GroupMember counts, upserts GroupAnalyticsSnapshot.
 
-- [ ] **TD-11**: Health Check Task — Create `apps/trigger/src/trigger/health-check.ts`. Queue: ops, cron: `*/5 * * * *`. Checks DB connectivity, manager-bot health endpoint, GramJS transport status. Logs results.
+- [x] **TD-11**: Health Check Task — Create `apps/trigger/src/trigger/health-check.ts`. Queue: ops, cron: `*/5 * * * *`. Checks DB connectivity, manager-bot health endpoint, GramJS transport status. Logs results.
 
 ### 11C — Integrate @trigger.dev/sdk into Existing Apps
 
-- [ ] **TD-12**: Add SDK to API — Install `@trigger.dev/sdk` in `apps/api`. Add TRIGGER_SECRET_KEY and TRIGGER_API_URL to env config. Verify: `pnpm api build` passes.
+- [x] **TD-12**: Add SDK to API — Install `@trigger.dev/sdk` in `apps/api`. Add TRIGGER_SECRET_KEY and TRIGGER_API_URL to env config. Verify: `pnpm api build` passes.
 
-- [ ] **TD-13**: Add SDK to Manager Bot — Install `@trigger.dev/sdk` in `apps/manager-bot`. Add TRIGGER_SECRET_KEY and TRIGGER_API_URL to env config. Verify: `pnpm manager-bot typecheck && pnpm manager-bot build`.
+- [x] **TD-13**: Add SDK to Manager Bot — Install `@trigger.dev/sdk` in `apps/manager-bot`. Add TRIGGER_SECRET_KEY and TRIGGER_API_URL to env config. Verify: `pnpm manager-bot typecheck && pnpm manager-bot build`.
 
-- [ ] **TD-14**: Manager Bot Send Message Endpoint — Add `POST /api/send-message` endpoint to manager-bot Hono server. Body: `{ chatId: string, text: string }`. Uses grammY bot.api.sendMessage(). Response: `{ success, messageId? }`. Verify: build passes.
+- [x] **TD-14**: Manager Bot Send Message Endpoint — Add `POST /api/send-message` endpoint to manager-bot Hono server. Body: `{ chatId: string, text: string }`. Uses grammY bot.api.sendMessage(). Response: `{ success, messageId? }`. Verify: build passes.
 
-- [ ] **TD-15**: API Broadcast Service — Update `apps/api/src/broadcast/broadcast.service.ts`: after creating BroadcastMessage, trigger `broadcast` task via `tasks.trigger()`. Same for retry. Verify: `pnpm api build`.
+- [x] **TD-15**: API Broadcast Service — Update `apps/api/src/broadcast/broadcast.service.ts`: after creating BroadcastMessage, trigger `broadcast` task via `tasks.trigger()`. Same for retry. Verify: `pnpm api build`.
 
-- [ ] **TD-16**: API Order Event Trigger — Update order event creation in API to trigger `order-notification` task after creating OrderEvent record. Verify: `pnpm api build`.
+- [x] **TD-16**: API Order Event Trigger — Update order event creation in API to trigger `order-notification` task after creating OrderEvent record. Verify: `pnpm api build`.
 
-- [ ] **TD-17**: Manager Bot Cross-Post Trigger — Update `apps/manager-bot/src/bot/features/crosspost.ts` to trigger `cross-post` task via `tasks.trigger()` instead of writing AutomationJob directly. Verify: typecheck + build.
+- [x] **TD-17**: Manager Bot Cross-Post Trigger — Update `apps/manager-bot/src/bot/features/crosspost.ts` to trigger `cross-post` task via `tasks.trigger()` instead of writing AutomationJob directly. Verify: typecheck + build.
 
 ### 11D — Cleanup & Finalization
 
-- [ ] **TD-18**: Remove tg-client App — Remove `apps/tg-client/src/scheduler/`, `apps/tg-client/src/server/`, `apps/tg-client/src/main.ts`, `apps/tg-client/src/config.ts`, `apps/tg-client/src/repositories/JobRepository.ts`. Keep only files that were NOT moved to packages/telegram-transport. Update root package.json to remove tg-client scripts. Update root tsconfig.json.
+- [x] **TD-18**: Remove tg-client App — Remove `apps/tg-client/src/scheduler/`, `apps/tg-client/src/server/`, `apps/tg-client/src/main.ts`, `apps/tg-client/src/config.ts`, `apps/tg-client/src/repositories/JobRepository.ts`. Keep only files that were NOT moved to packages/telegram-transport. Update root package.json to remove tg-client scripts. Update root tsconfig.json.
 
-- [ ] **TD-19**: Update Root Config — Update root package.json with `trigger` and `telegram-transport` filter scripts. Update Docker Compose if needed. Update .env.example files with Trigger.dev env vars.
+- [x] **TD-19**: Update Root Config — Update root package.json with `trigger` and `telegram-transport` filter scripts. Update Docker Compose if needed. Update .env.example files with Trigger.dev env vars.
 
-- [ ] **TD-20**: Update CLAUDE.md — Add apps/trigger and packages/telegram-transport sections. Update tg-client section to note deprecation. Add Trigger.dev commands. Update environment variables section.
+- [x] **TD-20**: Update CLAUDE.md — Add apps/trigger and packages/telegram-transport sections. Update tg-client section to note deprecation. Add Trigger.dev commands. Update environment variables section.
 
-- [ ] **TD-21**: Validation — Run full build validation: `pnpm api build`, `pnpm frontend build`, `pnpm manager-bot build`, `pnpm telegram-transport typecheck`, `pnpm trigger typecheck`. Verify all pass. Commit and push.
+- [x] **TD-21**: Validation — Run full build validation: `pnpm api build`, `pnpm frontend build`, `pnpm manager-bot build`, `pnpm telegram-transport typecheck`, `pnpm trigger typecheck`. Verify all pass. Commit and push.
