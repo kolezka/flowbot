@@ -1,3 +1,5 @@
+export { executeForwardMessage } from './forward-message.js'
+export { executeSendMessage } from './send-message.js'
 export {
   type Action,
   type ActionPayload,
