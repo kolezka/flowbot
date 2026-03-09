@@ -46,7 +46,7 @@ Source docs: `docs/plan/mb-05-tasks.md` (manager-bot), `docs/plan/05-tasks.md` (
 
 - [x] **MB-15**: Message Deletion — `src/bot/features/deletion.ts`: /del (reply-to-delete), /purge N (bulk, max 100, admin+). Auto-delete bot confirmations.
 
-- [ ] **MB-16**: Anti-Spam Engine — `src/bot/middlewares/rate-tracker.ts`, `src/services/anti-spam.ts` (in-memory, LRU, flood + duplicate detection). `src/bot/features/anti-spam.ts` running BEFORE other features. Admins bypass.
+- [x] **MB-16**: Anti-Spam Engine — `src/bot/middlewares/rate-tracker.ts`, `src/services/anti-spam.ts` (in-memory, LRU, flood + duplicate detection). `src/bot/features/anti-spam.ts` running BEFORE other features. Admins bypass.
 
 - [ ] **MB-17**: Anti-Link Protection — `src/bot/features/anti-link.ts`. URL regex, domain whitelist. /allowlink, /denylink, /links. Admins bypass.
 

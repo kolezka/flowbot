@@ -11,6 +11,7 @@ import { sequentialize } from '@grammyjs/runner'
 import { Bot as TelegramBot } from 'grammy'
 import { AdminCacheService } from '../services/admin-cache.js'
 import { AntiSpamService } from '../services/anti-spam.js'
+import { createAntiLinkFeature } from './features/anti-link.js'
 import { createAntiSpamFeature } from './features/anti-spam.js'
 import { createDeletionFeature } from './features/deletion.js'
 import { createModerationFeature } from './features/moderation.js'
@@ -76,6 +77,7 @@ export function createBot(token: string, dependencies: Dependencies, botConfig?:
   // Features — anti-spam runs first
   const antiSpamService = new AntiSpamService()
   protectedBot.use(createAntiSpamFeature(antiSpamService))
+  protectedBot.use(createAntiLinkFeature(prisma))
   protectedBot.use(createPermissionsFeature(prisma))
   protectedBot.use(createModerationFeature(prisma))
   protectedBot.use(createDeletionFeature(prisma))
