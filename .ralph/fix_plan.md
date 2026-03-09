@@ -48,7 +48,7 @@ Source docs: `docs/plan/mb-05-tasks.md` (manager-bot), `docs/plan/05-tasks.md` (
 
 - [x] **MB-16**: Anti-Spam Engine — `src/bot/middlewares/rate-tracker.ts`, `src/services/anti-spam.ts` (in-memory, LRU, flood + duplicate detection). `src/bot/features/anti-spam.ts` running BEFORE other features. Admins bypass.
 
-- [ ] **MB-17**: Anti-Link Protection — `src/bot/features/anti-link.ts`. URL regex, domain whitelist. /allowlink, /denylink, /links. Admins bypass.
+- [x] **MB-17**: Anti-Link Protection — `src/bot/features/anti-link.ts`. URL regex, domain whitelist. /allowlink, /denylink, /links. Admins bypass.
 
 ## Phase 5: Community Features
 

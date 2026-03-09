@@ -17,6 +17,7 @@ import { createDeletionFeature } from './features/deletion.js'
 import { createModerationFeature } from './features/moderation.js'
 import { createPermissionsFeature } from './features/permissions.js'
 import { unhandledFeature } from './features/unhandled.js'
+import { createWelcomeFeature } from './features/welcome.js'
 import { errorHandler } from './handlers/error.js'
 import { adminCache } from './middlewares/admin-cache.js'
 import { groupData } from './middlewares/group-data.js'
@@ -81,6 +82,7 @@ export function createBot(token: string, dependencies: Dependencies, botConfig?:
   protectedBot.use(createPermissionsFeature(prisma))
   protectedBot.use(createModerationFeature(prisma))
   protectedBot.use(createDeletionFeature(prisma))
+  protectedBot.use(createWelcomeFeature(prisma))
   protectedBot.use(unhandledFeature)
 
   return bot
