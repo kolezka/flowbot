@@ -32,8 +32,15 @@ const RATE_LIMIT_MAX_TOKENS = 10
 const RATE_LIMIT_REFILL_MS = 60_000
 const CACHE_TTL_MS = 5 * 60_000
 const CACHE_CLEANUP_INTERVAL_MS = 60_000
+const MAX_CONCURRENCY = 2
 
 const VALID_LABELS = new Set<ClassificationLabel>(['safe', 'spam', 'scam', 'toxic', 'off-topic'])
+
+interface QueueItem {
+  text: string
+  hash: string
+  resolve: (result: Classification) => void
+}
 
 export class AiClassifierService {
   private client: Anthropic
@@ -42,6 +49,8 @@ export class AiClassifierService {
   private lastRefill: number
   private cache = new Map<string, CacheEntry>()
   private cleanupTimer: ReturnType<typeof setInterval> | undefined
+  private queue: QueueItem[] = []
+  private activeRequests = 0
 
   constructor(apiKey: string, logger: Logger) {
     this.client = new Anthropic({ apiKey })
@@ -55,18 +64,65 @@ export class AiClassifierService {
   async classifyContent(text: string): Promise<Classification> {
     const hash = this.hashContent(text)
 
-    // Check cache
+    // Check cache first (no need to queue if cached)
     const cached = this.cache.get(hash)
     if (cached && cached.expiresAt > Date.now()) {
       return cached.result
     }
 
-    // Check rate limit
-    if (!this.tryConsume()) {
-      this.logger.warn('Rate limited, returning safe default')
-      return { label: 'safe', confidence: 0, reason: 'rate limited' }
+    // Enqueue the request and return a promise that resolves when processed
+    return new Promise<Classification>((resolve) => {
+      this.queue.push({ text, hash, resolve })
+      this.processQueue()
+    })
+  }
+
+  stop() {
+    if (this.cleanupTimer) {
+      clearInterval(this.cleanupTimer)
+      this.cleanupTimer = undefined
     }
 
+    // Drain remaining queue items with a safe default
+    for (const item of this.queue) {
+      item.resolve({ label: 'safe', confidence: 0, reason: 'service stopped' })
+    }
+    this.queue = []
+  }
+
+  private processQueue() {
+    while (this.queue.length > 0 && this.activeRequests < MAX_CONCURRENCY) {
+      const item = this.queue.shift()
+      if (!item)
+        break
+
+      // Re-check cache (another in-flight request may have populated it)
+      const cached = this.cache.get(item.hash)
+      if (cached && cached.expiresAt > Date.now()) {
+        item.resolve(cached.result)
+        continue
+      }
+
+      // Check rate limit
+      if (!this.tryConsume()) {
+        this.logger.warn('Rate limited, returning safe default')
+        item.resolve({ label: 'safe', confidence: 0, reason: 'rate limited' })
+        continue
+      }
+
+      this.activeRequests++
+      this.executeClassification(item.text, item.hash)
+        .then((result) => {
+          item.resolve(result)
+        })
+        .finally(() => {
+          this.activeRequests--
+          this.processQueue()
+        })
+    }
+  }
+
+  private async executeClassification(text: string, hash: string): Promise<Classification> {
     try {
       const message = await this.client.messages.create({
         model: 'claude-haiku-4-5-20251001',
@@ -96,13 +152,6 @@ export class AiClassifierService {
     catch (error) {
       this.logger.error({ err: error }, 'Claude API classification failed')
       return { label: 'safe', confidence: 0, reason: 'api error' }
-    }
-  }
-
-  stop() {
-    if (this.cleanupTimer) {
-      clearInterval(this.cleanupTimer)
-      this.cleanupTimer = undefined
     }
   }
 
