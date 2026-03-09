@@ -24,9 +24,9 @@ Source docs: `docs/plan/mb-05-tasks.md` (manager-bot), `docs/plan/05-tasks.md` (
 
 - [x] **MB-06**: Context Type and Session — `src/bot/context.ts` with SessionData (groupConfig, adminIds, adminCacheExpiry). Flavor stack: ParseMode, Hydrate, Default, Extended, Session, AutoChatAction. Session keyed by chat ID. `src/bot/middlewares/session.ts`.
 
-- [ ] **MB-07**: Bot Factory — `src/bot/index.ts` with `createBot()`. Middleware order: context enrichment → error boundary → API config (parseMode, autoRetry, throttler) → sequentialize → update logger → hydrate → ratelimiter → session → group-data (stub) → admin-cache (stub) → rate-tracker (stub) → features → unhandled.
+- [x] **MB-07**: Bot Factory — `src/bot/index.ts` with `createBot()`. Middleware order: context enrichment → error boundary → API config (parseMode, autoRetry, throttler) → sequentialize → update logger → hydrate → ratelimiter → session → group-data (stub) → admin-cache (stub) → rate-tracker (stub) → features → unhandled.
 
-- [ ] **MB-08**: Error Handler — `src/bot/handlers/error.ts` and `src/bot/helpers/logging.ts` (logHandle, getUpdateInfo). Structured error logging, no rethrow.
+- [x] **MB-08**: Error Handler — `src/bot/handlers/error.ts` and `src/bot/helpers/logging.ts` (logHandle, getUpdateInfo). Structured error logging, no rethrow.
 
 - [ ] **MB-09**: Server and Main Entrypoint — `src/server/` (Hono health + webhook), `src/main.ts` (dual-mode polling/webhook, graceful shutdown). allowed_updates includes chat_member, my_chat_member, edited_message, chat_join_request. Verify: `pnpm manager-bot dev` starts.
 
