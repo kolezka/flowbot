@@ -17,22 +17,46 @@ const ACTION_ICONS: Record<string, string> = {
   allowlink: '🔗',
   denylink: '🔗',
   config_change: '⚙️',
+  ai_spam_detected: '🤖',
 }
 
-function formatLogEntry(log: { action: string, actorId: bigint, targetId: bigint | null, reason: string | null, automated: boolean, createdAt: Date }): string {
-  const icon = ACTION_ICONS[log.action] ?? '📋'
+interface AiDetails {
+  classifier?: string
+  label?: string
+  confidence?: number
+  aiReason?: string
+  messageText?: string
+}
+
+function isAiDetails(value: unknown): value is AiDetails {
+  return typeof value === 'object' && value !== null && 'label' in value
+}
+
+function formatLogEntry(log: { action: string, actorId: bigint, targetId: bigint | null, reason: string | null, automated: boolean, details: unknown, createdAt: Date }): string {
+  const isAiAction = log.automated && isAiDetails(log.details)
+  const icon = isAiAction ? '🤖' : (ACTION_ICONS[log.action] ?? '📋')
   const date = log.createdAt.toISOString().slice(0, 16).replace('T', ' ')
   const actor = log.automated ? 'System' : `<code>${log.actorId}</code>`
   const target = log.targetId ? ` → <code>${log.targetId}</code>` : ''
   const reason = log.reason ? ` — ${log.reason}` : ''
-  return `${icon} <b>${log.action}</b> by ${actor}${target}${reason}\n   <i>${date}</i>`
+
+  let aiInfo = ''
+  if (isAiAction) {
+    const details = log.details as AiDetails
+    const conf = details.confidence != null ? ` ${(details.confidence * 100).toFixed(0)}%` : ''
+    const label = details.label ? ` [${details.label}${conf}]` : ''
+    const aiReason = details.aiReason ? `\n   💬 ${details.aiReason}` : ''
+    aiInfo = `${label}${aiReason}`
+  }
+
+  return `${icon} <b>${log.action}</b> by ${actor}${target}${reason}${aiInfo}\n   <i>${date}</i>`
 }
 
 export function createAuditFeature(prisma: PrismaClient) {
   const feature = new Composer<Context>()
   const modLogRepo = new ModerationLogRepository(prisma)
 
-  // /modlog [N] or /modlog @user
+  // /modlog [N] or /modlog @user or /modlog ai [N]
   feature.command('modlog', requirePermission('moderator', prisma), logHandle('cmd:modlog'), async (ctx) => {
     const group = await prisma.managedGroup.findUnique({ where: { chatId: BigInt(ctx.chat.id) } })
     if (!group)
@@ -51,6 +75,23 @@ export function createAuditFeature(prisma: PrismaClient) {
       const name = replyTarget.username ? `@${replyTarget.username}` : replyTarget.first_name
       const lines = logs.map(formatLogEntry)
       await ctx.reply(`📋 <b>Moderation log for ${name}</b>\n\n${lines.join('\n\n')}`)
+      return
+    }
+
+    // /modlog ai [N] — filter AI-automated entries only
+    const aiMatch = arg?.match(/^ai(?:\s+(\d+))?$/i)
+    if (aiMatch) {
+      const aiLimit = aiMatch[1] ? Number.parseInt(aiMatch[1], 10) : 10
+      const aiCount = Number.isNaN(aiLimit) || aiLimit < 1 ? 10 : Math.min(aiLimit, 50)
+
+      const logs = await modLogRepo.findByGroupAutomated(group.id, aiCount)
+      if (logs.length === 0) {
+        await ctx.reply('No AI moderation logs for this group.')
+        return
+      }
+
+      const lines = logs.map(formatLogEntry)
+      await ctx.reply(`🤖 <b>AI Moderation log</b> (last ${logs.length})\n\n${lines.join('\n\n')}`)
       return
     }
 

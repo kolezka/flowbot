@@ -50,4 +50,18 @@ export class ModerationLogRepository {
       take: limit,
     })
   }
+
+  async findByGroupAutomated(groupId: string, limit = 10): Promise<ModerationLog[]> {
+    return this.prisma.moderationLog.findMany({
+      where: {
+        groupId,
+        OR: [
+          { automated: true },
+          { action: 'ai_spam_detected' },
+        ],
+      },
+      orderBy: { createdAt: 'desc' },
+      take: limit,
+    })
+  }
 }

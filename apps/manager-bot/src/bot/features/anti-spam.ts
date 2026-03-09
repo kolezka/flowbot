@@ -143,6 +143,7 @@ export function createAntiSpamFeature(antiSpamService: AntiSpamService, prisma: 
                 targetId: BigInt(fromId),
                 reason,
                 details: {
+                  classifier: 'ai',
                   label: result.classification.label,
                   confidence: result.classification.confidence,
                   aiReason: result.classification.reason,
