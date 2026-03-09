@@ -4,7 +4,8 @@
     "bot": "pnpm --filter @tg-allegro/bot",
     "db": "pnpm --filter @tg-allegro/db",
     "frontend": "pnpm --filter @tg-allegro/frontend",
-    "api": "pnpm --filter @tg-allegro/api"
+    "api": "pnpm --filter @tg-allegro/api",
+    "manager-bot": "pnpm --filter @tg-allegro/manager-bot"
   },
   "devDependencies": {
     "@types/node": "^25.3.0"

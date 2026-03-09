@@ -4,6 +4,7 @@
     { "path": "./apps/api" },
     { "path": "./apps/frontend" },
     { "path": "./apps/bot" },
-    { "path": "./packages/db" }
+    { "path": "./packages/db" },
+    { "path": "./apps/manager-bot" }
   ]
 }
