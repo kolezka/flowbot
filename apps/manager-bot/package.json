@@ -15,6 +15,7 @@
     "start": "tsc && tsx ./src/main.ts",
     "start:force": "tsx ./src/main.ts",
     "test": "vitest run",
+    "test:integration": "vitest run --config vitest.integration.config.ts",
     "test:watch": "vitest"
   },
   "dependencies": {
