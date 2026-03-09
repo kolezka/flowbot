@@ -10,6 +10,7 @@ import { hydrateReply, parseMode } from '@grammyjs/parse-mode'
 import { sequentialize } from '@grammyjs/runner'
 import { Bot as TelegramBot } from 'grammy'
 import { AdminCacheService } from '../services/admin-cache.js'
+import { createModerationFeature } from './features/moderation.js'
 import { createPermissionsFeature } from './features/permissions.js'
 import { unhandledFeature } from './features/unhandled.js'
 import { errorHandler } from './handlers/error.js'
@@ -72,6 +73,7 @@ export function createBot(token: string, dependencies: Dependencies, botConfig?:
 
   // Features
   protectedBot.use(createPermissionsFeature(prisma))
+  protectedBot.use(createModerationFeature(prisma))
   protectedBot.use(unhandledFeature)
 
   return bot

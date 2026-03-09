@@ -36,7 +36,7 @@ Source docs: `docs/plan/mb-05-tasks.md` (manager-bot), `docs/plan/05-tasks.md` (
 
 - [x] **MB-11**: Admin Cache Middleware — `src/services/admin-cache.ts` (in-memory Map, 5-min TTL). Invalidate on chat_member admin changes. Populate ctx.session.adminIds.
 
-- [ ] **MB-12**: Permission Filters and Mod Management — Filters: is-group, is-admin, is-moderator, is-mod-or-admin. `src/bot/helpers/permissions.ts` (requirePermission). Feature: /mod, /unmod, /mods commands. MemberRepository.
+- [x] **MB-12**: Permission Filters and Mod Management — Filters: is-group, is-admin, is-moderator, is-mod-or-admin. `src/bot/helpers/permissions.ts` (requirePermission). Feature: /mod, /unmod, /mods commands. MemberRepository.
 
 ## Phase 4: Core Moderation
 
@@ -145,3 +145,127 @@ Source docs: `docs/plan/mb-05-tasks.md` (manager-bot), `docs/plan/05-tasks.md` (
 - [ ] **TC-21**: Integration Test Harness — vitest.integration.config.ts. Gated behind INTEGRATION_TESTS_ENABLED. Tests: connect, send to Saved Messages. TIER: Optional.
 
 - [ ] **TC-22**: Documentation — Update CLAUDE.md. Create apps/tg-client/README.md. Add *.session to .gitignore.
+
+---
+
+# Cross-App Features & Platform Evolution
+
+Specs: `.ralph/specs/cross-app-integration.md`, `.ralph/specs/dashboard-moderation.md`, `.ralph/specs/analytics.md`
+
+**Prerequisites**: Phases 1–7 of both apps must be complete before starting Phase 8. These phases modify `apps/api` and `apps/frontend` (previously out of scope) and add new Prisma models.
+
+---
+
+## Phase 8: Cross-App Integration
+
+### 8A — Product Promotion in Managed Groups
+
+- [ ] **XP-01**: Product Read Repository — Create `apps/manager-bot/src/repositories/ProductRepository.ts` with read-only access to Product and Category models (findBySlug, findFeatured, findByCategory). Add `SALES_BOT_USERNAME` to manager-bot config.ts Valibot schema (optional).
+
+- [ ] **XP-02**: Deeplink Generator — Create `apps/manager-bot/src/bot/helpers/deeplink.ts` with `productDeeplink(botUsername, productId)` and `productCard(product)` HTML formatter (name, price, image, buy button).
+
+- [ ] **XP-03**: Promote Feature — Create `apps/manager-bot/src/bot/features/promote.ts`. Commands: `/promote <slug>` (send product card to group), `/featured` (list featured products). Admin+ only. Log to ModerationLog as `promotion`.
+
+### 8B — Automated Member → Customer Pipeline
+
+- [ ] **XP-04**: Pipeline Config — Add `pipelineEnabled`, `pipelineDmTemplate`, `pipelineDeeplink` fields to GroupConfig Prisma model. Migrate + generate. Verify existing apps compile.
+
+- [ ] **XP-05**: Welcome DM Job Emitter — Extend `apps/manager-bot/src/bot/features/welcome.ts` to write `AutomationJob(SEND_WELCOME_DM)` when a member joins and `pipelineEnabled` is true. Payload: `{ userId, text, deeplink }`.
+
+- [ ] **XP-06**: Welcome DM Action — Add `SEND_WELCOME_DM` to tg-client ActionType enum. Create `apps/tg-client/src/actions/send-welcome-dm.ts`. Resolve user by telegramId, send formatted DM with product deeplink.
+
+- [ ] **XP-07**: Pipeline Commands — Add `/pipeline on|off`, `/pipeline template <text>`, `/pipeline test` commands to manager-bot setup.ts. Admin+ only.
+
+### 8C — Cross-Posting / Content Syndication
+
+- [ ] **XP-08**: CrossPostTemplate Model — Add `CrossPostTemplate` Prisma model (name, messageText, targetChatIds BigInt[], isActive, createdBy BigInt). Migrate + generate.
+
+- [ ] **XP-09**: Cross-Post Action — Add `CROSS_POST` to tg-client ActionType enum. Create `apps/tg-client/src/actions/cross-post.ts`. Send same message to multiple chat IDs with 100ms stagger delay. Log each delivery to ClientLog.
+
+- [ ] **XP-10**: Cross-Post Feature — Create `apps/manager-bot/src/bot/features/crosspost.ts`. Commands: `/crosspost <template_name>` (execute), `/crosspost create <name>` (interactive template builder), `/crosspost list`, `/crosspost delete <name>`. Admin+ only. Writes AutomationJob(CROSS_POST).
+
+### 8D — Broadcast System
+
+- [ ] **XP-11**: Broadcast Action — Add `BROADCAST` to tg-client ActionType enum. Create `apps/tg-client/src/actions/broadcast.ts`. Staggered delivery to targetChatIds with configurable delay (default 200ms). Track per-target success/failure in job details JSON.
+
+- [ ] **XP-12**: Broadcast API Endpoints — Create `apps/api/src/broadcast/` module. POST `/api/broadcast` (create AutomationJob with BROADCAST type), GET `/api/broadcast` (list with status), GET `/api/broadcast/:id` (details + per-target delivery status). class-validator DTOs.
+
+- [ ] **XP-13**: Broadcast Frontend Page — Create `apps/frontend/src/app/dashboard/broadcast/` pages. Composer: text editor + managed group selector + schedule picker. List view with delivery status badges. Uses API client.
+
+### 8E — Order Notifications in Groups
+
+- [ ] **XP-14**: OrderEvent Model — Add `OrderEvent` Prisma model (eventType, orderData Json, targetChatIds BigInt[], jobId String?, processed Boolean). Migrate + generate.
+
+- [ ] **XP-15**: Order Notification Action — Add `SEND_ORDER_NOTIFICATION` to tg-client ActionType enum. Create `apps/tg-client/src/actions/order-notification.ts`. Format social-proof message ("Someone just purchased X!"), send to target groups. Anonymize buyer data.
+
+- [ ] **XP-16**: Notification Config Commands — Add `/notifications on|off`, `/notifications events <order_placed|order_shipped>` to manager-bot setup.ts. Stores target chatId + event types in GroupConfig (add `notificationEvents String[]` field).
+
+### 8F — User Identity Unification
+
+- [ ] **XP-17**: UserIdentity Model — Add `UserIdentity` Prisma model (telegramId BigInt unique, userId String? FK to User, reputationScore Int, firstSeenAt, updatedAt). Migrate + generate.
+
+- [ ] **XP-18**: Identity Resolution Service — Create `packages/db/src/services/identity.ts`. Functions: `resolveIdentity(telegramId)` (find or create), `linkToUser(telegramId, userId)`, `getFullProfile(telegramId)` (joins User + GroupMember + warnings). Export from package index.
+
+- [ ] **XP-19**: Unified User API — Extend `apps/api/src/users/users.controller.ts` with GET `/api/users/:telegramId/profile` returning cross-app data: sales bot user info, group memberships, warnings, reputation. New DTO.
+
+- [ ] **XP-20**: Unified User Frontend — Create `apps/frontend/src/app/dashboard/users/[telegramId]/profile/page.tsx`. Display: sales history, group memberships with roles, active warnings, moderation log, reputation score.
+
+---
+
+## Phase 9: Dashboard & Analytics
+
+### 9A — Manager-Bot Dashboard Integration
+
+- [ ] **DB-01**: Groups API Module — Create `apps/api/src/moderation/groups/` with controller + service. GET `/api/groups` (paginated, filterable by isActive), GET `/api/groups/:id` (detail with config + member count), PATCH `/api/groups/:id/config` (update GroupConfig). class-validator DTOs.
+
+- [ ] **DB-02**: Moderation Logs API — Create `apps/api/src/moderation/logs/` with controller + service. GET `/api/moderation/logs` (filterable by groupId, targetId, action, dateRange, automated; paginated), GET `/api/moderation/logs/stats` (aggregated: actions/day, top actors/targets).
+
+- [ ] **DB-03**: Warnings API — Create `apps/api/src/moderation/warnings/` with controller + service. GET `/api/warnings` (filterable by groupId, memberId, isActive; paginated), DELETE `/api/warnings/:id` (set isActive=false), GET `/api/warnings/stats` (counts by group, escalation stats).
+
+- [ ] **DB-04**: Members API — Create `apps/api/src/moderation/members/` with controller + service. GET `/api/groups/:id/members` (paginated, filterable by role), GET `/api/groups/:id/members/:memberId` (detail with warnings).
+
+- [ ] **DB-05**: Frontend Moderation Layout — Create `apps/frontend/src/app/dashboard/moderation/layout.tsx` and `page.tsx` (overview). Add "Moderation" section to dashboard sidebar. Overview shows: group count, recent actions, quick stats.
+
+- [ ] **DB-06**: Groups Management Pages — Create `apps/frontend/src/app/dashboard/moderation/groups/page.tsx` (list table) and `[id]/page.tsx` (detail with config editor form). API client extensions in `lib/api.ts`.
+
+- [ ] **DB-07**: Moderation Log Viewer — Create `apps/frontend/src/app/dashboard/moderation/logs/page.tsx`. Sortable, filterable table with: action type badges, actor/target names, timestamps, reason text. Date range picker and action type filter.
+
+- [ ] **DB-08**: Members & Warnings Pages — Create `apps/frontend/src/app/dashboard/moderation/groups/[id]/members/page.tsx` (member list with role badges, warning counts) and `warnings/page.tsx` (active warnings with deactivate action).
+
+### 9B — Group Analytics
+
+- [ ] **AN-01**: Analytics Prisma Model — Add `GroupAnalyticsSnapshot` model (groupId, date, memberCount, newMembers, leftMembers, messageCount, spamDetected, linksBlocked, warningsIssued, mutesIssued, bansIssued, deletedMessages). Unique on [groupId, date]. Migrate + generate.
+
+- [ ] **AN-02**: Analytics Service — Create `apps/manager-bot/src/services/analytics.ts`. In-memory counters per group, flush to DB every 5 minutes. Methods: incrementMessage, incrementSpam, incrementWarning, etc. Wire into relevant middlewares/features. Start/stop with bot lifecycle.
+
+- [ ] **AN-03**: Stats Command — Create `apps/manager-bot/src/bot/features/stats.ts`. Commands: `/stats` (today's stats), `/stats 7d` (last 7 days), `/stats 30d` (last 30 days). Formatted message with member growth, messages, spam, moderation actions.
+
+- [ ] **AN-04**: Analytics API — Create `apps/api/src/analytics/` module. GET `/api/analytics/groups/:id` (time series with from/to/granularity params), GET `/api/analytics/groups/:id/summary` (7d/30d/all aggregates), GET `/api/analytics/overview` (cross-group dashboard data).
+
+- [ ] **AN-05**: Analytics Frontend — Create `apps/frontend/src/app/dashboard/moderation/analytics/page.tsx`. Add chart library (recharts) dependency. Components: MemberGrowthChart (line), ModerationActivityChart (stacked bar), SpamTrendChart (line), GroupHealthCard (KPIs).
+
+---
+
+## Phase 10: AI & Advanced Features
+
+### 10A — Reputation System
+
+- [ ] **XP-21**: ReputationScore Model — Add `ReputationScore` Prisma model (telegramId BigInt unique, totalScore, messageFactor, tenureFactor, warningPenalty, moderationBonus, lastCalculated). Migrate + generate.
+
+- [ ] **XP-22**: Reputation Calculation Service — Create `apps/manager-bot/src/services/reputation.ts`. Calculate score from: message count (+), membership tenure (+), warnings (-), active moderation role (+). Recalculate on moderation events. Store in ReputationScore table.
+
+- [ ] **XP-23**: Reputation Commands — Add `/reputation` (show own score), `/reputation @user` (show user's score) to manager-bot. Add reputation info to /warnings and /modlog output.
+
+- [ ] **XP-24**: Reputation API — Extend `apps/api/src/analytics/` or create new endpoint: GET `/api/reputation/:telegramId`. Expose score + breakdown. Consumable by sales bot for discount logic.
+
+### 10B — AI Content Moderation
+
+- [ ] **MB-32**: Claude API Client — Add `@anthropic-ai/sdk` dependency to manager-bot. Create `apps/manager-bot/src/services/ai-classifier.ts` with rate-limited Claude API client. Config: `ANTHROPIC_API_KEY` (optional), `AI_MOD_ENABLED` (default false). System prompt for content classification.
+
+- [ ] **MB-33**: AI Classification Pipeline — Implement `classifyContent(text): Promise<Classification>` returning `{ label: 'safe'|'spam'|'scam'|'toxic'|'off-topic', confidence: number, reason: string }`. Batch-friendly with request queuing. Cache results by content hash (5-min TTL).
+
+- [ ] **MB-34**: Anti-Spam AI Integration — Extend `apps/manager-bot/src/services/anti-spam.ts` to call AI classifier as fallback when rule-based checks are inconclusive. Only trigger for messages that pass basic rules but have suspicious patterns. Confidence threshold from GroupConfig.
+
+- [ ] **MB-35**: AI Moderation Commands — Add `/aimod on|off`, `/aimod threshold <0.0-1.0>`, `/aimod stats` to manager-bot setup.ts. Add `aiModEnabled Boolean`, `aiModThreshold Float` to GroupConfig. Log AI decisions to ModerationLog with `details: { aiClassification }`.
+
+- [ ] **MB-36**: AI Moderation Audit — Extend /modlog to show AI classification details. Add `automated: true, details: { classifier: 'ai', label, confidence, reason }` to ModerationLog entries from AI. Dashboard filter for AI vs rule-based actions.
