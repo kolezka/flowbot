@@ -27,6 +27,7 @@ import { createSetupFeature } from './features/setup.js'
 import { unhandledFeature } from './features/unhandled.js'
 import { createWelcomeFeature } from './features/welcome.js'
 import { errorHandler } from './handlers/error.js'
+import { i18n } from './i18n.js'
 import { adminCache } from './middlewares/admin-cache.js'
 import { groupData } from './middlewares/group-data.js'
 import { session } from './middlewares/session.js'
@@ -78,6 +79,9 @@ export function createBot(token: string, dependencies: Dependencies, botConfig?:
   protectedBot.use(hydrateReply)
   protectedBot.use(hydrate())
   protectedBot.use(session())
+
+  // i18n
+  protectedBot.use(i18n)
 
   // Group data
   protectedBot.use(groupData(prisma))

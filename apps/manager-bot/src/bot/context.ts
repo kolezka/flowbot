@@ -1,5 +1,6 @@
 import type { AutoChatActionFlavor } from '@grammyjs/auto-chat-action'
 import type { HydrateFlavor } from '@grammyjs/hydrate'
+import type { I18nFlavor } from '@grammyjs/i18n'
 import type { ParseModeFlavor } from '@grammyjs/parse-mode'
 import type { GroupConfig } from '@tg-allegro/db'
 import type { Context as DefaultContext, SessionFlavor } from 'grammy'
@@ -22,6 +23,7 @@ export type Context = ParseModeFlavor<
     DefaultContext &
     ExtendedContextFlavor &
     SessionFlavor<SessionData> &
+    I18nFlavor &
     AutoChatActionFlavor
   >
 >
