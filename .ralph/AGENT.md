@@ -102,7 +102,23 @@ pnpm manager-bot typecheck    # Must still pass
 pnpm tg-client typecheck      # Must still pass
 ```
 
-## Existing App Commands (reference only — DO NOT MODIFY these apps)
+## apps/trigger Commands (available after TD-02)
+
+```bash
+pnpm trigger dev              # Trigger.dev dev mode
+pnpm trigger deploy           # Deploy to trigger.raqz.link
+pnpm trigger typecheck        # tsc --noEmit
+pnpm trigger build            # tsc build
+```
+
+## packages/telegram-transport Commands (available after TD-01)
+
+```bash
+pnpm telegram-transport build      # tsc build
+pnpm telegram-transport typecheck  # tsc --noEmit
+```
+
+## Other App Commands
 
 ```bash
 # Bot (sales bot)

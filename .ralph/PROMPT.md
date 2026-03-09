@@ -2,12 +2,14 @@
 
 ## Mission
 
-Implement two new applications in this monorepo:
+Implement and maintain the following applications and packages:
 
-1. **`apps/manager-bot`** — Telegram group management and community administration bot (grammY / Bot API). Plans in `docs/plan/mb-*.md`.
-2. **`apps/tg-client`** — Telegram MTProto client for automation (GramJS). Plans in `docs/plan/00-05.md`.
+1. **`apps/manager-bot`** — Telegram group management and community administration bot (grammY / Bot API). Plans in `docs/plan/mb-*.md`. COMPLETE.
+2. **`apps/tg-client`** — DEPRECATED. Code extracted to `packages/telegram-transport`. App being replaced by `apps/trigger`.
+3. **`packages/telegram-transport`** — Shared package extracted from tg-client: GramJS transport, ActionRunner, CircuitBreaker, action executors. Imported by `apps/trigger`.
+4. **`apps/trigger`** — Trigger.dev v3 worker. All background job task definitions. Connects to self-hosted instance at `trigger.raqz.link`. Design: `docs/plans/2026-03-09-trigger-dev-integration-design.md`.
 
-Both are independent apps sharing only the `@tg-allegro/db` Prisma layer and root monorepo config. Neither imports from the other or from `apps/bot`.
+Apps share `@tg-allegro/db` (Prisma), `@tg-allegro/telegram-transport`, and `@trigger.dev/sdk`. Neither imports from `apps/bot`.
 
 ## Execution Order
 
@@ -32,24 +34,24 @@ When in doubt, defer to `CLAUDE.md` for repo-wide conventions and the respective
 ## Scope Boundaries
 
 ### In Scope
-- All work under `apps/manager-bot/` (new app)
-- All work under `apps/tg-client/` (new app)
+- All work under `apps/manager-bot/` (existing, complete)
+- All work under `apps/trigger/` (new — Trigger.dev worker)
+- All work under `packages/telegram-transport/` (new — extracted from tg-client)
+- `apps/api/` — Modifications to trigger tasks from services (broadcast, order events)
+- `apps/bot/` — Modifications to trigger tasks (order notifications)
+- `apps/frontend/` — Dashboard modifications
 - New Prisma models added to `packages/db/prisma/schema.prisma` (additive only)
-- Root `package.json` script additions (`"manager-bot"` and `"tg-client"` filters)
+- Root `package.json` script additions
 - Root `tsconfig.json` project reference additions
-- `CLAUDE.md` updates reflecting both new apps (final tasks)
-- `*.session` added to `.gitignore`
+- `CLAUDE.md` updates
 
 ### Out of Scope — DO NOT TOUCH
-- `apps/bot/` — The existing sales bot. Zero code coupling. Never modify.
-- `apps/api/` — The NestJS API. Not modified (except Task TC-19 which is docs-only).
-- `apps/frontend/` — The Next.js dashboard. Not modified.
 - `packages/db/src/` — Do not change existing code. Only add new models to the Prisma schema.
 
 ### Separation Rules
-- `apps/manager-bot` must NOT import from `apps/bot` or `apps/tg-client`
-- `apps/tg-client` must NOT import from `apps/bot` or `apps/manager-bot`
-- Both share only: `@tg-allegro/db`, `tsconfig.base.json`, Docker Compose PostgreSQL
+- `apps/trigger` imports from `@tg-allegro/telegram-transport` and `@tg-allegro/db`
+- `apps/api`, `apps/bot`, `apps/manager-bot` trigger tasks via `@trigger.dev/sdk` only — no direct imports from `apps/trigger`
+- `packages/telegram-transport` has no app dependencies — only `telegram` (GramJS) and `pino`
 
 ## Implementation Guardrails
 
@@ -73,15 +75,23 @@ When in doubt, defer to `CLAUDE.md` for repo-wide conventions and the respective
 - Admin lists cached with 5-minute TTL + `chat_member` invalidation
 - Bot must request `chat_member` in `allowed_updates`
 
-### tg-client Specific
+### packages/telegram-transport Specific
 - **Framework**: GramJS (`telegram` npm package) for MTProto
 - Transport abstraction: `ITelegramTransport` interface wraps GramJS
-- Session management: interactive `authenticate` script for first-time auth, string session in env var
-- Database-backed job queue (AutomationJob table) for cross-app communication
 - Error classification: FATAL / RATE_LIMITED / AUTH_EXPIRED / RETRYABLE
 - Circuit breaker wrapping transport
-- Session strings NEVER logged (Pino `redact` config)
-- Serial job execution for rate limit safety
+- ActionRunner with retry/backoff/idempotency
+- Action executors: broadcast, order-notification, cross-post, send-message
+- Session strings NEVER logged
+
+### apps/trigger Specific
+- **Framework**: Trigger.dev v3 SDK
+- Self-hosted instance: `trigger.raqz.link`
+- Task definitions in `src/trigger/`, lib helpers in `src/lib/`
+- Telegram queue: concurrency 1 (GramJS session constraint)
+- Ops queue: no concurrency limit (scheduled messages, analytics, health)
+- Lazy GramJS singleton initialization on first Telegram task
+- Cron tasks for scheduled messages (1min), analytics (daily), health (5min)
 
 ### Prisma Schema Rules (Both Apps)
 - New models are ADDITIVE ONLY to `packages/db/prisma/schema.prisma`

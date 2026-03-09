@@ -6,7 +6,9 @@
     "frontend": "pnpm --filter @tg-allegro/frontend",
     "api": "pnpm --filter @tg-allegro/api",
     "manager-bot": "pnpm --filter @tg-allegro/manager-bot",
-    "tg-client": "pnpm --filter @tg-allegro/tg-client"
+    "tg-client": "pnpm --filter @tg-allegro/tg-client",
+    "telegram-transport": "pnpm --filter @tg-allegro/telegram-transport",
+    "trigger": "pnpm --filter @tg-allegro/trigger"
   },
   "devDependencies": {
     "@types/node": "^25.3.0"
