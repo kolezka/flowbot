@@ -64,7 +64,7 @@ Source docs: `docs/plan/mb-05-tasks.md` (manager-bot), `docs/plan/05-tasks.md` (
 
 - [x] **MB-22**: Rules System — `src/bot/features/rules.ts`. /rules, /setrules, /pinrules.
 
-- [ ] **MB-23**: Keyword Filters — `src/bot/features/filters.ts`. /filter add|remove|list. Case-insensitive. Delete + warn on match.
+- [x] **MB-23**: Keyword Filters — `src/bot/features/filters.ts`. /filter add|remove|list. Case-insensitive. Delete + warn on match.
 
 - [ ] **MB-24**: Media Restrictions — /restrict media type on|off. Granular ChatPermissions.
 

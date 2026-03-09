@@ -17,6 +17,7 @@ import { createAntiSpamFeature } from './features/anti-spam.js'
 import { createAuditFeature } from './features/audit.js'
 import { createDeletionFeature } from './features/deletion.js'
 import { createFiltersFeature } from './features/filters.js'
+import { createMediaRestrictFeature } from './features/media-restrict.js'
 import { createModerationFeature } from './features/moderation.js'
 import { createPermissionsFeature } from './features/permissions.js'
 import { createRulesFeature } from './features/rules.js'
@@ -93,6 +94,7 @@ export function createBot(token: string, dependencies: Dependencies, botConfig?:
   protectedBot.use(createDeletionFeature(prisma))
   protectedBot.use(createWelcomeFeature(prisma))
   protectedBot.use(createSetupFeature(prisma))
+  protectedBot.use(createMediaRestrictFeature(prisma))
   protectedBot.use(createAuditFeature(prisma))
   protectedBot.use(createRulesFeature(prisma))
   protectedBot.use(unhandledFeature)
