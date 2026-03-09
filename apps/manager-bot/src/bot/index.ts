@@ -23,6 +23,7 @@ import { createDeletionFeature } from './features/deletion.js'
 import { createFiltersFeature } from './features/filters.js'
 import { createMediaRestrictFeature } from './features/media-restrict.js'
 import { createModerationFeature } from './features/moderation.js'
+import { createNotificationsFeature } from './features/notifications.js'
 import { createPermissionsFeature } from './features/permissions.js'
 import { createPipelineFeature } from './features/pipeline.js'
 import { createPromoteFeature } from './features/promote.js'
@@ -122,6 +123,7 @@ export function createBot(token: string, dependencies: Dependencies, botConfig?:
   protectedBot.use(createPipelineFeature(prisma))
   protectedBot.use(createPromoteFeature(prisma))
   protectedBot.use(createCrossPostFeature(prisma))
+  protectedBot.use(createNotificationsFeature(prisma))
   protectedBot.use(unhandledFeature)
 
   return bot

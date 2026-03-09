@@ -63,6 +63,8 @@ export const ModelName = {
   ModerationLog: 'ModerationLog',
   ScheduledMessage: 'ScheduledMessage',
   CrossPostTemplate: 'CrossPostTemplate',
+  BroadcastMessage: 'BroadcastMessage',
+  OrderEvent: 'OrderEvent',
   ClientLog: 'ClientLog',
   ClientSession: 'ClientSession'
 } as const
@@ -211,6 +213,7 @@ export const GroupConfigScalarFieldEnum = {
   keywordFilters: 'keywordFilters',
   aiModEnabled: 'aiModEnabled',
   aiModThreshold: 'aiModThreshold',
+  notificationEvents: 'notificationEvents',
   pipelineEnabled: 'pipelineEnabled',
   pipelineDmTemplate: 'pipelineDmTemplate',
   pipelineDeeplink: 'pipelineDeeplink',
@@ -296,6 +299,32 @@ export const CrossPostTemplateScalarFieldEnum = {
 export type CrossPostTemplateScalarFieldEnum = (typeof CrossPostTemplateScalarFieldEnum)[keyof typeof CrossPostTemplateScalarFieldEnum]
 
 
+export const BroadcastMessageScalarFieldEnum = {
+  id: 'id',
+  status: 'status',
+  text: 'text',
+  targetChatIds: 'targetChatIds',
+  results: 'results',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type BroadcastMessageScalarFieldEnum = (typeof BroadcastMessageScalarFieldEnum)[keyof typeof BroadcastMessageScalarFieldEnum]
+
+
+export const OrderEventScalarFieldEnum = {
+  id: 'id',
+  eventType: 'eventType',
+  orderData: 'orderData',
+  targetChatIds: 'targetChatIds',
+  jobId: 'jobId',
+  processed: 'processed',
+  createdAt: 'createdAt'
+} as const
+
+export type OrderEventScalarFieldEnum = (typeof OrderEventScalarFieldEnum)[keyof typeof OrderEventScalarFieldEnum]
+
+
 export const ClientLogScalarFieldEnum = {
   id: 'id',
   level: 'level',
@@ -333,6 +362,13 @@ export const NullableJsonNullValueInput = {
 } as const
 
 export type NullableJsonNullValueInput = (typeof NullableJsonNullValueInput)[keyof typeof NullableJsonNullValueInput]
+
+
+export const JsonNullValueInput = {
+  JsonNull: JsonNull
+} as const
+
+export type JsonNullValueInput = (typeof JsonNullValueInput)[keyof typeof JsonNullValueInput]
 
 
 export const QueryMode = {

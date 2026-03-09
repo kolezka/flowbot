@@ -5,6 +5,8 @@ export enum ActionType {
   FORWARD_MESSAGE = 'FORWARD_MESSAGE',
   SEND_WELCOME_DM = 'SEND_WELCOME_DM',
   CROSS_POST = 'CROSS_POST',
+  BROADCAST = 'BROADCAST',
+  SEND_ORDER_NOTIFICATION = 'SEND_ORDER_NOTIFICATION',
 }
 
 export interface SendMessagePayload {
@@ -36,7 +38,21 @@ export interface CrossPostPayload {
   silent?: boolean
 }
 
-export type ActionPayload = SendMessagePayload | ForwardMessagePayload | SendWelcomeDmPayload | CrossPostPayload
+export interface BroadcastPayload {
+  text: string
+  targetChatIds: string[]
+  parseMode?: string
+  delayMs?: number
+}
+
+export interface SendOrderNotificationPayload {
+  eventType: string
+  orderData: Record<string, unknown>
+  targetChatIds: string[]
+  parseMode?: string
+}
+
+export type ActionPayload = SendMessagePayload | ForwardMessagePayload | SendWelcomeDmPayload | CrossPostPayload | BroadcastPayload | SendOrderNotificationPayload
 
 export interface Action {
   type: ActionType
@@ -73,6 +89,20 @@ export const CrossPostPayloadSchema = v.object({
   silent: v.optional(v.boolean()),
 })
 
+export const BroadcastPayloadSchema = v.object({
+  text: v.string(),
+  targetChatIds: v.array(v.string()),
+  parseMode: v.optional(v.string()),
+  delayMs: v.optional(v.number()),
+})
+
+export const SendOrderNotificationPayloadSchema = v.object({
+  eventType: v.string(),
+  orderData: v.record(v.string(), v.unknown()),
+  targetChatIds: v.array(v.string()),
+  parseMode: v.optional(v.string()),
+})
+
 export const ActionSchema = v.variant('type', [
   v.object({
     type: v.literal(ActionType.SEND_MESSAGE),
@@ -92,6 +122,16 @@ export const ActionSchema = v.variant('type', [
   v.object({
     type: v.literal(ActionType.CROSS_POST),
     payload: CrossPostPayloadSchema,
+    idempotencyKey: v.optional(v.string()),
+  }),
+  v.object({
+    type: v.literal(ActionType.BROADCAST),
+    payload: BroadcastPayloadSchema,
+    idempotencyKey: v.optional(v.string()),
+  }),
+  v.object({
+    type: v.literal(ActionType.SEND_ORDER_NOTIFICATION),
+    payload: SendOrderNotificationPayloadSchema,
     idempotencyKey: v.optional(v.string()),
   }),
 ])

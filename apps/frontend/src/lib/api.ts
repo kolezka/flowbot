@@ -152,6 +152,30 @@ export interface CartsResponse {
   totalPages: number;
 }
 
+// Broadcast interfaces
+export interface Broadcast {
+  id: string;
+  status: string;
+  text: string;
+  targetChatIds: string[];
+  results?: any;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface BroadcastsResponse {
+  data: Broadcast[];
+  total: number;
+  page: number;
+  limit: number;
+  totalPages: number;
+}
+
+export interface CreateBroadcastDto {
+  text: string;
+  targetChatIds: string[];
+}
+
 export interface ApiError {
   message: string;
   status?: number;
@@ -350,6 +374,27 @@ class ApiClient {
   async removeCartItem(userId: string, itemId: string): Promise<void> {
     return this.request<void>(`/api/cart/user/${userId}/items/${itemId}`, {
       method: 'DELETE',
+    });
+  }
+
+  // Broadcasts
+  async getBroadcasts(page?: number, limit?: number): Promise<BroadcastsResponse> {
+    const params = new URLSearchParams();
+    if (page !== undefined) params.append('page', page.toString());
+    if (limit !== undefined) params.append('limit', limit.toString());
+
+    const queryString = params.toString();
+    return this.request<BroadcastsResponse>(`/api/broadcast${queryString ? `?${queryString}` : ''}`);
+  }
+
+  async getBroadcast(id: string): Promise<Broadcast> {
+    return this.request<Broadcast>(`/api/broadcast/${id}`);
+  }
+
+  async createBroadcast(data: CreateBroadcastDto): Promise<Broadcast> {
+    return this.request<Broadcast>('/api/broadcast', {
+      method: 'POST',
+      body: JSON.stringify(data),
     });
   }
 }

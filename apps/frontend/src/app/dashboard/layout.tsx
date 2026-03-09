@@ -28,6 +28,9 @@ export default function DashboardLayout({
             <Link href="/dashboard/carts">
               <Button variant="ghost">Carts</Button>
             </Link>
+            <Link href="/dashboard/broadcast">
+              <Button variant="ghost">Broadcast</Button>
+            </Link>
           </nav>
         </div>
       </header>

@@ -78,6 +78,16 @@ export type ScheduledMessage = Prisma.ScheduledMessageModel
  */
 export type CrossPostTemplate = Prisma.CrossPostTemplateModel
 /**
+ * Model BroadcastMessage
+ * 
+ */
+export type BroadcastMessage = Prisma.BroadcastMessageModel
+/**
+ * Model OrderEvent
+ * 
+ */
+export type OrderEvent = Prisma.OrderEventModel
+/**
  * Model ClientLog
  * 
  */

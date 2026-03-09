@@ -7,6 +7,7 @@ import { UsersModule } from './users/users.module';
 import { ProductsModule } from './products/products.module';
 import { CategoriesModule } from './categories/categories.module';
 import { CartModule } from './cart/cart.module';
+import { BroadcastModule } from './broadcast/broadcast.module';
 
 @Global()
 @Module({
@@ -19,6 +20,7 @@ import { CartModule } from './cart/cart.module';
     ProductsModule,
     CategoriesModule,
     CartModule,
+    BroadcastModule,
   ],
   controllers: [AppController],
   providers: [AppService],

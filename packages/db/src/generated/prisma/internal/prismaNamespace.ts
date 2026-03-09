@@ -396,6 +396,8 @@ export const ModelName = {
   ModerationLog: 'ModerationLog',
   ScheduledMessage: 'ScheduledMessage',
   CrossPostTemplate: 'CrossPostTemplate',
+  BroadcastMessage: 'BroadcastMessage',
+  OrderEvent: 'OrderEvent',
   ClientLog: 'ClientLog',
   ClientSession: 'ClientSession'
 } as const
@@ -413,7 +415,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "user" | "category" | "product" | "cart" | "cartItem" | "managedGroup" | "groupConfig" | "groupMember" | "warning" | "moderationLog" | "scheduledMessage" | "crossPostTemplate" | "clientLog" | "clientSession"
+    modelProps: "user" | "category" | "product" | "cart" | "cartItem" | "managedGroup" | "groupConfig" | "groupMember" | "warning" | "moderationLog" | "scheduledMessage" | "crossPostTemplate" | "broadcastMessage" | "orderEvent" | "clientLog" | "clientSession"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -1305,6 +1307,154 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    BroadcastMessage: {
+      payload: Prisma.$BroadcastMessagePayload<ExtArgs>
+      fields: Prisma.BroadcastMessageFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.BroadcastMessageFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BroadcastMessagePayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.BroadcastMessageFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BroadcastMessagePayload>
+        }
+        findFirst: {
+          args: Prisma.BroadcastMessageFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BroadcastMessagePayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.BroadcastMessageFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BroadcastMessagePayload>
+        }
+        findMany: {
+          args: Prisma.BroadcastMessageFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BroadcastMessagePayload>[]
+        }
+        create: {
+          args: Prisma.BroadcastMessageCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BroadcastMessagePayload>
+        }
+        createMany: {
+          args: Prisma.BroadcastMessageCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.BroadcastMessageCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BroadcastMessagePayload>[]
+        }
+        delete: {
+          args: Prisma.BroadcastMessageDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BroadcastMessagePayload>
+        }
+        update: {
+          args: Prisma.BroadcastMessageUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BroadcastMessagePayload>
+        }
+        deleteMany: {
+          args: Prisma.BroadcastMessageDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.BroadcastMessageUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.BroadcastMessageUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BroadcastMessagePayload>[]
+        }
+        upsert: {
+          args: Prisma.BroadcastMessageUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BroadcastMessagePayload>
+        }
+        aggregate: {
+          args: Prisma.BroadcastMessageAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateBroadcastMessage>
+        }
+        groupBy: {
+          args: Prisma.BroadcastMessageGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.BroadcastMessageGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.BroadcastMessageCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.BroadcastMessageCountAggregateOutputType> | number
+        }
+      }
+    }
+    OrderEvent: {
+      payload: Prisma.$OrderEventPayload<ExtArgs>
+      fields: Prisma.OrderEventFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.OrderEventFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$OrderEventPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.OrderEventFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$OrderEventPayload>
+        }
+        findFirst: {
+          args: Prisma.OrderEventFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$OrderEventPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.OrderEventFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$OrderEventPayload>
+        }
+        findMany: {
+          args: Prisma.OrderEventFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$OrderEventPayload>[]
+        }
+        create: {
+          args: Prisma.OrderEventCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$OrderEventPayload>
+        }
+        createMany: {
+          args: Prisma.OrderEventCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.OrderEventCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$OrderEventPayload>[]
+        }
+        delete: {
+          args: Prisma.OrderEventDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$OrderEventPayload>
+        }
+        update: {
+          args: Prisma.OrderEventUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$OrderEventPayload>
+        }
+        deleteMany: {
+          args: Prisma.OrderEventDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.OrderEventUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.OrderEventUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$OrderEventPayload>[]
+        }
+        upsert: {
+          args: Prisma.OrderEventUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$OrderEventPayload>
+        }
+        aggregate: {
+          args: Prisma.OrderEventAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateOrderEvent>
+        }
+        groupBy: {
+          args: Prisma.OrderEventGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.OrderEventGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.OrderEventCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.OrderEventCountAggregateOutputType> | number
+        }
+      }
+    }
     ClientLog: {
       payload: Prisma.$ClientLogPayload<ExtArgs>
       fields: Prisma.ClientLogFieldRefs
@@ -1620,6 +1770,7 @@ export const GroupConfigScalarFieldEnum = {
   keywordFilters: 'keywordFilters',
   aiModEnabled: 'aiModEnabled',
   aiModThreshold: 'aiModThreshold',
+  notificationEvents: 'notificationEvents',
   pipelineEnabled: 'pipelineEnabled',
   pipelineDmTemplate: 'pipelineDmTemplate',
   pipelineDeeplink: 'pipelineDeeplink',
@@ -1705,6 +1856,32 @@ export const CrossPostTemplateScalarFieldEnum = {
 export type CrossPostTemplateScalarFieldEnum = (typeof CrossPostTemplateScalarFieldEnum)[keyof typeof CrossPostTemplateScalarFieldEnum]
 
 
+export const BroadcastMessageScalarFieldEnum = {
+  id: 'id',
+  status: 'status',
+  text: 'text',
+  targetChatIds: 'targetChatIds',
+  results: 'results',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type BroadcastMessageScalarFieldEnum = (typeof BroadcastMessageScalarFieldEnum)[keyof typeof BroadcastMessageScalarFieldEnum]
+
+
+export const OrderEventScalarFieldEnum = {
+  id: 'id',
+  eventType: 'eventType',
+  orderData: 'orderData',
+  targetChatIds: 'targetChatIds',
+  jobId: 'jobId',
+  processed: 'processed',
+  createdAt: 'createdAt'
+} as const
+
+export type OrderEventScalarFieldEnum = (typeof OrderEventScalarFieldEnum)[keyof typeof OrderEventScalarFieldEnum]
+
+
 export const ClientLogScalarFieldEnum = {
   id: 'id',
   level: 'level',
@@ -1742,6 +1919,13 @@ export const NullableJsonNullValueInput = {
 } as const
 
 export type NullableJsonNullValueInput = (typeof NullableJsonNullValueInput)[keyof typeof NullableJsonNullValueInput]
+
+
+export const JsonNullValueInput = {
+  JsonNull: JsonNull
+} as const
+
+export type JsonNullValueInput = (typeof JsonNullValueInput)[keyof typeof JsonNullValueInput]
 
 
 export const QueryMode = {
@@ -1986,6 +2170,8 @@ export type GlobalOmitConfig = {
   moderationLog?: Prisma.ModerationLogOmit
   scheduledMessage?: Prisma.ScheduledMessageOmit
   crossPostTemplate?: Prisma.CrossPostTemplateOmit
+  broadcastMessage?: Prisma.BroadcastMessageOmit
+  orderEvent?: Prisma.OrderEventOmit
   clientLog?: Prisma.ClientLogOmit
   clientSession?: Prisma.ClientSessionOmit
 }

@@ -189,6 +189,8 @@ model GroupConfig {
   aiModEnabled   Boolean @default(false)
   aiModThreshold Float   @default(0.8)
 
+  notificationEvents String[]
+
   pipelineEnabled    Boolean @default(false)
   pipelineDmTemplate String?
   pipelineDeeplink   String?
@@ -284,6 +286,33 @@ model CrossPostTemplate {
 // ==========================================
 // TG Client Models
 // ==========================================
+
+model BroadcastMessage {
+  id            String   @id @default(cuid())
+  status        String   @default("pending")
+  text          String
+  targetChatIds BigInt[]
+  results       Json?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@index([status])
+  @@index([createdAt])
+}
+
+model OrderEvent {
+  id            String   @id @default(cuid())
+  eventType     String
+  orderData     Json
+  targetChatIds BigInt[]
+  jobId         String?
+  processed     Boolean  @default(false)
+  createdAt     DateTime @default(now())
+
+  @@index([processed])
+  @@index([eventType])
+  @@index([createdAt])
+}
 
 model ClientLog {
   id        String   @id @default(cuid())
