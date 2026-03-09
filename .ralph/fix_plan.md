@@ -16,7 +16,7 @@ Source docs: `docs/plan/mb-05-tasks.md` (manager-bot), `docs/plan/05-tasks.md` (
 
 - [x] **MB-03**: Logger Module — `src/logger.ts` using Pino. pino-pretty in debug, pino/file in production. Match `apps/bot/src/logger.ts` pattern.
 
-- [ ] **MB-04**: Database Module — `src/database.ts` two-line singleton via `createPrismaClient(config.databaseUrl)` from `@tg-allegro/db`.
+- [x] **MB-04**: Database Module — `src/database.ts` two-line singleton via `createPrismaClient(config.databaseUrl)` from `@tg-allegro/db`.
 
 - [ ] **MB-05**: Prisma Schema Migration — Add ManagedGroup, GroupConfig, GroupMember, Warning, ModerationLog to `packages/db/prisma/schema.prisma`. Run migrate + generate. Verify: `pnpm bot build` and `pnpm api build` still pass.
 

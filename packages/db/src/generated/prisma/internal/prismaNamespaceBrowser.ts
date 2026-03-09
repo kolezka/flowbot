@@ -55,7 +55,12 @@ export const ModelName = {
   Category: 'Category',
   Product: 'Product',
   Cart: 'Cart',
-  CartItem: 'CartItem'
+  CartItem: 'CartItem',
+  ManagedGroup: 'ManagedGroup',
+  GroupConfig: 'GroupConfig',
+  GroupMember: 'GroupMember',
+  Warning: 'Warning',
+  ModerationLog: 'ModerationLog'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -160,12 +165,111 @@ export const CartItemScalarFieldEnum = {
 export type CartItemScalarFieldEnum = (typeof CartItemScalarFieldEnum)[keyof typeof CartItemScalarFieldEnum]
 
 
+export const ManagedGroupScalarFieldEnum = {
+  id: 'id',
+  chatId: 'chatId',
+  title: 'title',
+  isActive: 'isActive',
+  joinedAt: 'joinedAt',
+  leftAt: 'leftAt',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type ManagedGroupScalarFieldEnum = (typeof ManagedGroupScalarFieldEnum)[keyof typeof ManagedGroupScalarFieldEnum]
+
+
+export const GroupConfigScalarFieldEnum = {
+  id: 'id',
+  groupId: 'groupId',
+  welcomeEnabled: 'welcomeEnabled',
+  welcomeMessage: 'welcomeMessage',
+  rulesText: 'rulesText',
+  warnThresholdMute: 'warnThresholdMute',
+  warnThresholdBan: 'warnThresholdBan',
+  warnDecayDays: 'warnDecayDays',
+  defaultMuteDurationS: 'defaultMuteDurationS',
+  antiSpamEnabled: 'antiSpamEnabled',
+  antiSpamMaxMessages: 'antiSpamMaxMessages',
+  antiSpamWindowSeconds: 'antiSpamWindowSeconds',
+  antiLinkEnabled: 'antiLinkEnabled',
+  antiLinkWhitelist: 'antiLinkWhitelist',
+  slowModeDelay: 'slowModeDelay',
+  logChannelId: 'logChannelId',
+  autoDeleteCommandsS: 'autoDeleteCommandsS',
+  captchaEnabled: 'captchaEnabled',
+  captchaMode: 'captchaMode',
+  captchaTimeoutS: 'captchaTimeoutS',
+  quarantineEnabled: 'quarantineEnabled',
+  quarantineDurationS: 'quarantineDurationS',
+  silentMode: 'silentMode',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type GroupConfigScalarFieldEnum = (typeof GroupConfigScalarFieldEnum)[keyof typeof GroupConfigScalarFieldEnum]
+
+
+export const GroupMemberScalarFieldEnum = {
+  id: 'id',
+  groupId: 'groupId',
+  telegramId: 'telegramId',
+  role: 'role',
+  joinedAt: 'joinedAt',
+  messageCount: 'messageCount',
+  lastSeenAt: 'lastSeenAt',
+  isQuarantined: 'isQuarantined',
+  quarantineExpiresAt: 'quarantineExpiresAt',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type GroupMemberScalarFieldEnum = (typeof GroupMemberScalarFieldEnum)[keyof typeof GroupMemberScalarFieldEnum]
+
+
+export const WarningScalarFieldEnum = {
+  id: 'id',
+  groupId: 'groupId',
+  memberId: 'memberId',
+  issuerId: 'issuerId',
+  reason: 'reason',
+  isActive: 'isActive',
+  expiresAt: 'expiresAt',
+  createdAt: 'createdAt'
+} as const
+
+export type WarningScalarFieldEnum = (typeof WarningScalarFieldEnum)[keyof typeof WarningScalarFieldEnum]
+
+
+export const ModerationLogScalarFieldEnum = {
+  id: 'id',
+  groupId: 'groupId',
+  action: 'action',
+  actorId: 'actorId',
+  targetId: 'targetId',
+  reason: 'reason',
+  details: 'details',
+  automated: 'automated',
+  createdAt: 'createdAt'
+} as const
+
+export type ModerationLogScalarFieldEnum = (typeof ModerationLogScalarFieldEnum)[keyof typeof ModerationLogScalarFieldEnum]
+
+
 export const SortOrder = {
   asc: 'asc',
   desc: 'desc'
 } as const
 
 export type SortOrder = (typeof SortOrder)[keyof typeof SortOrder]
+
+
+export const NullableJsonNullValueInput = {
+  DbNull: DbNull,
+  JsonNull: JsonNull
+} as const
+
+export type NullableJsonNullValueInput = (typeof NullableJsonNullValueInput)[keyof typeof NullableJsonNullValueInput]
 
 
 export const QueryMode = {
@@ -182,4 +286,13 @@ export const NullsOrder = {
 } as const
 
 export type NullsOrder = (typeof NullsOrder)[keyof typeof NullsOrder]
+
+
+export const JsonNullValueFilter = {
+  DbNull: DbNull,
+  JsonNull: JsonNull,
+  AnyNull: AnyNull
+} as const
+
+export type JsonNullValueFilter = (typeof JsonNullValueFilter)[keyof typeof JsonNullValueFilter]
 

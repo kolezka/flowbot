@@ -124,3 +124,118 @@ model CartItem {
   @@index([cartId])
   @@index([productId])
 }
+
+// ==========================================
+// Manager Bot Models
+// ==========================================
+
+model ManagedGroup {
+  id       String  @id @default(cuid())
+  chatId   BigInt  @unique
+  title    String?
+  isActive Boolean @default(true)
+  joinedAt DateTime @default(now())
+  leftAt   DateTime?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  config         GroupConfig?
+  members        GroupMember[]
+  warnings       Warning[]
+  moderationLogs ModerationLog[]
+
+  @@index([chatId])
+}
+
+model GroupConfig {
+  id      String       @id @default(cuid())
+  groupId String       @unique
+  group   ManagedGroup @relation(fields: [groupId], references: [id], onDelete: Cascade)
+
+  welcomeEnabled Boolean @default(true)
+  welcomeMessage String?
+  rulesText      String?
+
+  warnThresholdMute    Int @default(3)
+  warnThresholdBan     Int @default(5)
+  warnDecayDays        Int @default(30)
+  defaultMuteDurationS Int @default(3600)
+
+  antiSpamEnabled       Boolean @default(true)
+  antiSpamMaxMessages   Int     @default(10)
+  antiSpamWindowSeconds Int     @default(10)
+
+  antiLinkEnabled   Boolean  @default(false)
+  antiLinkWhitelist String[]
+
+  slowModeDelay Int @default(0)
+
+  logChannelId        BigInt?
+  autoDeleteCommandsS Int     @default(10)
+
+  captchaEnabled  Boolean @default(false)
+  captchaMode     String  @default("button")
+  captchaTimeoutS Int     @default(60)
+
+  quarantineEnabled    Boolean @default(false)
+  quarantineDurationS  Int     @default(86400)
+
+  silentMode Boolean @default(false)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model GroupMember {
+  id         String       @id @default(cuid())
+  groupId    String
+  group      ManagedGroup @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  telegramId BigInt
+  role       String       @default("member")
+  joinedAt   DateTime     @default(now())
+  messageCount Int        @default(0)
+  lastSeenAt DateTime     @default(now())
+  isQuarantined Boolean   @default(false)
+  quarantineExpiresAt DateTime?
+  createdAt  DateTime     @default(now())
+  updatedAt  DateTime     @updatedAt
+
+  warnings Warning[]
+
+  @@unique([groupId, telegramId])
+  @@index([groupId])
+  @@index([telegramId])
+}
+
+model Warning {
+  id        String       @id @default(cuid())
+  groupId   String
+  group     ManagedGroup @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  memberId  String
+  member    GroupMember   @relation(fields: [memberId], references: [id], onDelete: Cascade)
+  issuerId  BigInt
+  reason    String?
+  isActive  Boolean      @default(true)
+  expiresAt DateTime?
+  createdAt DateTime     @default(now())
+
+  @@index([groupId])
+  @@index([memberId])
+  @@index([isActive, expiresAt])
+}
+
+model ModerationLog {
+  id        String       @id @default(cuid())
+  groupId   String
+  group     ManagedGroup @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  action    String
+  actorId   BigInt
+  targetId  BigInt?
+  reason    String?
+  details   Json?
+  automated Boolean      @default(false)
+  createdAt DateTime     @default(now())
+
+  @@index([groupId, createdAt])
+  @@index([targetId])
+}

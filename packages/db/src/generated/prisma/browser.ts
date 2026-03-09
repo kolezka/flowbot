@@ -42,3 +42,28 @@ export type Cart = Prisma.CartModel
  * 
  */
 export type CartItem = Prisma.CartItemModel
+/**
+ * Model ManagedGroup
+ * 
+ */
+export type ManagedGroup = Prisma.ManagedGroupModel
+/**
+ * Model GroupConfig
+ * 
+ */
+export type GroupConfig = Prisma.GroupConfigModel
+/**
+ * Model GroupMember
+ * 
+ */
+export type GroupMember = Prisma.GroupMemberModel
+/**
+ * Model Warning
+ * 
+ */
+export type Warning = Prisma.WarningModel
+/**
+ * Model ModerationLog
+ * 
+ */
+export type ModerationLog = Prisma.ModerationLogModel
