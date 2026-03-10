@@ -1,8 +1,59 @@
 # Playwright E2E Test Plan — Strefa Ruchu Dashboard
 
-> **Status:** Planning (no implementation)
+> **Status:** Implementation in progress
 > **Date:** 2026-03-10
 > **Scope:** Full E2E coverage for `apps/frontend` (Next.js dashboard) against `apps/api` (NestJS backend)
+
+---
+
+## Implementation Progress
+
+### Iteration 1 — Phase 0: Infrastructure + Auth + Smoke (2026-03-10)
+
+**What was done:**
+- Fixed critical bug: `AuthModule` was defined but never imported in `AppModule` — login endpoint was 404, all API endpoints were unprotected
+- Updated `playwright.config.ts`: dual project setup (authenticated/unauthenticated), dual webServer (API + frontend), global setup, timeouts, screenshots on failure
+- Created `e2e/global-setup.ts`: authenticates and saves storage state for test reuse
+- Created `e2e/auth.spec.ts`: 5 auth tests (login page, invalid password, successful login, auth redirect, already-auth redirect)
+- Rewrote `e2e/smoke.spec.ts`: 4 dashboard home tests + 9 page navigation smoke tests
+- Added `.playwright/`, `test-results/`, `playwright-report/` to `.gitignore`
+
+**Test results:**
+```
+18 passed (21.2s)
+
+Auth tests (5):
+  ✓ shows login page with password field
+  ✓ rejects invalid password
+  ✓ successful login redirects to dashboard
+  ✓ redirects unauthenticated users to login
+  ✓ authenticated user is redirected from login to dashboard
+
+Dashboard smoke tests (4):
+  ✓ loads with KPI cards
+  ✓ shows automation and group health sections
+  ✓ recent activity section is visible
+  ✓ quick links navigate correctly
+
+Page navigation smoke tests (9):
+  ✓ /dashboard/users loads successfully
+  ✓ /dashboard/products loads successfully
+  ✓ /dashboard/categories loads successfully
+  ✓ /dashboard/broadcast loads successfully
+  ✓ /dashboard/moderation loads successfully
+  ✓ /dashboard/flows loads successfully
+  ✓ /dashboard/bot-config loads successfully
+  ✓ /dashboard/automation/jobs loads successfully
+  ✓ /dashboard/community/reputation loads successfully
+```
+
+**Files changed:**
+- `apps/api/src/app.module.ts` — added `AuthModule` import (bug fix)
+- `apps/frontend/playwright.config.ts` — complete rewrite with dual projects + servers
+- `apps/frontend/e2e/global-setup.ts` — new: auth global setup
+- `apps/frontend/e2e/auth.spec.ts` — new: 5 auth tests
+- `apps/frontend/e2e/smoke.spec.ts` — rewritten: 13 smoke tests
+- `apps/frontend/.gitignore` — added playwright artifacts
 
 ---
 

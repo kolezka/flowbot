@@ -1,6 +1,6 @@
 # Playwright E2E Test Plan — Strefa Ruchu Dashboard
 
-> **Status:** Planning (no implementation)
+> **Status:** Implementation in progress — see `.ralph/playwright-test-plan.md` for live progress
 > **Date:** 2026-03-10
 > **Scope:** Full E2E coverage for `apps/frontend` (Next.js dashboard) against `apps/api` (NestJS backend)
 

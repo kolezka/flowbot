@@ -17,6 +17,7 @@ import { BotConfigModule } from './bot-config/bot-config.module';
 import { TgClientModule } from './tg-client/tg-client.module';
 import { FlowsModule } from './flows/flows.module';
 import { WebhooksModule } from './webhooks/webhooks.module';
+import { AuthModule } from './auth/auth.module';
 
 @Global()
 @Module({
@@ -24,6 +25,7 @@ import { WebhooksModule } from './webhooks/webhooks.module';
     ConfigModule.forRoot({
       isGlobal: true,
     }),
+    AuthModule,
     PrismaModule,
     UsersModule,
     ProductsModule,
