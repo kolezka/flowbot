@@ -119,6 +119,37 @@ All 35+ dashboard pages now have at least basic E2E coverage including:
 - Auth flow (login, logout redirect, token persistence)
 - Navigation (sidebar, quick links, page routing)
 
+### Iteration 4 — Test Quality Audit + CRUD Lifecycle Tests (2026-03-10)
+
+**What was done:**
+- Audited all 65 tests for false greens and weak assertions
+- Fixed `expect(true).toBeTruthy()` in products search test → proper "No products found" assertion
+- Created `e2e/global-teardown.ts`: cleans up test data (flows, broadcasts, webhooks, products, categories) via API after each run
+- Updated `playwright.config.ts` with `globalTeardown`
+- Refactored `e2e/fixtures/auth.ts` from unused authenticatedPage fixture to reusable `ApiHelper` fixture
+- Created `e2e/crud-interactions.spec.ts`: 4 full CRUD lifecycle tests
+  - Category: API create → verify in UI → navigate to edit → API cleanup
+  - Product: API create with category → verify in table with price → delete via UI confirm dialog → cleanup
+  - Webhook: UI create → verify Active badge → UI delete
+  - Broadcast: UI create → verify in table → UI delete
+
+**Test results:**
+```
+69 passed (1.4m)
+
+Test breakdown:
+- Auth: 5 | Smoke: 13 | Categories: 5 | Products: 6 | Users: 4
+- Flows: 3 | Broadcast: 4 | Moderation: 7 | Bot Config: 2
+- System: 3 | TG Client: 4 | Webhooks: 4 | Automation: 5
+- CRUD Lifecycle: 4
+```
+
+**Quality notes:**
+- Zero `expect(true)` or placeholder assertions remaining
+- OR-pattern assertions (e.g., `hasData || hasEmpty`) are intentional for handling both empty and populated DB states
+- All CRUD tests create unique data with `Date.now()` to avoid conflicts
+- Global teardown cleans up test data to prevent accumulation
+
 ---
 
 ## Table of Contents

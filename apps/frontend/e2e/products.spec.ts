@@ -73,14 +73,13 @@ test.describe('Products', () => {
     await page.waitForLoadState('networkidle');
 
     const searchInput = page.getByPlaceholder('Search by name...');
-    await searchInput.fill('nonexistent-product-xyz');
+    await searchInput.fill('nonexistent-product-xyz-99999');
 
-    await page.waitForTimeout(500);
+    // Wait for debounced search to execute
+    await page.waitForTimeout(1000);
     await page.waitForLoadState('networkidle');
 
-    // Should show no results or filtered results
-    const noProducts = await page.getByText(/no products found/i).isVisible().catch(() => false);
-    // Either shows no products or still shows the list (search might be debounced)
-    expect(true).toBeTruthy(); // Search doesn't crash
+    // Nonexistent search term should show "No products found"
+    await expect(page.getByText(/no products found/i)).toBeVisible({ timeout: 5_000 });
   });
 });
