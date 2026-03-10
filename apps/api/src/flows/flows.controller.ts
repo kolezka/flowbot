@@ -25,12 +25,29 @@ export class FlowsController {
     return this.service.findAll(page ? parseInt(page) : undefined, limit ? parseInt(limit) : undefined, status);
   }
 
+  @Get('analytics')
+  @ApiOperation({ summary: 'Get global flow analytics' })
+  @ApiQuery({ name: 'days', required: false, type: Number, description: 'Number of days to look back (default 30)' })
+  @ApiResponse({ status: 200, description: 'Global flow analytics data' })
+  getGlobalAnalytics(@Query('days') days?: string) {
+    return this.service.getGlobalAnalytics(days ? parseInt(days) : undefined);
+  }
+
   @Get('user-context/:telegramId')
   @ApiOperation({ summary: 'Get correlated user context across bots' })
   @ApiParam({ name: 'telegramId', type: String, description: 'Telegram user ID' })
   @ApiResponse({ status: 200, description: 'Unified user data from User and UserIdentity tables' })
   getUserContext(@Param('telegramId') telegramId: string) {
     return this.correlationService.getCorrelatedContext(BigInt(telegramId));
+  }
+
+  @Get('executions/:executionId')
+  @ApiOperation({ summary: 'Get a single execution by ID' })
+  @ApiParam({ name: 'executionId', type: String, description: 'Execution ID' })
+  @ApiResponse({ status: 200, description: 'Execution details' })
+  @ApiResponse({ status: 404, description: 'Execution not found' })
+  getExecution(@Param('executionId') executionId: string) {
+    return this.service.getExecution(executionId);
   }
 
   @Get(':id')
@@ -108,6 +125,16 @@ export class FlowsController {
     return this.service.createVersion(id, body.createdBy);
   }
 
+  @Get(':id/versions/:versionId')
+  @ApiOperation({ summary: 'Get a specific version of a flow' })
+  @ApiParam({ name: 'id', type: String, description: 'Flow ID' })
+  @ApiParam({ name: 'versionId', type: String, description: 'Version ID' })
+  @ApiResponse({ status: 200, description: 'Flow version detail' })
+  @ApiResponse({ status: 404, description: 'Flow or version not found' })
+  getVersion(@Param('id') id: string, @Param('versionId') versionId: string) {
+    return this.service.getVersion(id, versionId);
+  }
+
   @Post(':id/versions/:versionId/restore')
   @ApiOperation({ summary: 'Restore a flow to a specific version' })
   @ApiParam({ name: 'id', type: String, description: 'Flow ID' })
@@ -125,6 +152,15 @@ export class FlowsController {
   @ApiResponse({ status: 404, description: 'Flow not found' })
   getAnalytics(@Param('id') id: string) {
     return this.service.getAnalytics(id);
+  }
+
+  @Post(':id/test-execute')
+  @ApiOperation({ summary: 'Start a test execution of a flow' })
+  @ApiParam({ name: 'id', type: String, description: 'Flow ID' })
+  @ApiResponse({ status: 201, description: 'Execution started' })
+  @ApiResponse({ status: 404, description: 'Flow not found' })
+  testExecute(@Param('id') id: string, @Body() body: { triggerData?: any }) {
+    return this.service.testExecute(id, body.triggerData);
   }
 
   @Post('webhook/:flowId')

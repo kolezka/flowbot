@@ -58,3 +58,20 @@ export class UpdateBotMenuButtonDto {
   @ApiPropertyOptional() @IsOptional() @IsInt() row?: number;
   @ApiPropertyOptional() @IsOptional() @IsInt() col?: number;
 }
+
+// I18n String DTOs
+export class CreateI18nStringDto {
+  @ApiProperty() @IsString() key: string;
+  @ApiPropertyOptional({ default: 'en' }) @IsOptional() @IsString() locale?: string;
+  @ApiProperty() @IsString() value: string;
+}
+
+export class UpdateI18nStringDto {
+  @ApiPropertyOptional() @IsOptional() @IsString() value?: string;
+}
+
+export class BatchUpdateI18nStringDto {
+  @ApiProperty() @IsString() key: string;
+  @ApiProperty() @IsString() locale: string;
+  @ApiProperty() @IsString() value: string;
+}

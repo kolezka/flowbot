@@ -10,6 +10,9 @@ import {
   CreateBotMenuDto,
   CreateBotMenuButtonDto,
   UpdateBotMenuButtonDto,
+  CreateI18nStringDto,
+  UpdateI18nStringDto,
+  BatchUpdateI18nStringDto,
 } from './dto';
 
 @Injectable()
@@ -140,10 +143,34 @@ export class BotConfigService {
   // Config versioning
   async publishConfig(botId: string) {
     const bot = await this.findBot(botId);
+    const newVersion = bot.configVersion + 1;
+
+    // Snapshot the current config state
+    const [commands, responses, menus] = await Promise.all([
+      this.prisma.botCommand.findMany({ where: { botId }, orderBy: { sortOrder: 'asc' } }),
+      this.prisma.botResponse.findMany({ where: { botId }, orderBy: { key: 'asc' } }),
+      this.prisma.botMenu.findMany({ where: { botId }, include: { buttons: true } }),
+    ]);
+
+    const snapshot = { commands: commands.length, responses: responses.length, menus: menus.length };
+
+    // Read existing version history from metadata
+    const existingHistory = (bot as any).configHistory ?? [];
+    const versionEntry = {
+      version: newVersion,
+      publishedAt: new Date().toISOString(),
+      snapshot,
+    };
+    const updatedHistory = [...(Array.isArray(existingHistory) ? existingHistory : []), versionEntry];
+
     const updated = await this.prisma.botInstance.update({
       where: { id: botId },
-      data: { configVersion: bot.configVersion + 1 },
+      data: {
+        configVersion: newVersion,
+        configHistory: updatedHistory as any,
+      },
     });
+
     this.logger.log(`Config published for bot ${botId}, version ${updated.configVersion}`);
     return { version: updated.configVersion };
   }
@@ -151,5 +178,91 @@ export class BotConfigService {
   async getConfigVersion(botId: string) {
     const bot = await this.findBot(botId);
     return { version: bot.configVersion };
+  }
+
+  async getConfigVersionHistory(botId: string) {
+    const bot = await this.findBot(botId);
+    const history = (bot as any).configHistory;
+    if (Array.isArray(history) && history.length > 0) {
+      return history.sort((a: any, b: any) => b.version - a.version);
+    }
+    // Return synthetic history if no stored history exists
+    const versions = [];
+    for (let v = bot.configVersion; v >= 1; v--) {
+      versions.push({
+        version: v,
+        publishedAt: v === bot.configVersion ? (bot as any).updatedAt?.toISOString?.() ?? new Date().toISOString() : null,
+      });
+    }
+    return versions;
+  }
+
+  // I18n Strings (backed by BotResponse model)
+  private mapToI18nDto(record: any) {
+    return {
+      id: record.id,
+      botId: record.botId,
+      key: record.key,
+      locale: record.locale,
+      value: record.text,
+      createdAt: record.createdAt,
+      updatedAt: record.updatedAt,
+    };
+  }
+
+  async findI18nStrings(botId: string, locale?: string) {
+    await this.findBot(botId);
+    const where: any = { botId };
+    if (locale) where.locale = locale;
+    const records = await this.prisma.botResponse.findMany({ where, orderBy: { key: 'asc' } });
+    return records.map((r) => this.mapToI18nDto(r));
+  }
+
+  async createI18nString(botId: string, dto: CreateI18nStringDto) {
+    await this.findBot(botId);
+    const record = await this.prisma.botResponse.create({
+      data: { key: dto.key, locale: dto.locale ?? 'en', text: dto.value, botId },
+    });
+    return this.mapToI18nDto(record);
+  }
+
+  async updateI18nString(botId: string, stringId: string, dto: UpdateI18nStringDto) {
+    const record = await this.prisma.botResponse.findFirst({ where: { id: stringId, botId } });
+    if (!record) throw new NotFoundException(`I18n string ${stringId} not found`);
+    const updated = await this.prisma.botResponse.update({
+      where: { id: stringId },
+      data: { text: dto.value },
+    });
+    return this.mapToI18nDto(updated);
+  }
+
+  async deleteI18nString(botId: string, stringId: string) {
+    const record = await this.prisma.botResponse.findFirst({ where: { id: stringId, botId } });
+    if (!record) throw new NotFoundException(`I18n string ${stringId} not found`);
+    await this.prisma.botResponse.delete({ where: { id: stringId } });
+    return { deleted: true };
+  }
+
+  async batchUpdateI18nStrings(botId: string, items: BatchUpdateI18nStringDto[]) {
+    await this.findBot(botId);
+    const results = [];
+    for (const item of items) {
+      const existing = await this.prisma.botResponse.findFirst({
+        where: { botId, key: item.key, locale: item.locale },
+      });
+      if (existing) {
+        const updated = await this.prisma.botResponse.update({
+          where: { id: existing.id },
+          data: { text: item.value },
+        });
+        results.push(this.mapToI18nDto(updated));
+      } else {
+        const created = await this.prisma.botResponse.create({
+          data: { key: item.key, locale: item.locale, text: item.value, botId },
+        });
+        results.push(this.mapToI18nDto(created));
+      }
+    }
+    return results;
   }
 }

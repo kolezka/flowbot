@@ -10,6 +10,7 @@ import {
   CreateBotResponseDto, UpdateBotResponseDto,
   CreateBotMenuDto,
   CreateBotMenuButtonDto, UpdateBotMenuButtonDto,
+  CreateI18nStringDto, UpdateI18nStringDto, BatchUpdateI18nStringDto,
 } from './dto';
 
 @ApiTags('Bot Config')
@@ -148,6 +149,40 @@ export class BotConfigController {
   @ApiResponse({ status: 200, description: 'Button deleted' })
   deleteButton(@Param('botId') botId: string, @Param('menuId') menuId: string, @Param('buttonId') buttonId: string) { return this.service.deleteMenuButton(botId, menuId, buttonId); }
 
+  // I18n Strings
+  @Get(':botId/i18n')
+  @ApiOperation({ summary: 'List i18n strings for a bot' })
+  @ApiParam({ name: 'botId', type: String, description: 'Bot instance ID' })
+  @ApiQuery({ name: 'locale', required: false, type: String, description: 'Filter by locale' })
+  @ApiResponse({ status: 200, description: 'List of i18n strings' })
+  findI18nStrings(@Param('botId') botId: string, @Query('locale') locale?: string) { return this.service.findI18nStrings(botId, locale); }
+
+  @Post(':botId/i18n')
+  @ApiOperation({ summary: 'Create an i18n string for a bot' })
+  @ApiParam({ name: 'botId', type: String, description: 'Bot instance ID' })
+  @ApiResponse({ status: 201, description: 'I18n string created' })
+  createI18nString(@Param('botId') botId: string, @Body() dto: CreateI18nStringDto) { return this.service.createI18nString(botId, dto); }
+
+  @Post(':botId/i18n/batch')
+  @ApiOperation({ summary: 'Batch update i18n strings (upsert by key+locale)' })
+  @ApiParam({ name: 'botId', type: String, description: 'Bot instance ID' })
+  @ApiResponse({ status: 200, description: 'Batch update result' })
+  batchUpdateI18nStrings(@Param('botId') botId: string, @Body() items: BatchUpdateI18nStringDto[]) { return this.service.batchUpdateI18nStrings(botId, items); }
+
+  @Patch(':botId/i18n/:stringId')
+  @ApiOperation({ summary: 'Update an i18n string' })
+  @ApiParam({ name: 'botId', type: String, description: 'Bot instance ID' })
+  @ApiParam({ name: 'stringId', type: String, description: 'I18n string ID' })
+  @ApiResponse({ status: 200, description: 'I18n string updated' })
+  updateI18nString(@Param('botId') botId: string, @Param('stringId') stringId: string, @Body() dto: UpdateI18nStringDto) { return this.service.updateI18nString(botId, stringId, dto); }
+
+  @Delete(':botId/i18n/:stringId')
+  @ApiOperation({ summary: 'Delete an i18n string' })
+  @ApiParam({ name: 'botId', type: String, description: 'Bot instance ID' })
+  @ApiParam({ name: 'stringId', type: String, description: 'I18n string ID' })
+  @ApiResponse({ status: 200, description: 'I18n string deleted' })
+  deleteI18nString(@Param('botId') botId: string, @Param('stringId') stringId: string) { return this.service.deleteI18nString(botId, stringId); }
+
   // Config versioning
   @Post(':botId/publish')
   @ApiOperation({ summary: 'Publish bot configuration (increment version)' })
@@ -162,4 +197,11 @@ export class BotConfigController {
   @ApiResponse({ status: 200, description: 'Current config version number' })
   @ApiResponse({ status: 404, description: 'Bot instance not found' })
   getVersion(@Param('botId') botId: string) { return this.service.getConfigVersion(botId); }
+
+  @Get(':botId/versions')
+  @ApiOperation({ summary: 'Get config version history' })
+  @ApiParam({ name: 'botId', type: String, description: 'Bot instance ID' })
+  @ApiResponse({ status: 200, description: 'List of config versions' })
+  @ApiResponse({ status: 404, description: 'Bot instance not found' })
+  getVersionHistory(@Param('botId') botId: string) { return this.service.getConfigVersionHistory(botId); }
 }
