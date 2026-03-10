@@ -2,7 +2,7 @@ import { defineConfig } from "@trigger.dev/sdk/v3";
 import { prismaExtension } from "@trigger.dev/build/extensions/prisma";
 
 export default defineConfig({
-  project: "proj_trigger_tg_allegro",
+  project: "proj_hilpmfmsfxxbgutxovgl",
   dirs: ["./src/trigger"],
   retries: {
     enabledInDev: true,

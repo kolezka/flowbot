@@ -99,3 +99,16 @@ Strict mode. `noUncheckedIndexedAccess`, `noImplicitOverride`, `experimentalDeco
 - Never wrap `triggerAndWait`/`batchTriggerAndWait`/`wait` in `Promise.all`
 - Self-hosted at `trigger.raqz.link`
 - For full Trigger.dev API reference, use the trigger MCP server (`search_docs`)
+
+### Running Trigger.dev Worker
+
+- **Secret key:** stored in `.trigger-secret-key` file (contains `TRIGGER_SECRET_KEY=...`)
+- **Project ref:** `proj_hilpmfmsfxxbgutxovgl` (configured in `apps/trigger/trigger.config.ts`)
+- **SDK version:** `@trigger.dev/sdk@3.3.17` — CLI must match, do NOT use `@latest` (currently 4.x, incompatible)
+- **Login required:** first run needs `npx trigger.dev@3.3.17 login --api-url https://trigger.raqz.link` (opens browser auth flow)
+- **Auth config:** stored in `~/.config/trigger/config.json` after login
+- **Start command:**
+  ```bash
+  TRIGGER_SECRET_KEY=tr_dev_pd7r4ISDoUW36jlJSVLH npx trigger.dev@3.3.17 dev --api-url https://trigger.raqz.link --skip-update-check
+  ```
+- **Note:** `pnpm trigger dev` uses `npx trigger.dev@latest` which causes version mismatch errors — use the explicit command above instead
