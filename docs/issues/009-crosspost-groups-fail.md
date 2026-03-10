@@ -1,7 +1,7 @@
 # Issue #009: Cross-post Templates - Target Groups Fails to Load
 
 ## Severity: Medium
-## Status: Open
+## Status: Fixed
 ## Date Found: 2026-03-10
 ## Component: Frontend Cross-post Templates
 

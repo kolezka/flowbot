@@ -1,7 +1,7 @@
 # Issue #008: Scheduled Messages - Group Dropdown Fails to Load
 
 ## Severity: Medium
-## Status: Open
+## Status: Fixed
 ## Date Found: 2026-03-10
 ## Component: Frontend Scheduled Messages
 

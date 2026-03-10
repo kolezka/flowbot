@@ -12,12 +12,21 @@ Manual QA testing was performed on the Allegro Dashboard using Playwright browse
 
 | # | Severity | Title | Status |
 |---|----------|-------|--------|
-| 001 | High | API Endpoint URL Mismatches | Open |
-| 002 | Medium | Dashboard Charts Render with Negative Dimensions | Open |
-| 003 | Medium | WebSocket Connection Fails on Dashboard | Open |
+| 001 | High | API Endpoint URL Mismatches | Fixed |
+| 002 | Medium | Dashboard Charts Render with Negative Dimensions | Fixed |
+| 003 | Medium | WebSocket Connection Fails on Dashboard | Fixed |
 | 004 | High | Trigger.dev Worker Not Running | Open |
-| 005 | High | Groups API Endpoint Mismatch | Open |
-| 006 | High | Multiple Missing API Endpoints (404 Errors) | Open |
+| 005 | High | Groups API Endpoint Mismatch | Fixed |
+| 006 | High | Multiple Missing API Endpoints (404 Errors) | Fixed |
+| 008 | Medium | Scheduled Messages Groups Dropdown Empty | Fixed |
+| 009 | Medium | Crosspost Groups Fail to Load | Fixed |
+| 010 | High | Order Events Page Fails to Load | Fixed |
+| 011 | High | Flows Analytics Page Fails to Load | Fixed |
+| 012 | High | AutomationModule Not Registered in AppModule | Fixed |
+| 013 | High | Flows Global Analytics Route Collision with :id | Fixed |
+| 014 | Medium | Missing GET /api/moderation/groups Endpoint | Fixed |
+| 015 | High | Trigger.dev Config Has Wrong Project Reference | Fixed |
+| 016 | Medium | Trigger.dev SDK vs CLI Version Mismatch | Fixed |
 
 ## Priority Actions Required
 

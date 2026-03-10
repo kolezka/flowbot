@@ -1,7 +1,7 @@
 # Issue #005: Groups API Endpoint URL Mismatch
 
 ## Severity: High
-## Status: Open
+## Status: Fixed
 ## Date Found: 2026-03-10
 ## Component: Frontend API Client
 
