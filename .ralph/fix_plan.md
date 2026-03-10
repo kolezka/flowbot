@@ -370,11 +370,11 @@ Design: `docs/plans/2026-03-09-platform-evolution-design.md`
 
 ### 12D — Trigger & Frontend E2E
 
-- [ ] **TS-16**: Extract + test trigger task business logic — Separate pure logic from Trigger.dev wiring. Test broadcast-logic, order-notification-logic.
+- [x] **TS-16**: Extract + test trigger task business logic — Separate pure logic from Trigger.dev wiring. Test broadcast-logic, order-notification-logic.
 
-- [ ] **TS-17**: Playwright E2E — Auth flow, dashboard overview, sidebar navigation.
+- [x] **TS-17**: Playwright E2E — Auth flow, dashboard overview, sidebar navigation.
 
-- [ ] **TS-18**: Playwright E2E — Product CRUD, moderation pages, broadcast creation.
+- [x] **TS-18**: Playwright E2E — Product CRUD, moderation pages, broadcast creation.
 
 ---
 
@@ -408,7 +408,7 @@ Design: `docs/plans/2026-03-09-platform-evolution-design.md`
 
 - [x] **UI-12**: EmptyState component — Icon/title/description/action pattern for empty data states.
 
-- [ ] **UI-13**: Responsive table → card layout on mobile.
+- [x] **UI-13**: Responsive table → card layout on mobile.
 
 - [x] **UI-14**: ConfirmDialog for destructive actions — Delete, ban, deactivate with confirmation modal.
 
@@ -416,7 +416,7 @@ Design: `docs/plans/2026-03-09-platform-evolution-design.md`
 
 - [x] **UI-16**: Shared Pagination component — Page size selector, page navigation, total count.
 
-- [ ] **UI-17**: Dashboard overview page redesign — Stat cards, activity feed, mini charts.
+- [x] **UI-17**: Dashboard overview page redesign — Stat cards, activity feed, mini charts.
 
 ---
 
@@ -454,7 +454,7 @@ Design: `docs/plans/2026-03-09-platform-evolution-design.md`
 
 - [x] **RT-14**: Notification badge — Sidebar unread event counts.
 
-- [ ] **RT-15**: Unit tests for WS gateway and EventBus.
+- [x] **RT-15**: Unit tests for WS gateway and EventBus.
 
 ---
 
@@ -476,27 +476,27 @@ Design: `docs/plans/2026-03-09-platform-evolution-design.md`
 
 ### 15B — Bot-Side Config Consumer
 
-- [ ] **BC-07**: ConfigSync service in `apps/bot` — Poll/WS for version changes.
+- [x] **BC-07**: ConfigSync service in `apps/bot` — Poll/WS for version changes.
 
-- [ ] **BC-08**: ConfigSync service in `apps/manager-bot`.
+- [x] **BC-08**: ConfigSync service in `apps/manager-bot`.
 
-- [ ] **BC-09**: Dynamic command registration — From DB config with fallback to code defaults.
+- [x] **BC-09**: Dynamic command registration — From DB config with fallback to code defaults.
 
 ### 15C — Dashboard UI
 
 - [x] **BC-10**: Bot instances list page — `/dashboard/bot-config`.
 
-- [ ] **BC-11**: Commands editor — Drag-reorderable, enable/disable toggle.
+- [x] **BC-11**: Commands editor — Drag-reorderable, enable/disable toggle.
 
-- [ ] **BC-12**: Responses editor — Locale tabs, Telegram markdown preview.
+- [x] **BC-12**: Responses editor — Locale tabs, Telegram markdown preview.
 
-- [ ] **BC-13**: Menu builder — Visual grid, drag-drop rows/cols, Telegram preview.
+- [x] **BC-13**: Menu builder — Visual grid, drag-drop rows/cols, Telegram preview.
 
-- [ ] **BC-14**: Config publish + version history — Diff view.
+- [x] **BC-14**: Config publish + version history — Diff view.
 
-- [ ] **BC-15**: i18n string editor — Load .ftl defaults, override via DB.
+- [x] **BC-15**: i18n string editor — Load .ftl defaults, override via DB.
 
-- [ ] **BC-16**: Unit tests for BotConfig service.
+- [x] **BC-16**: Unit tests for BotConfig service.
 
 ---
 
@@ -526,11 +526,11 @@ Design: `docs/plans/2026-03-09-platform-evolution-design.md`
 
 - [x] **TM-10**: Auth flow wizard — Multi-step: phone → code → 2FA → done.
 
-- [ ] **TM-11**: Transport health metrics dashboard — recharts: msg/min, error rate, latency.
+- [x] **TM-11**: Transport health metrics dashboard — recharts: msg/min, error rate, latency.
 
 - [x] **TM-12**: Session actions — Rotate, deactivate with confirmation.
 
-- [ ] **TM-13**: Unit tests for TgClient service.
+- [x] **TM-13**: Unit tests for TgClient service.
 
 ---
 
@@ -600,7 +600,7 @@ Design: `docs/plans/2026-03-09-platform-evolution-design.md`
 
 - [x] **FE-09**: Webhook ingress — `POST /api/flows/webhook/:flowId`.
 
-- [ ] **FE-10**: Manager-bot event forwarding to flow engine.
+- [x] **FE-10**: Manager-bot event forwarding to flow engine.
 
 ### 18C — Execution Monitoring
 
@@ -608,9 +608,9 @@ Design: `docs/plans/2026-03-09-platform-evolution-design.md`
 
 - [x] **FE-12**: Execution log dashboard page.
 
-- [ ] **FE-13**: Live execution visualization — Node highlighting on canvas, variable values.
+- [x] **FE-13**: Live execution visualization — Node highlighting on canvas, variable values.
 
-- [ ] **FE-14**: Unit tests for flow engine — Executor, variables, conditions.
+- [x] **FE-14**: Unit tests for flow engine — Executor, variables, conditions.
 
 ---
 
@@ -620,13 +620,13 @@ Design: `docs/plans/2026-03-09-platform-evolution-design.md`
 
 - [x] **AF-01**: Loop node — Iterate over array variable.
 
-- [ ] **AF-02**: Parallel branch node — Concurrent paths + join.
+- [x] **AF-02**: Parallel branch node — Concurrent paths + join.
 
 - [x] **AF-03**: Switch/router node — Multi-output condition.
 
 - [x] **AF-04**: Transform node — JSON path, string manipulation, math operations.
 
-- [ ] **AF-05**: Database query node — Safe allowlist of Prisma queries.
+- [x] **AF-05**: Database query node — Safe allowlist of Prisma queries.
 
 - [x] **AF-06**: Notification node — WebSocket event, Telegram, email.
 
@@ -634,7 +634,7 @@ Design: `docs/plans/2026-03-09-platform-evolution-design.md`
 
 - [x] **AF-07**: Flow versioning — `FlowVersion` model, version on each save.
 
-- [ ] **AF-08**: Version history UI — Visual diff + rollback.
+- [x] **AF-08**: Version history UI — Visual diff + rollback.
 
 - [x] **AF-09**: Flow templates library — Welcome, spam escalation, broadcast, cross-post templates.
 
@@ -642,11 +642,11 @@ Design: `docs/plans/2026-03-09-platform-evolution-design.md`
 
 - [x] **AF-11**: Flow import/export — JSON file download/upload.
 
-- [ ] **AF-12**: Expression builder UI — Complex conditions (AND/OR groups, regex).
+- [x] **AF-12**: Expression builder UI — Complex conditions (AND/OR groups, regex).
 
-- [ ] **AF-13**: Flow analytics — Execution counts, duration, error rates, common paths.
+- [x] **AF-13**: Flow analytics — Execution counts, duration, error rates, common paths.
 
-- [ ] **AF-14**: Unit tests for advanced nodes + versioning.
+- [x] **AF-14**: Unit tests for advanced nodes + versioning.
 
 ---
 
@@ -658,32 +658,32 @@ Design: `docs/plans/2026-03-09-platform-evolution-design.md`
 
 - [x] **PI-02**: Webhook management UI — Create endpoints, view payloads, connect to flows.
 
-- [ ] **PI-03**: Multi-bot flow orchestration — BotAction node targeting specific bot instance.
+- [x] **PI-03**: Multi-bot flow orchestration — BotAction node targeting specific bot instance.
 
-- [ ] **PI-04**: Cross-bot event correlation — UserIdentity-based context merging.
+- [x] **PI-04**: Cross-bot event correlation — UserIdentity-based context merging.
 
 ### 20B — E2E Testing & Performance
 
-- [ ] **PI-05**: Playwright E2E for flow builder — Create, connect, save, validate, activate.
+- [x] **PI-05**: Playwright E2E for flow builder — Create, connect, save, validate, activate.
 
-- [ ] **PI-06**: Playwright E2E for real-time features — WebSocket, live feed, status.
+- [x] **PI-06**: Playwright E2E for real-time features — WebSocket, live feed, status.
 
-- [ ] **PI-07**: Playwright E2E for bot config + TG client pages.
+- [x] **PI-07**: Playwright E2E for bot config + TG client pages.
 
-- [ ] **PI-08**: Load testing setup — k6 scripts for flow execution, WebSocket, broadcasts.
+- [x] **PI-08**: Load testing setup — k6 scripts for flow execution, WebSocket, broadcasts.
 
-- [ ] **PI-09**: Flow execution performance — Caching, batch DB writes, graph optimization.
+- [x] **PI-09**: Flow execution performance — Caching, batch DB writes, graph optimization.
 
-- [ ] **PI-10**: Database query optimization — Indexes, N+1 fixes, Prisma batching.
+- [x] **PI-10**: Database query optimization — Indexes, N+1 fixes, Prisma batching.
 
 ### 20C — Documentation & Final Polish
 
-- [ ] **PI-11**: API documentation overhaul — Complete Swagger decorators, OpenAPI spec.
+- [x] **PI-11**: API documentation overhaul — Complete Swagger decorators, OpenAPI spec.
 
-- [ ] **PI-12**: Flow builder user docs — Node reference, variable system, templates.
+- [x] **PI-12**: Flow builder user docs — Node reference, variable system, templates.
 
-- [ ] **PI-13**: Architecture docs — Diagrams, data flow, deployment, env vars.
+- [x] **PI-13**: Architecture docs — Diagrams, data flow, deployment, env vars.
 
-- [ ] **PI-14**: Dashboard accessibility audit — Keyboard nav, ARIA, focus, contrast.
+- [x] **PI-14**: Dashboard accessibility audit — Keyboard nav, ARIA, focus, contrast.
 
-- [ ] **PI-15**: Full integration smoke test — Create flow → activate → trigger → verify.
+- [x] **PI-15**: Full integration smoke test — Create flow → activate → trigger → verify.
