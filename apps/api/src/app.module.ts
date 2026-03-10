@@ -17,6 +17,7 @@ import { BotConfigModule } from './bot-config/bot-config.module';
 import { TgClientModule } from './tg-client/tg-client.module';
 import { FlowsModule } from './flows/flows.module';
 import { WebhooksModule } from './webhooks/webhooks.module';
+import { AutomationModule } from './automation/automation.module';
 import { AuthModule } from './auth/auth.module';
 
 @Global()
@@ -41,6 +42,7 @@ import { AuthModule } from './auth/auth.module';
     TgClientModule,
     FlowsModule,
     WebhooksModule,
+    AutomationModule,
   ],
   controllers: [AppController],
   providers: [AppService],
