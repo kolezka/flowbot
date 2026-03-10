@@ -1,6 +1,6 @@
 import {
   Controller, Get, Post, Patch, Delete,
-  Param, Body, Query, BadRequestException,
+  Param, Body, Query, BadRequestException, NotFoundException,
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse, ApiParam, ApiQuery } from '@nestjs/swagger';
 import { FlowsService } from './flows.service';
@@ -52,10 +52,17 @@ export class FlowsController {
 
   @Get(':id')
   @ApiOperation({ summary: 'Get a flow definition by ID' })
-  @ApiParam({ name: 'id', type: String, description: 'Flow ID' })
+  @ApiParam({ name: 'id', type: String, description: 'Flow ID (CUID)' })
   @ApiResponse({ status: 200, description: 'Flow definition' })
   @ApiResponse({ status: 404, description: 'Flow not found' })
-  findOne(@Param('id') id: string) { return this.service.findOne(id); }
+  findOne(@Param('id') id: string) {
+    // Reject reserved sub-route names that shouldn't match :id
+    const reserved = ['analytics', 'webhook', 'user-context', 'executions'];
+    if (reserved.includes(id)) {
+      throw new NotFoundException(`Flow not found`);
+    }
+    return this.service.findOne(id);
+  }
 
   @Post()
   @ApiOperation({ summary: 'Create a new flow definition' })
