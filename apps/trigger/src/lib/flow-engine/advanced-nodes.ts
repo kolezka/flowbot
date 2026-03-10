@@ -64,6 +64,92 @@ export function executeTransform(node: FlowNode, ctx: FlowContext): unknown {
   }
 }
 
+// AF-02: Parallel branch node
+export async function executeParallelBranch(
+  node: FlowNode,
+  ctx: FlowContext,
+  executeBranch: (branchId: string) => Promise<unknown>,
+): Promise<unknown> {
+  const branches = (node.config.branches as string[]) ?? [];
+
+  if (branches.length === 0) {
+    return { branchCount: 0, results: {} };
+  }
+
+  const results = await Promise.all(
+    branches.map(async (branchId) => {
+      try {
+        const output = await executeBranch(branchId);
+        return { branchId, status: 'success' as const, output };
+      } catch (error) {
+        return {
+          branchId,
+          status: 'error' as const,
+          error: error instanceof Error ? error.message : String(error),
+        };
+      }
+    }),
+  );
+
+  const collected: Record<string, unknown> = {};
+  for (const r of results) {
+    collected[r.branchId] = r.status === 'success' ? r.output : { error: r.error };
+    ctx.variables.set(`parallel.${r.branchId}`, r.status === 'success' ? r.output : null);
+  }
+
+  return { branchCount: branches.length, results: collected };
+}
+
+// AF-05: Database query node
+const DB_QUERY_ALLOWLIST = new Set([
+  'user.count',
+  'user.findMany',
+  'product.count',
+  'product.findMany',
+  'broadcastMessage.count',
+]);
+
+export async function executeDbQuery(
+  node: FlowNode,
+  ctx: FlowContext,
+  prisma: any,
+): Promise<unknown> {
+  const query = String(node.config.query ?? '');
+
+  if (!DB_QUERY_ALLOWLIST.has(query)) {
+    throw new Error(`Query "${query}" is not in the allowlist. Allowed: ${[...DB_QUERY_ALLOWLIST].join(', ')}`);
+  }
+
+  const [model, operation] = query.split('.') as [string, string];
+  const whereRaw = (node.config.where as Record<string, unknown>) ?? {};
+  const selectRaw = (node.config.select as Record<string, boolean>) ?? undefined;
+
+  const delegate = prisma[model];
+  if (!delegate) {
+    throw new Error(`Unknown model: ${model}`);
+  }
+
+  if (operation === 'count') {
+    const count = await delegate.count({ where: whereRaw });
+    return { query, count };
+  }
+
+  if (operation === 'findMany') {
+    const takeRaw = (node.config.take as number) ?? 20;
+    const take = Math.min(Math.max(1, takeRaw), 100);
+    const skipRaw = (node.config.skip as number) ?? 0;
+    const skip = Math.max(0, skipRaw);
+
+    const args: any = { where: whereRaw, take, skip };
+    if (selectRaw) args.select = selectRaw;
+
+    const records = await delegate.findMany(args);
+    return { query, count: records.length, data: records };
+  }
+
+  throw new Error(`Unsupported operation: ${operation}`);
+}
+
 // AF-06: Notification node
 export async function executeNotification(node: FlowNode, ctx: FlowContext): Promise<unknown> {
   const channel = String(node.config.channel ?? 'websocket');

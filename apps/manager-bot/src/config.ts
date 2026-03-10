@@ -23,6 +23,7 @@ const baseConfigSchema = v.object({
   salesBotUsername: v.optional(v.string()),
   triggerSecretKey: v.optional(v.string()),
   triggerApiUrl: v.optional(v.string()),
+  apiUrl: v.optional(v.string(), 'http://localhost:3000'),
   apiServerHost: v.optional(v.string(), '0.0.0.0'),
   apiServerPort: v.optional(v.pipe(v.string(), v.transform(Number), v.number()), '3001'),
 })

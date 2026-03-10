@@ -135,6 +135,104 @@ export class FlowsService {
     });
   }
 
+  // Version History
+  async getVersions(flowId: string) {
+    await this.findOne(flowId); // ensure flow exists
+    return this.prisma.flowVersion.findMany({
+      where: { flowId },
+      orderBy: { version: 'desc' },
+    });
+  }
+
+  async createVersion(flowId: string, createdBy?: string) {
+    const flow = await this.findOne(flowId);
+    const latestVersion = await this.prisma.flowVersion.findFirst({
+      where: { flowId },
+      orderBy: { version: 'desc' },
+    });
+    const nextVersion = latestVersion ? latestVersion.version + 1 : 1;
+
+    return this.prisma.flowVersion.create({
+      data: {
+        flowId,
+        version: nextVersion,
+        nodesJson: flow.nodesJson,
+        edgesJson: flow.edgesJson,
+        createdBy,
+      },
+    });
+  }
+
+  async restoreVersion(flowId: string, versionId: string) {
+    await this.findOne(flowId);
+    const version = await this.prisma.flowVersion.findUnique({
+      where: { id: versionId },
+    });
+    if (!version || version.flowId !== flowId) {
+      throw new NotFoundException(`Version ${versionId} not found for flow ${flowId}`);
+    }
+
+    return this.prisma.flowDefinition.update({
+      where: { id: flowId },
+      data: {
+        nodesJson: version.nodesJson,
+        edgesJson: version.edgesJson,
+      },
+    });
+  }
+
+  // Analytics
+  async getAnalytics(flowId: string) {
+    await this.findOne(flowId);
+
+    const [total, completed, failed, executions] = await Promise.all([
+      this.prisma.flowExecution.count({ where: { flowId } }),
+      this.prisma.flowExecution.count({ where: { flowId, status: 'completed' } }),
+      this.prisma.flowExecution.count({ where: { flowId, status: 'failed' } }),
+      this.prisma.flowExecution.findMany({
+        where: { flowId, completedAt: { not: null } },
+        select: { startedAt: true, completedAt: true, status: true, error: true },
+        orderBy: { startedAt: 'desc' },
+        take: 500,
+      }),
+    ]);
+
+    // Calculate average duration from completed executions
+    let totalDurationMs = 0;
+    let durationCount = 0;
+    const errorCounts: Record<string, number> = {};
+
+    for (const exec of executions) {
+      if (exec.completedAt) {
+        totalDurationMs += new Date(exec.completedAt).getTime() - new Date(exec.startedAt).getTime();
+        durationCount++;
+      }
+      if (exec.status === 'failed' && exec.error) {
+        const errorKey = exec.error.slice(0, 100);
+        errorCounts[errorKey] = (errorCounts[errorKey] ?? 0) + 1;
+      }
+    }
+
+    const avgDurationMs = durationCount > 0 ? Math.round(totalDurationMs / durationCount) : 0;
+    const errorRate = total > 0 ? Math.round((failed / total) * 10000) / 100 : 0;
+
+    // Top errors
+    const commonErrors = Object.entries(errorCounts)
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 5)
+      .map(([error, count]) => ({ error, count }));
+
+    return {
+      totalExecutions: total,
+      completedCount: completed,
+      failedCount: failed,
+      runningCount: total - completed - failed,
+      avgDurationMs,
+      errorRate,
+      commonErrors,
+    };
+  }
+
   // Executions
   async getExecutions(flowId: string, page: number = 1, limit: number = 20) {
     const skip = (page - 1) * limit;

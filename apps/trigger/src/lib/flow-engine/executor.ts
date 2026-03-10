@@ -2,16 +2,37 @@ import type { FlowNode, FlowEdge, FlowContext, NodeResult, ErrorHandling } from 
 import { evaluateCondition } from './conditions.js';
 import { executeAction } from './actions.js';
 import { interpolate } from './variables.js';
+import { executeParallelBranch, executeDbQuery, executeLoop, evaluateSwitch, executeTransform, executeNotification } from './advanced-nodes.js';
 
 export interface ExecutorConfig {
   defaultErrorHandling: ErrorHandling;
   maxNodes: number;
+  enableNodeCache: boolean;
+  prisma?: any;
 }
 
 const DEFAULT_CONFIG: ExecutorConfig = {
   defaultErrorHandling: 'stop',
   maxNodes: 100,
+  enableNodeCache: true,
 };
+
+/**
+ * Build a cache key for a node based on its type, config, and resolved inputs.
+ * Returns null if the node is not cacheable (e.g. delay, side-effect actions).
+ */
+function buildNodeCacheKey(node: FlowNode, ctx: FlowContext): string | null {
+  // Side-effect nodes should never be cached
+  const nonCacheableTypes = new Set([
+    'delay', 'send_message', 'forward_message', 'ban_user', 'mute_user',
+    'bot_action', 'api_call', 'db_query', 'parallel_branch', 'notification',
+  ]);
+  if (nonCacheableTypes.has(node.type)) return null;
+
+  const configStr = JSON.stringify(node.config);
+  const resolvedConfig = interpolate(configStr, ctx);
+  return `${node.type}::${resolvedConfig}`;
+}
 
 export async function executeFlow(
   nodes: FlowNode[],
@@ -21,6 +42,8 @@ export async function executeFlow(
 ): Promise<FlowContext> {
   const cfg = { ...DEFAULT_CONFIG, ...config };
 
+  // Batch context writes: collect variable updates, flush at end
+  const pendingVariables = new Map<string, unknown>();
   const ctx: FlowContext = {
     flowId: '',
     executionId: '',
@@ -28,6 +51,16 @@ export async function executeFlow(
     triggerData,
     nodeResults: new Map(),
   };
+
+  // Wrap variables.set to track pending writes for batch persistence
+  const originalSet = ctx.variables.set.bind(ctx.variables);
+  ctx.variables.set = (key: string, value: unknown) => {
+    pendingVariables.set(key, value);
+    return originalSet(key, value);
+  };
+
+  // Node result cache: skip re-executing nodes with same inputs
+  const nodeCache = new Map<string, unknown>();
 
   // Build adjacency list
   const adjacency = new Map<string, string[]>();
@@ -60,14 +93,41 @@ export async function executeFlow(
       let output: unknown;
       let shouldContinue = true;
 
-      if (node.category === 'trigger') {
+      // Check node cache for cacheable nodes
+      const cacheKey = cfg.enableNodeCache ? buildNodeCacheKey(node, ctx) : null;
+      if (cacheKey && nodeCache.has(cacheKey)) {
+        output = nodeCache.get(cacheKey);
+      } else if (node.category === 'trigger') {
         output = triggerData;
       } else if (node.category === 'condition') {
         const result = await evaluateCondition(node, ctx);
         output = result;
         shouldContinue = !!result;
+      } else if (node.type === 'parallel_branch') {
+        const branchTargets = adjacency.get(nodeId) ?? [];
+        output = await executeParallelBranch(
+          { ...node, config: { ...node.config, branches: branchTargets } },
+          ctx,
+          async (branchId: string) => {
+            const branchNode = nodeMap.get(branchId);
+            if (!branchNode) return null;
+            if (branchNode.category === 'action') return executeAction(branchNode, ctx);
+            if (branchNode.category === 'condition') return evaluateCondition(branchNode, ctx);
+            return null;
+          },
+        );
+        // Mark branch targets as visited since they were executed in parallel
+        for (const t of branchTargets) visited.add(t);
+      } else if (node.type === 'db_query') {
+        if (!cfg.prisma) throw new Error('Prisma client required for db_query nodes');
+        output = await executeDbQuery(node, ctx, cfg.prisma);
       } else if (node.category === 'action') {
         output = await executeAction(node, ctx);
+      }
+
+      // Store in cache if cacheable
+      if (cacheKey && !nodeCache.has(cacheKey)) {
+        nodeCache.set(cacheKey, output);
       }
 
       const result: NodeResult = {
@@ -113,6 +173,9 @@ export async function executeFlow(
       }
     }
   }
+
+  // Expose batched variable writes for callers who need to persist only changed variables
+  (ctx as any)._pendingVariableWrites = Object.fromEntries(pendingVariables);
 
   return ctx;
 }

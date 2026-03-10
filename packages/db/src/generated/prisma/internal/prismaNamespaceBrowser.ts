@@ -452,6 +452,7 @@ export const BotInstanceScalarFieldEnum = {
   botToken: 'botToken',
   botUsername: 'botUsername',
   type: 'type',
+  apiUrl: 'apiUrl',
   isActive: 'isActive',
   configVersion: 'configVersion',
   createdAt: 'createdAt',

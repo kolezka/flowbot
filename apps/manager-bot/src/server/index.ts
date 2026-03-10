@@ -12,6 +12,7 @@ interface ApiDependencies {
   botApi: Api
   logger: Logger
   prisma: PrismaClient
+  apiUrl?: string
 }
 
 interface WebhookDependencies extends ApiDependencies {
@@ -21,7 +22,7 @@ interface WebhookDependencies extends ApiDependencies {
 
 const startedAt = Date.now()
 
-function addApiRoutes(server: Hono, { botApi, logger, prisma }: ApiDependencies) {
+function addApiRoutes(server: Hono, { botApi, logger, prisma, apiUrl }: ApiDependencies) {
   server.get('/health', async (c) => {
     const uptime = Math.floor((Date.now() - startedAt) / 1000)
 
@@ -63,6 +64,36 @@ function addApiRoutes(server: Hono, { botApi, logger, prisma }: ApiDependencies)
     catch (error) {
       const message = error instanceof Error ? error.message : 'Unknown error'
       logger.error({ err: error }, 'Failed to send message via API')
+      return c.json({ success: false, error: message }, 500)
+    }
+  })
+
+  server.post('/api/flow-event', async (c) => {
+    try {
+      const body = await c.req.json<{ eventType: string, data: unknown }>()
+      if (!body.eventType) {
+        return c.json({ success: false, error: 'eventType is required' }, 400)
+      }
+
+      const targetUrl = `${apiUrl ?? 'http://localhost:3000'}/api/flow/webhook`
+      const response = await fetch(targetUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ eventType: body.eventType, data: body.data }),
+      })
+
+      if (!response.ok) {
+        const text = await response.text()
+        logger.error({ status: response.status, body: text }, 'Flow webhook forwarding failed')
+        return c.json({ success: false, error: `API responded with ${response.status}` }, 502)
+      }
+
+      const result = await response.json()
+      return c.json({ success: true, result })
+    }
+    catch (error) {
+      const message = error instanceof Error ? error.message : 'Unknown error'
+      logger.error({ err: error }, 'Failed to forward flow event')
       return c.json({ success: false, error: message }, 500)
     }
   })

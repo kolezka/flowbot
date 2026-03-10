@@ -18,7 +18,9 @@ import "@xyflow/react/dist/style.css";
 import { api } from "@/lib/api";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Save, Play, Square } from "lucide-react";
+import { Save, Play, Square, BarChart3, History } from "lucide-react";
+import { ExpressionBuilder, type ExpressionValue } from "@/components/expression-builder";
+import Link from "next/link";
 
 const NODE_TYPES_CONFIG = [
   { type: "message_received", label: "Message Received", category: "trigger", color: "#22c55e" },
@@ -34,10 +36,15 @@ const NODE_TYPES_CONFIG = [
   { type: "mute_user", label: "Mute User", category: "action", color: "#ef4444" },
   { type: "api_call", label: "API Call", category: "action", color: "#3b82f6" },
   { type: "delay", label: "Delay", category: "action", color: "#8b5cf6" },
+  { type: "parallel_branch", label: "Parallel Branch", category: "advanced", color: "#a855f7" },
+  { type: "db_query", label: "Database Query", category: "advanced", color: "#a855f7" },
+  { type: "loop", label: "Loop", category: "advanced", color: "#a855f7" },
+  { type: "switch", label: "Switch/Router", category: "advanced", color: "#a855f7" },
+  { type: "transform", label: "Transform", category: "advanced", color: "#a855f7" },
 ];
 
 function NodePalette({ onDragStart }: { onDragStart: (type: string, label: string, category: string) => void }) {
-  const categories = ["trigger", "condition", "action"];
+  const categories = ["trigger", "condition", "action", "advanced"];
 
   return (
     <div className="w-56 border-r border-border bg-card p-3 overflow-y-auto">
@@ -80,6 +87,7 @@ export default function FlowEditorPage() {
   const [edges, setEdges, onEdgesChange] = useEdgesState([] as Edge[]);
   const [saving, setSaving] = useState(false);
   const [loaded, setLoaded] = useState(false);
+  const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
 
   useEffect(() => {
     api.getFlow(flowId).then((flow) => {
@@ -163,6 +171,31 @@ export default function FlowEditorPage() {
     setFlowStatus(result.status);
   };
 
+  const selectedNode = nodes.find((n) => n.id === selectedNodeId);
+  const isConditionNode = selectedNode?.data?.category === "condition";
+
+  const handleExpressionChange = useCallback(
+    (expression: ExpressionValue) => {
+      if (!selectedNodeId) return;
+      setNodes((nds) =>
+        nds.map((n) =>
+          n.id === selectedNodeId
+            ? { ...n, data: { ...n.data, config: { ...(n.data.config as Record<string, unknown>), expression } } }
+            : n,
+        ),
+      );
+    },
+    [selectedNodeId, setNodes],
+  );
+
+  const onNodeClick = useCallback((_: React.MouseEvent, node: Node) => {
+    setSelectedNodeId(node.id);
+  }, []);
+
+  const onPaneClick = useCallback(() => {
+    setSelectedNodeId(null);
+  }, []);
+
   if (!loaded) return <div className="h-screen animate-pulse bg-muted" />;
 
   return (
@@ -174,6 +207,12 @@ export default function FlowEditorPage() {
           <Badge variant={flowStatus === "active" ? "default" : "secondary"}>{flowStatus}</Badge>
         </div>
         <div className="flex items-center gap-2">
+          <Link href={`/dashboard/flows/${flowId}/analytics`}>
+            <Button variant="ghost" size="sm"><BarChart3 className="mr-1 h-4 w-4" />Analytics</Button>
+          </Link>
+          <Link href={`/dashboard/flows/${flowId}/versions`}>
+            <Button variant="ghost" size="sm"><History className="mr-1 h-4 w-4" />Versions</Button>
+          </Link>
           <Button variant="outline" size="sm" onClick={handleSave} disabled={saving}>
             <Save className="mr-1 h-4 w-4" />{saving ? "Saving..." : "Save"}
           </Button>
@@ -195,6 +234,8 @@ export default function FlowEditorPage() {
             onNodesChange={onNodesChange}
             onEdgesChange={onEdgesChange}
             onConnect={onConnect}
+            onNodeClick={onNodeClick}
+            onPaneClick={onPaneClick}
             fitView
           >
             <Background />
@@ -202,6 +243,18 @@ export default function FlowEditorPage() {
             <MiniMap />
           </ReactFlow>
         </div>
+        {/* Property panel for selected condition nodes */}
+        {selectedNode && isConditionNode && (
+          <div className="w-72 border-l border-border bg-card p-3 overflow-y-auto">
+            <h3 className="mb-3 text-sm font-semibold">
+              Condition: {String(selectedNode.data.label ?? "")}
+            </h3>
+            <ExpressionBuilder
+              value={(selectedNode.data.config as Record<string, unknown>)?.expression as ExpressionValue | undefined}
+              onChange={handleExpressionChange}
+            />
+          </div>
+        )}
       </div>
     </div>
   );

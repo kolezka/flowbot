@@ -3,9 +3,6 @@
 import { useEffect, useState } from "react";
 import { api, ModerationLog } from "@/lib/api";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import {
-  Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
-} from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
@@ -14,11 +11,30 @@ import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
 import { ExportButton } from "@/components/export-button";
+import { ResponsiveTable, Column } from "@/components/responsive-table";
 
 const ACTION_TYPES = [
   "warn", "mute", "unmute", "kick", "ban", "unban",
   "delete_message", "restrict", "unrestrict", "filter_triggered",
 ];
+
+const actionBadgeVariant = (action: string) => {
+  switch (action) {
+    case "ban":
+    case "kick":
+      return "destructive" as const;
+    case "warn":
+    case "mute":
+    case "restrict":
+      return "secondary" as const;
+    case "unban":
+    case "unmute":
+    case "unrestrict":
+      return "default" as const;
+    default:
+      return "outline" as const;
+  }
+};
 
 export default function ModerationLogsPage() {
   const [logs, setLogs] = useState<ModerationLog[]>([]);
@@ -78,28 +94,59 @@ export default function ModerationLogsPage() {
     return sortDir === "asc" ? cmp : -cmp;
   });
 
-  const actionBadgeVariant = (action: string) => {
-    switch (action) {
-      case "ban":
-      case "kick":
-        return "destructive" as const;
-      case "warn":
-      case "mute":
-      case "restrict":
-        return "secondary" as const;
-      case "unban":
-      case "unmute":
-      case "unrestrict":
-        return "default" as const;
-      default:
-        return "outline" as const;
-    }
-  };
-
   const sortIndicator = (field: string) => {
     if (sortField !== field) return "";
     return sortDir === "asc" ? " \u2191" : " \u2193";
   };
+
+  const logColumns: Column<ModerationLog>[] = [
+    {
+      header: `Action${sortIndicator("action")}`,
+      accessor: (log) => (
+        <div className="flex items-center gap-1">
+          <Badge variant={actionBadgeVariant(log.action)}>
+            {log.action}
+          </Badge>
+          {log.automated && (
+            <Badge variant="outline">Auto</Badge>
+          )}
+        </div>
+      ),
+      headerClassName: "cursor-pointer select-none",
+    },
+    {
+      header: `Actor${sortIndicator("actorId")}`,
+      accessor: "actorId",
+      cellClassName: "font-mono text-xs",
+      headerClassName: "cursor-pointer select-none",
+    },
+    {
+      header: `Target${sortIndicator("targetId")}`,
+      accessor: (log) => log.targetId || "-",
+      cellClassName: "font-mono text-xs",
+      headerClassName: "cursor-pointer select-none",
+    },
+    {
+      header: "Reason",
+      accessor: (log) => (
+        <div className="max-w-[200px] truncate text-sm">
+          {log.reason || "-"}
+        </div>
+      ),
+      hideOnMobile: true,
+    },
+    {
+      header: "Group",
+      accessor: (log) => log.group?.title || "-",
+      cellClassName: "text-sm",
+    },
+    {
+      header: `Time${sortIndicator("createdAt")}`,
+      accessor: (log) => new Date(log.createdAt).toLocaleString(),
+      cellClassName: "text-sm text-muted-foreground whitespace-nowrap",
+      headerClassName: "cursor-pointer select-none",
+    },
+  ];
 
   const totalPages = Math.ceil(total / pageSize);
 
@@ -197,87 +244,13 @@ export default function ModerationLogsPage() {
             </div>
           )}
 
-          <div className="rounded-md border">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead
-                    className="cursor-pointer select-none"
-                    onClick={() => handleSort("action")}
-                  >
-                    Action{sortIndicator("action")}
-                  </TableHead>
-                  <TableHead
-                    className="cursor-pointer select-none"
-                    onClick={() => handleSort("actorId")}
-                  >
-                    Actor{sortIndicator("actorId")}
-                  </TableHead>
-                  <TableHead
-                    className="cursor-pointer select-none"
-                    onClick={() => handleSort("targetId")}
-                  >
-                    Target{sortIndicator("targetId")}
-                  </TableHead>
-                  <TableHead>Reason</TableHead>
-                  <TableHead>Group</TableHead>
-                  <TableHead
-                    className="cursor-pointer select-none"
-                    onClick={() => handleSort("createdAt")}
-                  >
-                    Time{sortIndicator("createdAt")}
-                  </TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {loading ? (
-                  <TableRow>
-                    <TableCell colSpan={6} className="h-24 text-center">
-                      Loading...
-                    </TableCell>
-                  </TableRow>
-                ) : sortedLogs.length === 0 ? (
-                  <TableRow>
-                    <TableCell colSpan={6} className="h-24 text-center text-muted-foreground">
-                      No moderation logs found
-                    </TableCell>
-                  </TableRow>
-                ) : (
-                  sortedLogs.map((log) => (
-                    <TableRow key={log.id}>
-                      <TableCell>
-                        <div className="flex items-center gap-1">
-                          <Badge variant={actionBadgeVariant(log.action)}>
-                            {log.action}
-                          </Badge>
-                          {log.automated && (
-                            <Badge variant="outline">Auto</Badge>
-                          )}
-                        </div>
-                      </TableCell>
-                      <TableCell className="font-mono text-xs">
-                        {log.actorId}
-                      </TableCell>
-                      <TableCell className="font-mono text-xs">
-                        {log.targetId || "-"}
-                      </TableCell>
-                      <TableCell>
-                        <div className="max-w-[200px] truncate text-sm">
-                          {log.reason || "-"}
-                        </div>
-                      </TableCell>
-                      <TableCell className="text-sm">
-                        {log.group?.title || "-"}
-                      </TableCell>
-                      <TableCell className="text-sm text-muted-foreground whitespace-nowrap">
-                        {new Date(log.createdAt).toLocaleString()}
-                      </TableCell>
-                    </TableRow>
-                  ))
-                )}
-              </TableBody>
-            </Table>
-          </div>
+          <ResponsiveTable
+            columns={logColumns}
+            data={sortedLogs}
+            keyExtractor={(log) => log.id}
+            loading={loading}
+            emptyMessage="No moderation logs found"
+          />
 
           {totalPages > 1 && (
             <div className="flex items-center justify-between mt-4">

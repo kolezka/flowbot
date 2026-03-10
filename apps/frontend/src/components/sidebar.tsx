@@ -141,6 +141,7 @@ const navigation: NavSection[] = [
     children: [
       { label: "Overview", href: "/dashboard/tg-client", icon: Activity },
       { label: "Sessions", href: "/dashboard/tg-client/sessions", icon: Smartphone },
+      { label: "Health", href: "/dashboard/tg-client/health", icon: Heart },
     ],
   },
   {
@@ -223,6 +224,7 @@ function NavLink({
     <Link
       href={href}
       onClick={onClick}
+      aria-current={active ? "page" : undefined}
       className={cn(
         "flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors",
         active
@@ -313,7 +315,7 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
   };
 
   return (
-    <nav className="flex flex-col gap-1 px-3 py-4">
+    <nav role="navigation" aria-label="Dashboard navigation" className="flex flex-col gap-1 px-3 py-4">
       {navigation.map((section) => {
         // Standalone link (no children)
         if (section.href) {

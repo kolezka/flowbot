@@ -12,6 +12,7 @@ import { createDatabase } from './database.js'
 import { createLogger } from './logger.js'
 import { createApiServer, createServer, createServerManager } from './server/index.js'
 import { AnalyticsService } from './services/analytics.js'
+import { initConfigSync } from './services/config-sync.js'
 import { SchedulerService } from './services/scheduler.js'
 
 const config = createConfigFromEnvironment()
@@ -27,13 +28,16 @@ const logger = createLogger(config)
 const prisma = createDatabase(config)
 
 async function startPolling(config: PollingConfig) {
-  const bot = createBot(config.botToken, { config, logger, prisma })
+  const configSync = initConfigSync(prisma, config.botToken, logger)
+  await configSync.start()
+
+  const bot = createBot(config.botToken, { config, logger, prisma, configSync })
   let runner: undefined | RunnerHandle
   const scheduler = new SchedulerService(prisma, bot.api, logger)
   const analytics = new AnalyticsService(prisma, logger)
 
   // Start API server for health checks and Trigger.dev send-message endpoint
-  const apiServer = createApiServer({ botApi: bot.api, logger, prisma })
+  const apiServer = createApiServer({ botApi: bot.api, logger, prisma, apiUrl: config.apiUrl })
   const apiServerManager = createServerManager(apiServer, {
     host: config.apiServerHost,
     port: config.apiServerPort,
@@ -41,6 +45,7 @@ async function startPolling(config: PollingConfig) {
 
   onShutdown(async () => {
     logger.info('Shutdown')
+    configSync.stop()
     analytics.stop()
     scheduler.stop()
     await runner?.stop()
@@ -73,8 +78,11 @@ async function startPolling(config: PollingConfig) {
 }
 
 async function startWebhook(config: WebhookConfig) {
-  const bot = createBot(config.botToken, { config, logger, prisma })
-  const server = createServer({ bot, config, logger, prisma, botApi: bot.api })
+  const configSync = initConfigSync(prisma, config.botToken, logger)
+  await configSync.start()
+
+  const bot = createBot(config.botToken, { config, logger, prisma, configSync })
+  const server = createServer({ bot, config, logger, prisma, botApi: bot.api, apiUrl: config.apiUrl })
   const serverManager = createServerManager(server, {
     host: config.serverHost,
     port: config.serverPort,
@@ -84,6 +92,7 @@ async function startWebhook(config: WebhookConfig) {
 
   onShutdown(async () => {
     logger.info('Shutdown')
+    configSync.stop()
     analytics.stop()
     scheduler.stop()
     await serverManager.stop()

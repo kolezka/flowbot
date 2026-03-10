@@ -256,6 +256,7 @@ model Warning {
   @@index([groupId])
   @@index([memberId])
   @@index([isActive, expiresAt])
+  @@index([groupId, issuerId])
 }
 
 model ModerationLog {
@@ -358,6 +359,7 @@ model BroadcastMessage {
 
   @@index([status])
   @@index([createdAt])
+  @@index([status, createdAt])
 }
 
 model OrderEvent {
@@ -438,6 +440,8 @@ model FlowExecution {
 
   @@index([flowId])
   @@index([status])
+  @@index([flowId, status])
+  @@index([flowId, createdAt])
 }
 
 // ==========================================
@@ -450,6 +454,7 @@ model BotInstance {
   botToken    String
   botUsername String?
   type        String   @default("standard") // standard | manager
+  apiUrl      String?  // HTTP API URL for this bot instance (e.g. http://localhost:3001)
   isActive    Boolean  @default(true)
   configVersion Int    @default(0)
 

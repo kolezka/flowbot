@@ -4,3 +4,4 @@ export type { ExecutorConfig } from './executor.js';
 export { interpolate, setVariable, getVariable } from './variables.js';
 export { evaluateCondition } from './conditions.js';
 export { executeAction } from './actions.js';
+export { executeParallelBranch, executeDbQuery, executeLoop, evaluateSwitch, executeTransform, executeNotification } from './advanced-nodes.js';

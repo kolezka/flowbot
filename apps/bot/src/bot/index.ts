@@ -1,6 +1,7 @@
 import { SessionData, type Context } from './context'
 import type { Config } from '../config'
 import type { Logger } from '../logger'
+import type { ConfigSyncService } from '../services/config-sync'
 import type { BotConfig } from 'grammy'
 import { adminFeature } from './features/admin'
 import { languageFeature } from './features/language'
@@ -24,6 +25,7 @@ import { isBanned } from './filters/is-banned'
 interface Dependencies {
   config: Config
   logger: Logger
+  configSync?: ConfigSyncService
 }
 
 function getSessionKey(ctx: Omit<Context, 'session'>) {
@@ -34,6 +36,7 @@ export function createBot(token: string, dependencies: Dependencies, botConfig?:
   const {
     config,
     logger,
+    configSync,
   } = dependencies
 
   const bot = new TelegramBot<Context>(token, botConfig)
@@ -69,6 +72,20 @@ export function createBot(token: string, dependencies: Dependencies, botConfig?:
   protectedBot.use(userDataMiddleware())
 
   protectedBot.filter(isBanned)
+
+  // Filter out disabled commands via ConfigSync
+  if (configSync) {
+    protectedBot.on('message:text', async (ctx, next) => {
+      const text = ctx.message.text
+      if (text.startsWith('/')) {
+        const command = text.split(/[\s@]/)[0]!.slice(1)
+        if (command && !configSync.isCommandEnabled(command)) {
+          return // Skip disabled command
+        }
+      }
+      return next()
+    })
+  }
 
   // Handlers
   protectedBot.use(welcomeFeature)

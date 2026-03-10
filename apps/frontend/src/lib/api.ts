@@ -672,6 +672,24 @@ export interface BotMenuButton {
   updatedAt: string;
 }
 
+// Bot Config version history
+export interface BotConfigVersion {
+  version: number;
+  publishedAt: string;
+  publishedBy?: string;
+}
+
+// Bot i18n string
+export interface BotI18nString {
+  id: string;
+  botId: string;
+  key: string;
+  locale: string;
+  value: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
 // TG Client interfaces
 export interface TgClientSession {
   id: string;
@@ -740,6 +758,26 @@ export interface FlowExecution {
 export interface FlowValidation {
   valid: boolean;
   errors: string[];
+}
+
+export interface FlowVersion {
+  id: string;
+  flowId: string;
+  version: number;
+  nodesJson: any[];
+  edgesJson: any[];
+  createdBy?: string;
+  createdAt: string;
+}
+
+export interface FlowAnalytics {
+  totalExecutions: number;
+  completedCount: number;
+  failedCount: number;
+  runningCount: number;
+  avgDurationMs: number;
+  errorRate: number;
+  commonErrors: Array<{ error: string; count: number }>;
 }
 
 // Webhook interfaces
@@ -1384,8 +1422,49 @@ class ApiClient {
     await this.request<void>(`/api/bot-config/${botId}/menus/${menuId}`, { method: 'DELETE' });
   }
 
+  async updateBotMenu(botId: string, menuId: string, data: { name?: string }): Promise<BotMenu> {
+    return this.request<BotMenu>(`/api/bot-config/${botId}/menus/${menuId}`, { method: 'PATCH', body: JSON.stringify(data) });
+  }
+
+  async createMenuButton(botId: string, menuId: string, data: { label: string; action: string; row: number; col: number }): Promise<BotMenuButton> {
+    return this.request<BotMenuButton>(`/api/bot-config/${botId}/menus/${menuId}/buttons`, { method: 'POST', body: JSON.stringify(data) });
+  }
+
+  async updateMenuButton(botId: string, menuId: string, buttonId: string, data: { label?: string; action?: string; row?: number; col?: number }): Promise<BotMenuButton> {
+    return this.request<BotMenuButton>(`/api/bot-config/${botId}/menus/${menuId}/buttons/${buttonId}`, { method: 'PATCH', body: JSON.stringify(data) });
+  }
+
+  async deleteMenuButton(botId: string, menuId: string, buttonId: string): Promise<void> {
+    await this.request<void>(`/api/bot-config/${botId}/menus/${menuId}/buttons/${buttonId}`, { method: 'DELETE' });
+  }
+
+  async reorderBotCommands(botId: string, commandIds: string[]): Promise<BotCommand[]> {
+    return this.request<BotCommand[]>(`/api/bot-config/${botId}/commands/reorder`, { method: 'POST', body: JSON.stringify({ commandIds }) });
+  }
+
   async publishBotConfig(botId: string): Promise<{ version: number }> {
     return this.request<{ version: number }>(`/api/bot-config/${botId}/publish`, { method: 'POST' });
+  }
+
+  async getBotConfigVersions(botId: string): Promise<BotConfigVersion[]> {
+    return this.request<BotConfigVersion[]>(`/api/bot-config/${botId}/versions`);
+  }
+
+  async getBotI18nStrings(botId: string, locale?: string): Promise<BotI18nString[]> {
+    const params = locale ? `?locale=${locale}` : '';
+    return this.request<BotI18nString[]>(`/api/bot-config/${botId}/i18n${params}`);
+  }
+
+  async createBotI18nString(botId: string, data: { key: string; locale: string; value: string }): Promise<BotI18nString> {
+    return this.request<BotI18nString>(`/api/bot-config/${botId}/i18n`, { method: 'POST', body: JSON.stringify(data) });
+  }
+
+  async updateBotI18nString(botId: string, stringId: string, data: { value: string }): Promise<BotI18nString> {
+    return this.request<BotI18nString>(`/api/bot-config/${botId}/i18n/${stringId}`, { method: 'PATCH', body: JSON.stringify(data) });
+  }
+
+  async deleteBotI18nString(botId: string, stringId: string): Promise<void> {
+    await this.request<void>(`/api/bot-config/${botId}/i18n/${stringId}`, { method: 'DELETE' });
   }
 
   // TG Client
@@ -1461,6 +1540,27 @@ class ApiClient {
     if (params?.limit !== undefined) searchParams.append('limit', params.limit.toString());
     const qs = searchParams.toString();
     return this.request<{ data: FlowExecution[]; total: number }>(`/api/flows/${flowId}/executions${qs ? `?${qs}` : ''}`);
+  }
+
+  async getFlowVersions(flowId: string): Promise<FlowVersion[]> {
+    return this.request<FlowVersion[]>(`/api/flows/${flowId}/versions`);
+  }
+
+  async createFlowVersion(flowId: string, createdBy?: string): Promise<FlowVersion> {
+    return this.request<FlowVersion>(`/api/flows/${flowId}/versions`, {
+      method: 'POST',
+      body: JSON.stringify({ createdBy }),
+    });
+  }
+
+  async restoreFlowVersion(flowId: string, versionId: string): Promise<FlowDefinition> {
+    return this.request<FlowDefinition>(`/api/flows/${flowId}/versions/${versionId}/restore`, {
+      method: 'POST',
+    });
+  }
+
+  async getFlowAnalytics(flowId: string): Promise<FlowAnalytics> {
+    return this.request<FlowAnalytics>(`/api/flows/${flowId}/analytics`);
   }
 
   async startTgAuth(phoneNumber: string): Promise<{ sessionId: string; status: string }> {

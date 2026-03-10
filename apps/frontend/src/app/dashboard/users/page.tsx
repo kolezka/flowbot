@@ -2,15 +2,72 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { api, User, StatsResponse, UsersResponse } from "@/lib/api";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Search, Users as UsersIcon, UserCheck, Ban, UserPlus, Filter, X } from "lucide-react";
+import { ResponsiveTable, Column } from "@/components/responsive-table";
+import { Search, Users as UsersIcon, UserCheck, Ban, UserPlus } from "lucide-react";
+
+const userColumns: Column<User>[] = [
+  {
+    header: "User",
+    accessor: (user) => (
+      <div>
+        <div className="font-medium">
+          {user.firstName} {user.lastName}
+        </div>
+        {user.username && (
+          <div className="text-sm text-muted-foreground">@{user.username}</div>
+        )}
+      </div>
+    ),
+  },
+  {
+    header: "Telegram ID",
+    accessor: "telegramId",
+    cellClassName: "text-muted-foreground",
+  },
+  {
+    header: "Messages",
+    accessor: "messageCount",
+  },
+  {
+    header: "Last Seen",
+    accessor: (user) =>
+      user.lastSeenAt
+        ? new Date(user.lastSeenAt).toLocaleDateString()
+        : "Never",
+    cellClassName: "text-muted-foreground",
+    hideOnMobile: true,
+  },
+  {
+    header: "Status",
+    accessor: (user) =>
+      user.isBanned ? (
+        <Badge variant="destructive">Banned</Badge>
+      ) : (
+        <Badge variant="default">Active</Badge>
+      ),
+  },
+  {
+    header: "",
+    accessor: (user) => (
+      <Link href={`/dashboard/users/${user.id}`}>
+        <Button variant="ghost" size="sm">
+          View
+        </Button>
+      </Link>
+    ),
+    cellClassName: "text-right",
+    hideOnMobile: true,
+  },
+];
 
 export default function DashboardPage() {
+  const router = useRouter();
   const [stats, setStats] = useState<StatsResponse | null>(null);
   const [users, setUsers] = useState<User[]>([]);
   const [totalUsers, setTotalUsers] = useState(0);
@@ -70,7 +127,7 @@ export default function DashboardPage() {
   return (
     <div className="space-y-8">
       {/* Stats Cards */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-4 grid-cols-2 lg:grid-cols-4">
         <StatCard
           title="Total Users"
           value={stats?.totalUsers ?? 0}
@@ -151,75 +208,14 @@ export default function DashboardPage() {
             </div>
           )}
 
-          <div className="rounded-md border">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>User</TableHead>
-                  <TableHead className="hidden sm:table-cell">Telegram ID</TableHead>
-                  <TableHead className="hidden md:table-cell">Messages</TableHead>
-                  <TableHead className="hidden lg:table-cell">Last Seen</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead></TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {loading ? (
-                  <TableRow>
-                    <TableCell colSpan={6} className="h-24 text-center">
-                      Loading...
-                    </TableCell>
-                  </TableRow>
-                ) : users.length === 0 ? (
-                  <TableRow>
-                    <TableCell colSpan={6} className="h-24 text-center text-muted-foreground">
-                      No users found
-                    </TableCell>
-                  </TableRow>
-                ) : (
-                  users.map((user) => (
-                    <TableRow key={user.id} className="group cursor-pointer transition-colors">
-                      <TableCell>
-                        <div>
-                          <div className="font-medium">
-                            {user.firstName} {user.lastName}
-                          </div>
-                          {user.username && (
-                            <div className="text-sm text-muted-foreground">@{user.username}</div>
-                          )}
-                        </div>
-                      </TableCell>
-                      <TableCell className="hidden sm:table-cell text-muted-foreground">
-                        {user.telegramId}
-                      </TableCell>
-                      <TableCell className="hidden md:table-cell">
-                        {user.messageCount}
-                      </TableCell>
-                      <TableCell className="hidden lg:table-cell text-muted-foreground">
-                        {user.lastSeenAt
-                          ? new Date(user.lastSeenAt).toLocaleDateString()
-                          : "Never"}
-                      </TableCell>
-                      <TableCell>
-                        {user.isBanned ? (
-                          <Badge variant="destructive">Banned</Badge>
-                        ) : (
-                          <Badge variant="default">Active</Badge>
-                        )}
-                      </TableCell>
-                      <TableCell className="text-right">
-                        <Link href={`/dashboard/users/${user.id}`}>
-                          <Button variant="ghost" size="sm" className="opacity-0 group-hover:opacity-100 transition-opacity">
-                            View
-                          </Button>
-                        </Link>
-                      </TableCell>
-                    </TableRow>
-                  ))
-                )}
-              </TableBody>
-            </Table>
-          </div>
+          <ResponsiveTable
+            columns={userColumns}
+            data={users}
+            keyExtractor={(user) => user.id}
+            onRowClick={(user) => router.push(`/dashboard/users/${user.id}`)}
+            loading={loading}
+            emptyMessage="No users found"
+          />
 
           {/* Pagination */}
           {totalPages > 1 && (

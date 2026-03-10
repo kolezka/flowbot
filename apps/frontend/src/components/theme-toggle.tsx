@@ -27,7 +27,8 @@ export function ThemeToggle() {
               : "text-muted-foreground hover:text-foreground"
           )}
           title={label}
-          aria-label={`Switch to ${label} theme`}
+          aria-label={theme === value ? `${label} theme (active)` : `Switch to ${label} theme`}
+          aria-pressed={theme === value}
         >
           <Icon className="h-4 w-4" />
         </button>

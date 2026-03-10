@@ -2,6 +2,7 @@ import type { PrismaClient } from '@tg-allegro/db'
 import type { BotConfig } from 'grammy'
 import type { Config } from '../config.js'
 import type { Logger } from '../logger.js'
+import type { ConfigSyncService } from '../services/config-sync.js'
 import type { Context } from './context.js'
 import { autoChatAction } from '@grammyjs/auto-chat-action'
 import { autoRetry } from '@grammyjs/auto-retry'
@@ -45,6 +46,7 @@ interface Dependencies {
   config: Config
   logger: Logger
   prisma: PrismaClient
+  configSync?: ConfigSyncService
 }
 
 function getSessionKey(ctx: Omit<Context, 'session'>) {
@@ -52,7 +54,7 @@ function getSessionKey(ctx: Omit<Context, 'session'>) {
 }
 
 export function createBot(token: string, dependencies: Dependencies, botConfig?: BotConfig<Context>) {
-  const { config, logger, prisma } = dependencies
+  const { config, logger, prisma, configSync } = dependencies
 
   const bot = new TelegramBot<Context>(token, botConfig)
 
@@ -97,6 +99,20 @@ export function createBot(token: string, dependencies: Dependencies, botConfig?:
   // Admin cache
   const adminCacheService = new AdminCacheService()
   protectedBot.use(adminCache(adminCacheService))
+
+  // Filter out disabled commands via ConfigSync
+  if (configSync) {
+    protectedBot.on('message:text', async (ctx, next) => {
+      const text = ctx.message.text
+      if (text.startsWith('/')) {
+        const command = text.split(/[\s@]/)[0]!.slice(1)
+        if (command && !configSync.isCommandEnabled(command)) {
+          return // Skip disabled command
+        }
+      }
+      return next()
+    })
+  }
 
   // Features — anti-spam runs first
   const antiSpamService = new AntiSpamService()

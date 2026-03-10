@@ -32,14 +32,16 @@ export function ConfirmDialog({
   onConfirm,
   loading = false,
 }: ConfirmDialogProps) {
+  const descriptionId = "confirm-dialog-description";
+
   return (
-    <DialogContent open={open} onClose={() => onOpenChange(false)}>
+    <DialogContent open={open} onClose={() => onOpenChange(false)} aria-describedby={descriptionId}>
       <DialogHeader>
         <DialogTitle>{title}</DialogTitle>
-        <DialogDescription>{description}</DialogDescription>
+        <DialogDescription id={descriptionId}>{description}</DialogDescription>
       </DialogHeader>
       <DialogFooter>
-        <Button variant="outline" onClick={() => onOpenChange(false)} disabled={loading}>
+        <Button variant="outline" onClick={() => onOpenChange(false)} disabled={loading} autoFocus>
           {cancelLabel}
         </Button>
         <Button

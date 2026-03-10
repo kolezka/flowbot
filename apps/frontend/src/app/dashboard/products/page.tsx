@@ -2,16 +2,18 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { api, Product, Category } from "@/lib/api";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { ResponsiveTable, Column } from "@/components/responsive-table";
 import { Search, Plus, Edit, Trash2, Image } from "lucide-react";
 
 export default function ProductsPage() {
+  const router = useRouter();
   const [products, setProducts] = useState<Product[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [totalProducts, setTotalProducts] = useState(0);
@@ -68,7 +70,8 @@ export default function ProductsPage() {
     setPage(1);
   };
 
-  const handleDelete = async (id: string) => {
+  const handleDelete = async (id: string, e: React.MouseEvent) => {
+    e.stopPropagation();
     if (!confirm("Are you sure you want to delete this product?")) return;
     try {
       await api.deleteProduct(id);
@@ -77,6 +80,102 @@ export default function ProductsPage() {
       alert(err.message || "Failed to delete product");
     }
   };
+
+  const productColumns: Column<Product>[] = [
+    {
+      header: "Image",
+      accessor: (product) =>
+        product.thumbnail ? (
+          <img
+            src={product.thumbnail}
+            alt={product.name}
+            className="h-10 w-10 rounded object-cover"
+          />
+        ) : product.images.length > 0 ? (
+          <img
+            src={product.images[0]}
+            alt={product.name}
+            className="h-10 w-10 rounded object-cover"
+          />
+        ) : (
+          <div className="flex h-10 w-10 items-center justify-center rounded bg-muted">
+            <Image className="h-5 w-5 text-muted-foreground" />
+          </div>
+        ),
+      headerClassName: "w-16",
+      hideOnMobile: true,
+    },
+    {
+      header: "Name",
+      accessor: (product) => (
+        <div>
+          <div className="font-medium">{product.name}</div>
+          <div className="text-sm text-muted-foreground">{product.slug}</div>
+        </div>
+      ),
+    },
+    {
+      header: "Category",
+      accessor: (product) => product.category?.name || "-",
+      cellClassName: "text-muted-foreground",
+    },
+    {
+      header: "Price",
+      accessor: (product) => (
+        <div>
+          <div className="font-medium">${product.price.toFixed(2)}</div>
+          {product.compareAtPrice && (
+            <div className="text-sm text-muted-foreground line-through">
+              ${product.compareAtPrice.toFixed(2)}
+            </div>
+          )}
+        </div>
+      ),
+    },
+    {
+      header: "Stock",
+      accessor: (product) => (
+        <Badge variant={product.stock > 0 ? "default" : "secondary"}>
+          {product.stock}
+        </Badge>
+      ),
+    },
+    {
+      header: "Status",
+      accessor: (product) => (
+        <div className="flex gap-1 flex-wrap">
+          {product.isActive && <Badge variant="default">Active</Badge>}
+          {product.isFeatured && <Badge variant="secondary">Featured</Badge>}
+          {!product.isActive && <Badge variant="outline">Inactive</Badge>}
+        </div>
+      ),
+    },
+    {
+      header: "Actions",
+      accessor: (product) => (
+        <div className="flex justify-end gap-2">
+          <Link href={`/dashboard/products/${product.id}`} onClick={(e) => e.stopPropagation()}>
+            <Button variant="ghost" size="sm">View</Button>
+          </Link>
+          <Link href={`/dashboard/products/${product.id}/edit`} onClick={(e) => e.stopPropagation()}>
+            <Button variant="ghost" size="sm">
+              <Edit className="h-4 w-4" />
+            </Button>
+          </Link>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={(e) => handleDelete(product.id, e)}
+          >
+            <Trash2 className="h-4 w-4 text-destructive" />
+          </Button>
+        </div>
+      ),
+      cellClassName: "text-right",
+      headerClassName: "text-right",
+      hideOnMobile: true,
+    },
+  ];
 
   const totalPages = Math.ceil(totalProducts / pageSize);
 
@@ -152,118 +251,14 @@ export default function ProductsPage() {
             </div>
           )}
 
-          <div className="rounded-md border">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead className="w-16">Image</TableHead>
-                  <TableHead>Name</TableHead>
-                  <TableHead className="hidden sm:table-cell">Category</TableHead>
-                  <TableHead>Price</TableHead>
-                  <TableHead className="hidden md:table-cell">Stock</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead className="text-right">Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {loading ? (
-                  <TableRow>
-                    <TableCell colSpan={7} className="h-24 text-center">
-                      Loading...
-                    </TableCell>
-                  </TableRow>
-                ) : products.length === 0 ? (
-                  <TableRow>
-                    <TableCell colSpan={7} className="h-24 text-center text-muted-foreground">
-                      No products found
-                    </TableCell>
-                  </TableRow>
-                ) : (
-                  products.map((product) => (
-                    <TableRow key={product.id} className="group">
-                      <TableCell>
-                        {product.thumbnail ? (
-                          <img
-                            src={product.thumbnail}
-                            alt={product.name}
-                            className="h-10 w-10 rounded object-cover"
-                          />
-                        ) : product.images.length > 0 ? (
-                          <img
-                            src={product.images[0]}
-                            alt={product.name}
-                            className="h-10 w-10 rounded object-cover"
-                          />
-                        ) : (
-                          <div className="flex h-10 w-10 items-center justify-center rounded bg-muted">
-                            <Image className="h-5 w-5 text-muted-foreground" />
-                          </div>
-                        )}
-                      </TableCell>
-                      <TableCell>
-                        <div>
-                          <div className="font-medium">{product.name}</div>
-                          <div className="text-sm text-muted-foreground">{product.slug}</div>
-                        </div>
-                      </TableCell>
-                      <TableCell className="hidden sm:table-cell text-muted-foreground">
-                        {product.category?.name || "-"}
-                      </TableCell>
-                      <TableCell>
-                        <div>
-                          <div className="font-medium">${product.price.toFixed(2)}</div>
-                          {product.compareAtPrice && (
-                            <div className="text-sm text-muted-foreground line-through">
-                              ${product.compareAtPrice.toFixed(2)}
-                            </div>
-                          )}
-                        </div>
-                      </TableCell>
-                      <TableCell className="hidden md:table-cell">
-                        <Badge variant={product.stock > 0 ? "default" : "secondary"}>
-                          {product.stock}
-                        </Badge>
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex gap-1">
-                          {product.isActive && (
-                            <Badge variant="default">Active</Badge>
-                          )}
-                          {product.isFeatured && (
-                            <Badge variant="secondary">Featured</Badge>
-                          )}
-                          {!product.isActive && (
-                            <Badge variant="outline">Inactive</Badge>
-                          )}
-                        </div>
-                      </TableCell>
-                      <TableCell className="text-right">
-                        <div className="flex justify-end gap-2">
-                          <Link href={`/dashboard/products/${product.id}`}>
-                            <Button variant="ghost" size="sm">
-                              View
-                            </Button>
-                          </Link>
-                          <Link href={`/dashboard/products/${product.id}/edit`}>
-                            <Button variant="ghost" size="sm">
-                              <Edit className="h-4 w-4" />
-                            </Button>
-                          </Link>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => handleDelete(product.id)}
-                          >
-                            <Trash2 className="h-4 w-4 text-destructive" />
-                          </Button>
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  ))
-                )}
-              </TableBody>
-            </Table>
-          </div>
+          <ResponsiveTable
+            columns={productColumns}
+            data={products}
+            keyExtractor={(product) => product.id}
+            onRowClick={(product) => router.push(`/dashboard/products/${product.id}`)}
+            loading={loading}
+            emptyMessage="No products found"
+          />
 
           {/* Pagination */}
           {totalPages > 1 && (
