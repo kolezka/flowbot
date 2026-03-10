@@ -59,14 +59,28 @@ async function executeApiCall(node: FlowNode, ctx: FlowContext): Promise<unknown
   const url = interpolate(String(node.config.url ?? ''), ctx);
   const method = String(node.config.method ?? 'GET');
   const bodyTemplate = node.config.body ? interpolate(JSON.stringify(node.config.body), ctx) : undefined;
+  const timeoutMs = (node.config.timeoutMs as number) ?? 10_000;
 
-  const response = await fetch(url, {
-    method,
-    headers: { 'Content-Type': 'application/json' },
-    body: bodyTemplate,
-  });
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), timeoutMs);
 
-  return { status: response.status, data: await response.json().catch(() => null) };
+  try {
+    const response = await fetch(url, {
+      method,
+      headers: { 'Content-Type': 'application/json' },
+      body: bodyTemplate,
+      signal: controller.signal,
+    });
+
+    return { status: response.status, data: await response.json().catch(() => null) };
+  } catch (error) {
+    if (error instanceof Error && error.name === 'AbortError') {
+      throw new Error(`API call to ${url} timed out after ${timeoutMs}ms`);
+    }
+    throw error;
+  } finally {
+    clearTimeout(timer);
+  }
 }
 
 async function executeDelay(node: FlowNode, ctx: FlowContext): Promise<unknown> {
@@ -109,15 +123,29 @@ async function executeBotAction(node: FlowNode, ctx: FlowContext): Promise<unkno
     interpolatedParams[key] = typeof value === 'string' ? interpolate(value, ctx) : value;
   }
 
-  // Make HTTP call to the bot's API endpoint
+  // Make HTTP call to the bot's API endpoint with timeout
   const url = `${botInstance.apiUrl.replace(/\/+$/, '')}/api/send-message`;
-  const response = await fetch(url, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ action, ...interpolatedParams }),
-  });
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), 10_000);
 
-  const data = await response.json().catch(() => null);
+  let response: Response;
+  let data: unknown;
+  try {
+    response = await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action, ...interpolatedParams }),
+      signal: controller.signal,
+    });
+    data = await response.json().catch(() => null);
+  } catch (error) {
+    clearTimeout(timer);
+    if (error instanceof Error && error.name === 'AbortError') {
+      throw new Error(`Bot action request to ${url} timed out after 10s`);
+    }
+    throw error;
+  }
+  clearTimeout(timer);
 
   if (!response.ok) {
     throw new Error(`Bot action failed (${response.status}): ${JSON.stringify(data)}`);

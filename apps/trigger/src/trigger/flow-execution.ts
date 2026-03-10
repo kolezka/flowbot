@@ -2,6 +2,7 @@ import { task } from '@trigger.dev/sdk/v3';
 import { getPrisma } from '../lib/prisma.js';
 import { executeFlow } from '../lib/flow-engine/index.js';
 import type { FlowNode, FlowEdge } from '../lib/flow-engine/index.js';
+import { enrichTriggerData } from '../lib/event-correlator.js';
 
 export const flowExecutionTask = task({
   id: 'flow-execution',
@@ -28,7 +29,10 @@ export const flowExecutionTask = task({
       const nodes = flow.nodesJson as unknown as FlowNode[];
       const edges = flow.edgesJson as unknown as FlowEdge[];
 
-      const ctx = await executeFlow(nodes, edges, payload.triggerData);
+      // Enrich trigger data with cross-bot event correlation context
+      const enrichedTriggerData = await enrichTriggerData(payload.triggerData);
+
+      const ctx = await executeFlow(nodes, edges, enrichedTriggerData);
 
       const nodeResults = Object.fromEntries(
         Array.from(ctx.nodeResults.entries()).map(([k, v]) => [k, {
