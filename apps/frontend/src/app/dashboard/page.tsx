@@ -180,7 +180,7 @@ function EnhancedStatCard({ title, value, icon, trend, sparklineData }: Enhanced
           </div>
           {sparklineData && sparklineData.length > 0 && (
             <div className="h-8 w-16">
-              <ResponsiveContainer width="100%" height="100%">
+              <ResponsiveContainer width="100%" height={300} minWidth={0} minHeight={0}>
                 <LineChart data={sparklineData}>
                   <Line
                     type="monotone"
@@ -317,7 +317,7 @@ function MiniChartCard({ title, data, type, color }: MiniChartCardProps) {
       </CardHeader>
       <CardContent className="pb-3">
         <div className="h-32">
-          <ResponsiveContainer width="100%" height="100%">
+          <ResponsiveContainer width="100%" height={300} minWidth={0} minHeight={0}>
             {type === "area" ? (
               <AreaChart data={data}>
                 <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
