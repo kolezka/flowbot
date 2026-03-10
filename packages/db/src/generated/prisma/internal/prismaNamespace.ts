@@ -2900,6 +2900,7 @@ export const BotInstanceScalarFieldEnum = {
   apiUrl: 'apiUrl',
   isActive: 'isActive',
   configVersion: 'configVersion',
+  configHistory: 'configHistory',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const

@@ -48,6 +48,8 @@ model User {
 
   @@index([isBanned])
   @@index([lastSeenAt])
+  @@index([username])
+  @@index([createdAt])
 }
 
 // Category - hierarchical categories for products
@@ -94,6 +96,8 @@ model Product {
   @@index([isActive])
   @@index([sku])
   @@index([stock])
+  @@index([categoryId, isActive])
+  @@index([isFeatured])
 }
 
 // Cart - one per user
@@ -239,6 +243,8 @@ model GroupMember {
   @@unique([groupId, telegramId])
   @@index([groupId])
   @@index([telegramId])
+  @@index([groupId, role])
+  @@index([lastSeenAt])
 }
 
 model Warning {
@@ -257,6 +263,7 @@ model Warning {
   @@index([memberId])
   @@index([isActive, expiresAt])
   @@index([groupId, issuerId])
+  @@index([groupId, isActive])
 }
 
 model ModerationLog {
@@ -273,6 +280,9 @@ model ModerationLog {
 
   @@index([groupId, createdAt])
   @@index([targetId])
+  @@index([action])
+  @@index([actorId])
+  @@index([automated])
 }
 
 model ScheduledMessage {
@@ -289,6 +299,8 @@ model ScheduledMessage {
 
   @@index([sendAt, sent])
   @@index([groupId])
+  @@index([chatId])
+  @@index([createdBy])
 }
 
 model GroupAnalyticsSnapshot {
@@ -374,6 +386,7 @@ model OrderEvent {
   @@index([processed])
   @@index([eventType])
   @@index([createdAt])
+  @@index([processed, createdAt])
 }
 
 model ClientLog {
@@ -384,6 +397,7 @@ model ClientLog {
   createdAt DateTime @default(now())
 
   @@index([createdAt])
+  @@index([level])
 }
 
 model ClientSession {
@@ -402,6 +416,8 @@ model ClientSession {
   updatedAt     DateTime @updatedAt
 
   @@index([isActive])
+  @@index([sessionType])
+  @@index([isActive, sessionType])
 }
 
 // ==========================================
@@ -442,6 +458,7 @@ model FlowExecution {
   @@index([status])
   @@index([flowId, status])
   @@index([flowId, createdAt])
+  @@index([startedAt])
 }
 
 // ==========================================
@@ -457,6 +474,7 @@ model BotInstance {
   apiUrl      String?  // HTTP API URL for this bot instance (e.g. http://localhost:3001)
   isActive    Boolean  @default(true)
   configVersion Int    @default(0)
+  configHistory Json   @default("[]")
 
   commands  BotCommand[]
   responses BotResponse[]

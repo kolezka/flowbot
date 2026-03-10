@@ -69,6 +69,7 @@ export type BotInstanceCountAggregateOutputType = {
   apiUrl: number
   isActive: number
   configVersion: number
+  configHistory: number
   createdAt: number
   updatedAt: number
   _all: number
@@ -118,6 +119,7 @@ export type BotInstanceCountAggregateInputType = {
   apiUrl?: true
   isActive?: true
   configVersion?: true
+  configHistory?: true
   createdAt?: true
   updatedAt?: true
   _all?: true
@@ -218,6 +220,7 @@ export type BotInstanceGroupByOutputType = {
   apiUrl: string | null
   isActive: boolean
   configVersion: number
+  configHistory: runtime.JsonValue
   createdAt: Date
   updatedAt: Date
   _count: BotInstanceCountAggregateOutputType | null
@@ -254,6 +257,7 @@ export type BotInstanceWhereInput = {
   apiUrl?: Prisma.StringNullableFilter<"BotInstance"> | string | null
   isActive?: Prisma.BoolFilter<"BotInstance"> | boolean
   configVersion?: Prisma.IntFilter<"BotInstance"> | number
+  configHistory?: Prisma.JsonFilter<"BotInstance">
   createdAt?: Prisma.DateTimeFilter<"BotInstance"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"BotInstance"> | Date | string
   commands?: Prisma.BotCommandListRelationFilter
@@ -270,6 +274,7 @@ export type BotInstanceOrderByWithRelationInput = {
   apiUrl?: Prisma.SortOrderInput | Prisma.SortOrder
   isActive?: Prisma.SortOrder
   configVersion?: Prisma.SortOrder
+  configHistory?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   commands?: Prisma.BotCommandOrderByRelationAggregateInput
@@ -289,6 +294,7 @@ export type BotInstanceWhereUniqueInput = Prisma.AtLeast<{
   apiUrl?: Prisma.StringNullableFilter<"BotInstance"> | string | null
   isActive?: Prisma.BoolFilter<"BotInstance"> | boolean
   configVersion?: Prisma.IntFilter<"BotInstance"> | number
+  configHistory?: Prisma.JsonFilter<"BotInstance">
   createdAt?: Prisma.DateTimeFilter<"BotInstance"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"BotInstance"> | Date | string
   commands?: Prisma.BotCommandListRelationFilter
@@ -305,6 +311,7 @@ export type BotInstanceOrderByWithAggregationInput = {
   apiUrl?: Prisma.SortOrderInput | Prisma.SortOrder
   isActive?: Prisma.SortOrder
   configVersion?: Prisma.SortOrder
+  configHistory?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   _count?: Prisma.BotInstanceCountOrderByAggregateInput
@@ -326,6 +333,7 @@ export type BotInstanceScalarWhereWithAggregatesInput = {
   apiUrl?: Prisma.StringNullableWithAggregatesFilter<"BotInstance"> | string | null
   isActive?: Prisma.BoolWithAggregatesFilter<"BotInstance"> | boolean
   configVersion?: Prisma.IntWithAggregatesFilter<"BotInstance"> | number
+  configHistory?: Prisma.JsonWithAggregatesFilter<"BotInstance">
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"BotInstance"> | Date | string
   updatedAt?: Prisma.DateTimeWithAggregatesFilter<"BotInstance"> | Date | string
 }
@@ -339,6 +347,7 @@ export type BotInstanceCreateInput = {
   apiUrl?: string | null
   isActive?: boolean
   configVersion?: number
+  configHistory?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   createdAt?: Date | string
   updatedAt?: Date | string
   commands?: Prisma.BotCommandCreateNestedManyWithoutBotInput
@@ -355,6 +364,7 @@ export type BotInstanceUncheckedCreateInput = {
   apiUrl?: string | null
   isActive?: boolean
   configVersion?: number
+  configHistory?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   createdAt?: Date | string
   updatedAt?: Date | string
   commands?: Prisma.BotCommandUncheckedCreateNestedManyWithoutBotInput
@@ -371,6 +381,7 @@ export type BotInstanceUpdateInput = {
   apiUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   configVersion?: Prisma.IntFieldUpdateOperationsInput | number
+  configHistory?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   commands?: Prisma.BotCommandUpdateManyWithoutBotNestedInput
@@ -387,6 +398,7 @@ export type BotInstanceUncheckedUpdateInput = {
   apiUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   configVersion?: Prisma.IntFieldUpdateOperationsInput | number
+  configHistory?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   commands?: Prisma.BotCommandUncheckedUpdateManyWithoutBotNestedInput
@@ -403,6 +415,7 @@ export type BotInstanceCreateManyInput = {
   apiUrl?: string | null
   isActive?: boolean
   configVersion?: number
+  configHistory?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -416,6 +429,7 @@ export type BotInstanceUpdateManyMutationInput = {
   apiUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   configVersion?: Prisma.IntFieldUpdateOperationsInput | number
+  configHistory?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -429,6 +443,7 @@ export type BotInstanceUncheckedUpdateManyInput = {
   apiUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   configVersion?: Prisma.IntFieldUpdateOperationsInput | number
+  configHistory?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -442,6 +457,7 @@ export type BotInstanceCountOrderByAggregateInput = {
   apiUrl?: Prisma.SortOrder
   isActive?: Prisma.SortOrder
   configVersion?: Prisma.SortOrder
+  configHistory?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -536,6 +552,7 @@ export type BotInstanceCreateWithoutCommandsInput = {
   apiUrl?: string | null
   isActive?: boolean
   configVersion?: number
+  configHistory?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   createdAt?: Date | string
   updatedAt?: Date | string
   responses?: Prisma.BotResponseCreateNestedManyWithoutBotInput
@@ -551,6 +568,7 @@ export type BotInstanceUncheckedCreateWithoutCommandsInput = {
   apiUrl?: string | null
   isActive?: boolean
   configVersion?: number
+  configHistory?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   createdAt?: Date | string
   updatedAt?: Date | string
   responses?: Prisma.BotResponseUncheckedCreateNestedManyWithoutBotInput
@@ -582,6 +600,7 @@ export type BotInstanceUpdateWithoutCommandsInput = {
   apiUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   configVersion?: Prisma.IntFieldUpdateOperationsInput | number
+  configHistory?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   responses?: Prisma.BotResponseUpdateManyWithoutBotNestedInput
@@ -597,6 +616,7 @@ export type BotInstanceUncheckedUpdateWithoutCommandsInput = {
   apiUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   configVersion?: Prisma.IntFieldUpdateOperationsInput | number
+  configHistory?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   responses?: Prisma.BotResponseUncheckedUpdateManyWithoutBotNestedInput
@@ -612,6 +632,7 @@ export type BotInstanceCreateWithoutResponsesInput = {
   apiUrl?: string | null
   isActive?: boolean
   configVersion?: number
+  configHistory?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   createdAt?: Date | string
   updatedAt?: Date | string
   commands?: Prisma.BotCommandCreateNestedManyWithoutBotInput
@@ -627,6 +648,7 @@ export type BotInstanceUncheckedCreateWithoutResponsesInput = {
   apiUrl?: string | null
   isActive?: boolean
   configVersion?: number
+  configHistory?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   createdAt?: Date | string
   updatedAt?: Date | string
   commands?: Prisma.BotCommandUncheckedCreateNestedManyWithoutBotInput
@@ -658,6 +680,7 @@ export type BotInstanceUpdateWithoutResponsesInput = {
   apiUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   configVersion?: Prisma.IntFieldUpdateOperationsInput | number
+  configHistory?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   commands?: Prisma.BotCommandUpdateManyWithoutBotNestedInput
@@ -673,6 +696,7 @@ export type BotInstanceUncheckedUpdateWithoutResponsesInput = {
   apiUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   configVersion?: Prisma.IntFieldUpdateOperationsInput | number
+  configHistory?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   commands?: Prisma.BotCommandUncheckedUpdateManyWithoutBotNestedInput
@@ -688,6 +712,7 @@ export type BotInstanceCreateWithoutMenusInput = {
   apiUrl?: string | null
   isActive?: boolean
   configVersion?: number
+  configHistory?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   createdAt?: Date | string
   updatedAt?: Date | string
   commands?: Prisma.BotCommandCreateNestedManyWithoutBotInput
@@ -703,6 +728,7 @@ export type BotInstanceUncheckedCreateWithoutMenusInput = {
   apiUrl?: string | null
   isActive?: boolean
   configVersion?: number
+  configHistory?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   createdAt?: Date | string
   updatedAt?: Date | string
   commands?: Prisma.BotCommandUncheckedCreateNestedManyWithoutBotInput
@@ -734,6 +760,7 @@ export type BotInstanceUpdateWithoutMenusInput = {
   apiUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   configVersion?: Prisma.IntFieldUpdateOperationsInput | number
+  configHistory?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   commands?: Prisma.BotCommandUpdateManyWithoutBotNestedInput
@@ -749,6 +776,7 @@ export type BotInstanceUncheckedUpdateWithoutMenusInput = {
   apiUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   configVersion?: Prisma.IntFieldUpdateOperationsInput | number
+  configHistory?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   commands?: Prisma.BotCommandUncheckedUpdateManyWithoutBotNestedInput
@@ -813,6 +841,7 @@ export type BotInstanceSelect<ExtArgs extends runtime.Types.Extensions.InternalA
   apiUrl?: boolean
   isActive?: boolean
   configVersion?: boolean
+  configHistory?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   commands?: boolean | Prisma.BotInstance$commandsArgs<ExtArgs>
@@ -830,6 +859,7 @@ export type BotInstanceSelectCreateManyAndReturn<ExtArgs extends runtime.Types.E
   apiUrl?: boolean
   isActive?: boolean
   configVersion?: boolean
+  configHistory?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }, ExtArgs["result"]["botInstance"]>
@@ -843,6 +873,7 @@ export type BotInstanceSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.E
   apiUrl?: boolean
   isActive?: boolean
   configVersion?: boolean
+  configHistory?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }, ExtArgs["result"]["botInstance"]>
@@ -856,11 +887,12 @@ export type BotInstanceSelectScalar = {
   apiUrl?: boolean
   isActive?: boolean
   configVersion?: boolean
+  configHistory?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }
 
-export type BotInstanceOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "name" | "botToken" | "botUsername" | "type" | "apiUrl" | "isActive" | "configVersion" | "createdAt" | "updatedAt", ExtArgs["result"]["botInstance"]>
+export type BotInstanceOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "name" | "botToken" | "botUsername" | "type" | "apiUrl" | "isActive" | "configVersion" | "configHistory" | "createdAt" | "updatedAt", ExtArgs["result"]["botInstance"]>
 export type BotInstanceInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   commands?: boolean | Prisma.BotInstance$commandsArgs<ExtArgs>
   responses?: boolean | Prisma.BotInstance$responsesArgs<ExtArgs>
@@ -886,6 +918,7 @@ export type $BotInstancePayload<ExtArgs extends runtime.Types.Extensions.Interna
     apiUrl: string | null
     isActive: boolean
     configVersion: number
+    configHistory: runtime.JsonValue
     createdAt: Date
     updatedAt: Date
   }, ExtArgs["result"]["botInstance"]>
@@ -1322,6 +1355,7 @@ export interface BotInstanceFieldRefs {
   readonly apiUrl: Prisma.FieldRef<"BotInstance", 'String'>
   readonly isActive: Prisma.FieldRef<"BotInstance", 'Boolean'>
   readonly configVersion: Prisma.FieldRef<"BotInstance", 'Int'>
+  readonly configHistory: Prisma.FieldRef<"BotInstance", 'Json'>
   readonly createdAt: Prisma.FieldRef<"BotInstance", 'DateTime'>
   readonly updatedAt: Prisma.FieldRef<"BotInstance", 'DateTime'>
 }
