@@ -3,3 +3,8 @@ dist
 .env
 *.session
 .trigger-secret-key
+
+# Temporary/generated files
+.playwright-mcp/
+dashboard-overview.png
+ralph-loop-prompt.txt
