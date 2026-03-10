@@ -12,6 +12,7 @@ import { createDatabase } from './database.js'
 import { createLogger } from './logger.js'
 import { createApiServer, createServer, createServerManager } from './server/index.js'
 import { AnalyticsService } from './services/analytics.js'
+import { registerCommandsFromConfig } from './services/command-registry.js'
 import { initConfigSync } from './services/config-sync.js'
 import { SchedulerService } from './services/scheduler.js'
 
@@ -57,6 +58,12 @@ async function startPolling(config: PollingConfig) {
     bot.api.deleteWebhook(),
   ])
 
+  // Register commands from DB config (and re-register on config changes)
+  await registerCommandsFromConfig(bot.api, configSync.getCommands(), logger)
+  configSync.onChange(async (cfg) => {
+    await registerCommandsFromConfig(bot.api, cfg.commands, logger)
+  })
+
   runner = run(bot, {
     runner: {
       fetch: {
@@ -99,6 +106,12 @@ async function startWebhook(config: WebhookConfig) {
   })
 
   await bot.init()
+
+  // Register commands from DB config (and re-register on config changes)
+  await registerCommandsFromConfig(bot.api, configSync.getCommands(), logger)
+  configSync.onChange(async (cfg) => {
+    await registerCommandsFromConfig(bot.api, cfg.commands, logger)
+  })
 
   const info = await serverManager.start()
   logger.info({ msg: 'Server started', url: info.url })

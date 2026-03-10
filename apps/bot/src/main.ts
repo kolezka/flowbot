@@ -9,6 +9,7 @@ import { config } from './config'
 import { prismaClient } from './database'
 import { logger } from './logger'
 import { createServer, createServerManager } from './server'
+import { registerCommandsFromConfig } from './services/command-registry'
 import { initConfigSync } from './services/config-sync'
 import { run } from '@grammyjs/runner'
 
@@ -34,6 +35,12 @@ async function startPolling(config: PollingConfig) {
     bot.init(),
     bot.api.deleteWebhook(),
   ])
+
+  // Register commands from DB config (and re-register on config changes)
+  await registerCommandsFromConfig(bot.api, configSync.getCommands(), logger)
+  configSync.onChange(async (cfg) => {
+    await registerCommandsFromConfig(bot.api, cfg.commands, logger)
+  })
 
   // start bot
   runner = run(bot, {
@@ -78,6 +85,12 @@ async function startWebhook(config: WebhookConfig) {
 
   // to prevent receiving updates before the bot is ready
   await bot.init()
+
+  // Register commands from DB config (and re-register on config changes)
+  await registerCommandsFromConfig(bot.api, configSync.getCommands(), logger)
+  configSync.onChange(async (cfg) => {
+    await registerCommandsFromConfig(bot.api, cfg.commands, logger)
+  })
 
   // start server
   const info = await serverManager.start()

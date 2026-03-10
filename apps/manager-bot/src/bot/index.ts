@@ -13,6 +13,7 @@ import { Bot as TelegramBot } from 'grammy'
 import { AdminCacheService } from '../services/admin-cache.js'
 import { AiClassifierService } from '../services/ai-classifier.js'
 import { AntiSpamService } from '../services/anti-spam.js'
+import { FlowEventForwarder } from '../services/flow-events.js'
 import { logChannelService } from '../services/log-channel.js'
 import { createAiModerationFeature } from './features/ai-moderation.js'
 import { createAntiLinkFeature } from './features/anti-link.js'
@@ -38,6 +39,7 @@ import { createWelcomeFeature } from './features/welcome.js'
 import { errorHandler } from './handlers/error.js'
 import { i18n } from './i18n.js'
 import { adminCache } from './middlewares/admin-cache.js'
+import { flowEvents } from './middlewares/flow-events.js'
 import { groupData } from './middlewares/group-data.js'
 import { session } from './middlewares/session.js'
 import { updateLogger } from './middlewares/update-logger.js'
@@ -99,6 +101,10 @@ export function createBot(token: string, dependencies: Dependencies, botConfig?:
   // Admin cache
   const adminCacheService = new AdminCacheService()
   protectedBot.use(adminCache(adminCacheService))
+
+  // Flow event forwarding — forwards bot events to the flow engine via Trigger.dev
+  const flowEventForwarder = new FlowEventForwarder(prisma, logger)
+  protectedBot.use(flowEvents(flowEventForwarder))
 
   // Filter out disabled commands via ConfigSync
   if (configSync) {

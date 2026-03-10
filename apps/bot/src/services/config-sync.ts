@@ -1,24 +1,40 @@
 import type { PrismaClient } from '@tg-allegro/db'
 import type { Logger } from '../logger'
 
-interface CommandConfig {
+export interface CommandConfig {
   command: string
   description: string | null
   isEnabled: boolean
   sortOrder: number
 }
 
-interface SyncedConfig {
+export interface ResponseConfig {
+  key: string
+  locale: string
+  text: string
+}
+
+export interface MenuConfig {
+  name: string
+  buttons: { label: string; action: string; row: number; col: number }[]
+}
+
+export interface SyncedConfig {
   configVersion: number
   commands: CommandConfig[]
+  responses: ResponseConfig[]
+  menus: MenuConfig[]
 }
 
 const POLL_INTERVAL_MS = 60_000
+
+export type ConfigChangeListener = (config: SyncedConfig) => void | Promise<void>
 
 export class ConfigSyncService {
   private config: SyncedConfig | null = null
   private botInstanceId: string | null = null
   private pollTimer: ReturnType<typeof setInterval> | null = null
+  private changeListeners: ConfigChangeListener[] = []
 
   constructor(
     private readonly prisma: PrismaClient,
@@ -51,6 +67,10 @@ export class ConfigSyncService {
     }
   }
 
+  onChange(listener: ConfigChangeListener): void {
+    this.changeListeners.push(listener)
+  }
+
   isCommandEnabled(command: string): boolean {
     if (!this.config) {
       // No DB config loaded — allow all commands (code defaults)
@@ -70,6 +90,29 @@ export class ConfigSyncService {
     return this.config?.commands ?? []
   }
 
+  getResponse(key: string, locale = 'en'): string | null {
+    if (!this.config) return null
+    const response = this.config.responses.find(r => r.key === key && r.locale === locale)
+    return response?.text ?? null
+  }
+
+  getResponses(locale?: string): ResponseConfig[] {
+    if (!this.config) return []
+    if (locale) {
+      return this.config.responses.filter(r => r.locale === locale)
+    }
+    return this.config.responses
+  }
+
+  getMenu(name: string): MenuConfig | null {
+    if (!this.config) return null
+    return this.config.menus.find(m => m.name === name) ?? null
+  }
+
+  getMenus(): MenuConfig[] {
+    return this.config?.menus ?? []
+  }
+
   getConfigVersion(): number {
     return this.config?.configVersion ?? 0
   }
@@ -80,6 +123,12 @@ export class ConfigSyncService {
         where: { botToken: this.botToken, isActive: true },
         include: {
           commands: { orderBy: { sortOrder: 'asc' } },
+          responses: true,
+          menus: {
+            include: {
+              buttons: { orderBy: [{ row: 'asc' }, { col: 'asc' }] },
+            },
+          },
         },
       })
 
@@ -90,6 +139,8 @@ export class ConfigSyncService {
         return
       }
 
+      const previousVersion = this.config?.configVersion
+
       this.botInstanceId = instance.id
       this.config = {
         configVersion: instance.configVersion,
@@ -99,12 +150,36 @@ export class ConfigSyncService {
           isEnabled: c.isEnabled,
           sortOrder: c.sortOrder,
         })),
+        responses: instance.responses.map(r => ({
+          key: r.key,
+          locale: r.locale,
+          text: r.text,
+        })),
+        menus: instance.menus.map(m => ({
+          name: m.name,
+          buttons: m.buttons.map(b => ({
+            label: b.label,
+            action: b.action,
+            row: b.row,
+            col: b.col,
+          })),
+        })),
       }
 
       this.logger.info(
-        { configVersion: instance.configVersion, commandCount: instance.commands.length },
+        {
+          configVersion: instance.configVersion,
+          commandCount: instance.commands.length,
+          responseCount: instance.responses.length,
+          menuCount: instance.menus.length,
+        },
         'ConfigSync loaded config from DB',
       )
+
+      // Notify listeners if version changed
+      if (previousVersion !== undefined && previousVersion !== instance.configVersion) {
+        await this.notifyListeners()
+      }
     }
     catch (error) {
       this.logger.warn({ err: error }, 'ConfigSync failed to load from DB, falling back to code defaults')
@@ -142,6 +217,18 @@ export class ConfigSyncService {
     }
     catch (error) {
       this.logger.warn({ err: error }, 'ConfigSync version check failed')
+    }
+  }
+
+  private async notifyListeners(): Promise<void> {
+    if (!this.config) return
+    for (const listener of this.changeListeners) {
+      try {
+        await listener(this.config)
+      }
+      catch (error) {
+        this.logger.warn({ err: error }, 'ConfigSync change listener failed')
+      }
     }
   }
 }
