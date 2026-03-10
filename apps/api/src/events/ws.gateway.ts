@@ -12,9 +12,12 @@ import { EventBusService } from './event-bus.service';
 @WebSocketGateway({
   cors: {
     origin: process.env.FRONTEND_URL ?? 'http://localhost:3001',
+    methods: ['GET', 'POST'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
     credentials: true,
   },
   namespace: '/events',
+  transports: ['websocket', 'polling'],
 })
 export class WsGateway implements OnGatewayConnection, OnGatewayDisconnect {
   @WebSocketServer()
