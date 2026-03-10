@@ -33,7 +33,7 @@ async function globalTeardown(_config: FullConfig) {
     // Clean up test flows
     const flows = await apiGet<{ data: { id: string; name: string }[] }>(token, '/api/flows?limit=100');
     for (const flow of flows.data ?? []) {
-      if (flow.name === 'New Flow' || flow.name === 'Test Flow') {
+      if (flow.name === 'New Flow' || flow.name === 'Test Flow' || flow.name.startsWith('E2E ') || flow.name?.startsWith('Smoke Flow ')) {
         await apiDelete(token, `/api/flows/${flow.id}`);
       }
     }
@@ -41,7 +41,7 @@ async function globalTeardown(_config: FullConfig) {
     // Clean up test broadcasts (E2E test messages)
     const broadcasts = await apiGet<{ data: { id: string; text: string }[] }>(token, '/api/broadcast?limit=100');
     for (const b of broadcasts.data ?? []) {
-      if (b.text?.includes('E2E test')) {
+      if (b.text?.includes('E2E test') || b.text?.includes('E2E smoke test')) {
         await apiDelete(token, `/api/broadcast/${b.id}`);
       }
     }
@@ -50,7 +50,7 @@ async function globalTeardown(_config: FullConfig) {
     const webhooksRes = await apiGet<any>(token, '/api/webhooks');
     const webhooks = Array.isArray(webhooksRes) ? webhooksRes : (webhooksRes?.data ?? []);
     for (const wh of webhooks) {
-      if (wh.name?.includes('E2E Webhook') || wh.name?.includes('Lifecycle WH')) {
+      if (wh.name?.includes('E2E Webhook') || wh.name?.includes('Lifecycle WH') || wh.name?.includes('Smoke WH')) {
         await apiDelete(token, `/api/webhooks/${wh.id}`);
       }
     }
@@ -59,7 +59,7 @@ async function globalTeardown(_config: FullConfig) {
     const productsRes = await apiGet<any>(token, '/api/products?limit=100');
     const products = Array.isArray(productsRes) ? productsRes : (productsRes?.data ?? []);
     for (const p of products) {
-      if (p.name?.includes('Test Product') || p.name?.includes('CRUD Product')) {
+      if (p.name?.includes('Test Product') || p.name?.includes('CRUD Product') || p.name?.includes('Smoke Product')) {
         await apiDelete(token, `/api/products/${p.id}`);
       }
     }
@@ -68,7 +68,7 @@ async function globalTeardown(_config: FullConfig) {
     const categoriesRes = await apiGet<any>(token, '/api/categories');
     const categories = Array.isArray(categoriesRes) ? categoriesRes : (categoriesRes?.data ?? []);
     for (const c of categories) {
-      if (c.name?.includes('Test Cat') || c.name?.includes('Test Category') || c.name?.includes('CRUD Cat') || c.name?.includes('ProdTest Cat')) {
+      if (c.name?.includes('Test Cat') || c.name?.includes('Test Category') || c.name?.includes('CRUD Cat') || c.name?.includes('ProdTest Cat') || c.name?.includes('Smoke Cat')) {
         await apiDelete(token, `/api/categories/${c.id}`);
       }
     }
