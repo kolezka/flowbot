@@ -112,3 +112,48 @@ export type ClientLog = Prisma.ClientLogModel
  * 
  */
 export type ClientSession = Prisma.ClientSessionModel
+/**
+ * Model FlowDefinition
+ * 
+ */
+export type FlowDefinition = Prisma.FlowDefinitionModel
+/**
+ * Model FlowExecution
+ * 
+ */
+export type FlowExecution = Prisma.FlowExecutionModel
+/**
+ * Model BotInstance
+ * 
+ */
+export type BotInstance = Prisma.BotInstanceModel
+/**
+ * Model BotCommand
+ * 
+ */
+export type BotCommand = Prisma.BotCommandModel
+/**
+ * Model BotResponse
+ * 
+ */
+export type BotResponse = Prisma.BotResponseModel
+/**
+ * Model BotMenu
+ * 
+ */
+export type BotMenu = Prisma.BotMenuModel
+/**
+ * Model BotMenuButton
+ * 
+ */
+export type BotMenuButton = Prisma.BotMenuButtonModel
+/**
+ * Model FlowVersion
+ * 
+ */
+export type FlowVersion = Prisma.FlowVersionModel
+/**
+ * Model WebhookEndpoint
+ * 
+ */
+export type WebhookEndpoint = Prisma.WebhookEndpointModel

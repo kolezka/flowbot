@@ -6,6 +6,7 @@ import {
 } from '@nestjs/common';
 import { tasks } from '@trigger.dev/sdk/v3';
 import { PrismaService } from '../prisma/prisma.service';
+import { EventBusService } from '../events/event-bus.service';
 import {
   BroadcastDto,
   BroadcastListResponseDto,
@@ -17,7 +18,10 @@ import {
 export class BroadcastService {
   private readonly logger = new Logger(BroadcastService.name);
 
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private eventBus: EventBusService,
+  ) {}
 
   async findAll(
     page: number = 1,
@@ -65,6 +69,13 @@ export class BroadcastService {
     });
 
     this.logger.log(`Broadcast created: ${broadcast.id}`);
+
+    this.eventBus.emitAutomation({
+      type: 'broadcast.created',
+      jobId: broadcast.id,
+      data: { text: broadcast.text },
+      timestamp: new Date(),
+    });
 
     try {
       await tasks.trigger('broadcast', { broadcastId: broadcast.id });
@@ -135,6 +146,13 @@ export class BroadcastService {
     });
 
     this.logger.log(`Broadcast retried: ${id} -> ${newBroadcast.id}`);
+
+    this.eventBus.emitAutomation({
+      type: 'broadcast.created',
+      jobId: newBroadcast.id,
+      data: { text: newBroadcast.text, retriedFrom: id },
+      timestamp: new Date(),
+    });
 
     try {
       await tasks.trigger('broadcast', { broadcastId: newBroadcast.id });

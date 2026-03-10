@@ -1,5 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
+import { EventBusService } from '../../events/event-bus.service';
 import {
   WarningDto,
   WarningListResponseDto,
@@ -8,7 +9,10 @@ import {
 
 @Injectable()
 export class WarningsService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private eventBus: EventBusService,
+  ) {}
 
   async findAll(
     page: number = 1,
@@ -68,6 +72,13 @@ export class WarningsService {
       where: { id },
       data: { isActive: false },
       include: { group: { select: { title: true } } },
+    });
+
+    this.eventBus.emitModeration({
+      type: 'warning.deactivated',
+      groupId: updated.groupId,
+      data: { warningId: updated.id },
+      timestamp: new Date(),
     });
 
     return this.mapToDto(updated);

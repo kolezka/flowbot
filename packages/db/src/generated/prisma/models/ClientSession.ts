@@ -20,8 +20,20 @@ export type ClientSessionModel = runtime.Types.Result.DefaultSelection<Prisma.$C
 
 export type AggregateClientSession = {
   _count: ClientSessionCountAggregateOutputType | null
+  _avg: ClientSessionAvgAggregateOutputType | null
+  _sum: ClientSessionSumAggregateOutputType | null
   _min: ClientSessionMinAggregateOutputType | null
   _max: ClientSessionMaxAggregateOutputType | null
+}
+
+export type ClientSessionAvgAggregateOutputType = {
+  dcId: number | null
+  errorCount: number | null
+}
+
+export type ClientSessionSumAggregateOutputType = {
+  dcId: number | null
+  errorCount: number | null
 }
 
 export type ClientSessionMinAggregateOutputType = {
@@ -29,6 +41,13 @@ export type ClientSessionMinAggregateOutputType = {
   sessionString: string | null
   isActive: boolean | null
   lastUsedAt: Date | null
+  phoneNumber: string | null
+  displayName: string | null
+  dcId: number | null
+  sessionType: string | null
+  errorCount: number | null
+  lastError: string | null
+  lastErrorAt: Date | null
   createdAt: Date | null
   updatedAt: Date | null
 }
@@ -38,6 +57,13 @@ export type ClientSessionMaxAggregateOutputType = {
   sessionString: string | null
   isActive: boolean | null
   lastUsedAt: Date | null
+  phoneNumber: string | null
+  displayName: string | null
+  dcId: number | null
+  sessionType: string | null
+  errorCount: number | null
+  lastError: string | null
+  lastErrorAt: Date | null
   createdAt: Date | null
   updatedAt: Date | null
 }
@@ -47,17 +73,41 @@ export type ClientSessionCountAggregateOutputType = {
   sessionString: number
   isActive: number
   lastUsedAt: number
+  phoneNumber: number
+  displayName: number
+  dcId: number
+  sessionType: number
+  errorCount: number
+  lastError: number
+  lastErrorAt: number
   createdAt: number
   updatedAt: number
   _all: number
 }
 
 
+export type ClientSessionAvgAggregateInputType = {
+  dcId?: true
+  errorCount?: true
+}
+
+export type ClientSessionSumAggregateInputType = {
+  dcId?: true
+  errorCount?: true
+}
+
 export type ClientSessionMinAggregateInputType = {
   id?: true
   sessionString?: true
   isActive?: true
   lastUsedAt?: true
+  phoneNumber?: true
+  displayName?: true
+  dcId?: true
+  sessionType?: true
+  errorCount?: true
+  lastError?: true
+  lastErrorAt?: true
   createdAt?: true
   updatedAt?: true
 }
@@ -67,6 +117,13 @@ export type ClientSessionMaxAggregateInputType = {
   sessionString?: true
   isActive?: true
   lastUsedAt?: true
+  phoneNumber?: true
+  displayName?: true
+  dcId?: true
+  sessionType?: true
+  errorCount?: true
+  lastError?: true
+  lastErrorAt?: true
   createdAt?: true
   updatedAt?: true
 }
@@ -76,6 +133,13 @@ export type ClientSessionCountAggregateInputType = {
   sessionString?: true
   isActive?: true
   lastUsedAt?: true
+  phoneNumber?: true
+  displayName?: true
+  dcId?: true
+  sessionType?: true
+  errorCount?: true
+  lastError?: true
+  lastErrorAt?: true
   createdAt?: true
   updatedAt?: true
   _all?: true
@@ -119,6 +183,18 @@ export type ClientSessionAggregateArgs<ExtArgs extends runtime.Types.Extensions.
   /**
    * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
    * 
+   * Select which fields to average
+  **/
+  _avg?: ClientSessionAvgAggregateInputType
+  /**
+   * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+   * 
+   * Select which fields to sum
+  **/
+  _sum?: ClientSessionSumAggregateInputType
+  /**
+   * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+   * 
    * Select which fields to find the minimum value
   **/
   _min?: ClientSessionMinAggregateInputType
@@ -149,6 +225,8 @@ export type ClientSessionGroupByArgs<ExtArgs extends runtime.Types.Extensions.In
   take?: number
   skip?: number
   _count?: ClientSessionCountAggregateInputType | true
+  _avg?: ClientSessionAvgAggregateInputType
+  _sum?: ClientSessionSumAggregateInputType
   _min?: ClientSessionMinAggregateInputType
   _max?: ClientSessionMaxAggregateInputType
 }
@@ -158,9 +236,18 @@ export type ClientSessionGroupByOutputType = {
   sessionString: string
   isActive: boolean
   lastUsedAt: Date
+  phoneNumber: string | null
+  displayName: string | null
+  dcId: number | null
+  sessionType: string
+  errorCount: number
+  lastError: string | null
+  lastErrorAt: Date | null
   createdAt: Date
   updatedAt: Date
   _count: ClientSessionCountAggregateOutputType | null
+  _avg: ClientSessionAvgAggregateOutputType | null
+  _sum: ClientSessionSumAggregateOutputType | null
   _min: ClientSessionMinAggregateOutputType | null
   _max: ClientSessionMaxAggregateOutputType | null
 }
@@ -188,6 +275,13 @@ export type ClientSessionWhereInput = {
   sessionString?: Prisma.StringFilter<"ClientSession"> | string
   isActive?: Prisma.BoolFilter<"ClientSession"> | boolean
   lastUsedAt?: Prisma.DateTimeFilter<"ClientSession"> | Date | string
+  phoneNumber?: Prisma.StringNullableFilter<"ClientSession"> | string | null
+  displayName?: Prisma.StringNullableFilter<"ClientSession"> | string | null
+  dcId?: Prisma.IntNullableFilter<"ClientSession"> | number | null
+  sessionType?: Prisma.StringFilter<"ClientSession"> | string
+  errorCount?: Prisma.IntFilter<"ClientSession"> | number
+  lastError?: Prisma.StringNullableFilter<"ClientSession"> | string | null
+  lastErrorAt?: Prisma.DateTimeNullableFilter<"ClientSession"> | Date | string | null
   createdAt?: Prisma.DateTimeFilter<"ClientSession"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"ClientSession"> | Date | string
 }
@@ -197,6 +291,13 @@ export type ClientSessionOrderByWithRelationInput = {
   sessionString?: Prisma.SortOrder
   isActive?: Prisma.SortOrder
   lastUsedAt?: Prisma.SortOrder
+  phoneNumber?: Prisma.SortOrderInput | Prisma.SortOrder
+  displayName?: Prisma.SortOrderInput | Prisma.SortOrder
+  dcId?: Prisma.SortOrderInput | Prisma.SortOrder
+  sessionType?: Prisma.SortOrder
+  errorCount?: Prisma.SortOrder
+  lastError?: Prisma.SortOrderInput | Prisma.SortOrder
+  lastErrorAt?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -209,6 +310,13 @@ export type ClientSessionWhereUniqueInput = Prisma.AtLeast<{
   sessionString?: Prisma.StringFilter<"ClientSession"> | string
   isActive?: Prisma.BoolFilter<"ClientSession"> | boolean
   lastUsedAt?: Prisma.DateTimeFilter<"ClientSession"> | Date | string
+  phoneNumber?: Prisma.StringNullableFilter<"ClientSession"> | string | null
+  displayName?: Prisma.StringNullableFilter<"ClientSession"> | string | null
+  dcId?: Prisma.IntNullableFilter<"ClientSession"> | number | null
+  sessionType?: Prisma.StringFilter<"ClientSession"> | string
+  errorCount?: Prisma.IntFilter<"ClientSession"> | number
+  lastError?: Prisma.StringNullableFilter<"ClientSession"> | string | null
+  lastErrorAt?: Prisma.DateTimeNullableFilter<"ClientSession"> | Date | string | null
   createdAt?: Prisma.DateTimeFilter<"ClientSession"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"ClientSession"> | Date | string
 }, "id">
@@ -218,11 +326,20 @@ export type ClientSessionOrderByWithAggregationInput = {
   sessionString?: Prisma.SortOrder
   isActive?: Prisma.SortOrder
   lastUsedAt?: Prisma.SortOrder
+  phoneNumber?: Prisma.SortOrderInput | Prisma.SortOrder
+  displayName?: Prisma.SortOrderInput | Prisma.SortOrder
+  dcId?: Prisma.SortOrderInput | Prisma.SortOrder
+  sessionType?: Prisma.SortOrder
+  errorCount?: Prisma.SortOrder
+  lastError?: Prisma.SortOrderInput | Prisma.SortOrder
+  lastErrorAt?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   _count?: Prisma.ClientSessionCountOrderByAggregateInput
+  _avg?: Prisma.ClientSessionAvgOrderByAggregateInput
   _max?: Prisma.ClientSessionMaxOrderByAggregateInput
   _min?: Prisma.ClientSessionMinOrderByAggregateInput
+  _sum?: Prisma.ClientSessionSumOrderByAggregateInput
 }
 
 export type ClientSessionScalarWhereWithAggregatesInput = {
@@ -233,6 +350,13 @@ export type ClientSessionScalarWhereWithAggregatesInput = {
   sessionString?: Prisma.StringWithAggregatesFilter<"ClientSession"> | string
   isActive?: Prisma.BoolWithAggregatesFilter<"ClientSession"> | boolean
   lastUsedAt?: Prisma.DateTimeWithAggregatesFilter<"ClientSession"> | Date | string
+  phoneNumber?: Prisma.StringNullableWithAggregatesFilter<"ClientSession"> | string | null
+  displayName?: Prisma.StringNullableWithAggregatesFilter<"ClientSession"> | string | null
+  dcId?: Prisma.IntNullableWithAggregatesFilter<"ClientSession"> | number | null
+  sessionType?: Prisma.StringWithAggregatesFilter<"ClientSession"> | string
+  errorCount?: Prisma.IntWithAggregatesFilter<"ClientSession"> | number
+  lastError?: Prisma.StringNullableWithAggregatesFilter<"ClientSession"> | string | null
+  lastErrorAt?: Prisma.DateTimeNullableWithAggregatesFilter<"ClientSession"> | Date | string | null
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"ClientSession"> | Date | string
   updatedAt?: Prisma.DateTimeWithAggregatesFilter<"ClientSession"> | Date | string
 }
@@ -242,6 +366,13 @@ export type ClientSessionCreateInput = {
   sessionString: string
   isActive?: boolean
   lastUsedAt?: Date | string
+  phoneNumber?: string | null
+  displayName?: string | null
+  dcId?: number | null
+  sessionType?: string
+  errorCount?: number
+  lastError?: string | null
+  lastErrorAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -251,6 +382,13 @@ export type ClientSessionUncheckedCreateInput = {
   sessionString: string
   isActive?: boolean
   lastUsedAt?: Date | string
+  phoneNumber?: string | null
+  displayName?: string | null
+  dcId?: number | null
+  sessionType?: string
+  errorCount?: number
+  lastError?: string | null
+  lastErrorAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -260,6 +398,13 @@ export type ClientSessionUpdateInput = {
   sessionString?: Prisma.StringFieldUpdateOperationsInput | string
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   lastUsedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  phoneNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  displayName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  dcId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  sessionType?: Prisma.StringFieldUpdateOperationsInput | string
+  errorCount?: Prisma.IntFieldUpdateOperationsInput | number
+  lastError?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  lastErrorAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -269,6 +414,13 @@ export type ClientSessionUncheckedUpdateInput = {
   sessionString?: Prisma.StringFieldUpdateOperationsInput | string
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   lastUsedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  phoneNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  displayName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  dcId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  sessionType?: Prisma.StringFieldUpdateOperationsInput | string
+  errorCount?: Prisma.IntFieldUpdateOperationsInput | number
+  lastError?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  lastErrorAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -278,6 +430,13 @@ export type ClientSessionCreateManyInput = {
   sessionString: string
   isActive?: boolean
   lastUsedAt?: Date | string
+  phoneNumber?: string | null
+  displayName?: string | null
+  dcId?: number | null
+  sessionType?: string
+  errorCount?: number
+  lastError?: string | null
+  lastErrorAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -287,6 +446,13 @@ export type ClientSessionUpdateManyMutationInput = {
   sessionString?: Prisma.StringFieldUpdateOperationsInput | string
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   lastUsedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  phoneNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  displayName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  dcId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  sessionType?: Prisma.StringFieldUpdateOperationsInput | string
+  errorCount?: Prisma.IntFieldUpdateOperationsInput | number
+  lastError?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  lastErrorAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -296,6 +462,13 @@ export type ClientSessionUncheckedUpdateManyInput = {
   sessionString?: Prisma.StringFieldUpdateOperationsInput | string
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   lastUsedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  phoneNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  displayName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  dcId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  sessionType?: Prisma.StringFieldUpdateOperationsInput | string
+  errorCount?: Prisma.IntFieldUpdateOperationsInput | number
+  lastError?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  lastErrorAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -305,8 +478,20 @@ export type ClientSessionCountOrderByAggregateInput = {
   sessionString?: Prisma.SortOrder
   isActive?: Prisma.SortOrder
   lastUsedAt?: Prisma.SortOrder
+  phoneNumber?: Prisma.SortOrder
+  displayName?: Prisma.SortOrder
+  dcId?: Prisma.SortOrder
+  sessionType?: Prisma.SortOrder
+  errorCount?: Prisma.SortOrder
+  lastError?: Prisma.SortOrder
+  lastErrorAt?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
+}
+
+export type ClientSessionAvgOrderByAggregateInput = {
+  dcId?: Prisma.SortOrder
+  errorCount?: Prisma.SortOrder
 }
 
 export type ClientSessionMaxOrderByAggregateInput = {
@@ -314,6 +499,13 @@ export type ClientSessionMaxOrderByAggregateInput = {
   sessionString?: Prisma.SortOrder
   isActive?: Prisma.SortOrder
   lastUsedAt?: Prisma.SortOrder
+  phoneNumber?: Prisma.SortOrder
+  displayName?: Prisma.SortOrder
+  dcId?: Prisma.SortOrder
+  sessionType?: Prisma.SortOrder
+  errorCount?: Prisma.SortOrder
+  lastError?: Prisma.SortOrder
+  lastErrorAt?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -323,8 +515,28 @@ export type ClientSessionMinOrderByAggregateInput = {
   sessionString?: Prisma.SortOrder
   isActive?: Prisma.SortOrder
   lastUsedAt?: Prisma.SortOrder
+  phoneNumber?: Prisma.SortOrder
+  displayName?: Prisma.SortOrder
+  dcId?: Prisma.SortOrder
+  sessionType?: Prisma.SortOrder
+  errorCount?: Prisma.SortOrder
+  lastError?: Prisma.SortOrder
+  lastErrorAt?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
+}
+
+export type ClientSessionSumOrderByAggregateInput = {
+  dcId?: Prisma.SortOrder
+  errorCount?: Prisma.SortOrder
+}
+
+export type NullableIntFieldUpdateOperationsInput = {
+  set?: number | null
+  increment?: number
+  decrement?: number
+  multiply?: number
+  divide?: number
 }
 
 
@@ -334,6 +546,13 @@ export type ClientSessionSelect<ExtArgs extends runtime.Types.Extensions.Interna
   sessionString?: boolean
   isActive?: boolean
   lastUsedAt?: boolean
+  phoneNumber?: boolean
+  displayName?: boolean
+  dcId?: boolean
+  sessionType?: boolean
+  errorCount?: boolean
+  lastError?: boolean
+  lastErrorAt?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }, ExtArgs["result"]["clientSession"]>
@@ -343,6 +562,13 @@ export type ClientSessionSelectCreateManyAndReturn<ExtArgs extends runtime.Types
   sessionString?: boolean
   isActive?: boolean
   lastUsedAt?: boolean
+  phoneNumber?: boolean
+  displayName?: boolean
+  dcId?: boolean
+  sessionType?: boolean
+  errorCount?: boolean
+  lastError?: boolean
+  lastErrorAt?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }, ExtArgs["result"]["clientSession"]>
@@ -352,6 +578,13 @@ export type ClientSessionSelectUpdateManyAndReturn<ExtArgs extends runtime.Types
   sessionString?: boolean
   isActive?: boolean
   lastUsedAt?: boolean
+  phoneNumber?: boolean
+  displayName?: boolean
+  dcId?: boolean
+  sessionType?: boolean
+  errorCount?: boolean
+  lastError?: boolean
+  lastErrorAt?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }, ExtArgs["result"]["clientSession"]>
@@ -361,11 +594,18 @@ export type ClientSessionSelectScalar = {
   sessionString?: boolean
   isActive?: boolean
   lastUsedAt?: boolean
+  phoneNumber?: boolean
+  displayName?: boolean
+  dcId?: boolean
+  sessionType?: boolean
+  errorCount?: boolean
+  lastError?: boolean
+  lastErrorAt?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }
 
-export type ClientSessionOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "sessionString" | "isActive" | "lastUsedAt" | "createdAt" | "updatedAt", ExtArgs["result"]["clientSession"]>
+export type ClientSessionOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "sessionString" | "isActive" | "lastUsedAt" | "phoneNumber" | "displayName" | "dcId" | "sessionType" | "errorCount" | "lastError" | "lastErrorAt" | "createdAt" | "updatedAt", ExtArgs["result"]["clientSession"]>
 
 export type $ClientSessionPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   name: "ClientSession"
@@ -375,6 +615,13 @@ export type $ClientSessionPayload<ExtArgs extends runtime.Types.Extensions.Inter
     sessionString: string
     isActive: boolean
     lastUsedAt: Date
+    phoneNumber: string | null
+    displayName: string | null
+    dcId: number | null
+    sessionType: string
+    errorCount: number
+    lastError: string | null
+    lastErrorAt: Date | null
     createdAt: Date
     updatedAt: Date
   }, ExtArgs["result"]["clientSession"]>
@@ -804,6 +1051,13 @@ export interface ClientSessionFieldRefs {
   readonly sessionString: Prisma.FieldRef<"ClientSession", 'String'>
   readonly isActive: Prisma.FieldRef<"ClientSession", 'Boolean'>
   readonly lastUsedAt: Prisma.FieldRef<"ClientSession", 'DateTime'>
+  readonly phoneNumber: Prisma.FieldRef<"ClientSession", 'String'>
+  readonly displayName: Prisma.FieldRef<"ClientSession", 'String'>
+  readonly dcId: Prisma.FieldRef<"ClientSession", 'Int'>
+  readonly sessionType: Prisma.FieldRef<"ClientSession", 'String'>
+  readonly errorCount: Prisma.FieldRef<"ClientSession", 'Int'>
+  readonly lastError: Prisma.FieldRef<"ClientSession", 'String'>
+  readonly lastErrorAt: Prisma.FieldRef<"ClientSession", 'DateTime'>
   readonly createdAt: Prisma.FieldRef<"ClientSession", 'DateTime'>
   readonly updatedAt: Prisma.FieldRef<"ClientSession", 'DateTime'>
 }

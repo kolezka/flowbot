@@ -69,7 +69,16 @@ export const ModelName = {
   BroadcastMessage: 'BroadcastMessage',
   OrderEvent: 'OrderEvent',
   ClientLog: 'ClientLog',
-  ClientSession: 'ClientSession'
+  ClientSession: 'ClientSession',
+  FlowDefinition: 'FlowDefinition',
+  FlowExecution: 'FlowExecution',
+  BotInstance: 'BotInstance',
+  BotCommand: 'BotCommand',
+  BotResponse: 'BotResponse',
+  BotMenu: 'BotMenu',
+  BotMenuButton: 'BotMenuButton',
+  FlowVersion: 'FlowVersion',
+  WebhookEndpoint: 'WebhookEndpoint'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -393,11 +402,143 @@ export const ClientSessionScalarFieldEnum = {
   sessionString: 'sessionString',
   isActive: 'isActive',
   lastUsedAt: 'lastUsedAt',
+  phoneNumber: 'phoneNumber',
+  displayName: 'displayName',
+  dcId: 'dcId',
+  sessionType: 'sessionType',
+  errorCount: 'errorCount',
+  lastError: 'lastError',
+  lastErrorAt: 'lastErrorAt',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const
 
 export type ClientSessionScalarFieldEnum = (typeof ClientSessionScalarFieldEnum)[keyof typeof ClientSessionScalarFieldEnum]
+
+
+export const FlowDefinitionScalarFieldEnum = {
+  id: 'id',
+  name: 'name',
+  description: 'description',
+  nodesJson: 'nodesJson',
+  edgesJson: 'edgesJson',
+  status: 'status',
+  version: 'version',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type FlowDefinitionScalarFieldEnum = (typeof FlowDefinitionScalarFieldEnum)[keyof typeof FlowDefinitionScalarFieldEnum]
+
+
+export const FlowExecutionScalarFieldEnum = {
+  id: 'id',
+  flowId: 'flowId',
+  status: 'status',
+  triggerData: 'triggerData',
+  nodeResults: 'nodeResults',
+  error: 'error',
+  startedAt: 'startedAt',
+  completedAt: 'completedAt',
+  createdAt: 'createdAt'
+} as const
+
+export type FlowExecutionScalarFieldEnum = (typeof FlowExecutionScalarFieldEnum)[keyof typeof FlowExecutionScalarFieldEnum]
+
+
+export const BotInstanceScalarFieldEnum = {
+  id: 'id',
+  name: 'name',
+  botToken: 'botToken',
+  botUsername: 'botUsername',
+  type: 'type',
+  isActive: 'isActive',
+  configVersion: 'configVersion',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type BotInstanceScalarFieldEnum = (typeof BotInstanceScalarFieldEnum)[keyof typeof BotInstanceScalarFieldEnum]
+
+
+export const BotCommandScalarFieldEnum = {
+  id: 'id',
+  botId: 'botId',
+  command: 'command',
+  description: 'description',
+  isEnabled: 'isEnabled',
+  sortOrder: 'sortOrder',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type BotCommandScalarFieldEnum = (typeof BotCommandScalarFieldEnum)[keyof typeof BotCommandScalarFieldEnum]
+
+
+export const BotResponseScalarFieldEnum = {
+  id: 'id',
+  botId: 'botId',
+  key: 'key',
+  locale: 'locale',
+  text: 'text',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type BotResponseScalarFieldEnum = (typeof BotResponseScalarFieldEnum)[keyof typeof BotResponseScalarFieldEnum]
+
+
+export const BotMenuScalarFieldEnum = {
+  id: 'id',
+  botId: 'botId',
+  name: 'name',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type BotMenuScalarFieldEnum = (typeof BotMenuScalarFieldEnum)[keyof typeof BotMenuScalarFieldEnum]
+
+
+export const BotMenuButtonScalarFieldEnum = {
+  id: 'id',
+  menuId: 'menuId',
+  label: 'label',
+  action: 'action',
+  row: 'row',
+  col: 'col',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type BotMenuButtonScalarFieldEnum = (typeof BotMenuButtonScalarFieldEnum)[keyof typeof BotMenuButtonScalarFieldEnum]
+
+
+export const FlowVersionScalarFieldEnum = {
+  id: 'id',
+  flowId: 'flowId',
+  version: 'version',
+  nodesJson: 'nodesJson',
+  edgesJson: 'edgesJson',
+  createdBy: 'createdBy',
+  createdAt: 'createdAt'
+} as const
+
+export type FlowVersionScalarFieldEnum = (typeof FlowVersionScalarFieldEnum)[keyof typeof FlowVersionScalarFieldEnum]
+
+
+export const WebhookEndpointScalarFieldEnum = {
+  id: 'id',
+  name: 'name',
+  token: 'token',
+  flowId: 'flowId',
+  isActive: 'isActive',
+  lastCalledAt: 'lastCalledAt',
+  callCount: 'callCount',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type WebhookEndpointScalarFieldEnum = (typeof WebhookEndpointScalarFieldEnum)[keyof typeof WebhookEndpointScalarFieldEnum]
 
 
 export const SortOrder = {

@@ -4,12 +4,14 @@ import { useState, useEffect, useMemo, createContext, useContext } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { clearToken } from "@/lib/auth";
+import { ConnectionStatus } from "@/components/connection-status";
 import {
   Activity,
   ChevronDown,
   Menu,
   Shield,
   ShoppingBag,
+  Smartphone,
   Users,
   Package,
   FolderTree,
@@ -20,6 +22,7 @@ import {
   Eye,
   Layers,
   X,
+  Workflow,
   Zap,
   Calendar,
   Copy,
@@ -27,11 +30,16 @@ import {
   Trophy,
   Gauge,
   LogOut,
+  Bot,
+  Settings,
+  Globe,
+  FileText as FileTextIcon,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
+import { ThemeToggle } from "@/components/theme-toggle";
 
 // ---------------------------------------------------------------------------
 // Types
@@ -109,6 +117,30 @@ const navigation: NavSection[] = [
       { label: "Jobs", href: "/dashboard/automation/jobs", icon: Activity },
       { label: "Cross-post", href: "/dashboard/automation/crosspost-templates", icon: Copy },
       { label: "Order Events", href: "/dashboard/automation/order-events", icon: Package },
+    ],
+  },
+  {
+    label: "Bot Config",
+    icon: Bot,
+    children: [
+      { label: "Instances", href: "/dashboard/bot-config", icon: Settings },
+    ],
+  },
+  {
+    label: "Flows",
+    icon: Workflow,
+    children: [
+      { label: "All Flows", href: "/dashboard/flows", icon: Workflow },
+      { label: "Templates", href: "/dashboard/flows/templates", icon: FileTextIcon },
+      { label: "Webhooks", href: "/dashboard/webhooks", icon: Globe },
+    ],
+  },
+  {
+    label: "TG Client",
+    icon: Smartphone,
+    children: [
+      { label: "Overview", href: "/dashboard/tg-client", icon: Activity },
+      { label: "Sessions", href: "/dashboard/tg-client/sessions", icon: Smartphone },
     ],
   },
   {
@@ -391,13 +423,17 @@ export function Sidebar() {
     <>
       {/* Desktop sidebar */}
       <aside className="hidden md:flex md:w-64 md:shrink-0 md:flex-col border-r border-border bg-card">
-        <div className="flex h-16 items-center border-b border-border px-6">
+        <div className="flex h-16 items-center justify-between border-b border-border px-6">
           <Link href="/dashboard" className="text-lg font-bold">
             Allegro Dashboard
           </Link>
+          <ConnectionStatus />
         </div>
         <div className="flex-1 overflow-y-auto">
           <SidebarContent />
+        </div>
+        <div className="border-t border-border px-4 py-3">
+          <ThemeToggle />
         </div>
         <LogoutButton />
       </aside>
@@ -433,6 +469,9 @@ export function Sidebar() {
             </div>
             <div className="flex-1 overflow-y-auto">
               <SidebarContent onNavigate={() => setOpen(false)} />
+            </div>
+            <div className="border-t border-border px-4 py-3">
+              <ThemeToggle />
             </div>
             <LogoutButton />
           </aside>

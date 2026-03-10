@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-Telegram e-commerce bot ("Strefa Ruchu") with admin dashboard, group management bot, and Trigger.dev background job worker. pnpm monorepo with eight workspaces:
+Telegram e-commerce bot ("Strefa Ruchu") with admin dashboard, group management bot, visual flow builder, and Trigger.dev background job worker. pnpm monorepo with eight workspaces, 28 Prisma models, 80+ API endpoints, 35+ dashboard pages, and 7 Trigger.dev tasks:
 
 - **`apps/bot`** — Telegram e-commerce bot (grammY framework, Hono for webhooks, Pino logging, Valibot config validation). ESM module using tsx runtime.
 - **`apps/manager-bot`** — Telegram group management/moderation bot (grammY, Hono, Pino, Valibot). Full moderation suite: warnings, bans, anti-spam, anti-link, CAPTCHA, scheduled messages, keyword filters. ESM module using tsx runtime.
@@ -55,11 +55,13 @@ pnpm api format                         # Prettier
 pnpm frontend lint                      # ESLint
 
 # Test
-pnpm api test                           # Jest unit tests (API)
+pnpm api test                           # Jest unit tests (API, 135 tests)
 pnpm api test -- --testPathPattern=<pattern>  # Run specific test
 pnpm api test:e2e                       # E2E tests (jest-e2e.json config)
-pnpm manager-bot test                   # Vitest unit tests
+pnpm manager-bot test                   # Vitest unit tests (73 tests)
 pnpm manager-bot test:integration       # Integration tests (requires INTEGRATION_TESTS_ENABLED)
+pnpm telegram-transport test            # Vitest unit tests (24 tests)
+pnpm trigger test                       # Vitest unit tests
 
 # Trigger.dev
 pnpm trigger dev                        # Start Trigger.dev dev worker
@@ -84,6 +86,12 @@ Models across multiple domains:
 **Group management (apps/manager-bot):** **ManagedGroup** (tracked groups), **GroupConfig** (per-group settings: anti-spam, anti-link, welcome, CAPTCHA, etc.), **GroupMember** (members with roles), **Warning** (with expiry and escalation), **ModerationLog** (audit trail), **ScheduledMessage** (cron-like scheduled messages).
 
 **Cross-app:** **CrossPostTemplate**, **OrderEvent**, **UserIdentity**, **ReputationScore**, **BroadcastMessage**, **GroupAnalyticsSnapshot**, **ClientLog**, **ClientSession**.
+
+**Bot Configuration:** **BotInstance** (registered bots), **BotCommand** (per-bot commands with ordering), **BotResponse** (localized responses), **BotMenu** (Telegram menus), **BotMenuButton** (menu buttons with ordering).
+
+**Flow Engine:** **FlowDefinition** (visual flows with nodesJson/edgesJson, status, version), **FlowExecution** (execution runs with per-node results), **FlowVersion** (flow version history with snapshots).
+
+**Webhooks:** **WebhookEndpoint** (external webhook ingress with token-based auth).
 
 Schema at `packages/db/prisma/schema.prisma`. After schema changes, run `pnpm db generate` to regenerate the client.
 
@@ -124,6 +132,8 @@ Trigger.dev v3 task definitions:
 - `trigger/scheduled-message.ts` — Cron every 1 minute, sends due messages via manager-bot
 - `trigger/analytics-snapshot.ts` — Cron daily at 2am, aggregates group analytics
 - `trigger/health-check.ts` — Cron every 5 minutes, checks DB and manager-bot
+- `trigger/flow-execution.ts` — Flow execution task (flows queue, concurrency: 5)
+- `lib/flow-engine/` — Flow runtime: executor (graph walker), variables (template interpolation), conditions (keyword/role/time), actions (send/forward/ban/api/delay), advanced nodes (loop/switch/transform/notification), templates library
 
 ### Telegram Transport (`packages/telegram-transport/src/`)
 Shared GramJS transport layer:
@@ -132,10 +142,24 @@ Shared GramJS transport layer:
 - `errors/` — Error classifier (FATAL/RATE_LIMITED/AUTH_EXPIRED/RETRYABLE), exponential backoff
 
 ### API Structure (`apps/api/src/`)
-Standard NestJS module organization: `users/`, `products/`, `categories/`, `cart/`, `broadcast/`, `automation/`, `analytics/`, `moderation/`, `reputation/`, `system/` — each with module, controller, service, and `dto/` directory. `PrismaModule` is global. All endpoints prefixed with `/api/`. Triggers Trigger.dev tasks via `@trigger.dev/sdk`.
+Standard NestJS module organization: `users/`, `products/`, `categories/`, `cart/`, `broadcast/`, `automation/`, `analytics/`, `moderation/`, `reputation/`, `system/`, `bot-config/`, `tg-client/`, `flows/`, `webhooks/` — each with module, controller, service, and `dto/` directory. `PrismaModule` is global. All endpoints prefixed with `/api/`. Triggers Trigger.dev tasks via `@trigger.dev/sdk`.
+
+Additional API modules:
+- `events/` — Real-time infrastructure: `EventBusService` (typed events via EventEmitter2), `WsGateway` (Socket.io on `/events` namespace with rooms), `SseController` (SSE fallback at `GET /api/events/stream`), `HealthPollerService` (30s interval health events)
+- `bot-config/` — Bot configuration CRUD: instances, commands, responses, menus, config versioning
+- `tg-client/` — TG client session management: session CRUD, auth flow, health metrics, rotation
+- `flows/` — Visual flow builder: flow CRUD, validation (cycle detection, type checking), activate/deactivate, webhook ingress, execution endpoints
+- `webhooks/` — External webhook endpoint management with token-based auth
 
 ### Frontend Structure (`apps/frontend/src/`)
-Next.js App Router. Dashboard pages under `app/dashboard/` for users, products, categories, carts, broadcast, moderation (groups, logs, members, warnings, analytics). API client with TypeScript interfaces in `lib/api.ts`. UI components are Radix-based in `components/ui/`.
+Next.js App Router. Dashboard pages under `app/dashboard/` for users, products, categories, carts, broadcast, moderation, automation, bot-config, tg-client, flows (with React Flow visual editor), webhooks. API client with TypeScript interfaces in `lib/api.ts`. UI components are Radix-based in `components/ui/`.
+
+Additional frontend infrastructure:
+- `components/theme-provider.tsx` — Light/dark/system theme with localStorage persistence
+- `lib/websocket.tsx` — WebSocketProvider, useWebSocket, useSocketEvent hooks (socket.io-client)
+- `lib/use-realtime-query.ts` — REST + WebSocket hybrid data fetching
+- `components/` — ConnectionStatus, LiveModerationFeed, JobProgress, NotificationBadge, EmptyState, ConfirmDialog, Breadcrumb, Pagination
+- `components/ui/` — Radix-based: Tabs, DropdownMenu, Tooltip, Sheet, Switch, Slider, Accordion, Popover, Skeleton, Sonner toast
 
 ## Environment Variables
 

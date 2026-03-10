@@ -12,6 +12,11 @@ import { BroadcastModule } from './broadcast/broadcast.module';
 import { ModerationModule } from './moderation/moderation.module';
 import { ReputationModule } from './reputation/reputation.module';
 import { SystemModule } from './system/system.module';
+import { EventsModule } from './events/events.module';
+import { BotConfigModule } from './bot-config/bot-config.module';
+import { TgClientModule } from './tg-client/tg-client.module';
+import { FlowsModule } from './flows/flows.module';
+import { WebhooksModule } from './webhooks/webhooks.module';
 
 @Global()
 @Module({
@@ -29,6 +34,11 @@ import { SystemModule } from './system/system.module';
     ModerationModule,
     ReputationModule,
     SystemModule,
+    EventsModule,
+    BotConfigModule,
+    TgClientModule,
+    FlowsModule,
+    WebhooksModule,
   ],
   controllers: [AppController],
   providers: [AppService],

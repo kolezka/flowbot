@@ -389,6 +389,174 @@ model ClientSession {
   sessionString String
   isActive      Boolean  @default(true)
   lastUsedAt    DateTime @default(now())
+  phoneNumber   String?
+  displayName   String?
+  dcId          Int?
+  sessionType   String   @default("user") // user | bot
+  errorCount    Int      @default(0)
+  lastError     String?
+  lastErrorAt   DateTime?
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
+
+  @@index([isActive])
+}
+
+// ==========================================
+// Flow Builder Models
+// ==========================================
+
+model FlowDefinition {
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+  nodesJson   Json     @default("[]")
+  edgesJson   Json     @default("[]")
+  status      String   @default("draft") // draft | active | inactive
+  version     Int      @default(1)
+
+  executions FlowExecution[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([status])
+}
+
+model FlowExecution {
+  id          String   @id @default(cuid())
+  flowId      String
+  flow        FlowDefinition @relation(fields: [flowId], references: [id], onDelete: Cascade)
+  status      String   @default("running") // running | completed | failed
+  triggerData Json?
+  nodeResults Json?
+  error       String?
+  startedAt   DateTime @default(now())
+  completedAt DateTime?
+
+  createdAt DateTime @default(now())
+
+  @@index([flowId])
+  @@index([status])
+}
+
+// ==========================================
+// Bot Configuration Models
+// ==========================================
+
+model BotInstance {
+  id          String   @id @default(cuid())
+  name        String
+  botToken    String
+  botUsername String?
+  type        String   @default("standard") // standard | manager
+  isActive    Boolean  @default(true)
+  configVersion Int    @default(0)
+
+  commands  BotCommand[]
+  responses BotResponse[]
+  menus     BotMenu[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([botUsername])
+  @@index([isActive])
+}
+
+model BotCommand {
+  id          String      @id @default(cuid())
+  botId       String
+  bot         BotInstance @relation(fields: [botId], references: [id], onDelete: Cascade)
+  command     String
+  description String?
+  isEnabled   Boolean     @default(true)
+  sortOrder   Int         @default(0)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([botId, command])
+  @@index([botId])
+}
+
+model BotResponse {
+  id       String      @id @default(cuid())
+  botId    String
+  bot      BotInstance @relation(fields: [botId], references: [id], onDelete: Cascade)
+  key      String
+  locale   String      @default("en")
+  text     String
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([botId, key, locale])
+  @@index([botId])
+}
+
+model BotMenu {
+  id     String      @id @default(cuid())
+  botId  String
+  bot    BotInstance @relation(fields: [botId], references: [id], onDelete: Cascade)
+  name   String
+
+  buttons BotMenuButton[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([botId, name])
+  @@index([botId])
+}
+
+model BotMenuButton {
+  id       String  @id @default(cuid())
+  menuId   String
+  menu     BotMenu @relation(fields: [menuId], references: [id], onDelete: Cascade)
+  label    String
+  action   String
+  row      Int     @default(0)
+  col      Int     @default(0)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([menuId])
+}
+
+// ==========================================
+// Flow Versioning Models
+// ==========================================
+
+model FlowVersion {
+  id         String   @id @default(cuid())
+  flowId     String
+  version    Int
+  nodesJson  Json
+  edgesJson  Json
+  createdBy  String?
+  createdAt  DateTime @default(now())
+
+  @@unique([flowId, version])
+  @@index([flowId])
+}
+
+// ==========================================
+// Webhook Ingress Models
+// ==========================================
+
+model WebhookEndpoint {
+  id          String   @id @default(cuid())
+  name        String
+  token       String   @unique @default(cuid())
+  flowId      String?
+  isActive    Boolean  @default(true)
+  lastCalledAt DateTime?
+  callCount   Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([token])
+  @@index([flowId])
 }

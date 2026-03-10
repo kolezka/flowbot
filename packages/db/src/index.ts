@@ -18,3 +18,4 @@ export function createPrismaClient(DATABASE_URL: string): PrismaClientType {
 
 export * from "./generated/prisma/client";
 export { resolveIdentity, linkToUser, getFullProfile } from "./services/identity";
+export * from "./flow-types";

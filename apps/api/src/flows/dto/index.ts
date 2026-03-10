@@ -1,0 +1,14 @@
+import { IsString, IsOptional, IsArray } from 'class-validator';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+
+export class CreateFlowDto {
+  @ApiProperty() @IsString() name: string;
+  @ApiPropertyOptional() @IsOptional() @IsString() description?: string;
+}
+
+export class UpdateFlowDto {
+  @ApiPropertyOptional() @IsOptional() @IsString() name?: string;
+  @ApiPropertyOptional() @IsOptional() @IsString() description?: string;
+  @ApiPropertyOptional() @IsOptional() nodesJson?: any;
+  @ApiPropertyOptional() @IsOptional() edgesJson?: any;
+}

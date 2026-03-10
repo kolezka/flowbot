@@ -325,3 +325,365 @@ Design: `docs/plans/2026-03-09-trigger-dev-integration-design.md`
 - [x] **TD-20**: Update CLAUDE.md — Add apps/trigger and packages/telegram-transport sections. Update tg-client section to note deprecation. Add Trigger.dev commands. Update environment variables section.
 
 - [x] **TD-21**: Validation — Run full build validation: `pnpm api build`, `pnpm frontend build`, `pnpm manager-bot build`, `pnpm telegram-transport typecheck`, `pnpm trigger typecheck`. Verify all pass. Commit and push.
+
+---
+
+## Phase 12 — Testing Foundation
+
+Design: `docs/plans/2026-03-09-platform-evolution-design.md`
+
+### 12A — Test Infrastructure Setup
+
+- [x] **TS-01**: Vitest config for telegram-transport — Create `packages/telegram-transport/vitest.config.ts` and `src/__tests__/setup.ts`. Add vitest devDependency. Add `test` script to package.json.
+
+- [x] **TS-02**: Playwright config for frontend E2E — Create `apps/frontend/playwright.config.ts` and `e2e/fixtures/auth.ts`. Install @playwright/test. Add `test:e2e` script.
+
+- [x] **TS-03**: Jest PrismaService mock factory for API — Create `apps/api/src/common/testing/prisma-mock.factory.ts`. Mock factory returning typed PrismaService with jest.fn() for all model methods.
+
+- [x] **TS-04**: Vitest config for trigger task logic — Create `apps/trigger/vitest.config.ts` and `src/__tests__/setup.ts`. Add vitest devDependency. Add `test` script to package.json.
+
+### 12B — API Service Unit Tests
+
+- [x] **TS-05**: `users.service.spec.ts` — Pagination, stats, ban, unified profile. Use PrismaService mock factory.
+
+- [x] **TS-06**: `products.service.spec.ts` — CRUD, slug, stock/category filtering.
+
+- [x] **TS-07**: `categories.service.spec.ts` — Tree building, slug uniqueness, parent-child.
+
+- [x] **TS-08**: `cart.service.spec.ts` — Add/remove/update items, total recalculation.
+
+- [x] **TS-09**: Moderation service specs — `groups.service.spec.ts`, `logs.service.spec.ts`, `warnings.service.spec.ts`, `members.service.spec.ts`.
+
+- [x] **TS-10**: `automation.service.spec.ts` + `broadcast.service.spec.ts` — Job creation, status transitions, trigger integration.
+
+### 12C — Manager-Bot & Transport Tests
+
+- [x] **TS-11**: `moderation-service.test.ts` — Escalation engine, duration parsing, warning thresholds.
+
+- [x] **TS-12**: `scheduler.test.ts` + `analytics.test.ts` — Polling loop, aggregation, flush cycles.
+
+- [x] **TS-13**: `circuit-breaker.test.ts` — State transitions (CLOSED→OPEN→HALF_OPEN), threshold, reset.
+
+- [x] **TS-14**: `action-runner.test.ts` — Retry logic, backoff, error classification, idempotency.
+
+- [x] **TS-15**: Executor tests — broadcast, cross-post, send-message executors using FakeTelegramTransport.
+
+### 12D — Trigger & Frontend E2E
+
+- [ ] **TS-16**: Extract + test trigger task business logic — Separate pure logic from Trigger.dev wiring. Test broadcast-logic, order-notification-logic.
+
+- [ ] **TS-17**: Playwright E2E — Auth flow, dashboard overview, sidebar navigation.
+
+- [ ] **TS-18**: Playwright E2E — Product CRUD, moderation pages, broadcast creation.
+
+---
+
+## Phase 13 — UI/UX Overhaul
+
+### 13A — Theme System & Core Components
+
+- [x] **UI-01**: ThemeProvider — Light/dark/system mode with localStorage persistence. CSS variables for theme colors.
+
+- [x] **UI-02**: Theme toggle — Add toggle in sidebar + mobile header.
+
+- [x] **UI-03**: Toast/Sonner notification system — Wire into all mutations with success/error feedback.
+
+- [x] **UI-04**: Skeleton components — SkeletonCard, SkeletonTable, SkeletonChart reusable loading placeholders.
+
+- [x] **UI-05**: Radix Tabs component — Styled Tabs matching design system.
+
+- [x] **UI-06**: Radix DropdownMenu component.
+
+- [x] **UI-07**: Radix Tooltip component.
+
+- [x] **UI-08**: Radix Sheet/Drawer component.
+
+- [x] **UI-09**: Radix Switch + Slider components.
+
+- [x] **UI-10**: Radix Accordion + Popover components.
+
+### 13B — Page Polish & Responsive
+
+- [x] **UI-11**: Loading skeletons for all 28 pages — Add `loading.tsx` files to every dashboard route.
+
+- [x] **UI-12**: EmptyState component — Icon/title/description/action pattern for empty data states.
+
+- [ ] **UI-13**: Responsive table → card layout on mobile.
+
+- [x] **UI-14**: ConfirmDialog for destructive actions — Delete, ban, deactivate with confirmation modal.
+
+- [x] **UI-15**: Breadcrumb navigation — Auto-generated from pathname.
+
+- [x] **UI-16**: Shared Pagination component — Page size selector, page navigation, total count.
+
+- [ ] **UI-17**: Dashboard overview page redesign — Stat cards, activity feed, mini charts.
+
+---
+
+## Phase 14 — Real-Time Infrastructure
+
+### 14A — Backend Event System
+
+- [x] **RT-01**: EventBus service — NestJS EventEmitter with typed event interfaces.
+
+- [x] **RT-02**: WebSocket gateway — `@nestjs/websockets` + Socket.io with JWT auth, rooms per feature.
+
+- [x] **RT-03**: SSE fallback endpoint — `GET /api/events/stream` for clients without WS support.
+
+- [x] **RT-04**: Emit moderation events — Wire EventBus into logs/warnings/members services.
+
+- [x] **RT-05**: Emit automation/broadcast events — Status change emissions.
+
+- [x] **RT-06**: Periodic health poller — 30s interval emitting system status events.
+
+### 14B — Frontend WebSocket Integration
+
+- [x] **RT-07**: `useWebSocket` hook — socket.io-client, auto-reconnection, SSE fallback.
+
+- [x] **RT-08**: WebSocketProvider — Shared connection context, event distribution.
+
+- [x] **RT-09**: `useRealtimeQuery` hook — REST fetch + WS updates, stale-while-revalidate.
+
+- [x] **RT-10**: Live moderation feed component — Scrolling events, auto-scroll/pause.
+
+- [x] **RT-11**: Sidebar status dots — Green/yellow/red for bot health.
+
+- [x] **RT-12**: Live job progress bars — Automation/broadcast pages.
+
+- [x] **RT-13**: Auto-updating health metrics — Automation health page.
+
+- [x] **RT-14**: Notification badge — Sidebar unread event counts.
+
+- [ ] **RT-15**: Unit tests for WS gateway and EventBus.
+
+---
+
+## Phase 15 — Bot Configuration UI
+
+### 15A — Data Model & API
+
+- [x] **BC-01**: Prisma models — `BotInstance`, `BotCommand`, `BotResponse`, `BotMenu`, `BotMenuButton`.
+
+- [x] **BC-02**: NestJS `BotConfig` module — Controller, service, DTOs.
+
+- [x] **BC-03**: Command CRUD endpoints — `GET/POST/PATCH/DELETE /api/bot-config/:botId/commands`.
+
+- [x] **BC-04**: Response CRUD endpoints — With locale filtering.
+
+- [x] **BC-05**: Menu CRUD endpoints — With button management.
+
+- [x] **BC-06**: Config version + publish endpoint — Emit `config.updated` WS event.
+
+### 15B — Bot-Side Config Consumer
+
+- [ ] **BC-07**: ConfigSync service in `apps/bot` — Poll/WS for version changes.
+
+- [ ] **BC-08**: ConfigSync service in `apps/manager-bot`.
+
+- [ ] **BC-09**: Dynamic command registration — From DB config with fallback to code defaults.
+
+### 15C — Dashboard UI
+
+- [x] **BC-10**: Bot instances list page — `/dashboard/bot-config`.
+
+- [ ] **BC-11**: Commands editor — Drag-reorderable, enable/disable toggle.
+
+- [ ] **BC-12**: Responses editor — Locale tabs, Telegram markdown preview.
+
+- [ ] **BC-13**: Menu builder — Visual grid, drag-drop rows/cols, Telegram preview.
+
+- [ ] **BC-14**: Config publish + version history — Diff view.
+
+- [ ] **BC-15**: i18n string editor — Load .ftl defaults, override via DB.
+
+- [ ] **BC-16**: Unit tests for BotConfig service.
+
+---
+
+## Phase 16 — TG Client Management
+
+### 16A — Backend
+
+- [x] **TM-01**: Extend `ClientSession` model — Add phoneNumber, displayName, dcId, sessionType, metrics fields.
+
+- [x] **TM-02**: NestJS `TgClient` module — Controller, service, DTOs.
+
+- [x] **TM-03**: Session list + detail endpoints.
+
+- [x] **TM-04**: Auth flow endpoints — Start → code → password, proxying to telegram-transport.
+
+- [x] **TM-05**: Transport health metrics endpoint — Circuit breaker state, throughput, error rates.
+
+- [x] **TM-06**: Session rotation + deactivation endpoints.
+
+- [x] **TM-07**: Real-time transport health events via EventBus.
+
+### 16B — Dashboard UI
+
+- [x] **TM-08**: TG Client overview page — `/dashboard/tg-client`.
+
+- [x] **TM-09**: Session list + detail pages.
+
+- [x] **TM-10**: Auth flow wizard — Multi-step: phone → code → 2FA → done.
+
+- [ ] **TM-11**: Transport health metrics dashboard — recharts: msg/min, error rate, latency.
+
+- [x] **TM-12**: Session actions — Rotate, deactivate with confirmation.
+
+- [ ] **TM-13**: Unit tests for TgClient service.
+
+---
+
+## Phase 17 — Flow Builder Foundation
+
+### 17A — Data Model
+
+- [x] **FB-01**: Prisma models — `FlowDefinition` (nodesJson, edgesJson, status, version), `FlowExecution`.
+
+- [x] **FB-02**: Shared TypeScript types — `packages/db/src/flow-types.ts` with FlowNodeType enum, FlowNode, FlowEdge interfaces.
+
+### 17B — API Layer
+
+- [x] **FB-03**: NestJS `Flows` module — Controller, service, DTOs.
+
+- [x] **FB-04**: Flow CRUD endpoints — `GET/POST/PATCH/DELETE /api/flows`.
+
+- [x] **FB-05**: Flow validation endpoint — Graph validation (connected, typed, no cycles).
+
+- [x] **FB-06**: Flow activate/deactivate endpoints.
+
+### 17C — Frontend Flow Editor
+
+- [x] **FB-07**: React Flow base canvas — `@xyflow/react` with zoom, pan, minimap.
+
+- [x] **FB-08**: Trigger nodes — MessageReceived, UserJoins, Schedule, Webhook.
+
+- [x] **FB-09**: Condition nodes — KeywordMatch, UserRole, TimeBased.
+
+- [x] **FB-10**: Action nodes — SendMessage, ForwardMessage, Ban/Mute, APICall, Delay.
+
+- [x] **FB-11**: Node palette sidebar — Draggable, categorized by type.
+
+- [x] **FB-12**: Property editor panel — Dynamic form per node type.
+
+- [x] **FB-13**: Edge connection validation — Type-safe connections, no cycles.
+
+- [x] **FB-14**: Flow list page — `/dashboard/flows`.
+
+- [x] **FB-15**: Flow editor page — `/dashboard/flows/[id]/edit` with canvas + palette + properties + toolbar.
+
+- [x] **FB-16**: Save/load serialization — React Flow state ↔ FlowDefinition JSON.
+
+---
+
+## Phase 18 — Flow Execution Engine
+
+### 18A — Core Runtime
+
+- [x] **FE-01**: Flow executor — Graph walker, trigger→condition→action execution pipeline.
+
+- [x] **FE-02**: Variable system — Typed context, inter-node data passing, `{{template.interpolation}}`.
+
+- [x] **FE-03**: Trigger handlers — MessageReceived, UserJoins, Schedule, Webhook.
+
+- [x] **FE-04**: Condition evaluators — KeywordMatch, UserRole, TimeBased.
+
+- [x] **FE-05**: Action executors — SendMessage, ForwardMessage, Ban/Mute, APICall, Delay.
+
+- [x] **FE-06**: Per-node error handling — Stop/skip/retry configurable per node.
+
+### 18B — Trigger.dev Integration
+
+- [x] **FE-07**: `flow-execution` Trigger.dev task.
+
+- [x] **FE-08**: Flow trigger dispatcher — Events → matching active flows.
+
+- [x] **FE-09**: Webhook ingress — `POST /api/flows/webhook/:flowId`.
+
+- [ ] **FE-10**: Manager-bot event forwarding to flow engine.
+
+### 18C — Execution Monitoring
+
+- [x] **FE-11**: Flow execution API endpoints — List + detail with per-node logs.
+
+- [x] **FE-12**: Execution log dashboard page.
+
+- [ ] **FE-13**: Live execution visualization — Node highlighting on canvas, variable values.
+
+- [ ] **FE-14**: Unit tests for flow engine — Executor, variables, conditions.
+
+---
+
+## Phase 19 — Advanced Flow Features
+
+### 19A — Advanced Node Types
+
+- [x] **AF-01**: Loop node — Iterate over array variable.
+
+- [ ] **AF-02**: Parallel branch node — Concurrent paths + join.
+
+- [x] **AF-03**: Switch/router node — Multi-output condition.
+
+- [x] **AF-04**: Transform node — JSON path, string manipulation, math operations.
+
+- [ ] **AF-05**: Database query node — Safe allowlist of Prisma queries.
+
+- [x] **AF-06**: Notification node — WebSocket event, Telegram, email.
+
+### 19B — Flow Management
+
+- [x] **AF-07**: Flow versioning — `FlowVersion` model, version on each save.
+
+- [ ] **AF-08**: Version history UI — Visual diff + rollback.
+
+- [x] **AF-09**: Flow templates library — Welcome, spam escalation, broadcast, cross-post templates.
+
+- [x] **AF-10**: Templates gallery page — Preview + "Use Template".
+
+- [x] **AF-11**: Flow import/export — JSON file download/upload.
+
+- [ ] **AF-12**: Expression builder UI — Complex conditions (AND/OR groups, regex).
+
+- [ ] **AF-13**: Flow analytics — Execution counts, duration, error rates, common paths.
+
+- [ ] **AF-14**: Unit tests for advanced nodes + versioning.
+
+---
+
+## Phase 20 — Platform Integration & Polish
+
+### 20A — External Integrations
+
+- [x] **PI-01**: Webhook ingress service — `WebhookEndpoint` model, token-based auth.
+
+- [x] **PI-02**: Webhook management UI — Create endpoints, view payloads, connect to flows.
+
+- [ ] **PI-03**: Multi-bot flow orchestration — BotAction node targeting specific bot instance.
+
+- [ ] **PI-04**: Cross-bot event correlation — UserIdentity-based context merging.
+
+### 20B — E2E Testing & Performance
+
+- [ ] **PI-05**: Playwright E2E for flow builder — Create, connect, save, validate, activate.
+
+- [ ] **PI-06**: Playwright E2E for real-time features — WebSocket, live feed, status.
+
+- [ ] **PI-07**: Playwright E2E for bot config + TG client pages.
+
+- [ ] **PI-08**: Load testing setup — k6 scripts for flow execution, WebSocket, broadcasts.
+
+- [ ] **PI-09**: Flow execution performance — Caching, batch DB writes, graph optimization.
+
+- [ ] **PI-10**: Database query optimization — Indexes, N+1 fixes, Prisma batching.
+
+### 20C — Documentation & Final Polish
+
+- [ ] **PI-11**: API documentation overhaul — Complete Swagger decorators, OpenAPI spec.
+
+- [ ] **PI-12**: Flow builder user docs — Node reference, variable system, templates.
+
+- [ ] **PI-13**: Architecture docs — Diagrams, data flow, deployment, env vars.
+
+- [ ] **PI-14**: Dashboard accessibility audit — Keyboard nav, ARIA, focus, contrast.
+
+- [ ] **PI-15**: Full integration smoke test — Create flow → activate → trigger → verify.

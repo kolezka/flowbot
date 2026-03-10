@@ -23,8 +23,8 @@
   --radius: 0.5rem;
 }
 
-@media (prefers-color-scheme: dark) {
-  @theme {
+@layer base {
+  .dark {
     --color-background: 240 10% 3.9%;
     --color-foreground: 0 0% 98%;
     --color-card: 240 10% 3.9%;

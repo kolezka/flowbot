@@ -614,6 +614,147 @@ export interface SystemStatus {
   lastChecked: string;
 }
 
+// Bot Config interfaces
+export interface BotInstance {
+  id: string;
+  name: string;
+  botToken: string;
+  botUsername?: string;
+  type: string;
+  isActive: boolean;
+  configVersion: number;
+  _count?: { commands: number; responses: number; menus: number };
+  commands?: BotCommand[];
+  responses?: BotResponse[];
+  menus?: BotMenu[];
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface BotCommand {
+  id: string;
+  botId: string;
+  command: string;
+  description?: string;
+  isEnabled: boolean;
+  sortOrder: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface BotResponse {
+  id: string;
+  botId: string;
+  key: string;
+  locale: string;
+  text: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface BotMenu {
+  id: string;
+  botId: string;
+  name: string;
+  buttons: BotMenuButton[];
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface BotMenuButton {
+  id: string;
+  menuId: string;
+  label: string;
+  action: string;
+  row: number;
+  col: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+// TG Client interfaces
+export interface TgClientSession {
+  id: string;
+  isActive: boolean;
+  lastUsedAt: string;
+  phoneNumber?: string;
+  displayName?: string;
+  dcId?: number;
+  sessionType: string;
+  errorCount: number;
+  lastError?: string;
+  lastErrorAt?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface TgClientSessionsResponse {
+  data: TgClientSession[];
+  total: number;
+  page: number;
+  limit: number;
+  totalPages: number;
+}
+
+export interface TransportHealth {
+  activeSessions: number;
+  errorSessions: number;
+  healthySessions: number;
+  recentLogs: ClientLog[];
+  lastChecked: string;
+}
+
+// Flow interfaces
+export interface FlowDefinition {
+  id: string;
+  name: string;
+  description?: string;
+  nodesJson: any[];
+  edgesJson: any[];
+  status: string;
+  version: number;
+  _count?: { executions: number };
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface FlowsResponse {
+  data: FlowDefinition[];
+  total: number;
+  page: number;
+  limit: number;
+  totalPages: number;
+}
+
+export interface FlowExecution {
+  id: string;
+  flowId: string;
+  status: string;
+  triggerData?: any;
+  nodeResults?: any;
+  error?: string;
+  startedAt: string;
+  completedAt?: string;
+}
+
+export interface FlowValidation {
+  valid: boolean;
+  errors: string[];
+}
+
+// Webhook interfaces
+export interface WebhookEndpoint {
+  id: string;
+  name: string;
+  token: string;
+  flowId?: string;
+  isActive: boolean;
+  lastCalledAt?: string;
+  callCount: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
 export interface ApiError {
   message: string;
   status?: number;
@@ -1175,6 +1316,176 @@ class ApiClient {
     if (params?.groupId) searchParams.append('groupId', params.groupId);
     const qs = searchParams.toString();
     return this.request<LeaderboardResponse>(`/api/reputation/leaderboard${qs ? `?${qs}` : ''}`);
+  }
+
+  // Bot Config
+  async getBotInstances(): Promise<BotInstance[]> {
+    return this.request<BotInstance[]>('/api/bot-config');
+  }
+
+  async getBotInstance(botId: string): Promise<BotInstance> {
+    return this.request<BotInstance>(`/api/bot-config/${botId}`);
+  }
+
+  async createBotInstance(data: { name: string; botToken: string; botUsername?: string; type?: string }): Promise<BotInstance> {
+    return this.request<BotInstance>('/api/bot-config', { method: 'POST', body: JSON.stringify(data) });
+  }
+
+  async updateBotInstance(botId: string, data: { name?: string; botUsername?: string; isActive?: boolean }): Promise<BotInstance> {
+    return this.request<BotInstance>(`/api/bot-config/${botId}`, { method: 'PATCH', body: JSON.stringify(data) });
+  }
+
+  async deleteBotInstance(botId: string): Promise<void> {
+    await this.request<void>(`/api/bot-config/${botId}`, { method: 'DELETE' });
+  }
+
+  async getBotCommands(botId: string): Promise<BotCommand[]> {
+    return this.request<BotCommand[]>(`/api/bot-config/${botId}/commands`);
+  }
+
+  async createBotCommand(botId: string, data: { command: string; description?: string }): Promise<BotCommand> {
+    return this.request<BotCommand>(`/api/bot-config/${botId}/commands`, { method: 'POST', body: JSON.stringify(data) });
+  }
+
+  async updateBotCommand(botId: string, commandId: string, data: { description?: string; isEnabled?: boolean; sortOrder?: number }): Promise<BotCommand> {
+    return this.request<BotCommand>(`/api/bot-config/${botId}/commands/${commandId}`, { method: 'PATCH', body: JSON.stringify(data) });
+  }
+
+  async deleteBotCommand(botId: string, commandId: string): Promise<void> {
+    await this.request<void>(`/api/bot-config/${botId}/commands/${commandId}`, { method: 'DELETE' });
+  }
+
+  async getBotResponses(botId: string, locale?: string): Promise<BotResponse[]> {
+    const params = locale ? `?locale=${locale}` : '';
+    return this.request<BotResponse[]>(`/api/bot-config/${botId}/responses${params}`);
+  }
+
+  async createBotResponse(botId: string, data: { key: string; locale?: string; text: string }): Promise<BotResponse> {
+    return this.request<BotResponse>(`/api/bot-config/${botId}/responses`, { method: 'POST', body: JSON.stringify(data) });
+  }
+
+  async updateBotResponse(botId: string, responseId: string, data: { text: string }): Promise<BotResponse> {
+    return this.request<BotResponse>(`/api/bot-config/${botId}/responses/${responseId}`, { method: 'PATCH', body: JSON.stringify(data) });
+  }
+
+  async deleteBotResponse(botId: string, responseId: string): Promise<void> {
+    await this.request<void>(`/api/bot-config/${botId}/responses/${responseId}`, { method: 'DELETE' });
+  }
+
+  async getBotMenus(botId: string): Promise<BotMenu[]> {
+    return this.request<BotMenu[]>(`/api/bot-config/${botId}/menus`);
+  }
+
+  async createBotMenu(botId: string, data: { name: string }): Promise<BotMenu> {
+    return this.request<BotMenu>(`/api/bot-config/${botId}/menus`, { method: 'POST', body: JSON.stringify(data) });
+  }
+
+  async deleteBotMenu(botId: string, menuId: string): Promise<void> {
+    await this.request<void>(`/api/bot-config/${botId}/menus/${menuId}`, { method: 'DELETE' });
+  }
+
+  async publishBotConfig(botId: string): Promise<{ version: number }> {
+    return this.request<{ version: number }>(`/api/bot-config/${botId}/publish`, { method: 'POST' });
+  }
+
+  // TG Client
+  async getTgClientSessions(params?: { page?: number; limit?: number }): Promise<TgClientSessionsResponse> {
+    const searchParams = new URLSearchParams();
+    if (params?.page !== undefined) searchParams.append('page', params.page.toString());
+    if (params?.limit !== undefined) searchParams.append('limit', params.limit.toString());
+    const qs = searchParams.toString();
+    return this.request<TgClientSessionsResponse>(`/api/tg-client/sessions${qs ? `?${qs}` : ''}`);
+  }
+
+  async getTgClientSession(id: string): Promise<TgClientSession> {
+    return this.request<TgClientSession>(`/api/tg-client/sessions/${id}`);
+  }
+
+  async updateTgClientSession(id: string, data: { displayName?: string; isActive?: boolean }): Promise<TgClientSession> {
+    return this.request<TgClientSession>(`/api/tg-client/sessions/${id}`, { method: 'PATCH', body: JSON.stringify(data) });
+  }
+
+  async deactivateTgClientSession(id: string): Promise<void> {
+    await this.request<void>(`/api/tg-client/sessions/${id}/deactivate`, { method: 'POST' });
+  }
+
+  async rotateTgClientSession(id: string): Promise<TgClientSession> {
+    return this.request<TgClientSession>(`/api/tg-client/sessions/${id}/rotate`, { method: 'POST' });
+  }
+
+  async getTransportHealth(): Promise<TransportHealth> {
+    return this.request<TransportHealth>('/api/tg-client/health');
+  }
+
+  // Flows
+  async getFlows(params?: { page?: number; limit?: number; status?: string }): Promise<FlowsResponse> {
+    const searchParams = new URLSearchParams();
+    if (params?.page !== undefined) searchParams.append('page', params.page.toString());
+    if (params?.limit !== undefined) searchParams.append('limit', params.limit.toString());
+    if (params?.status) searchParams.append('status', params.status);
+    const qs = searchParams.toString();
+    return this.request<FlowsResponse>(`/api/flows${qs ? `?${qs}` : ''}`);
+  }
+
+  async getFlow(id: string): Promise<FlowDefinition> {
+    return this.request<FlowDefinition>(`/api/flows/${id}`);
+  }
+
+  async createFlow(data: { name: string; description?: string }): Promise<FlowDefinition> {
+    return this.request<FlowDefinition>('/api/flows', { method: 'POST', body: JSON.stringify(data) });
+  }
+
+  async updateFlow(id: string, data: { name?: string; description?: string; nodesJson?: any; edgesJson?: any }): Promise<FlowDefinition> {
+    return this.request<FlowDefinition>(`/api/flows/${id}`, { method: 'PATCH', body: JSON.stringify(data) });
+  }
+
+  async deleteFlow(id: string): Promise<void> {
+    await this.request<void>(`/api/flows/${id}`, { method: 'DELETE' });
+  }
+
+  async validateFlow(id: string): Promise<FlowValidation> {
+    return this.request<FlowValidation>(`/api/flows/${id}/validate`, { method: 'POST' });
+  }
+
+  async activateFlow(id: string): Promise<FlowDefinition> {
+    return this.request<FlowDefinition>(`/api/flows/${id}/activate`, { method: 'POST' });
+  }
+
+  async deactivateFlow(id: string): Promise<FlowDefinition> {
+    return this.request<FlowDefinition>(`/api/flows/${id}/deactivate`, { method: 'POST' });
+  }
+
+  async getFlowExecutions(flowId: string, params?: { page?: number; limit?: number }): Promise<{ data: FlowExecution[]; total: number }> {
+    const searchParams = new URLSearchParams();
+    if (params?.page !== undefined) searchParams.append('page', params.page.toString());
+    if (params?.limit !== undefined) searchParams.append('limit', params.limit.toString());
+    const qs = searchParams.toString();
+    return this.request<{ data: FlowExecution[]; total: number }>(`/api/flows/${flowId}/executions${qs ? `?${qs}` : ''}`);
+  }
+
+  async startTgAuth(phoneNumber: string): Promise<{ sessionId: string; status: string }> {
+    return this.request<{ sessionId: string; status: string }>('/api/tg-client/auth/start', { method: 'POST', body: JSON.stringify({ phoneNumber }) });
+  }
+
+  async submitTgAuthCode(sessionId: string, code: string): Promise<{ sessionId: string; status: string }> {
+    return this.request<{ sessionId: string; status: string }>('/api/tg-client/auth/code', { method: 'POST', body: JSON.stringify({ sessionId, code }) });
+  }
+
+  async submitTgAuthPassword(sessionId: string, password: string): Promise<{ sessionId: string; status: string }> {
+    return this.request<{ sessionId: string; status: string }>('/api/tg-client/auth/password', { method: 'POST', body: JSON.stringify({ sessionId, password }) });
+  }
+
+  // Webhooks
+  async getWebhooks(): Promise<WebhookEndpoint[]> {
+    return this.request<WebhookEndpoint[]>('/api/webhooks');
+  }
+
+  async createWebhook(data: { name: string; flowId?: string }): Promise<WebhookEndpoint> {
+    return this.request<WebhookEndpoint>('/api/webhooks', { method: 'POST', body: JSON.stringify(data) });
+  }
+
+  async deleteWebhook(id: string): Promise<void> {
+    await this.request<void>(`/api/webhooks/${id}`, { method: 'DELETE' });
   }
 }
 
