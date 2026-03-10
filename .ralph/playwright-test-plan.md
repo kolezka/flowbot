@@ -55,6 +55,32 @@ Page navigation smoke tests (9):
 - `apps/frontend/e2e/smoke.spec.ts` — rewritten: 13 smoke tests
 - `apps/frontend/.gitignore` — added playwright artifacts
 
+### Iteration 2 — Feature CRUD Tests (2026-03-10)
+
+**What was done:**
+- Created `e2e/categories.spec.ts`: 5 tests (display, empty/tree state, navigate new form, create, verify in list)
+- Created `e2e/products.spec.ts`: 6 tests (display, empty/table, navigate new form, form fields, create product with Radix Select, search)
+- Created `e2e/users.spec.ts`: 4 tests (stats cards, search, filter buttons, empty/list state)
+- Created `e2e/flows.spec.ts`: 3 tests (display, empty state, create flow + open editor with React Flow canvas)
+- Created `e2e/broadcast.spec.ts`: 4 tests (display, form fields, create broadcast, table headers)
+- Created `e2e/moderation.spec.ts`: 7 tests (overview, error/content state, groups search, groups list, logs, analytics, scheduled messages)
+- Pushed Prisma schema to DB (FlowDefinition table was missing)
+
+**Test results:**
+```
+47 passed (41.6s)
+
+Auth (5) + Smoke (13) + Categories (5) + Products (6) + Users (4) + Flows (3) + Broadcast (4) + Moderation (7) = 47 tests
+```
+
+**New files:**
+- `apps/frontend/e2e/categories.spec.ts`
+- `apps/frontend/e2e/products.spec.ts`
+- `apps/frontend/e2e/users.spec.ts`
+- `apps/frontend/e2e/flows.spec.ts`
+- `apps/frontend/e2e/broadcast.spec.ts`
+- `apps/frontend/e2e/moderation.spec.ts`
+
 ---
 
 ## Table of Contents
