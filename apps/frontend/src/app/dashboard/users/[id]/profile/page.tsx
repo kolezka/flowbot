@@ -11,7 +11,7 @@ import { ArrowLeft, Shield, AlertTriangle, Users, Star, MessageSquare } from "lu
 export default function UnifiedProfilePage() {
   const params = useParams();
   const router = useRouter();
-  const telegramId = params.telegramId as string;
+  const telegramId = params.id as string;
 
   const [profile, setProfile] = useState<UnifiedProfile | null>(null);
   const [loading, setLoading] = useState(true);
