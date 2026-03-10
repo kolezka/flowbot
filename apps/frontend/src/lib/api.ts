@@ -1093,15 +1093,15 @@ class ApiClient {
     if (params?.search) searchParams.append('search', params.search);
     if (params?.isActive !== undefined) searchParams.append('isActive', params.isActive.toString());
     const qs = searchParams.toString();
-    return this.request<GroupsResponse>(`/api/moderation/groups${qs ? `?${qs}` : ''}`);
+    return this.request<GroupsResponse>(`/api/groups${qs ? `?${qs}` : ''}`);
   }
 
   async getGroup(id: string): Promise<ManagedGroup> {
-    return this.request<ManagedGroup>(`/api/moderation/groups/${id}`);
+    return this.request<ManagedGroup>(`/api/groups/${id}`);
   }
 
   async updateGroupConfig(id: string, data: Partial<GroupConfig>): Promise<ManagedGroup> {
-    return this.request<ManagedGroup>(`/api/moderation/groups/${id}/config`, {
+    return this.request<ManagedGroup>(`/api/groups/${id}/config`, {
       method: 'PATCH',
       body: JSON.stringify(data),
     });
@@ -1145,17 +1145,17 @@ class ApiClient {
     if (params?.userId) searchParams.append('userId', params.userId);
     if (params?.isActive !== undefined) searchParams.append('isActive', params.isActive.toString());
     const qs = searchParams.toString();
-    return this.request<WarningsResponse>(`/api/moderation/warnings${qs ? `?${qs}` : ''}`);
+    return this.request<WarningsResponse>(`/api/warnings${qs ? `?${qs}` : ''}`);
   }
 
   async deactivateWarning(id: string): Promise<Warning> {
-    return this.request<Warning>(`/api/moderation/warnings/${id}/deactivate`, {
-      method: 'PATCH',
+    return this.request<Warning>(`/api/warnings/${id}`, {
+      method: 'DELETE',
     });
   }
 
   async getWarningStats(): Promise<WarningStats> {
-    return this.request<WarningStats>('/api/moderation/warnings/stats');
+    return this.request<WarningStats>('/api/warnings/stats');
   }
 
   // Moderation - Group Members
