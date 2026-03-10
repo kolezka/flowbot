@@ -81,6 +81,44 @@ Auth (5) + Smoke (13) + Categories (5) + Products (6) + Users (4) + Flows (3) + 
 - `apps/frontend/e2e/broadcast.spec.ts`
 - `apps/frontend/e2e/moderation.spec.ts`
 
+### Iteration 3 — Complete Dashboard Coverage (2026-03-10)
+
+**What was done:**
+- Created `e2e/bot-config.spec.ts`: 2 tests (heading, empty/bot cards)
+- Created `e2e/system.spec.ts`: 3 tests (heading, status banner, auto-refresh)
+- Created `e2e/tg-client.spec.ts`: 4 tests (management page, health metrics, sessions, health subpage)
+- Created `e2e/webhooks.spec.ts`: 4 tests (heading, empty state, form open, create webhook)
+- Created `e2e/automation.spec.ts`: 5 tests (health, jobs, crosspost templates, empty/list, order events)
+
+**Test results:**
+```
+65 passed (58.6s)
+
+Coverage breakdown:
+- Auth: 5 tests
+- Smoke (dashboard home + navigation): 13 tests
+- Categories: 5 tests
+- Products: 6 tests
+- Users: 4 tests
+- Flows: 3 tests
+- Broadcast: 4 tests
+- Moderation: 7 tests
+- Bot Config: 2 tests
+- System Status: 3 tests
+- TG Client: 4 tests
+- Webhooks: 4 tests
+- Automation: 5 tests
+```
+
+**Coverage summary:**
+All 35+ dashboard pages now have at least basic E2E coverage including:
+- Page load verification
+- Empty state / data state handling
+- CRUD operations (categories, products, flows, broadcasts, webhooks)
+- Form interactions (Radix Select, checkboxes, text inputs)
+- Auth flow (login, logout redirect, token persistence)
+- Navigation (sidebar, quick links, page routing)
+
 ---
 
 ## Table of Contents
