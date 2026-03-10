@@ -7,8 +7,9 @@ export function ConnectionStatus() {
   const { connected } = useWebSocket();
 
   return (
-    <div className="flex items-center gap-2 text-xs text-muted-foreground">
+    <div role="status" aria-live="polite" className="flex items-center gap-2 text-xs text-muted-foreground">
       <span
+        aria-hidden="true"
         className={cn(
           "h-2 w-2 rounded-full",
           connected ? "bg-green-500" : "bg-red-500"

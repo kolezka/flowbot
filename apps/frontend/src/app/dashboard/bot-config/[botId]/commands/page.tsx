@@ -13,6 +13,7 @@ import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
 import { ConfirmDialog } from "@/components/confirm-dialog";
 import { ArrowLeft, ArrowUp, ArrowDown, Plus, Pencil, Trash2, X, Check } from "lucide-react";
+import { toast } from "sonner";
 
 export default function CommandsEditorPage() {
   const params = useParams();
@@ -46,8 +47,10 @@ export default function CommandsEditorPage() {
     try {
       const updated = await api.updateBotCommand(botId, cmd.id, { isEnabled: !cmd.isEnabled });
       setCommands((prev) => prev.map((c) => (c.id === updated.id ? updated : c)));
+      toast.success(`Command /${cmd.command} ${updated.isEnabled ? "enabled" : "disabled"}`);
     } catch (err) {
       console.error(err);
+      toast.error("Failed to toggle command");
     }
   };
 
@@ -62,6 +65,7 @@ export default function CommandsEditorPage() {
       await api.reorderBotCommands(botId, newOrder.map((c) => c.id));
     } catch (err) {
       console.error(err);
+      toast.error("Failed to reorder commands");
       loadCommands();
     }
   };
@@ -77,6 +81,7 @@ export default function CommandsEditorPage() {
       await api.reorderBotCommands(botId, newOrder.map((c) => c.id));
     } catch (err) {
       console.error(err);
+      toast.error("Failed to reorder commands");
       loadCommands();
     }
   };
@@ -92,8 +97,10 @@ export default function CommandsEditorPage() {
       setNewCommand("");
       setNewDescription("");
       setShowAddForm(false);
+      toast.success(`Command /${created.command} created`);
     } catch (err) {
       console.error(err);
+      toast.error("Failed to create command");
     }
   };
 
@@ -111,8 +118,10 @@ export default function CommandsEditorPage() {
       });
       setCommands((prev) => prev.map((c) => (c.id === updated.id ? updated : c)));
       setEditingId(null);
+      toast.success(`Command /${updated.command} updated`);
     } catch (err) {
       console.error(err);
+      toast.error("Failed to update command");
     }
   };
 
@@ -121,9 +130,11 @@ export default function CommandsEditorPage() {
     try {
       await api.deleteBotCommand(botId, deleteTarget.id);
       setCommands((prev) => prev.filter((c) => c.id !== deleteTarget.id));
+      toast.success(`Command /${deleteTarget.command} deleted`);
       setDeleteTarget(null);
     } catch (err) {
       console.error(err);
+      toast.error("Failed to delete command");
     }
   };
 

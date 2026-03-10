@@ -1,39 +1,177 @@
 "use client";
 
-import { useState, useEffect, useCallback, useMemo } from "react";
+import { useState, useEffect, useCallback, useMemo, useRef } from "react";
 import { useParams } from "next/navigation";
-import Link from "next/link";
 import { api } from "@/lib/api";
 import type { BotI18nString } from "@/lib/api";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { Badge } from "@/components/ui/badge";
 import { ConfirmDialog } from "@/components/confirm-dialog";
-import { ArrowLeft, Plus, Pencil, Trash2, X, Check, Globe, Search } from "lucide-react";
+import { toast } from "sonner";
+import {
+  Plus,
+  Pencil,
+  Trash2,
+  X,
+  Check,
+  Globe,
+  Search,
+  RotateCcw,
+  Save,
+  Loader2,
+} from "lucide-react";
+
+// Default .ftl strings for each bot type (used as reference defaults)
+const DEFAULT_STRINGS: Record<string, Record<string, string>> = {
+  en: {
+    "start.description": "Start the bot",
+    "language.description": "Change language",
+    "setcommands.description": "Set bot commands",
+    "products.description": "Browse products",
+    "cart.description": "View your cart",
+    "categories.description": "Browse categories",
+    "welcome": "Welcome!",
+    "products-title": "Products",
+    "products-select-category": "Select a category:",
+    "products-list": "Products",
+    "products-empty-category": "No products in this category.",
+    "products-loading": "Loading products...",
+    "products-empty": "No products available at the moment.",
+    "products-error": "Error loading products. Please try again.",
+    "products-view-details": "View Details",
+    "products-add-to-cart": "Add to Cart",
+    "products-price": "Price",
+    "products-compare-price": "Compare at",
+    "products-stock": "In Stock",
+    "products-out-of-stock": "Out of Stock",
+    "products-page": "Page",
+    "products-of": "of",
+    "products-next": "Next",
+    "products-previous": "Previous",
+    "products-search": "Search Products",
+    "products-search-placeholder": "Enter product name...",
+    "products-filter-by-category": "Filter by Category",
+    "products-all-categories": "All Categories",
+    "products-featured": "Featured Products",
+    "products-back": "Back",
+    "products-close": "Close",
+    "product-name": "Name",
+    "product-price": "Price",
+    "product-stock": "Stock",
+    "product-description": "Description",
+    "add-to-cart": "Added to cart",
+    "product-details-title": "Product Details",
+    "product-details-sku": "SKU",
+    "product-details-category": "Category",
+    "product-details-quantity": "Quantity",
+    "product-details-update-cart": "Update Cart",
+    "product-details-remove-from-cart": "Remove from Cart",
+    "cart-title": "Your Cart",
+    "cart-actions": "Choose an action:",
+    "cart-error": "Error loading cart. Please try again.",
+    "cart-empty": "Your cart is empty.",
+    "cart-loading": "Loading cart...",
+    "cart-total": "Total: {$amount}",
+    "cart-item": "{$name} x{$quantity} - {$price}",
+    "remove-item": "Remove",
+    "clear-cart": "Cart cleared",
+    "back-to-products": "Back to Products",
+    "cart-item-name": "Product",
+    "cart-item-price": "Price",
+    "cart-item-quantity": "Quantity",
+    "cart-item-total": "Total",
+    "cart-item-remove": "Remove",
+    "cart-item-update": "Update",
+    "cart-subtotal": "Subtotal",
+    "cart-checkout": "Checkout",
+    "cart-clear-cart-button": "Clear Cart",
+    "cart-continue-shopping": "Continue Shopping",
+    "cart-quantity-increase": "Increase",
+    "cart-quantity-decrease": "Decrease",
+    "cart-added": "Product added to cart!",
+    "cart-removed": "Product removed from cart.",
+    "cart-updated": "Cart updated.",
+    "cart-cleared": "Cart cleared.",
+    "cart-checkout-message": "Proceeding to checkout...",
+    "cart-item-not-found": "Product not found.",
+    "cart-invalid-quantity": "Invalid quantity.",
+    "cart-max-stock": "Maximum stock reached for this product.",
+    "cart-item-added": "Added to cart!",
+    "language-select": "Please, select your language",
+    "language-changed": "Language successfully changed!",
+    "admin-commands-updated": "Commands updated.",
+    "categories-title": "Categories",
+    "categories-loading": "Loading categories...",
+    "categories-empty": "No categories found.",
+    "categories-error": "Error loading categories. Please try again.",
+    "categories-view-products": "View Products",
+    "categories-back": "Back",
+    "categories-all": "All Products",
+    "select-category": "Select a category:",
+    "pagination-page": "Page",
+    "pagination-of": "of",
+    "pagination-total": "Total",
+    "pagination-items": "items",
+    "pagination-showing": "Showing",
+    "unhandled": "Unrecognized command. Try /start",
+    "error-not-group": "This command works only in groups.",
+    "error-no-permission": "You don't have permission to use this command.",
+    "error-no-reply": "Reply to a message to use this command.",
+    "error-generic": "Something went wrong. Please try again.",
+    "mod-user-warned": "User {$user} has been warned. ({$count}/3)",
+    "mod-user-muted": "User {$user} has been muted.",
+    "mod-user-unmuted": "User {$user} has been unmuted.",
+    "mod-user-banned": "User {$user} has been banned.",
+    "mod-user-unbanned": "User {$user} has been unbanned.",
+    "mod-user-kicked": "User {$user} has been kicked.",
+    "welcome-default": "Welcome to the group, {$user}!",
+    "setup-group-registered": "Group registered successfully.",
+    "setup-group-already-registered": "This group is already registered.",
+    "rules-not-set": "No rules have been set for this group.",
+    "rules-updated": "Rules updated successfully.",
+  },
+};
+
+interface MergedString {
+  key: string;
+  locale: string;
+  defaultValue: string;
+  currentValue: string;
+  isOverridden: boolean;
+  dbRecord?: BotI18nString;
+}
 
 export default function I18nEditorPage() {
   const params = useParams();
   const botId = params.botId as string;
-  const [strings, setStrings] = useState<BotI18nString[]>([]);
+  const [dbStrings, setDbStrings] = useState<BotI18nString[]>([]);
   const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
   const [activeLocale, setActiveLocale] = useState("en");
   const [searchQuery, setSearchQuery] = useState("");
   const [showAddForm, setShowAddForm] = useState(false);
   const [newKey, setNewKey] = useState("");
   const [newLocale, setNewLocale] = useState("en");
   const [newValue, setNewValue] = useState("");
-  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editingKey, setEditingKey] = useState<string | null>(null);
   const [editValue, setEditValue] = useState("");
-  const [deleteTarget, setDeleteTarget] = useState<BotI18nString | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<MergedString | null>(null);
+  const [pendingChanges, setPendingChanges] = useState<
+    Map<string, { key: string; locale: string; value: string }>
+  >(new Map());
+  const editInputRef = useRef<HTMLInputElement>(null);
 
   const loadStrings = useCallback(async () => {
     try {
       const data = await api.getBotI18nStrings(botId);
-      setStrings(data);
+      setDbStrings(data);
     } catch (err) {
       console.error(err);
+      toast.error("Failed to load i18n strings");
     } finally {
       setLoading(false);
     }
@@ -43,22 +181,149 @@ export default function I18nEditorPage() {
     loadStrings();
   }, [loadStrings]);
 
-  const locales = useMemo(() => {
-    const set = new Set(strings.map((s) => s.locale));
-    if (set.size === 0) set.add("en");
-    return Array.from(set).sort();
-  }, [strings]);
+  // Merge defaults with DB overrides
+  const mergedStrings = useMemo(() => {
+    const defaults = DEFAULT_STRINGS[activeLocale] ?? DEFAULT_STRINGS["en"] ?? {};
+    const dbByKey = new Map<string, BotI18nString>();
+    for (const s of dbStrings) {
+      if (s.locale === activeLocale) {
+        dbByKey.set(s.key, s);
+      }
+    }
+
+    const result: MergedString[] = [];
+
+    // Add all default keys
+    for (const [key, defaultValue] of Object.entries(defaults)) {
+      const dbRecord = dbByKey.get(key);
+      const pendingChange = pendingChanges.get(`${activeLocale}:${key}`);
+      const currentValue = pendingChange?.value ?? dbRecord?.value ?? defaultValue;
+      result.push({
+        key,
+        locale: activeLocale,
+        defaultValue,
+        currentValue,
+        isOverridden: currentValue !== defaultValue,
+        dbRecord,
+      });
+      dbByKey.delete(key);
+    }
+
+    // Add any DB keys that aren't in defaults (custom keys)
+    for (const [key, record] of dbByKey) {
+      const pendingChange = pendingChanges.get(`${activeLocale}:${key}`);
+      result.push({
+        key,
+        locale: activeLocale,
+        defaultValue: "",
+        currentValue: pendingChange?.value ?? record.value,
+        isOverridden: true,
+        dbRecord: record,
+      });
+    }
+
+    return result.sort((a, b) => a.key.localeCompare(b.key));
+  }, [dbStrings, activeLocale, pendingChanges]);
 
   const filteredStrings = useMemo(() => {
-    let result = strings.filter((s) => s.locale === activeLocale);
-    if (searchQuery.trim()) {
-      const q = searchQuery.toLowerCase();
-      result = result.filter(
-        (s) => s.key.toLowerCase().includes(q) || s.value.toLowerCase().includes(q)
-      );
+    if (!searchQuery.trim()) return mergedStrings;
+    const q = searchQuery.toLowerCase();
+    return mergedStrings.filter(
+      (s) =>
+        s.key.toLowerCase().includes(q) ||
+        s.currentValue.toLowerCase().includes(q)
+    );
+  }, [mergedStrings, searchQuery]);
+
+  const locales = useMemo(() => {
+    const set = new Set<string>(["en"]);
+    for (const s of dbStrings) set.add(s.locale);
+    for (const key of Object.keys(DEFAULT_STRINGS)) set.add(key);
+    return Array.from(set).sort();
+  }, [dbStrings]);
+
+  const modifiedCount = pendingChanges.size;
+
+  const startEdit = (str: MergedString) => {
+    setEditingKey(str.key);
+    setEditValue(str.currentValue);
+    setTimeout(() => editInputRef.current?.focus(), 0);
+  };
+
+  const commitEdit = (str: MergedString) => {
+    if (editValue === str.defaultValue && !str.dbRecord) {
+      // Value matches default and there's no DB record -- remove any pending change
+      setPendingChanges((prev) => {
+        const next = new Map(prev);
+        next.delete(`${activeLocale}:${str.key}`);
+        return next;
+      });
+    } else if (editValue !== (str.dbRecord?.value ?? str.defaultValue)) {
+      // Value differs from what's stored
+      setPendingChanges((prev) => {
+        const next = new Map(prev);
+        next.set(`${activeLocale}:${str.key}`, {
+          key: str.key,
+          locale: activeLocale,
+          value: editValue,
+        });
+        return next;
+      });
+    } else {
+      // Value matches what's stored, remove from pending
+      setPendingChanges((prev) => {
+        const next = new Map(prev);
+        next.delete(`${activeLocale}:${str.key}`);
+        return next;
+      });
     }
-    return result.sort((a, b) => a.key.localeCompare(b.key));
-  }, [strings, activeLocale, searchQuery]);
+    setEditingKey(null);
+  };
+
+  const handleResetToDefault = (str: MergedString) => {
+    if (str.dbRecord) {
+      // Mark for deletion by setting value to default
+      setPendingChanges((prev) => {
+        const next = new Map(prev);
+        next.set(`${activeLocale}:${str.key}`, {
+          key: str.key,
+          locale: activeLocale,
+          value: str.defaultValue,
+        });
+        return next;
+      });
+    } else {
+      // Just remove pending change
+      setPendingChanges((prev) => {
+        const next = new Map(prev);
+        next.delete(`${activeLocale}:${str.key}`);
+        return next;
+      });
+    }
+    if (editingKey === str.key) {
+      setEditValue(str.defaultValue);
+      setEditingKey(null);
+    }
+  };
+
+  const handleSaveAll = async () => {
+    if (pendingChanges.size === 0) return;
+    setSaving(true);
+    try {
+      const items = Array.from(pendingChanges.values());
+      const updated = await api.batchUpdateBotI18nStrings(botId, items);
+      // Refresh from server
+      const freshData = await api.getBotI18nStrings(botId);
+      setDbStrings(freshData);
+      setPendingChanges(new Map());
+      toast.success(`Saved ${updated.length} string${updated.length !== 1 ? "s" : ""}`);
+    } catch (err) {
+      console.error(err);
+      toast.error("Failed to save changes");
+    } finally {
+      setSaving(false);
+    }
+  };
 
   const handleAdd = async () => {
     if (!newKey.trim() || !newValue.trim()) return;
@@ -68,85 +333,151 @@ export default function I18nEditorPage() {
         locale: newLocale,
         value: newValue,
       });
-      setStrings((prev) => [...prev, created]);
+      setDbStrings((prev) => [...prev, created]);
       setNewKey("");
       setNewValue("");
       setNewLocale(activeLocale);
       setShowAddForm(false);
+      toast.success("String created");
     } catch (err) {
       console.error(err);
-    }
-  };
-
-  const startEdit = (str: BotI18nString) => {
-    setEditingId(str.id);
-    setEditValue(str.value);
-  };
-
-  const handleSaveEdit = async () => {
-    if (!editingId) return;
-    try {
-      const updated = await api.updateBotI18nString(botId, editingId, { value: editValue });
-      setStrings((prev) => prev.map((s) => (s.id === updated.id ? updated : s)));
-      setEditingId(null);
-    } catch (err) {
-      console.error(err);
+      toast.error("Failed to create string");
     }
   };
 
   const handleDelete = async () => {
-    if (!deleteTarget) return;
-    try {
-      await api.deleteBotI18nString(botId, deleteTarget.id);
-      setStrings((prev) => prev.filter((s) => s.id !== deleteTarget.id));
+    if (!deleteTarget?.dbRecord) {
+      // No DB record, just clear pending
+      if (deleteTarget) {
+        setPendingChanges((prev) => {
+          const next = new Map(prev);
+          next.delete(`${deleteTarget.locale}:${deleteTarget.key}`);
+          return next;
+        });
+      }
       setDeleteTarget(null);
+      return;
+    }
+    try {
+      await api.deleteBotI18nString(botId, deleteTarget.dbRecord.id);
+      setDbStrings((prev) => prev.filter((s) => s.id !== deleteTarget.dbRecord!.id));
+      setPendingChanges((prev) => {
+        const next = new Map(prev);
+        next.delete(`${deleteTarget.locale}:${deleteTarget.key}`);
+        return next;
+      });
+      setDeleteTarget(null);
+      toast.success("String deleted");
     } catch (err) {
       console.error(err);
+      toast.error("Failed to delete string");
     }
   };
 
-  if (loading) return <div className="animate-pulse space-y-4"><div className="h-8 w-48 bg-muted rounded" /><div className="h-64 bg-muted rounded-xl" /></div>;
+  if (loading) {
+    return (
+      <div className="animate-pulse space-y-4">
+        <div className="flex items-center gap-4">
+          <div className="h-8 w-48 bg-muted rounded" />
+        </div>
+        <div className="h-10 bg-muted rounded-lg" />
+        <div className="h-9 w-48 bg-muted rounded-lg" />
+        <div className="space-y-2">
+          {Array.from({ length: 8 }).map((_, i) => (
+            <div key={i} className="h-14 bg-muted rounded-lg" />
+          ))}
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
+      {/* Header */}
       <div className="flex items-center gap-4">
-        <Link href={`/dashboard/bot-config/${botId}`}>
-          <Button variant="ghost" size="icon"><ArrowLeft className="h-4 w-4" /></Button>
-        </Link>
         <div className="flex-1">
           <h1 className="text-2xl font-bold">i18n Strings</h1>
-          <p className="text-sm text-muted-foreground">Manage localization key-value pairs</p>
+          <p className="text-sm text-muted-foreground">
+            Manage localization strings. Override defaults or add custom keys.
+          </p>
         </div>
-        <Button onClick={() => { setShowAddForm(true); setNewLocale(activeLocale); }} disabled={showAddForm}>
-          <Plus className="mr-2 h-4 w-4" />Add String
-        </Button>
+        <div className="flex items-center gap-2">
+          {modifiedCount > 0 && (
+            <Button onClick={handleSaveAll} disabled={saving}>
+              {saving ? (
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              ) : (
+                <Save className="mr-2 h-4 w-4" />
+              )}
+              Save Changes ({modifiedCount})
+            </Button>
+          )}
+          <Button
+            variant="outline"
+            onClick={() => {
+              setShowAddForm(true);
+              setNewLocale(activeLocale);
+            }}
+            disabled={showAddForm}
+          >
+            <Plus className="mr-2 h-4 w-4" />
+            Add String
+          </Button>
+        </div>
       </div>
 
+      {/* Add form */}
       {showAddForm && (
         <Card>
-          <CardHeader><CardTitle>New i18n String</CardTitle></CardHeader>
-          <CardContent>
+          <CardContent className="pt-6">
             <div className="space-y-4">
               <div className="flex flex-col gap-4 sm:flex-row">
                 <div className="flex-1 space-y-2">
                   <Label htmlFor="i18n-key">Key</Label>
-                  <Input id="i18n-key" placeholder="greeting.welcome" value={newKey} onChange={(e) => setNewKey(e.target.value)} />
+                  <Input
+                    id="i18n-key"
+                    placeholder="custom-greeting"
+                    value={newKey}
+                    onChange={(e) => setNewKey(e.target.value)}
+                  />
                 </div>
                 <div className="w-32 space-y-2">
                   <Label htmlFor="i18n-locale">Locale</Label>
-                  <Input id="i18n-locale" placeholder="en" value={newLocale} onChange={(e) => setNewLocale(e.target.value)} />
+                  <Input
+                    id="i18n-locale"
+                    placeholder="en"
+                    value={newLocale}
+                    onChange={(e) => setNewLocale(e.target.value)}
+                  />
                 </div>
               </div>
               <div className="space-y-2">
                 <Label htmlFor="i18n-value">Value</Label>
-                <Input id="i18n-value" placeholder="Welcome to our bot!" value={newValue} onChange={(e) => setNewValue(e.target.value)} />
+                <Input
+                  id="i18n-value"
+                  placeholder="Welcome to our bot!"
+                  value={newValue}
+                  onChange={(e) => setNewValue(e.target.value)}
+                />
               </div>
               <div className="flex gap-2">
-                <Button onClick={handleAdd} disabled={!newKey.trim() || !newValue.trim()}>
-                  <Check className="mr-2 h-4 w-4" />Save
+                <Button
+                  onClick={handleAdd}
+                  disabled={!newKey.trim() || !newValue.trim()}
+                >
+                  <Check className="mr-2 h-4 w-4" />
+                  Save
                 </Button>
-                <Button variant="outline" onClick={() => { setShowAddForm(false); setNewKey(""); setNewValue(""); }}>
-                  <X className="mr-2 h-4 w-4" />Cancel
+                <Button
+                  variant="outline"
+                  onClick={() => {
+                    setShowAddForm(false);
+                    setNewKey("");
+                    setNewValue("");
+                  }}
+                >
+                  <X className="mr-2 h-4 w-4" />
+                  Cancel
                 </Button>
               </div>
             </div>
@@ -165,6 +496,7 @@ export default function I18nEditorPage() {
         />
       </div>
 
+      {/* Locale tabs */}
       <Tabs value={activeLocale} onValueChange={setActiveLocale}>
         <TabsList>
           {locales.map((locale) => (
@@ -179,62 +511,178 @@ export default function I18nEditorPage() {
             <Card>
               <CardContent className="p-0">
                 {filteredStrings.length === 0 ? (
-                  <div className="flex flex-col items-center py-8">
+                  <div className="flex flex-col items-center py-12">
                     <Globe className="h-10 w-10 text-muted-foreground mb-3" />
                     <p className="text-muted-foreground">
-                      {searchQuery ? "No matching strings found" : `No strings for locale "${locale}". Add one above.`}
+                      {searchQuery
+                        ? "No matching strings found"
+                        : `No strings for locale "${locale}".`}
                     </p>
                   </div>
                 ) : (
-                  <div className="divide-y divide-border">
-                    {filteredStrings.map((str) => (
-                      <div key={str.id} className="flex items-center gap-4 p-4">
-                        <div className="flex-1 min-w-0">
-                          {editingId === str.id ? (
-                            <div className="space-y-2">
-                              <div className="font-mono text-sm font-medium text-muted-foreground">{str.key}</div>
+                  <>
+                    {/* Table header */}
+                    <div className="grid grid-cols-[1fr_1fr_auto] gap-4 px-4 py-3 border-b border-border bg-muted/30 text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                      <div>Key</div>
+                      <div>Value</div>
+                      <div className="w-24 text-right">Actions</div>
+                    </div>
+                    {/* Table rows */}
+                    <div className="divide-y divide-border">
+                      {filteredStrings.map((str) => {
+                        const isPending = pendingChanges.has(
+                          `${locale}:${str.key}`
+                        );
+                        return (
+                          <div
+                            key={str.key}
+                            className={`grid grid-cols-[1fr_1fr_auto] gap-4 px-4 py-3 items-center ${
+                              isPending ? "bg-amber-50 dark:bg-amber-950/20" : ""
+                            }`}
+                          >
+                            {/* Key column */}
+                            <div className="min-w-0">
                               <div className="flex items-center gap-2">
-                                <Input
-                                  value={editValue}
-                                  onChange={(e) => setEditValue(e.target.value)}
-                                  className="flex-1"
-                                />
-                                <Button size="sm" onClick={handleSaveEdit}><Check className="h-3 w-3" /></Button>
-                                <Button size="sm" variant="outline" onClick={() => setEditingId(null)}><X className="h-3 w-3" /></Button>
+                                <span className="font-mono text-sm truncate">
+                                  {str.key}
+                                </span>
+                                {str.isOverridden && (
+                                  <Badge variant="secondary" className="shrink-0 text-[10px] px-1.5 py-0">
+                                    overridden
+                                  </Badge>
+                                )}
+                                {isPending && (
+                                  <Badge className="shrink-0 text-[10px] px-1.5 py-0 bg-amber-500 text-white hover:bg-amber-500">
+                                    modified
+                                  </Badge>
+                                )}
+                                {!str.defaultValue && (
+                                  <Badge variant="outline" className="shrink-0 text-[10px] px-1.5 py-0">
+                                    custom
+                                  </Badge>
+                                )}
                               </div>
                             </div>
-                          ) : (
-                            <div>
-                              <div className="font-mono text-sm font-medium">{str.key}</div>
-                              <p className="mt-0.5 text-sm text-muted-foreground truncate">{str.value}</p>
+
+                            {/* Value column */}
+                            <div className="min-w-0">
+                              {editingKey === str.key ? (
+                                <div className="flex items-center gap-2">
+                                  <Input
+                                    ref={editInputRef}
+                                    value={editValue}
+                                    onChange={(e) =>
+                                      setEditValue(e.target.value)
+                                    }
+                                    onKeyDown={(e) => {
+                                      if (e.key === "Enter") commitEdit(str);
+                                      if (e.key === "Escape")
+                                        setEditingKey(null);
+                                    }}
+                                    className="flex-1 h-8 text-sm"
+                                  />
+                                  <Button
+                                    size="sm"
+                                    variant="ghost"
+                                    className="h-8 w-8 p-0"
+                                    onClick={() => commitEdit(str)}
+                                  >
+                                    <Check className="h-3 w-3" />
+                                  </Button>
+                                  <Button
+                                    size="sm"
+                                    variant="ghost"
+                                    className="h-8 w-8 p-0"
+                                    onClick={() => setEditingKey(null)}
+                                  >
+                                    <X className="h-3 w-3" />
+                                  </Button>
+                                </div>
+                              ) : (
+                                <button
+                                  type="button"
+                                  className="text-sm text-left truncate block w-full hover:text-foreground transition-colors cursor-text text-muted-foreground"
+                                  onClick={() => startEdit(str)}
+                                  title="Click to edit"
+                                >
+                                  {str.currentValue || (
+                                    <span className="italic">empty</span>
+                                  )}
+                                </button>
+                              )}
                             </div>
-                          )}
-                        </div>
-                        {editingId !== str.id && (
-                          <div className="flex items-center gap-1">
-                            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => startEdit(str)}>
-                              <Pencil className="h-3 w-3" />
-                            </Button>
-                            <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive" onClick={() => setDeleteTarget(str)}>
-                              <Trash2 className="h-3 w-3" />
-                            </Button>
+
+                            {/* Actions column */}
+                            <div className="flex items-center gap-1 w-24 justify-end">
+                              {editingKey !== str.key && (
+                                <>
+                                  <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    className="h-7 w-7"
+                                    onClick={() => startEdit(str)}
+                                    title="Edit"
+                                  >
+                                    <Pencil className="h-3 w-3" />
+                                  </Button>
+                                  {str.isOverridden && str.defaultValue && (
+                                    <Button
+                                      variant="ghost"
+                                      size="icon"
+                                      className="h-7 w-7"
+                                      onClick={() =>
+                                        handleResetToDefault(str)
+                                      }
+                                      title="Reset to default"
+                                    >
+                                      <RotateCcw className="h-3 w-3" />
+                                    </Button>
+                                  )}
+                                  {!str.defaultValue && str.dbRecord && (
+                                    <Button
+                                      variant="ghost"
+                                      size="icon"
+                                      className="h-7 w-7 text-destructive"
+                                      onClick={() => setDeleteTarget(str)}
+                                      title="Delete"
+                                    >
+                                      <Trash2 className="h-3 w-3" />
+                                    </Button>
+                                  )}
+                                </>
+                              )}
+                            </div>
                           </div>
-                        )}
-                      </div>
-                    ))}
-                  </div>
+                        );
+                      })}
+                    </div>
+                  </>
                 )}
               </CardContent>
             </Card>
+
+            {/* Summary */}
+            <div className="flex items-center justify-between text-xs text-muted-foreground mt-3 px-1">
+              <span>
+                {filteredStrings.length} string{filteredStrings.length !== 1 ? "s" : ""}
+                {searchQuery && ` matching "${searchQuery}"`}
+              </span>
+              <span>
+                {filteredStrings.filter((s) => s.isOverridden).length} overridden
+              </span>
+            </div>
           </TabsContent>
         ))}
       </Tabs>
 
+      {/* Confirm delete */}
       <ConfirmDialog
         open={!!deleteTarget}
-        onOpenChange={(open) => { if (!open) setDeleteTarget(null); }}
+        onOpenChange={(open) => {
+          if (!open) setDeleteTarget(null);
+        }}
         title="Delete i18n String"
-        description={`Are you sure you want to delete the string "${deleteTarget?.key}" (${deleteTarget?.locale})? This action cannot be undone.`}
+        description={`Are you sure you want to delete the custom string "${deleteTarget?.key}" (${deleteTarget?.locale})? This action cannot be undone.`}
         confirmLabel="Delete"
         variant="destructive"
         onConfirm={handleDelete}

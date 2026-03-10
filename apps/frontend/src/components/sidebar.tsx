@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useMemo, createContext, useContext } from "react";
+import { useState, useEffect, useMemo, useRef, createContext, useContext } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { clearToken } from "@/lib/auth";
@@ -131,6 +131,7 @@ const navigation: NavSection[] = [
     icon: Workflow,
     children: [
       { label: "All Flows", href: "/dashboard/flows", icon: Workflow },
+      { label: "Analytics", href: "/dashboard/flows/analytics", icon: BarChart3 },
       { label: "Templates", href: "/dashboard/flows/templates", icon: FileTextIcon },
       { label: "Webhooks", href: "/dashboard/webhooks", icon: Globe },
     ],
@@ -232,7 +233,7 @@ function NavLink({
           : "text-muted-foreground hover:bg-accent/50 hover:text-accent-foreground"
       )}
     >
-      <Icon className="h-4 w-4 shrink-0" />
+      <Icon className="h-4 w-4 shrink-0" aria-hidden="true" />
       <span>{label}</span>
     </Link>
   );
@@ -259,17 +260,19 @@ function SectionHeader({
     <button
       type="button"
       onClick={onToggle}
+      aria-expanded={hasChildren ? expanded : undefined}
       className={cn(
         "flex w-full items-center justify-between rounded-md px-3 py-2 text-sm font-medium transition-colors",
         "text-muted-foreground hover:bg-accent/50 hover:text-accent-foreground"
       )}
     >
       <span className="flex items-center gap-3">
-        <Icon className="h-4 w-4 shrink-0" />
+        <Icon className="h-4 w-4 shrink-0" aria-hidden="true" />
         <span>{label}</span>
       </span>
       {hasChildren && (
         <ChevronDown
+          aria-hidden="true"
           className={cn(
             "h-4 w-4 shrink-0 transition-transform duration-200",
             expanded && "rotate-180"
@@ -383,7 +386,7 @@ function LogoutButton() {
         onClick={handleLogout}
         className="flex w-full items-center gap-3 rounded-md px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-accent/50 hover:text-accent-foreground"
       >
-        <LogOut className="h-4 w-4 shrink-0" />
+        <LogOut className="h-4 w-4 shrink-0" aria-hidden="true" />
         <span>Logout</span>
       </button>
     </div>
@@ -393,6 +396,8 @@ function LogoutButton() {
 export function Sidebar() {
   const { open, setOpen } = useContext(MobileSidebarContext);
   const pathname = usePathname();
+  const mobileSidebarRef = useRef<HTMLElement>(null);
+  const triggerRef = useRef<HTMLElement | null>(null);
 
   // Close mobile sidebar on route change
   useEffect(() => {
@@ -419,6 +424,51 @@ export function Sidebar() {
     return () => {
       document.body.style.overflow = "";
     };
+  }, [open]);
+
+  // Focus trap for mobile sidebar
+  useEffect(() => {
+    if (!open || !mobileSidebarRef.current) return;
+
+    // Store the element that triggered the sidebar
+    triggerRef.current = document.activeElement as HTMLElement;
+
+    const sidebar = mobileSidebarRef.current;
+    const focusableSelector =
+      'a[href], button:not([disabled]), textarea, input, select, [tabindex]:not([tabindex="-1"])';
+
+    // Focus first focusable element
+    const firstFocusable = sidebar.querySelector<HTMLElement>(focusableSelector);
+    firstFocusable?.focus();
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key !== "Tab") return;
+
+      const focusableElements = sidebar.querySelectorAll<HTMLElement>(focusableSelector);
+      if (focusableElements.length === 0) return;
+
+      const first = focusableElements[0]!;
+      const last = focusableElements[focusableElements.length - 1]!;
+
+      if (e.shiftKey && document.activeElement === first) {
+        e.preventDefault();
+        last.focus();
+      } else if (!e.shiftKey && document.activeElement === last) {
+        e.preventDefault();
+        first.focus();
+      }
+    };
+
+    document.addEventListener("keydown", handleKeyDown);
+    return () => document.removeEventListener("keydown", handleKeyDown);
+  }, [open]);
+
+  // Return focus to trigger when sidebar closes
+  useEffect(() => {
+    if (!open && triggerRef.current) {
+      triggerRef.current.focus();
+      triggerRef.current = null;
+    }
   }, [open]);
 
   return (
@@ -451,7 +501,13 @@ export function Sidebar() {
           />
 
           {/* Sidebar panel */}
-          <aside className="absolute inset-y-0 left-0 flex w-64 flex-col bg-card shadow-lg">
+          <aside
+            ref={mobileSidebarRef}
+            role="dialog"
+            aria-modal="true"
+            aria-label="Navigation menu"
+            className="absolute inset-y-0 left-0 flex w-64 flex-col bg-card shadow-lg"
+          >
             <div className="flex h-16 items-center justify-between border-b border-border px-6">
               <Link
                 href="/dashboard"

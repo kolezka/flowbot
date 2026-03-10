@@ -11,6 +11,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { ConfirmDialog } from "@/components/confirm-dialog";
+import { toast } from "sonner";
 import { ArrowLeft, Plus, Pencil, Trash2, X, Check, LayoutGrid } from "lucide-react";
 
 function ButtonGrid({ buttons }: { buttons: BotMenuButton[] }) {
@@ -74,6 +75,7 @@ export default function MenusEditorPage() {
       setMenus(data);
     } catch (err) {
       console.error(err);
+      toast.error("Failed to load menus");
     } finally {
       setLoading(false);
     }
@@ -91,8 +93,10 @@ export default function MenusEditorPage() {
       setNewMenuName("");
       setShowAddMenu(false);
       setExpandedMenuId(created.id);
+      toast.success("Menu created");
     } catch (err) {
       console.error(err);
+      toast.error("Failed to create menu");
     }
   };
 
@@ -102,8 +106,10 @@ export default function MenusEditorPage() {
       const updated = await api.updateBotMenu(botId, editingMenuId, { name: editMenuName });
       setMenus((prev) => prev.map((m) => (m.id === updated.id ? updated : m)));
       setEditingMenuId(null);
+      toast.success("Menu name updated");
     } catch (err) {
       console.error(err);
+      toast.error("Failed to update menu");
     }
   };
 
@@ -113,8 +119,10 @@ export default function MenusEditorPage() {
       await api.deleteBotMenu(botId, deleteMenuTarget.id);
       setMenus((prev) => prev.filter((m) => m.id !== deleteMenuTarget.id));
       setDeleteMenuTarget(null);
+      toast.success("Menu deleted");
     } catch (err) {
       console.error(err);
+      toast.error("Failed to delete menu");
     }
   };
 
@@ -135,8 +143,10 @@ export default function MenusEditorPage() {
       setNewBtnRow("0");
       setNewBtnCol("0");
       setAddButtonMenuId(null);
+      toast.success("Button added");
     } catch (err) {
       console.error(err);
+      toast.error("Failed to add button");
     }
   };
 
@@ -165,8 +175,10 @@ export default function MenusEditorPage() {
         )
       );
       setEditingButton(null);
+      toast.success("Button updated");
     } catch (err) {
       console.error(err);
+      toast.error("Failed to update button");
     }
   };
 
@@ -182,8 +194,10 @@ export default function MenusEditorPage() {
         )
       );
       setDeleteButtonTarget(null);
+      toast.success("Button deleted");
     } catch (err) {
       console.error(err);
+      toast.error("Failed to delete button");
     }
   };
 

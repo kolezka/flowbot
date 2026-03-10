@@ -29,8 +29,8 @@ export function Pagination({
   const end = Math.min(page * limit, total);
 
   return (
-    <div className={cn("flex items-center justify-between gap-4 pt-4", className)}>
-      <div className="text-sm text-muted-foreground">
+    <nav aria-label="Pagination" className={cn("flex items-center justify-between gap-4 pt-4", className)}>
+      <div className="text-sm text-muted-foreground" aria-live="polite">
         {total > 0 ? `${start}-${end} of ${total}` : "No results"}
       </div>
 
@@ -39,6 +39,7 @@ export function Pagination({
           <select
             value={limit}
             onChange={(e) => onLimitChange(Number(e.target.value))}
+            aria-label="Results per page"
             className="h-8 rounded-md border border-input bg-background px-2 text-sm"
           >
             {PAGE_SIZES.map((size) => (
@@ -54,8 +55,9 @@ export function Pagination({
             className="h-8 w-8"
             onClick={() => onPageChange(1)}
             disabled={page <= 1}
+            aria-label="First page"
           >
-            <ChevronsLeft className="h-4 w-4" />
+            <ChevronsLeft className="h-4 w-4" aria-hidden="true" />
           </Button>
           <Button
             variant="outline"
@@ -63,11 +65,12 @@ export function Pagination({
             className="h-8 w-8"
             onClick={() => onPageChange(page - 1)}
             disabled={page <= 1}
+            aria-label="Previous page"
           >
-            <ChevronLeft className="h-4 w-4" />
+            <ChevronLeft className="h-4 w-4" aria-hidden="true" />
           </Button>
-          <span className="px-2 text-sm">
-            {page} / {totalPages || 1}
+          <span className="px-2 text-sm" aria-current="page">
+            Page {page} of {totalPages || 1}
           </span>
           <Button
             variant="outline"
@@ -75,8 +78,9 @@ export function Pagination({
             className="h-8 w-8"
             onClick={() => onPageChange(page + 1)}
             disabled={page >= totalPages}
+            aria-label="Next page"
           >
-            <ChevronRight className="h-4 w-4" />
+            <ChevronRight className="h-4 w-4" aria-hidden="true" />
           </Button>
           <Button
             variant="outline"
@@ -84,11 +88,12 @@ export function Pagination({
             className="h-8 w-8"
             onClick={() => onPageChange(totalPages)}
             disabled={page >= totalPages}
+            aria-label="Last page"
           >
-            <ChevronsRight className="h-4 w-4" />
+            <ChevronsRight className="h-4 w-4" aria-hidden="true" />
           </Button>
         </div>
       </div>
-    </div>
+    </nav>
   );
 }

@@ -780,6 +780,20 @@ export interface FlowAnalytics {
   commonErrors: Array<{ error: string; count: number }>;
 }
 
+export interface FlowGlobalAnalytics {
+  totalExecutions: number;
+  completedCount: number;
+  failedCount: number;
+  runningCount: number;
+  activeFlowsCount: number;
+  totalFlowsCount: number;
+  avgDurationMs: number;
+  successRate: number;
+  dailyStats: Array<{ date: string; total: number; completed: number; failed: number }>;
+  topFlows: Array<{ flowId: string; name: string; status: string; executions: number; successRate: number }>;
+  commonErrors: Array<{ error: string; count: number }>;
+}
+
 // Webhook interfaces
 export interface WebhookEndpoint {
   id: string;
@@ -1467,6 +1481,10 @@ class ApiClient {
     await this.request<void>(`/api/bot-config/${botId}/i18n/${stringId}`, { method: 'DELETE' });
   }
 
+  async batchUpdateBotI18nStrings(botId: string, items: { key: string; locale: string; value: string }[]): Promise<BotI18nString[]> {
+    return this.request<BotI18nString[]>(`/api/bot-config/${botId}/i18n/batch`, { method: 'POST', body: JSON.stringify(items) });
+  }
+
   // TG Client
   async getTgClientSessions(params?: { page?: number; limit?: number }): Promise<TgClientSessionsResponse> {
     const searchParams = new URLSearchParams();
@@ -1546,6 +1564,10 @@ class ApiClient {
     return this.request<FlowVersion[]>(`/api/flows/${flowId}/versions`);
   }
 
+  async getFlowVersion(flowId: string, versionId: string): Promise<FlowVersion> {
+    return this.request<FlowVersion>(`/api/flows/${flowId}/versions/${versionId}`);
+  }
+
   async createFlowVersion(flowId: string, createdBy?: string): Promise<FlowVersion> {
     return this.request<FlowVersion>(`/api/flows/${flowId}/versions`, {
       method: 'POST',
@@ -1561,6 +1583,22 @@ class ApiClient {
 
   async getFlowAnalytics(flowId: string): Promise<FlowAnalytics> {
     return this.request<FlowAnalytics>(`/api/flows/${flowId}/analytics`);
+  }
+
+  async testExecuteFlow(flowId: string, triggerData?: any): Promise<FlowExecution> {
+    return this.request<FlowExecution>(`/api/flows/${flowId}/test-execute`, {
+      method: 'POST',
+      body: JSON.stringify({ triggerData }),
+    });
+  }
+
+  async getFlowExecution(executionId: string): Promise<FlowExecution> {
+    return this.request<FlowExecution>(`/api/flows/executions/${executionId}`);
+  }
+
+  async getFlowGlobalAnalytics(days?: number): Promise<FlowGlobalAnalytics> {
+    const qs = days ? `?days=${days}` : '';
+    return this.request<FlowGlobalAnalytics>(`/api/flows/analytics${qs}`);
   }
 
   async startTgAuth(phoneNumber: string): Promise<{ sessionId: string; status: string }> {

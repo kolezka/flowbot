@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { useParams, useRouter } from "next/navigation";
 import {
   ReactFlow,
@@ -15,12 +15,18 @@ import {
   type Edge,
 } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
-import { api } from "@/lib/api";
+import { api, type BotInstance } from "@/lib/api";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Save, Play, Square, BarChart3, History } from "lucide-react";
+import { Save, Play, Square, BarChart3, History, Bot } from "lucide-react";
 import { ExpressionBuilder, type ExpressionValue } from "@/components/expression-builder";
 import Link from "next/link";
+import {
+  ExecutionToolbar,
+  ExecutionPanel,
+  applyExecutionStyles,
+  useExecutionState,
+} from "@/components/flow-execution-overlay";
 
 const NODE_TYPES_CONFIG = [
   { type: "message_received", label: "Message Received", category: "trigger", color: "#22c55e" },
@@ -36,6 +42,7 @@ const NODE_TYPES_CONFIG = [
   { type: "mute_user", label: "Mute User", category: "action", color: "#ef4444" },
   { type: "api_call", label: "API Call", category: "action", color: "#3b82f6" },
   { type: "delay", label: "Delay", category: "action", color: "#8b5cf6" },
+  { type: "bot_action", label: "Bot Action", category: "action", color: "#f97316" },
   { type: "parallel_branch", label: "Parallel Branch", category: "advanced", color: "#a855f7" },
   { type: "db_query", label: "Database Query", category: "advanced", color: "#a855f7" },
   { type: "loop", label: "Loop", category: "advanced", color: "#a855f7" },
@@ -88,6 +95,14 @@ export default function FlowEditorPage() {
   const [saving, setSaving] = useState(false);
   const [loaded, setLoaded] = useState(false);
   const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
+  const [botInstances, setBotInstances] = useState<BotInstance[]>([]);
+
+  // Execution visualization state
+  const { executionState, setExecutionState } = useExecutionState();
+
+  useEffect(() => {
+    api.getBotInstances().then(setBotInstances).catch(() => {});
+  }, []);
 
   useEffect(() => {
     api.getFlow(flowId).then((flow) => {
@@ -173,6 +188,21 @@ export default function FlowEditorPage() {
 
   const selectedNode = nodes.find((n) => n.id === selectedNodeId);
   const isConditionNode = selectedNode?.data?.category === "condition";
+  const isBotActionNode = selectedNode?.data?.nodeType === "bot_action";
+
+  const updateNodeConfig = useCallback(
+    (key: string, value: unknown) => {
+      if (!selectedNodeId) return;
+      setNodes((nds) =>
+        nds.map((n) =>
+          n.id === selectedNodeId
+            ? { ...n, data: { ...n.data, config: { ...(n.data.config as Record<string, unknown>), [key]: value } } }
+            : n,
+        ),
+      );
+    },
+    [selectedNodeId, setNodes],
+  );
 
   const handleExpressionChange = useCallback(
     (expression: ExpressionValue) => {
@@ -196,6 +226,14 @@ export default function FlowEditorPage() {
     setSelectedNodeId(null);
   }, []);
 
+  // Apply execution styles to nodes and edges for visualization
+  const { styledNodes, styledEdges } = useMemo(() => {
+    if (!executionState.execution) {
+      return { styledNodes: nodes, styledEdges: edges };
+    }
+    return applyExecutionStyles(nodes, edges, executionState);
+  }, [nodes, edges, executionState]);
+
   if (!loaded) return <div className="h-screen animate-pulse bg-muted" />;
 
   return (
@@ -207,6 +245,14 @@ export default function FlowEditorPage() {
           <Badge variant={flowStatus === "active" ? "default" : "secondary"}>{flowStatus}</Badge>
         </div>
         <div className="flex items-center gap-2">
+          <ExecutionToolbar
+            flowId={flowId}
+            nodes={nodes}
+            edges={edges}
+            executionState={executionState}
+            onExecutionStateChange={setExecutionState}
+          />
+          <div className="mx-1 h-5 w-px bg-border" />
           <Link href={`/dashboard/flows/${flowId}/analytics`}>
             <Button variant="ghost" size="sm"><BarChart3 className="mr-1 h-4 w-4" />Analytics</Button>
           </Link>
@@ -224,13 +270,14 @@ export default function FlowEditorPage() {
         </div>
       </div>
 
-      {/* Canvas */}
-      <div className="flex flex-1">
+      {/* Canvas + Panels */}
+      <div className="flex flex-1 flex-col min-h-0">
+        <div className="flex flex-1 min-h-0">
         <NodePalette onDragStart={() => {}} />
         <div className="flex-1" onDragOver={onDragOver} onDrop={onDrop}>
           <ReactFlow
-            nodes={nodes}
-            edges={edges}
+            nodes={styledNodes}
+            edges={styledEdges}
             onNodesChange={onNodesChange}
             onEdgesChange={onEdgesChange}
             onConnect={onConnect}
@@ -255,6 +302,73 @@ export default function FlowEditorPage() {
             />
           </div>
         )}
+        {/* Property panel for bot_action nodes */}
+        {selectedNode && isBotActionNode && (
+          <div className="w-72 border-l border-border bg-card p-3 overflow-y-auto">
+            <h3 className="mb-3 text-sm font-semibold flex items-center gap-1">
+              <Bot className="h-4 w-4" />Bot Action
+            </h3>
+            <div className="space-y-3">
+              <div>
+                <label className="text-xs font-medium text-muted-foreground">Bot Instance</label>
+                <select
+                  className="mt-1 w-full rounded-md border border-border bg-background px-2 py-1.5 text-sm"
+                  value={String((selectedNode.data.config as Record<string, unknown>)?.botInstanceId ?? "")}
+                  onChange={(e) => updateNodeConfig("botInstanceId", e.target.value)}
+                >
+                  <option value="">Select a bot...</option>
+                  {botInstances.filter((b) => b.isActive).map((b) => (
+                    <option key={b.id} value={b.id}>
+                      {b.name}{b.botUsername ? ` (@${b.botUsername})` : ""}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label className="text-xs font-medium text-muted-foreground">Action</label>
+                <select
+                  className="mt-1 w-full rounded-md border border-border bg-background px-2 py-1.5 text-sm"
+                  value={String((selectedNode.data.config as Record<string, unknown>)?.action ?? "")}
+                  onChange={(e) => updateNodeConfig("action", e.target.value)}
+                >
+                  <option value="">Select action...</option>
+                  <option value="sendMessage">Send Message</option>
+                  <option value="setCommands">Set Commands</option>
+                  <option value="sendBroadcast">Send Broadcast</option>
+                  <option value="moderateUser">Moderate User</option>
+                  <option value="crossPost">Cross Post</option>
+                </select>
+              </div>
+              <div>
+                <label className="text-xs font-medium text-muted-foreground">Parameters (JSON)</label>
+                <textarea
+                  className="mt-1 w-full rounded-md border border-border bg-background px-2 py-1.5 text-sm font-mono"
+                  rows={5}
+                  placeholder='{"chatId": "123", "text": "Hello"}'
+                  value={(() => {
+                    const params = (selectedNode.data.config as Record<string, unknown>)?.params;
+                    if (!params) return "";
+                    if (typeof params === "string") return params;
+                    return JSON.stringify(params, null, 2);
+                  })()}
+                  onChange={(e) => {
+                    const raw = e.target.value;
+                    try {
+                      const parsed = JSON.parse(raw);
+                      updateNodeConfig("params", parsed);
+                    } catch {
+                      updateNodeConfig("params", raw);
+                    }
+                  }}
+                />
+              </div>
+            </div>
+          </div>
+        )}
+        </div>
+
+        {/* Execution panel (bottom) */}
+        <ExecutionPanel executionState={executionState} nodes={nodes} />
       </div>
     </div>
   );

@@ -49,12 +49,20 @@ export function LiveModerationFeed({ className }: { className?: string }) {
         <button
           type="button"
           onClick={() => setPaused(!paused)}
+          aria-label={paused ? "Resume live feed" : "Pause live feed"}
           className="text-xs text-muted-foreground hover:text-foreground"
         >
           {paused ? "Resume" : "Pause"}
         </button>
       </div>
-      <div ref={scrollRef} className="max-h-80 overflow-y-auto">
+      <div
+        ref={scrollRef}
+        className="max-h-80 overflow-y-auto"
+        aria-live="polite"
+        aria-atomic="false"
+        aria-relevant="additions"
+        role="log"
+      >
         {events.length === 0 ? (
           <div className="px-4 py-8 text-center text-sm text-muted-foreground">
             No events yet. Waiting for activity...
@@ -64,7 +72,7 @@ export function LiveModerationFeed({ className }: { className?: string }) {
             const Icon = eventIcons[event.type] ?? Shield;
             return (
               <div key={i} className="flex items-start gap-3 border-b border-border px-4 py-2 last:border-0">
-                <Icon className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
+                <Icon className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" aria-hidden="true" />
                 <div className="min-w-0 flex-1">
                   <p className="text-sm">{event.type.replace(".", ": ")}</p>
                   <p className="text-xs text-muted-foreground">

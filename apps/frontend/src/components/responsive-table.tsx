@@ -125,6 +125,7 @@ export function ResponsiveTable<T>({
               {columns.map((col, idx) => (
                 <th
                   key={idx}
+                  scope="col"
                   className={cn(
                     "h-10 px-4 text-left align-middle font-medium text-muted-foreground [&:has([role=checkbox])]:pr-0 [&>[role=checkbox]]:translate-y-[2px]",
                     col.headerClassName,
@@ -140,9 +141,17 @@ export function ResponsiveTable<T>({
               <tr
                 key={keyExtractor(row)}
                 onClick={clickable ? () => onRowClick!(row) : undefined}
+                onKeyDown={clickable ? (e) => {
+                  if (e.key === "Enter" || e.key === " ") {
+                    e.preventDefault();
+                    onRowClick!(row);
+                  }
+                } : undefined}
+                tabIndex={clickable ? 0 : undefined}
+                role={clickable ? "button" : undefined}
                 className={cn(
                   "border-b transition-colors hover:bg-muted/50",
-                  clickable && "cursor-pointer",
+                  clickable && "cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
                 )}
               >
                 {columns.map((col, idx) => (
@@ -170,9 +179,17 @@ export function ResponsiveTable<T>({
           <div
             key={keyExtractor(row)}
             onClick={clickable ? () => onRowClick!(row) : undefined}
+            onKeyDown={clickable ? (e) => {
+              if (e.key === "Enter" || e.key === " ") {
+                e.preventDefault();
+                onRowClick!(row);
+              }
+            } : undefined}
+            tabIndex={clickable ? 0 : undefined}
+            role={clickable ? "button" : undefined}
             className={cn(
               "rounded-xl border bg-card p-4 shadow-sm transition-colors",
-              clickable && "cursor-pointer hover:bg-accent/50 active:bg-accent",
+              clickable && "cursor-pointer hover:bg-accent/50 active:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
             )}
           >
             <div className="space-y-2">

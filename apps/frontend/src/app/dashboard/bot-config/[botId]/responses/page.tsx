@@ -11,6 +11,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { ConfirmDialog } from "@/components/confirm-dialog";
+import { toast } from "sonner";
 import { ArrowLeft, Plus, Pencil, Trash2, X, Check, Eye } from "lucide-react";
 
 function renderTelegramMarkdown(text: string): string {
@@ -52,6 +53,7 @@ export default function ResponsesEditorPage() {
       setResponses(data);
     } catch (err) {
       console.error(err);
+      toast.error("Failed to load responses");
     } finally {
       setLoading(false);
     }
@@ -85,8 +87,10 @@ export default function ResponsesEditorPage() {
       setNewText("");
       setNewLocale(activeLocale);
       setShowAddForm(false);
+      toast.success("Response created");
     } catch (err) {
       console.error(err);
+      toast.error("Failed to create response");
     }
   };
 
@@ -101,8 +105,10 @@ export default function ResponsesEditorPage() {
       const updated = await api.updateBotResponse(botId, editingId, { text: editText });
       setResponses((prev) => prev.map((r) => (r.id === updated.id ? updated : r)));
       setEditingId(null);
+      toast.success("Response updated");
     } catch (err) {
       console.error(err);
+      toast.error("Failed to update response");
     }
   };
 
@@ -112,8 +118,10 @@ export default function ResponsesEditorPage() {
       await api.deleteBotResponse(botId, deleteTarget.id);
       setResponses((prev) => prev.filter((r) => r.id !== deleteTarget.id));
       setDeleteTarget(null);
+      toast.success("Response deleted");
     } catch (err) {
       console.error(err);
+      toast.error("Failed to delete response");
     }
   };
 

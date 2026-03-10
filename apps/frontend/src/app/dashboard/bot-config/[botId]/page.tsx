@@ -8,7 +8,8 @@ import type { BotInstance, BotConfigVersion } from "@/lib/api";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Save, Terminal, MessageSquare, LayoutGrid, Globe, Clock } from "lucide-react";
+import { Save, Clock, History } from "lucide-react";
+import { toast } from "sonner";
 
 export default function BotDetailPage() {
   const params = useParams();
@@ -38,8 +39,10 @@ export default function BotDetailPage() {
       if (bot) setBot({ ...bot, configVersion: result.version });
       const updatedVersions = await api.getBotConfigVersions(botId).catch(() => [] as BotConfigVersion[]);
       setVersions(updatedVersions);
+      toast.success(`Config published as v${result.version}`);
     } catch (err) {
       console.error(err);
+      toast.error("Failed to publish config");
     } finally {
       setPublishing(false);
     }
@@ -47,13 +50,6 @@ export default function BotDetailPage() {
 
   if (loading) return <div className="animate-pulse h-64 bg-muted rounded-xl" />;
   if (!bot) return <p>Bot not found</p>;
-
-  const subPages = [
-    { label: "Commands", href: `/dashboard/bot-config/${botId}/commands`, icon: Terminal, count: bot.commands?.length ?? bot._count?.commands ?? 0 },
-    { label: "Responses", href: `/dashboard/bot-config/${botId}/responses`, icon: MessageSquare, count: bot.responses?.length ?? bot._count?.responses ?? 0 },
-    { label: "Menus", href: `/dashboard/bot-config/${botId}/menus`, icon: LayoutGrid, count: bot.menus?.length ?? bot._count?.menus ?? 0 },
-    { label: "i18n Strings", href: `/dashboard/bot-config/${botId}/i18n`, icon: Globe, count: null },
-  ];
 
   return (
     <div className="space-y-6">
@@ -68,28 +64,9 @@ export default function BotDetailPage() {
         </Button>
       </div>
 
-      {/* Sub-page navigation */}
-      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-        {subPages.map((page) => (
-          <Link key={page.href} href={page.href}>
-            <Card className="hover:shadow-md transition-shadow cursor-pointer">
-              <CardContent className="flex items-center gap-3 py-4">
-                <page.icon className="h-5 w-5 text-muted-foreground" />
-                <div>
-                  <p className="text-sm font-medium">{page.label}</p>
-                  {page.count !== null && (
-                    <p className="text-xs text-muted-foreground">{page.count} items</p>
-                  )}
-                </div>
-              </CardContent>
-            </Card>
-          </Link>
-        ))}
-      </div>
-
       {/* Commands summary */}
       <Card>
-        <CardHeader><CardTitle>Commands</CardTitle></CardHeader>
+        <CardHeader><CardTitle>Commands ({bot.commands?.length ?? 0})</CardTitle></CardHeader>
         <CardContent>
           <div className="space-y-2">
             {bot.commands?.slice(0, 5).map((cmd) => (
@@ -129,6 +106,9 @@ export default function BotDetailPage() {
                 <p className="text-sm text-muted-foreground truncate max-w-xs">{resp.text}</p>
               </div>
             ))}
+            {(!bot.responses || bot.responses.length === 0) && (
+              <p className="py-4 text-center text-muted-foreground">No responses configured</p>
+            )}
             {bot.responses && bot.responses.length > 5 && (
               <Link href={`/dashboard/bot-config/${botId}/responses`} className="block text-center text-sm text-primary hover:underline py-2">
                 View all {bot.responses.length} responses
@@ -149,24 +129,35 @@ export default function BotDetailPage() {
                 <p className="text-xs text-muted-foreground">{menu.buttons.length} buttons</p>
               </div>
             ))}
+            {(!bot.menus || bot.menus.length === 0) && (
+              <p className="py-4 text-center text-muted-foreground">No menus configured</p>
+            )}
           </div>
         </CardContent>
       </Card>
 
-      {/* Version History */}
+      {/* Recent Version History (compact) */}
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Clock className="h-5 w-5" />
-            Version History
-          </CardTitle>
+          <div className="flex items-center justify-between">
+            <CardTitle className="flex items-center gap-2">
+              <Clock className="h-5 w-5" />
+              Recent Versions
+            </CardTitle>
+            <Link href={`/dashboard/bot-config/${botId}/versions`}>
+              <Button variant="outline" size="sm" className="gap-2">
+                <History className="h-4 w-4" />
+                View All
+              </Button>
+            </Link>
+          </div>
         </CardHeader>
         <CardContent>
           {versions.length === 0 ? (
             <p className="py-4 text-center text-muted-foreground">No versions published yet. Click &quot;Publish Config&quot; to create the first version.</p>
           ) : (
             <div className="space-y-2">
-              {versions.map((v) => (
+              {versions.slice(0, 3).map((v) => (
                 <div key={v.version} className="flex items-center justify-between rounded-lg border border-border p-3">
                   <div className="flex items-center gap-3">
                     <Badge variant={v.version === bot.configVersion ? "default" : "secondary"}>
@@ -177,7 +168,7 @@ export default function BotDetailPage() {
                     )}
                   </div>
                   <div className="text-sm text-muted-foreground">
-                    Published {new Date(v.publishedAt).toLocaleString()}
+                    {v.publishedAt ? `Published ${new Date(v.publishedAt).toLocaleString()}` : ""}
                     {v.publishedBy && <span className="ml-2">by {v.publishedBy}</span>}
                   </div>
                 </div>
