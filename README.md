@@ -4,6 +4,27 @@ Telegram e-commerce and group management platform. pnpm monorepo with 8 workspac
 
 ---
 
+## Screenshots
+
+### Login
+![Login](docs/screenshots/login.png)
+
+### Dashboard Overview
+![Dashboard Overview](docs/screenshots/dashboard-overview.png)
+
+### Users Management
+![Users](docs/screenshots/users.png)
+
+### Broadcast Composer
+![Broadcast](docs/screenshots/broadcast.png)
+
+### Moderation Logs
+![Moderation Logs](docs/screenshots/moderation-logs.png)
+
+> All screenshots are available in [`docs/screenshots/`](docs/screenshots/).
+
+---
+
 ## System Architecture
 
 ```mermaid
