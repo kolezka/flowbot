@@ -54,57 +54,6 @@ export class AutomationStatsDto {
   failed!: number;
 }
 
-export class OrderEventDto {
-  @ApiProperty()
-  id!: string;
-
-  @ApiProperty()
-  eventType!: string;
-
-  @ApiProperty()
-  orderData!: any;
-
-  @ApiProperty({ type: [String] })
-  targetChatIds!: string[];
-
-  @ApiProperty({ required: false })
-  jobId?: string;
-
-  @ApiProperty()
-  processed!: boolean;
-
-  @ApiProperty()
-  createdAt!: Date;
-}
-
-export class CreateOrderEventDto {
-  @ApiProperty({ description: 'Event type (e.g. order_placed, order_shipped)' })
-  eventType!: string;
-
-  @ApiProperty({ description: 'Order data JSON' })
-  orderData!: Record<string, unknown>;
-
-  @ApiProperty({ type: [String], description: 'Target chat IDs for notifications' })
-  targetChatIds!: string[];
-}
-
-export class OrderEventListResponseDto {
-  @ApiProperty({ type: [OrderEventDto] })
-  data!: OrderEventDto[];
-
-  @ApiProperty()
-  total!: number;
-
-  @ApiProperty()
-  page!: number;
-
-  @ApiProperty()
-  limit!: number;
-
-  @ApiProperty()
-  totalPages!: number;
-}
-
 export class ClientLogDto {
   @ApiProperty()
   id!: string;

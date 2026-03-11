@@ -54,7 +54,6 @@ export function createMockPrismaService(): MockPrismaService {
     reputationScore: createMockModel(),
     crossPostTemplate: createMockModel(),
     broadcastMessage: createMockModel(),
-    orderEvent: createMockModel(),
     clientLog: createMockModel(),
     clientSession: createMockModel(),
     botInstance: createMockModel(),

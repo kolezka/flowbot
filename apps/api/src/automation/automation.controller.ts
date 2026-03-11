@@ -1,8 +1,6 @@
 import {
   Controller,
   Get,
-  Post,
-  Body,
   Param,
   Query,
   ParseIntPipe,
@@ -22,9 +20,6 @@ import {
   AutomationJobListResponseDto,
   AutomationStatsDto,
   ClientLogListResponseDto,
-  CreateOrderEventDto,
-  OrderEventDto,
-  OrderEventListResponseDto,
 } from './dto';
 
 @ApiTags('automation')
@@ -105,35 +100,4 @@ export class AutomationController {
     return this.automationService.getLogs(page, limit, level);
   }
 
-  @Post('order-events')
-  @ApiOperation({ summary: 'Create an order event and trigger notification' })
-  @ApiResponse({
-    status: HttpStatus.CREATED,
-    description: 'Order event created and notification triggered',
-    type: OrderEventDto,
-  })
-  async createOrderEvent(
-    @Body() dto: CreateOrderEventDto,
-  ): Promise<OrderEventDto> {
-    return this.automationService.createOrderEvent(dto);
-  }
-
-  @Get('order-events')
-  @ApiOperation({ summary: 'Get paginated order events' })
-  @ApiResponse({
-    status: HttpStatus.OK,
-    description: 'Returns paginated list of order events',
-    type: OrderEventListResponseDto,
-  })
-  @ApiQuery({ name: 'page', required: false, type: Number })
-  @ApiQuery({ name: 'limit', required: false, type: Number })
-  @ApiQuery({ name: 'processed', required: false, type: Boolean })
-  async getOrderEvents(
-    @Query('page', new DefaultValuePipe(1), ParseIntPipe) page: number,
-    @Query('limit', new DefaultValuePipe(20), ParseIntPipe) limit: number,
-    @Query('processed') processed?: string,
-  ): Promise<OrderEventListResponseDto> {
-    const processedBool = processed !== undefined ? processed === 'true' : undefined;
-    return this.automationService.getOrderEvents(page, limit, processedBool);
-  }
 }

@@ -1,7 +1,7 @@
 import { createCallbackData } from 'callback-data'
 
 export const menuData = createCallbackData('menu', {
-  section: String, // 'products', 'cart', 'language', 'profile'
+  section: String, // 'language', 'profile'
 })
 
 export const profileData = createCallbackData('profile', {

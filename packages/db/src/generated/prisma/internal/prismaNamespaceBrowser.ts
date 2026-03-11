@@ -52,10 +52,6 @@ export const AnyNull = runtime.AnyNull
 
 export const ModelName = {
   User: 'User',
-  Category: 'Category',
-  Product: 'Product',
-  Cart: 'Cart',
-  CartItem: 'CartItem',
   UserIdentity: 'UserIdentity',
   ManagedGroup: 'ManagedGroup',
   GroupConfig: 'GroupConfig',
@@ -67,7 +63,6 @@ export const ModelName = {
   ReputationScore: 'ReputationScore',
   CrossPostTemplate: 'CrossPostTemplate',
   BroadcastMessage: 'BroadcastMessage',
-  OrderEvent: 'OrderEvent',
   ClientLog: 'ClientLog',
   ClientSession: 'ClientSession',
   FlowDefinition: 'FlowDefinition',
@@ -120,67 +115,6 @@ export const UserScalarFieldEnum = {
 } as const
 
 export type UserScalarFieldEnum = (typeof UserScalarFieldEnum)[keyof typeof UserScalarFieldEnum]
-
-
-export const CategoryScalarFieldEnum = {
-  id: 'id',
-  name: 'name',
-  slug: 'slug',
-  parentId: 'parentId',
-  order: 'order',
-  isActive: 'isActive',
-  createdAt: 'createdAt',
-  updatedAt: 'updatedAt'
-} as const
-
-export type CategoryScalarFieldEnum = (typeof CategoryScalarFieldEnum)[keyof typeof CategoryScalarFieldEnum]
-
-
-export const ProductScalarFieldEnum = {
-  id: 'id',
-  name: 'name',
-  description: 'description',
-  slug: 'slug',
-  price: 'price',
-  compareAtPrice: 'compareAtPrice',
-  categoryId: 'categoryId',
-  images: 'images',
-  thumbnail: 'thumbnail',
-  sku: 'sku',
-  stock: 'stock',
-  isActive: 'isActive',
-  isFeatured: 'isFeatured',
-  createdAt: 'createdAt',
-  updatedAt: 'updatedAt'
-} as const
-
-export type ProductScalarFieldEnum = (typeof ProductScalarFieldEnum)[keyof typeof ProductScalarFieldEnum]
-
-
-export const CartScalarFieldEnum = {
-  id: 'id',
-  userId: 'userId',
-  totalItems: 'totalItems',
-  totalAmount: 'totalAmount',
-  updatedAt: 'updatedAt'
-} as const
-
-export type CartScalarFieldEnum = (typeof CartScalarFieldEnum)[keyof typeof CartScalarFieldEnum]
-
-
-export const CartItemScalarFieldEnum = {
-  id: 'id',
-  cartId: 'cartId',
-  productId: 'productId',
-  quantity: 'quantity',
-  productName: 'productName',
-  productPrice: 'productPrice',
-  productImage: 'productImage',
-  createdAt: 'createdAt',
-  updatedAt: 'updatedAt'
-} as const
-
-export type CartItemScalarFieldEnum = (typeof CartItemScalarFieldEnum)[keyof typeof CartItemScalarFieldEnum]
 
 
 export const UserIdentityScalarFieldEnum = {
@@ -371,19 +305,6 @@ export const BroadcastMessageScalarFieldEnum = {
 } as const
 
 export type BroadcastMessageScalarFieldEnum = (typeof BroadcastMessageScalarFieldEnum)[keyof typeof BroadcastMessageScalarFieldEnum]
-
-
-export const OrderEventScalarFieldEnum = {
-  id: 'id',
-  eventType: 'eventType',
-  orderData: 'orderData',
-  targetChatIds: 'targetChatIds',
-  jobId: 'jobId',
-  processed: 'processed',
-  createdAt: 'createdAt'
-} as const
-
-export type OrderEventScalarFieldEnum = (typeof OrderEventScalarFieldEnum)[keyof typeof OrderEventScalarFieldEnum]
 
 
 export const ClientLogScalarFieldEnum = {

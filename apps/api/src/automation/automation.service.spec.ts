@@ -3,12 +3,6 @@ import { NotFoundException } from '@nestjs/common';
 import { AutomationService } from './automation.service';
 import { PrismaService } from '../prisma/prisma.service';
 
-jest.mock('@trigger.dev/sdk/v3', () => ({
-  tasks: { trigger: jest.fn() },
-}));
-
-import { tasks } from '@trigger.dev/sdk/v3';
-
 function createMockModel() {
   return {
     findMany: jest.fn(),
@@ -46,21 +40,10 @@ describe('AutomationService', () => {
     createdAt: new Date('2026-03-01'),
   };
 
-  const mockOrderEvent = {
-    id: 'event-1',
-    eventType: 'order_created',
-    orderData: { orderId: 'ORD-001', amount: 99.99 },
-    targetChatIds: [BigInt(333), BigInt(444)],
-    jobId: null,
-    processed: false,
-    createdAt: new Date('2026-03-01'),
-  };
-
   beforeEach(async () => {
     prisma = {
       broadcastMessage: createMockModel(),
       clientLog: createMockModel(),
-      orderEvent: createMockModel(),
       clientSession: createMockModel(),
     };
 
@@ -171,71 +154,6 @@ describe('AutomationService', () => {
       expect(prisma.clientLog.findMany).toHaveBeenCalledWith(
         expect.objectContaining({
           where: { level: 'error' },
-        }),
-      );
-    });
-  });
-
-  describe('createOrderEvent', () => {
-    it('should create an order event and trigger task', async () => {
-      prisma.orderEvent.create.mockResolvedValue(mockOrderEvent);
-      (tasks.trigger as jest.Mock).mockResolvedValue({});
-
-      const result = await service.createOrderEvent({
-        eventType: 'order_created',
-        orderData: { orderId: 'ORD-001', amount: 99.99 },
-        targetChatIds: ['333', '444'],
-      });
-
-      expect(result.id).toBe('event-1');
-      expect(result.eventType).toBe('order_created');
-      expect(result.targetChatIds).toEqual(['333', '444']);
-      expect(prisma.orderEvent.create).toHaveBeenCalledWith({
-        data: expect.objectContaining({
-          eventType: 'order_created',
-          targetChatIds: [BigInt(333), BigInt(444)],
-          processed: false,
-        }),
-      });
-      expect(tasks.trigger).toHaveBeenCalledWith('order-notification', {
-        orderEventId: 'event-1',
-      });
-    });
-
-    it('should not throw if trigger task fails', async () => {
-      prisma.orderEvent.create.mockResolvedValue(mockOrderEvent);
-      (tasks.trigger as jest.Mock).mockRejectedValue(new Error('Trigger failed'));
-
-      const result = await service.createOrderEvent({
-        eventType: 'order_created',
-        orderData: { orderId: 'ORD-001', amount: 99.99 },
-        targetChatIds: ['333', '444'],
-      });
-
-      expect(result.id).toBe('event-1');
-    });
-  });
-
-  describe('getOrderEvents', () => {
-    it('should return paginated order events', async () => {
-      prisma.orderEvent.findMany.mockResolvedValue([mockOrderEvent]);
-      prisma.orderEvent.count.mockResolvedValue(1);
-
-      const result = await service.getOrderEvents(1, 20);
-
-      expect(result.data).toHaveLength(1);
-      expect(result.data[0].eventType).toBe('order_created');
-    });
-
-    it('should filter by processed status', async () => {
-      prisma.orderEvent.findMany.mockResolvedValue([]);
-      prisma.orderEvent.count.mockResolvedValue(0);
-
-      await service.getOrderEvents(1, 20, false);
-
-      expect(prisma.orderEvent.findMany).toHaveBeenCalledWith(
-        expect.objectContaining({
-          where: { processed: false },
         }),
       );
     });

@@ -10,12 +10,8 @@ import {
   ChevronDown,
   Menu,
   Shield,
-  ShoppingBag,
   Smartphone,
   Users,
-  Package,
-  FolderTree,
-  ShoppingCart,
   BarChart3,
   FileText,
   Radio,
@@ -69,14 +65,9 @@ const navigation: NavSection[] = [
     href: "/dashboard",
   },
   {
-    label: "E-commerce",
-    icon: ShoppingBag,
-    children: [
-      { label: "Users", href: "/dashboard/users", icon: Users },
-      { label: "Products", href: "/dashboard/products", icon: Package },
-      { label: "Categories", href: "/dashboard/categories", icon: FolderTree },
-      { label: "Carts", href: "/dashboard/carts", icon: ShoppingCart },
-    ],
+    label: "Users",
+    icon: Users,
+    href: "/dashboard/users",
   },
   {
     label: "Moderation",
@@ -116,7 +107,6 @@ const navigation: NavSection[] = [
       { label: "Health", href: "/dashboard/automation/health", icon: Activity },
       { label: "Jobs", href: "/dashboard/automation/jobs", icon: Activity },
       { label: "Cross-post", href: "/dashboard/automation/crosspost-templates", icon: Copy },
-      { label: "Order Events", href: "/dashboard/automation/order-events", icon: Package },
     ],
   },
   {

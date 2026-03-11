@@ -4,12 +4,6 @@ import { InlineKeyboard } from 'grammy'
 export function createMainMenuKeyboard() {
   return InlineKeyboard.from([
     [
-      { text: '🛍️ Products', callback_data: menuData.pack({ section: 'products' }) },
-    ],
-    [
-      { text: '🛒 Cart', callback_data: menuData.pack({ section: 'cart' }) },
-    ],
-    [
       { text: '🌐 Language', callback_data: menuData.pack({ section: 'language' }) },
     ],
     [

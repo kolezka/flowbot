@@ -1,5 +1,4 @@
 import { Injectable, NotFoundException, Logger } from '@nestjs/common';
-import { tasks } from '@trigger.dev/sdk/v3';
 import { PrismaService } from '../prisma/prisma.service';
 import {
   AutomationJobDto,
@@ -7,9 +6,6 @@ import {
   AutomationStatsDto,
   ClientLogDto,
   ClientLogListResponseDto,
-  CreateOrderEventDto,
-  OrderEventDto,
-  OrderEventListResponseDto,
 } from './dto';
 
 @Injectable()
@@ -126,55 +122,6 @@ export class AutomationService {
     };
   }
 
-  async createOrderEvent(dto: CreateOrderEventDto): Promise<OrderEventDto> {
-    const event = await this.prisma.orderEvent.create({
-      data: {
-        eventType: dto.eventType,
-        orderData: dto.orderData as any,
-        targetChatIds: dto.targetChatIds.map(id => BigInt(id)),
-        processed: false,
-      },
-    });
-
-    this.logger.log(`OrderEvent created: ${event.id}`);
-
-    try {
-      await tasks.trigger('order-notification', { orderEventId: event.id });
-      this.logger.log(`Order notification task triggered: ${event.id}`);
-    } catch (error) {
-      this.logger.warn(`Failed to trigger order notification task: ${error}`);
-    }
-
-    return this.mapOrderEventToDto(event);
-  }
-
-  async getOrderEvents(
-    page: number = 1,
-    limit: number = 20,
-    processed?: boolean,
-  ): Promise<OrderEventListResponseDto> {
-    const skip = (page - 1) * limit;
-    const where = processed !== undefined ? { processed } : {};
-
-    const [events, total] = await Promise.all([
-      this.prisma.orderEvent.findMany({
-        where,
-        skip,
-        take: limit,
-        orderBy: { createdAt: 'desc' },
-      }),
-      this.prisma.orderEvent.count({ where }),
-    ]);
-
-    return {
-      data: events.map(this.mapOrderEventToDto),
-      total,
-      page,
-      limit,
-      totalPages: Math.ceil(total / limit),
-    };
-  }
-
   private async fetchTgClientHealth(): Promise<any> {
     const url = process.env.TG_CLIENT_HEALTH_URL || 'http://localhost:3002/health';
     try {
@@ -230,15 +177,4 @@ export class AutomationService {
     };
   }
 
-  private mapOrderEventToDto(event: any): OrderEventDto {
-    return {
-      id: event.id,
-      eventType: event.eventType,
-      orderData: event.orderData,
-      targetChatIds: event.targetChatIds.map((id: bigint) => id.toString()),
-      jobId: event.jobId ?? undefined,
-      processed: event.processed,
-      createdAt: event.createdAt,
-    };
-  }
 }

@@ -6,7 +6,6 @@ export enum ActionType {
   SEND_WELCOME_DM = 'SEND_WELCOME_DM',
   CROSS_POST = 'CROSS_POST',
   BROADCAST = 'BROADCAST',
-  SEND_ORDER_NOTIFICATION = 'SEND_ORDER_NOTIFICATION',
 }
 
 export interface SendMessagePayload {
@@ -45,14 +44,7 @@ export interface BroadcastPayload {
   delayMs?: number
 }
 
-export interface SendOrderNotificationPayload {
-  eventType: string
-  orderData: Record<string, unknown>
-  targetChatIds: string[]
-  parseMode?: string
-}
-
-export type ActionPayload = SendMessagePayload | ForwardMessagePayload | SendWelcomeDmPayload | CrossPostPayload | BroadcastPayload | SendOrderNotificationPayload
+export type ActionPayload = SendMessagePayload | ForwardMessagePayload | SendWelcomeDmPayload | CrossPostPayload | BroadcastPayload
 
 export interface Action {
   type: ActionType
@@ -96,13 +88,6 @@ export const BroadcastPayloadSchema = v.object({
   delayMs: v.optional(v.number()),
 })
 
-export const SendOrderNotificationPayloadSchema = v.object({
-  eventType: v.string(),
-  orderData: v.record(v.string(), v.unknown()),
-  targetChatIds: v.array(v.string()),
-  parseMode: v.optional(v.string()),
-})
-
 export const ActionSchema = v.variant('type', [
   v.object({
     type: v.literal(ActionType.SEND_MESSAGE),
@@ -127,11 +112,6 @@ export const ActionSchema = v.variant('type', [
   v.object({
     type: v.literal(ActionType.BROADCAST),
     payload: BroadcastPayloadSchema,
-    idempotencyKey: v.optional(v.string()),
-  }),
-  v.object({
-    type: v.literal(ActionType.SEND_ORDER_NOTIFICATION),
-    payload: SendOrderNotificationPayloadSchema,
     idempotencyKey: v.optional(v.string()),
   }),
 ])

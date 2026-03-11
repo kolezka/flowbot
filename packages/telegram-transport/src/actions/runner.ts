@@ -1,6 +1,6 @@
 import type { Logger } from '../logger.js'
 import type { ITelegramTransport } from '../transport/ITelegramTransport.js'
-import type { Action, BroadcastPayload, CrossPostPayload, ForwardMessagePayload, SendMessagePayload, SendOrderNotificationPayload, SendWelcomeDmPayload } from './types.js'
+import type { Action, BroadcastPayload, CrossPostPayload, ForwardMessagePayload, SendMessagePayload, SendWelcomeDmPayload } from './types.js'
 
 import { FloodWaitError } from 'telegram/errors'
 
@@ -9,7 +9,6 @@ import { classifyError, ErrorCategory } from '../errors/classifier.js'
 import { executeBroadcast } from './executors/broadcast.js'
 import { executeCrossPost } from './executors/cross-post.js'
 import { executeForwardMessage } from './executors/forward-message.js'
-import { executeOrderNotification } from './executors/order-notification.js'
 import { executeSendMessage } from './executors/send-message.js'
 import { executeSendWelcomeDm } from './executors/send-welcome-dm.js'
 import { ActionType } from './types.js'
@@ -180,12 +179,6 @@ export class ActionRunner {
         return executeBroadcast(
           this.transport,
           action.payload as BroadcastPayload,
-          this.logger,
-        )
-      case ActionType.SEND_ORDER_NOTIFICATION:
-        return executeOrderNotification(
-          this.transport,
-          action.payload as SendOrderNotificationPayload,
           this.logger,
         )
       default:

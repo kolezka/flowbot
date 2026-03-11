@@ -9,10 +9,6 @@
  * 🟢 You can import this file directly.
  */
 export type * from './models/User'
-export type * from './models/Category'
-export type * from './models/Product'
-export type * from './models/Cart'
-export type * from './models/CartItem'
 export type * from './models/UserIdentity'
 export type * from './models/ManagedGroup'
 export type * from './models/GroupConfig'
@@ -24,7 +20,6 @@ export type * from './models/GroupAnalyticsSnapshot'
 export type * from './models/ReputationScore'
 export type * from './models/CrossPostTemplate'
 export type * from './models/BroadcastMessage'
-export type * from './models/OrderEvent'
 export type * from './models/ClientLog'
 export type * from './models/ClientSession'
 export type * from './models/FlowDefinition'

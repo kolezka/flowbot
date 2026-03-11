@@ -21,7 +21,6 @@ export type {
   ForwardMessagePayload,
   BroadcastPayload,
   CrossPostPayload,
-  SendOrderNotificationPayload,
   SendWelcomeDmPayload,
 } from './actions/types.js'
 export { ActionRunner } from './actions/runner.js'
@@ -31,6 +30,5 @@ export type { ActionResult } from './actions/runner.js'
 export { executeBroadcast } from './actions/executors/broadcast.js'
 export { executeCrossPost } from './actions/executors/cross-post.js'
 export { executeForwardMessage } from './actions/executors/forward-message.js'
-export { executeOrderNotification } from './actions/executors/order-notification.js'
 export { executeSendMessage } from './actions/executors/send-message.js'
 export { executeSendWelcomeDm } from './actions/executors/send-welcome-dm.js'

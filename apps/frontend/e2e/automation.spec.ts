@@ -37,9 +37,4 @@ test.describe('Automation', () => {
     }
   });
 
-  test('order events page loads', async ({ page }) => {
-    const response = await page.goto('/dashboard/automation/order-events');
-    expect(response?.status()).toBeLessThan(400);
-    await page.waitForLoadState('networkidle');
-  });
 });

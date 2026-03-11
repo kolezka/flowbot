@@ -45,26 +45,6 @@ export { Prisma }
  */
 export type User = Prisma.UserModel
 /**
- * Model Category
- * 
- */
-export type Category = Prisma.CategoryModel
-/**
- * Model Product
- * 
- */
-export type Product = Prisma.ProductModel
-/**
- * Model Cart
- * 
- */
-export type Cart = Prisma.CartModel
-/**
- * Model CartItem
- * 
- */
-export type CartItem = Prisma.CartItemModel
-/**
  * Model UserIdentity
  * 
  */
@@ -119,11 +99,6 @@ export type CrossPostTemplate = Prisma.CrossPostTemplateModel
  * 
  */
 export type BroadcastMessage = Prisma.BroadcastMessageModel
-/**
- * Model OrderEvent
- * 
- */
-export type OrderEvent = Prisma.OrderEventModel
 /**
  * Model ClientLog
  * 

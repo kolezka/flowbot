@@ -39,8 +39,6 @@ test.describe('Dashboard home', () => {
 test.describe('Page navigation smoke tests', () => {
   const pages = [
     { path: '/dashboard/users', text: /users/i },
-    { path: '/dashboard/products', text: /products/i },
-    { path: '/dashboard/categories', text: /categories/i },
     { path: '/dashboard/broadcast', text: /broadcast/i },
     { path: '/dashboard/moderation', text: /moderation/i },
     { path: '/dashboard/flows', text: /flows/i },

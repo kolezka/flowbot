@@ -100,59 +100,6 @@ test.describe('Integration Smoke Test', () => {
     }
   });
 
-  test('product lifecycle: create → list → search → delete', async ({ page, api }) => {
-    const timestamp = Date.now();
-    const catName = `Smoke Cat ${timestamp}`;
-    const prodName = `Smoke Product ${timestamp}`;
-
-    // 1. Create a category via API
-    const cat = await api.post<{ id: string }>('/api/categories', {
-      name: catName,
-      slug: `smoke-cat-${timestamp}`,
-      isActive: true,
-    });
-
-    // 2. Create a product via API
-    const product = await api.post<{ id: string }>('/api/products', {
-      name: prodName,
-      slug: `smoke-product-${timestamp}`,
-      price: 19.99,
-      categoryId: cat.id,
-      stock: 10,
-      isActive: true,
-    });
-
-    // 3. Navigate to products page
-    await page.goto('/dashboard/products');
-    await page.waitForLoadState('networkidle');
-
-    // 4. Verify product appears
-    await expect(page.getByText(prodName).first()).toBeVisible({ timeout: 10_000 });
-
-    // 5. Search for the product
-    const searchInput = page.getByPlaceholder('Search by name...');
-    await searchInput.fill(prodName);
-    await page.waitForTimeout(1000); // debounce
-    await page.waitForLoadState('networkidle');
-    await expect(page.getByText(prodName).first()).toBeVisible({ timeout: 5_000 });
-
-    // 6. Delete product via UI
-    page.once('dialog', (dialog) => dialog.accept());
-    const deleteBtn = page.locator('tr').filter({ hasText: prodName }).locator('button').last();
-    await deleteBtn.click();
-    await page.waitForLoadState('networkidle');
-
-    // 7. Verify product is gone after search reset
-    await searchInput.clear();
-    await page.waitForTimeout(1000);
-    await page.waitForLoadState('networkidle');
-    const stillVisible = await page.getByText(prodName).first().isVisible().catch(() => false);
-    expect(stillVisible).toBeFalsy();
-
-    // 8. Cleanup category via API
-    await api.delete(`/api/categories/${cat.id}`);
-  });
-
   test('moderation pages load correctly', async ({ page }) => {
     const pages = [
       '/dashboard/moderation',
@@ -228,8 +175,6 @@ test.describe('Integration Smoke Test', () => {
     const dashboardPages = [
       { url: '/dashboard', text: 'Dashboard' },
       { url: '/dashboard/users', text: 'Users' },
-      { url: '/dashboard/categories', text: 'Categories' },
-      { url: '/dashboard/products', text: 'Products' },
       { url: '/dashboard/flows', text: 'Flows' },
       { url: '/dashboard/broadcast', text: 'Broadcast' },
       { url: '/dashboard/webhooks', text: 'Webhooks' },

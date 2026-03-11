@@ -7,7 +7,6 @@ import { adminFeature } from './features/admin'
 import { languageFeature } from './features/language'
 import { menuFeature } from './features/menu'
 import { profileFeature } from './features/profile'
-import { productsFeature } from './features/products'
 import { unhandledFeature } from './features/unhandled'
 import { welcomeFeature } from './features/welcome'
 import { errorHandler } from './handlers/error'
@@ -91,7 +90,6 @@ export function createBot(token: string, dependencies: Dependencies, botConfig?:
   protectedBot.use(welcomeFeature)
   protectedBot.use(menuFeature)
   protectedBot.use(profileFeature)
-  protectedBot.use(productsFeature)
   protectedBot.use(adminFeature)
 
   if (isMultipleLocales)
