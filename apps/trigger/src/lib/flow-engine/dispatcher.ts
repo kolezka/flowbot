@@ -31,13 +31,14 @@ const BOT_API_ACTIONS = new Set(['bot_action']);
  */
 export async function dispatchActions(
   ctx: FlowContext,
-  transportConfig?: { transport?: string; botInstanceId?: string },
+  transportConfig?: { transport?: string; botInstanceId?: string; platform?: string; discordBotInstanceId?: string },
 ): Promise<DispatchResult[]> {
   const results: DispatchResult[] = [];
   let transport: GramJsTransport | null = null;
 
   const mode = transportConfig?.transport ?? 'mtproto';
   const botInstanceId = transportConfig?.botInstanceId;
+  const discordBotInstanceId = transportConfig?.discordBotInstanceId;
   const useBot = mode === 'bot_api' && !!botInstanceId;
   const useAuto = mode === 'auto' && !!botInstanceId;
 
@@ -51,13 +52,24 @@ export async function dispatchActions(
     // Skip internal actions
     if (INTERNAL_ACTIONS.has(action)) continue;
 
-    // Bot action → already executed via HTTP in actions.ts
+    // Bot action -> already executed via HTTP in actions.ts
     if (BOT_API_ACTIONS.has(action)) continue;
 
     try {
       let response: unknown;
 
-      if (useBot) {
+      // Determine platform from action name prefix
+      const platform = action.startsWith('discord_') ? 'discord' : 'telegram';
+
+      if (platform === 'discord') {
+        // Discord actions are dispatched via Discord bot API
+        const effectiveBotId = discordBotInstanceId ?? botInstanceId;
+        if (effectiveBotId) {
+          response = await dispatchViaDiscordBotApi(action, output, effectiveBotId);
+        } else {
+          throw new Error(`Discord action '${action}' requires a discordBotInstanceId in transportConfig`);
+        }
+      } else if (useBot) {
         // Forced bot_api mode
         response = await dispatchViaBotApi(action, output, botInstanceId!);
       } else if (useAuto) {
@@ -302,4 +314,44 @@ function mapParseMode(mode: unknown): 'html' | 'markdown' | undefined {
   if (str === 'html') return 'html';
   if (str === 'markdownv2' || str === 'markdown') return 'markdown';
   return undefined;
+}
+
+// ---------------------------------------------------------------------------
+// Discord dispatch
+// ---------------------------------------------------------------------------
+
+/**
+ * Dispatch a Discord action via the Discord bot's HTTP API.
+ * The Discord bot instance exposes /api/execute-action just like Telegram bot instances.
+ */
+async function dispatchViaDiscordBotApi(
+  action: string,
+  params: Record<string, unknown>,
+  botInstanceId: string,
+): Promise<unknown> {
+  const { getPrisma } = await import('../prisma.js');
+  const prisma = getPrisma();
+
+  const botInstance = await prisma.botInstance.findUnique({
+    where: { id: botInstanceId },
+    select: { apiUrl: true, isActive: true },
+  });
+
+  if (!botInstance?.apiUrl || !botInstance.isActive) {
+    throw new Error(`Discord bot instance ${botInstanceId} not available`);
+  }
+
+  const response = await fetch(`${botInstance.apiUrl}/api/execute-action`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ action, params }),
+    signal: AbortSignal.timeout(15_000),
+  });
+
+  if (!response.ok) {
+    const text = await response.text().catch(() => '');
+    throw new Error(`Discord bot API returned ${response.status}: ${text}`);
+  }
+
+  return response.json();
 }

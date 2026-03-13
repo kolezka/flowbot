@@ -93,6 +93,48 @@ const NODE_TYPES_CONFIG = [
   { type: "loop", label: "Loop", category: "advanced", color: "#a855f7" },
   { type: "switch", label: "Switch/Router", category: "advanced", color: "#a855f7" },
   { type: "transform", label: "Transform", category: "advanced", color: "#a855f7" },
+  // Discord Triggers
+  { type: "discord_message_received", label: "Discord Message", category: "trigger", color: "#5865F2" },
+  { type: "discord_member_join", label: "Discord Member Join", category: "trigger", color: "#5865F2" },
+  { type: "discord_member_leave", label: "Discord Member Leave", category: "trigger", color: "#5865F2" },
+  { type: "discord_reaction_add", label: "Discord Reaction Add", category: "trigger", color: "#5865F2" },
+  { type: "discord_reaction_remove", label: "Discord Reaction Remove", category: "trigger", color: "#5865F2" },
+  { type: "discord_voice_state_update", label: "Discord Voice Update", category: "trigger", color: "#5865F2" },
+  { type: "discord_interaction_create", label: "Discord Interaction", category: "trigger", color: "#5865F2" },
+  { type: "discord_channel_create", label: "Discord Channel Create", category: "trigger", color: "#5865F2" },
+  { type: "discord_channel_delete", label: "Discord Channel Delete", category: "trigger", color: "#5865F2" },
+  { type: "discord_role_update", label: "Discord Role Update", category: "trigger", color: "#5865F2" },
+  { type: "discord_scheduled_event", label: "Discord Scheduled Event", category: "trigger", color: "#5865F2" },
+  // Discord Conditions
+  { type: "discord_has_role", label: "Discord Has Role", category: "condition", color: "#57F287" },
+  { type: "discord_channel_type", label: "Discord Channel Type", category: "condition", color: "#57F287" },
+  { type: "discord_is_bot", label: "Discord Is Bot", category: "condition", color: "#57F287" },
+  { type: "discord_message_has_embed", label: "Discord Has Embed", category: "condition", color: "#57F287" },
+  { type: "discord_member_permissions", label: "Discord Permissions", category: "condition", color: "#57F287" },
+  // Discord Actions
+  { type: "discord_send_message", label: "Discord Send Message", category: "action", color: "#5865F2" },
+  { type: "discord_send_embed", label: "Discord Send Embed", category: "action", color: "#5865F2" },
+  { type: "discord_send_dm", label: "Discord Send DM", category: "action", color: "#5865F2" },
+  { type: "discord_edit_message", label: "Discord Edit Message", category: "action", color: "#5865F2" },
+  { type: "discord_delete_message", label: "Discord Delete Message", category: "action", color: "#5865F2" },
+  { type: "discord_add_reaction", label: "Discord Add Reaction", category: "action", color: "#5865F2" },
+  { type: "discord_remove_reaction", label: "Discord Remove Reaction", category: "action", color: "#5865F2" },
+  { type: "discord_pin_message", label: "Discord Pin Message", category: "action", color: "#5865F2" },
+  { type: "discord_unpin_message", label: "Discord Unpin Message", category: "action", color: "#5865F2" },
+  { type: "discord_ban_member", label: "Discord Ban Member", category: "action", color: "#5865F2" },
+  { type: "discord_kick_member", label: "Discord Kick Member", category: "action", color: "#5865F2" },
+  { type: "discord_timeout_member", label: "Discord Timeout Member", category: "action", color: "#5865F2" },
+  { type: "discord_add_role", label: "Discord Add Role", category: "action", color: "#5865F2" },
+  { type: "discord_remove_role", label: "Discord Remove Role", category: "action", color: "#5865F2" },
+  { type: "discord_create_role", label: "Discord Create Role", category: "action", color: "#5865F2" },
+  { type: "discord_set_nickname", label: "Discord Set Nickname", category: "action", color: "#5865F2" },
+  { type: "discord_create_channel", label: "Discord Create Channel", category: "action", color: "#5865F2" },
+  { type: "discord_delete_channel", label: "Discord Delete Channel", category: "action", color: "#5865F2" },
+  { type: "discord_move_member", label: "Discord Move to Voice", category: "action", color: "#5865F2" },
+  { type: "discord_create_thread", label: "Discord Create Thread", category: "action", color: "#5865F2" },
+  { type: "discord_send_thread_message", label: "Discord Thread Message", category: "action", color: "#5865F2" },
+  { type: "discord_create_invite", label: "Discord Create Invite", category: "action", color: "#5865F2" },
+  { type: "discord_create_scheduled_event", label: "Discord Schedule Event", category: "action", color: "#5865F2" },
 ];
 
 /** Node types that have a dedicated property panel. */
@@ -103,37 +145,80 @@ const CONFIGURABLE_ACTIONS = new Set([
   "send_video", "send_document", "send_sticker", "send_location",
   "send_voice", "send_contact", "set_chat_title", "set_chat_description",
   "export_invite_link", "get_chat_member",
+  // Discord actions
+  "discord_send_message", "discord_send_embed", "discord_send_dm", "discord_edit_message",
+  "discord_delete_message", "discord_add_reaction", "discord_remove_reaction",
+  "discord_pin_message", "discord_unpin_message", "discord_ban_member", "discord_kick_member",
+  "discord_timeout_member", "discord_add_role", "discord_remove_role", "discord_create_role",
+  "discord_set_nickname", "discord_create_channel", "discord_delete_channel",
+  "discord_move_member", "discord_create_thread", "discord_send_thread_message",
+  "discord_create_invite", "discord_create_scheduled_event",
 ]);
 
+const GENERAL_NODE_TYPES = new Set(["schedule", "webhook", "api_call", "delay", "time_based"]);
+
+type PlatformFilter = "all" | "telegram" | "discord" | "general";
+
+function getNodePlatform(nodeType: string): "telegram" | "discord" | "general" {
+  if (nodeType.startsWith("discord_")) return "discord";
+  if (GENERAL_NODE_TYPES.has(nodeType)) return "general";
+  return "telegram";
+}
+
 function NodePalette({ onDragStart }: { onDragStart: (type: string, label: string, category: string) => void }) {
+  const [platformFilter, setPlatformFilter] = useState<PlatformFilter>("all");
   const categories = ["trigger", "condition", "action", "advanced"];
+
+  const filteredNodes = NODE_TYPES_CONFIG.filter((n) => {
+    if (platformFilter === "all") return true;
+    return getNodePlatform(n.type) === platformFilter;
+  });
 
   return (
     <div className="w-56 border-r border-border bg-card p-3 overflow-y-auto">
-      <h3 className="mb-3 text-sm font-semibold">Node Palette</h3>
-      {categories.map((cat) => (
-        <div key={cat} className="mb-4">
-          <h4 className="mb-1 text-xs font-medium uppercase text-muted-foreground">{cat}s</h4>
-          <div className="space-y-1">
-            {NODE_TYPES_CONFIG.filter((n) => n.category === cat).map((node) => (
-              <div
-                key={node.type}
-                draggable
-                onDragStart={(e) => {
-                  e.dataTransfer.setData("application/reactflow-type", node.type);
-                  e.dataTransfer.setData("application/reactflow-label", node.label);
-                  e.dataTransfer.setData("application/reactflow-category", node.category);
-                  onDragStart(node.type, node.label, node.category);
-                }}
-                className="cursor-grab rounded-md border border-border px-2 py-1.5 text-xs hover:bg-accent transition-colors"
-                style={{ borderLeftColor: node.color, borderLeftWidth: 3 }}
-              >
-                {node.label}
-              </div>
-            ))}
+      <h3 className="mb-2 text-sm font-semibold">Node Palette</h3>
+      <div className="mb-3 flex gap-1 flex-wrap">
+        {(["all", "telegram", "discord", "general"] as PlatformFilter[]).map((p) => (
+          <button
+            key={p}
+            onClick={() => setPlatformFilter(p)}
+            className={`rounded-md px-2 py-0.5 text-[10px] font-medium transition-colors ${
+              platformFilter === p
+                ? p === "discord" ? "bg-[#5865F2] text-white" : p === "telegram" ? "bg-[#0088cc] text-white" : "bg-primary text-primary-foreground"
+                : "bg-muted text-muted-foreground hover:bg-accent"
+            }`}
+          >
+            {p.charAt(0).toUpperCase() + p.slice(1)}
+          </button>
+        ))}
+      </div>
+      {categories.map((cat) => {
+        const catNodes = filteredNodes.filter((n) => n.category === cat);
+        if (catNodes.length === 0) return null;
+        return (
+          <div key={cat} className="mb-4">
+            <h4 className="mb-1 text-xs font-medium uppercase text-muted-foreground">{cat}s</h4>
+            <div className="space-y-1">
+              {catNodes.map((node) => (
+                <div
+                  key={node.type}
+                  draggable
+                  onDragStart={(e) => {
+                    e.dataTransfer.setData("application/reactflow-type", node.type);
+                    e.dataTransfer.setData("application/reactflow-label", node.label);
+                    e.dataTransfer.setData("application/reactflow-category", node.category);
+                    onDragStart(node.type, node.label, node.category);
+                  }}
+                  className="cursor-grab rounded-md border border-border px-2 py-1.5 text-xs hover:bg-accent transition-colors"
+                  style={{ borderLeftColor: node.color, borderLeftWidth: 3 }}
+                >
+                  {node.label}
+                </div>
+              ))}
+            </div>
           </div>
-        </div>
-      ))}
+        );
+      })}
     </div>
   );
 }
@@ -780,6 +865,327 @@ function ConditionPropertyPanel({
   }
 }
 
+// ---------------------------------------------------------------------------
+// Discord Action property panel
+// ---------------------------------------------------------------------------
+
+function DiscordActionPropertyPanel({
+  node,
+  updateConfig,
+}: {
+  node: Node;
+  updateConfig: (key: string, value: unknown) => void;
+}) {
+  const nodeType = String(node.data.nodeType ?? "");
+  const config = (node.data.config as Record<string, unknown>) ?? {};
+  const cfg = (key: string, fallback: unknown = "") => config[key] ?? fallback;
+
+  switch (nodeType) {
+    case "discord_send_message":
+      return (
+        <div className="space-y-3">
+          <TextInput label="Channel ID" value={String(cfg("channelId"))} onChange={(v) => updateConfig("channelId", v)} placeholder="{{trigger.channelId}}" />
+          <TextareaInput label="Content" value={String(cfg("content"))} onChange={(v) => updateConfig("content", v)} placeholder="Hello from the bot!" rows={4} />
+        </div>
+      );
+
+    case "discord_send_embed":
+      return (
+        <div className="space-y-3">
+          <TextInput label="Channel ID" value={String(cfg("channelId"))} onChange={(v) => updateConfig("channelId", v)} placeholder="{{trigger.channelId}}" />
+          <TextInput label="Title" value={String(cfg("title"))} onChange={(v) => updateConfig("title", v)} placeholder="Embed title" />
+          <TextareaInput label="Description" value={String(cfg("description"))} onChange={(v) => updateConfig("description", v)} placeholder="Embed description" rows={3} />
+          <TextInput label="Color (hex)" value={String(cfg("color", "#5865F2"))} onChange={(v) => updateConfig("color", v)} placeholder="#5865F2" />
+          <TextareaInput label="Fields (JSON)" value={String(cfg("fields", ""))} onChange={(v) => updateConfig("fields", v)} placeholder={'[{"name":"Field","value":"Value","inline":true}]'} rows={3} />
+          <TextInput label="Footer" value={String(cfg("footer", ""))} onChange={(v) => updateConfig("footer", v)} placeholder="Optional footer" />
+          <TextInput label="Image URL" value={String(cfg("imageUrl", ""))} onChange={(v) => updateConfig("imageUrl", v)} placeholder="https://example.com/image.png" />
+        </div>
+      );
+
+    case "discord_send_dm":
+      return (
+        <div className="space-y-3">
+          <TextInput label="User ID" value={String(cfg("userId"))} onChange={(v) => updateConfig("userId", v)} placeholder="{{trigger.userId}}" />
+          <TextareaInput label="Content" value={String(cfg("content"))} onChange={(v) => updateConfig("content", v)} placeholder="Direct message content" rows={4} />
+        </div>
+      );
+
+    case "discord_edit_message":
+      return (
+        <div className="space-y-3">
+          <TextInput label="Channel ID" value={String(cfg("channelId"))} onChange={(v) => updateConfig("channelId", v)} placeholder="{{trigger.channelId}}" />
+          <TextInput label="Message ID" value={String(cfg("messageId"))} onChange={(v) => updateConfig("messageId", v)} placeholder="{{trigger.messageId}}" />
+          <TextareaInput label="Content" value={String(cfg("content"))} onChange={(v) => updateConfig("content", v)} placeholder="Updated message" rows={3} />
+        </div>
+      );
+
+    case "discord_delete_message":
+      return (
+        <div className="space-y-3">
+          <TextInput label="Channel ID" value={String(cfg("channelId"))} onChange={(v) => updateConfig("channelId", v)} placeholder="{{trigger.channelId}}" />
+          <TextInput label="Message ID" value={String(cfg("messageId"))} onChange={(v) => updateConfig("messageId", v)} placeholder="{{trigger.messageId}}" />
+        </div>
+      );
+
+    case "discord_add_reaction":
+    case "discord_remove_reaction":
+      return (
+        <div className="space-y-3">
+          <TextInput label="Channel ID" value={String(cfg("channelId"))} onChange={(v) => updateConfig("channelId", v)} placeholder="{{trigger.channelId}}" />
+          <TextInput label="Message ID" value={String(cfg("messageId"))} onChange={(v) => updateConfig("messageId", v)} placeholder="{{trigger.messageId}}" />
+          <TextInput label="Emoji" value={String(cfg("emoji"))} onChange={(v) => updateConfig("emoji", v)} placeholder="👍 or custom emoji ID" />
+        </div>
+      );
+
+    case "discord_pin_message":
+    case "discord_unpin_message":
+      return (
+        <div className="space-y-3">
+          <TextInput label="Channel ID" value={String(cfg("channelId"))} onChange={(v) => updateConfig("channelId", v)} placeholder="{{trigger.channelId}}" />
+          <TextInput label="Message ID" value={String(cfg("messageId"))} onChange={(v) => updateConfig("messageId", v)} placeholder="{{trigger.messageId}}" />
+        </div>
+      );
+
+    case "discord_ban_member":
+      return (
+        <div className="space-y-3">
+          <TextInput label="Guild ID" value={String(cfg("guildId"))} onChange={(v) => updateConfig("guildId", v)} placeholder="{{trigger.guildId}}" />
+          <TextInput label="User ID" value={String(cfg("userId"))} onChange={(v) => updateConfig("userId", v)} placeholder="{{trigger.userId}}" />
+          <TextInput label="Reason" value={String(cfg("reason", ""))} onChange={(v) => updateConfig("reason", v)} placeholder="Optional ban reason" />
+          <NumberInput label="Delete Message Days" value={Number(cfg("deleteMessageDays", 0))} onChange={(v) => updateConfig("deleteMessageDays", v)} min={0} max={7} />
+        </div>
+      );
+
+    case "discord_kick_member":
+      return (
+        <div className="space-y-3">
+          <TextInput label="Guild ID" value={String(cfg("guildId"))} onChange={(v) => updateConfig("guildId", v)} placeholder="{{trigger.guildId}}" />
+          <TextInput label="User ID" value={String(cfg("userId"))} onChange={(v) => updateConfig("userId", v)} placeholder="{{trigger.userId}}" />
+          <TextInput label="Reason" value={String(cfg("reason", ""))} onChange={(v) => updateConfig("reason", v)} placeholder="Optional kick reason" />
+        </div>
+      );
+
+    case "discord_timeout_member":
+      return (
+        <div className="space-y-3">
+          <TextInput label="Guild ID" value={String(cfg("guildId"))} onChange={(v) => updateConfig("guildId", v)} placeholder="{{trigger.guildId}}" />
+          <TextInput label="User ID" value={String(cfg("userId"))} onChange={(v) => updateConfig("userId", v)} placeholder="{{trigger.userId}}" />
+          <NumberInput label="Duration (ms)" value={Number(cfg("durationMs", 60000))} onChange={(v) => updateConfig("durationMs", v)} min={0} />
+          <TextInput label="Reason" value={String(cfg("reason", ""))} onChange={(v) => updateConfig("reason", v)} placeholder="Optional reason" />
+        </div>
+      );
+
+    case "discord_add_role":
+    case "discord_remove_role":
+      return (
+        <div className="space-y-3">
+          <TextInput label="Guild ID" value={String(cfg("guildId"))} onChange={(v) => updateConfig("guildId", v)} placeholder="{{trigger.guildId}}" />
+          <TextInput label="User ID" value={String(cfg("userId"))} onChange={(v) => updateConfig("userId", v)} placeholder="{{trigger.userId}}" />
+          <TextInput label="Role ID" value={String(cfg("roleId"))} onChange={(v) => updateConfig("roleId", v)} placeholder="Role ID" />
+        </div>
+      );
+
+    case "discord_create_role":
+      return (
+        <div className="space-y-3">
+          <TextInput label="Guild ID" value={String(cfg("guildId"))} onChange={(v) => updateConfig("guildId", v)} placeholder="{{trigger.guildId}}" />
+          <TextInput label="Name" value={String(cfg("name"))} onChange={(v) => updateConfig("name", v)} placeholder="Role name" />
+          <TextInput label="Color (hex)" value={String(cfg("color", ""))} onChange={(v) => updateConfig("color", v)} placeholder="#FF0000" />
+          <TextInput label="Permissions" value={String(cfg("permissions", ""))} onChange={(v) => updateConfig("permissions", v)} placeholder="Permission bitfield" />
+        </div>
+      );
+
+    case "discord_set_nickname":
+      return (
+        <div className="space-y-3">
+          <TextInput label="Guild ID" value={String(cfg("guildId"))} onChange={(v) => updateConfig("guildId", v)} placeholder="{{trigger.guildId}}" />
+          <TextInput label="User ID" value={String(cfg("userId"))} onChange={(v) => updateConfig("userId", v)} placeholder="{{trigger.userId}}" />
+          <TextInput label="Nickname" value={String(cfg("nickname"))} onChange={(v) => updateConfig("nickname", v)} placeholder="New nickname" />
+        </div>
+      );
+
+    case "discord_create_channel":
+      return (
+        <div className="space-y-3">
+          <TextInput label="Guild ID" value={String(cfg("guildId"))} onChange={(v) => updateConfig("guildId", v)} placeholder="{{trigger.guildId}}" />
+          <TextInput label="Name" value={String(cfg("name"))} onChange={(v) => updateConfig("name", v)} placeholder="channel-name" />
+          <SelectInput label="Type" value={String(cfg("type", "text"))} onChange={(v) => updateConfig("type", v)} options={[
+            { value: "text", label: "Text" },
+            { value: "voice", label: "Voice" },
+            { value: "category", label: "Category" },
+            { value: "forum", label: "Forum" },
+            { value: "stage", label: "Stage" },
+          ]} />
+        </div>
+      );
+
+    case "discord_delete_channel":
+      return (
+        <div className="space-y-3">
+          <TextInput label="Channel ID" value={String(cfg("channelId"))} onChange={(v) => updateConfig("channelId", v)} placeholder="Channel ID to delete" />
+        </div>
+      );
+
+    case "discord_move_member":
+      return (
+        <div className="space-y-3">
+          <TextInput label="Guild ID" value={String(cfg("guildId"))} onChange={(v) => updateConfig("guildId", v)} placeholder="{{trigger.guildId}}" />
+          <TextInput label="User ID" value={String(cfg("userId"))} onChange={(v) => updateConfig("userId", v)} placeholder="{{trigger.userId}}" />
+          <TextInput label="Voice Channel ID" value={String(cfg("channelId"))} onChange={(v) => updateConfig("channelId", v)} placeholder="Target voice channel" />
+        </div>
+      );
+
+    case "discord_create_thread":
+      return (
+        <div className="space-y-3">
+          <TextInput label="Channel ID" value={String(cfg("channelId"))} onChange={(v) => updateConfig("channelId", v)} placeholder="{{trigger.channelId}}" />
+          <TextInput label="Thread Name" value={String(cfg("name"))} onChange={(v) => updateConfig("name", v)} placeholder="Thread name" />
+          <NumberInput label="Auto Archive Duration (min)" value={Number(cfg("autoArchiveDuration", 1440))} onChange={(v) => updateConfig("autoArchiveDuration", v)} min={60} />
+        </div>
+      );
+
+    case "discord_send_thread_message":
+      return (
+        <div className="space-y-3">
+          <TextInput label="Thread ID" value={String(cfg("threadId"))} onChange={(v) => updateConfig("threadId", v)} placeholder="Thread ID" />
+          <TextareaInput label="Content" value={String(cfg("content"))} onChange={(v) => updateConfig("content", v)} placeholder="Thread message" rows={3} />
+        </div>
+      );
+
+    case "discord_create_invite":
+      return (
+        <div className="space-y-3">
+          <TextInput label="Channel ID" value={String(cfg("channelId"))} onChange={(v) => updateConfig("channelId", v)} placeholder="{{trigger.channelId}}" />
+          <NumberInput label="Max Age (seconds, 0 = never)" value={Number(cfg("maxAge", 86400))} onChange={(v) => updateConfig("maxAge", v)} min={0} />
+          <NumberInput label="Max Uses (0 = unlimited)" value={Number(cfg("maxUses", 0))} onChange={(v) => updateConfig("maxUses", v)} min={0} />
+        </div>
+      );
+
+    case "discord_create_scheduled_event":
+      return (
+        <div className="space-y-3">
+          <TextInput label="Guild ID" value={String(cfg("guildId"))} onChange={(v) => updateConfig("guildId", v)} placeholder="{{trigger.guildId}}" />
+          <TextInput label="Name" value={String(cfg("name"))} onChange={(v) => updateConfig("name", v)} placeholder="Event name" />
+          <TextareaInput label="Description" value={String(cfg("description", ""))} onChange={(v) => updateConfig("description", v)} placeholder="Event description" rows={2} />
+          <TextInput label="Scheduled Start Time" value={String(cfg("scheduledStartTime"))} onChange={(v) => updateConfig("scheduledStartTime", v)} placeholder="ISO 8601 datetime" />
+          <TextInput label="Scheduled End Time" value={String(cfg("scheduledEndTime", ""))} onChange={(v) => updateConfig("scheduledEndTime", v)} placeholder="ISO 8601 datetime (optional)" />
+          <SelectInput label="Entity Type" value={String(cfg("entityType", "VOICE"))} onChange={(v) => updateConfig("entityType", v)} options={[
+            { value: "STAGE_INSTANCE", label: "Stage Instance" },
+            { value: "VOICE", label: "Voice" },
+            { value: "EXTERNAL", label: "External" },
+          ]} />
+        </div>
+      );
+
+    default:
+      return null;
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Discord Trigger property panel
+// ---------------------------------------------------------------------------
+
+function DiscordTriggerPropertyPanel({
+  node,
+  updateConfig,
+}: {
+  node: Node;
+  updateConfig: (key: string, value: unknown) => void;
+}) {
+  const nodeType = String(node.data.nodeType ?? "");
+  const config = (node.data.config as Record<string, unknown>) ?? {};
+  const cfg = (key: string, fallback: unknown = "") => config[key] ?? fallback;
+
+  switch (nodeType) {
+    case "discord_interaction_create":
+      return (
+        <div className="space-y-3">
+          <TextInput label="Command Name" value={String(cfg("commandName", ""))} onChange={(v) => updateConfig("commandName", v)} placeholder="/mycommand" />
+          <TextInput label="Command Description" value={String(cfg("commandDescription", ""))} onChange={(v) => updateConfig("commandDescription", v)} placeholder="What the command does" />
+        </div>
+      );
+
+    case "discord_message_received":
+      return (
+        <div className="space-y-3">
+          <TextInput label="Channel Filter" value={String(cfg("channelFilter", ""))} onChange={(v) => updateConfig("channelFilter", v)} placeholder="Optional channel ID filter" />
+        </div>
+      );
+
+    default:
+      return (
+        <div className="space-y-3">
+          <TextInput label="Guild Filter" value={String(cfg("guildFilter", ""))} onChange={(v) => updateConfig("guildFilter", v)} placeholder="Optional guild ID filter" />
+          <TextInput label="Channel Filter" value={String(cfg("channelFilter", ""))} onChange={(v) => updateConfig("channelFilter", v)} placeholder="Optional channel ID filter" />
+        </div>
+      );
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Discord Condition property panel
+// ---------------------------------------------------------------------------
+
+function DiscordConditionPropertyPanel({
+  node,
+  updateConfig,
+}: {
+  node: Node;
+  updateConfig: (key: string, value: unknown) => void;
+}) {
+  const nodeType = String(node.data.nodeType ?? "");
+  const config = (node.data.config as Record<string, unknown>) ?? {};
+  const cfg = (key: string, fallback: unknown = "") => config[key] ?? fallback;
+
+  switch (nodeType) {
+    case "discord_has_role":
+      return (
+        <div className="space-y-3">
+          <TextInput label="Role ID" value={String(cfg("roleId"))} onChange={(v) => updateConfig("roleId", v)} placeholder="Role ID to check" />
+        </div>
+      );
+
+    case "discord_channel_type":
+      return (
+        <div className="space-y-3">
+          <SelectInput label="Channel Type" value={String(cfg("channelType", "text"))} onChange={(v) => updateConfig("channelType", v)} options={[
+            { value: "text", label: "Text" },
+            { value: "voice", label: "Voice" },
+            { value: "forum", label: "Forum" },
+            { value: "stage", label: "Stage" },
+            { value: "category", label: "Category" },
+          ]} />
+        </div>
+      );
+
+    case "discord_is_bot":
+      return (
+        <div className="space-y-3">
+          <p className="text-[10px] text-muted-foreground">Checks if the triggering user is a bot. No additional configuration needed.</p>
+        </div>
+      );
+
+    case "discord_message_has_embed":
+      return (
+        <div className="space-y-3">
+          <p className="text-[10px] text-muted-foreground">Checks if the message contains embeds. No additional configuration needed.</p>
+        </div>
+      );
+
+    case "discord_member_permissions":
+      return (
+        <div className="space-y-3">
+          <TextInput label="Required Permissions" value={String(cfg("requiredPermissions"))} onChange={(v) => updateConfig("requiredPermissions", v)} placeholder="MANAGE_MESSAGES, KICK_MEMBERS" />
+          <p className="text-[10px] text-muted-foreground">Comma-separated Discord permission names.</p>
+        </div>
+      );
+
+    default:
+      return null;
+  }
+}
+
 export default function FlowEditorPage() {
   const params = useParams();
   const router = useRouter();
@@ -793,7 +1199,8 @@ export default function FlowEditorPage() {
   const [loaded, setLoaded] = useState(false);
   const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
   const [botInstances, setBotInstances] = useState<BotInstance[]>([]);
-  const [transportConfig, setTransportConfig] = useState<{ transport: string; botInstanceId?: string }>({ transport: 'auto' });
+  const [transportConfig, setTransportConfig] = useState<{ transport: string; botInstanceId?: string; discordBotInstanceId?: string }>({ transport: 'auto' });
+  const [flowPlatform, setFlowPlatform] = useState<"telegram" | "discord" | "cross-platform">("telegram");
 
   // Execution visualization state
   const { executionState, setExecutionState } = useExecutionState();
@@ -811,6 +1218,9 @@ export default function FlowEditorPage() {
       setNodes(loadedNodes);
       setEdges(loadedEdges);
       setTransportConfig(flow.transportConfig ?? { transport: 'auto' });
+      if (flow.platform === 'discord') setFlowPlatform('discord');
+      else if (flow.platform === 'cross-platform') setFlowPlatform('cross-platform');
+      else setFlowPlatform('telegram');
       setLoaded(true);
     }).catch(() => router.push("/dashboard/flows"));
   }, [flowId]);
@@ -865,7 +1275,7 @@ export default function FlowEditorPage() {
   const handleSave = async () => {
     setSaving(true);
     try {
-      await api.updateFlow(flowId, { nodesJson: nodes, edgesJson: edges, transportConfig });
+      await api.updateFlow(flowId, { nodesJson: nodes, edgesJson: edges, transportConfig, platform: flowPlatform });
     } finally {
       setSaving(false);
     }
@@ -892,11 +1302,17 @@ export default function FlowEditorPage() {
   const isBotActionNode = selectedNodeType === "bot_action";
   const isTriggerNode = selectedCategory === "trigger";
   const isConfigurableAction = CONFIGURABLE_ACTIONS.has(selectedNodeType);
+  const isDiscordNode = selectedNodeType.startsWith("discord_");
+  const isDiscordAction = isDiscordNode && selectedCategory === "action";
+  const isDiscordTrigger = isDiscordNode && selectedCategory === "trigger";
+  const isDiscordCondition = isDiscordNode && selectedCategory === "condition";
 
   // New conditions with dedicated panels (not using ExpressionBuilder)
   const hasConditionPanel = ["message_type", "chat_type", "regex_match", "has_media", "user_is_admin", "message_length", "callback_data_match", "user_is_bot"].includes(selectedNodeType);
+  // Discord conditions have their own panel
+  const hasDiscordConditionPanel = isDiscordCondition;
   // Original conditions use ExpressionBuilder
-  const usesExpressionBuilder = isConditionNode && !hasConditionPanel;
+  const usesExpressionBuilder = isConditionNode && !hasConditionPanel && !hasDiscordConditionPanel;
 
   const updateNodeConfig = useCallback(
     (key: string, value: unknown) => {
@@ -936,7 +1352,7 @@ export default function FlowEditorPage() {
 
   // Determine if we should show a property panel
   const showPropertyPanel = selectedNode && (
-    usesExpressionBuilder || hasConditionPanel || isBotActionNode || isConfigurableAction || isTriggerNode
+    usesExpressionBuilder || hasConditionPanel || hasDiscordConditionPanel || isBotActionNode || isConfigurableAction || isTriggerNode || isDiscordAction || isDiscordTrigger
   );
 
   // Apply execution styles to nodes and edges for visualization
@@ -980,31 +1396,66 @@ export default function FlowEditorPage() {
           ) : (
             <Button variant="outline" size="sm" onClick={handleDeactivate}><Square className="mr-1 h-4 w-4" />Deactivate</Button>
           )}
-          {/* Transport Settings */}
+          {/* Platform & Transport Settings */}
           <div className="flex items-center gap-2 ml-2 pl-2 border-l border-border">
-            <label className="text-xs text-muted-foreground whitespace-nowrap">Transport:</label>
+            <label className="text-xs text-muted-foreground whitespace-nowrap">Platform:</label>
             <select
               className="h-8 rounded-md border border-border bg-background px-2 text-xs"
-              value={transportConfig.transport}
-              onChange={(e) => setTransportConfig(prev => ({ ...prev, transport: e.target.value }))}
+              value={flowPlatform}
+              onChange={(e) => setFlowPlatform(e.target.value as "telegram" | "discord" | "cross-platform")}
             >
-              <option value="auto">Auto</option>
-              <option value="mtproto">MTProto (User Account)</option>
-              <option value="bot_api">Bot API</option>
+              <option value="telegram">Telegram</option>
+              <option value="discord">Discord</option>
+              <option value="cross-platform">Cross-Platform</option>
             </select>
-            {(transportConfig.transport === 'bot_api' || transportConfig.transport === 'auto') && (
-              <select
-                className="h-8 rounded-md border border-border bg-background px-2 text-xs"
-                value={transportConfig.botInstanceId ?? ''}
-                onChange={(e) => setTransportConfig(prev => ({ ...prev, botInstanceId: e.target.value || undefined }))}
-              >
-                <option value="">No bot selected</option>
-                {botInstances.filter(b => b.isActive).map(b => (
-                  <option key={b.id} value={b.id}>
-                    {b.name}{b.botUsername ? ` (@${b.botUsername})` : ''}
-                  </option>
-                ))}
-              </select>
+
+            {/* Telegram transport config */}
+            {(flowPlatform === 'telegram' || flowPlatform === 'cross-platform') && (
+              <>
+                <label className="text-xs text-muted-foreground whitespace-nowrap">Transport:</label>
+                <select
+                  className="h-8 rounded-md border border-border bg-background px-2 text-xs"
+                  value={transportConfig.transport}
+                  onChange={(e) => setTransportConfig(prev => ({ ...prev, transport: e.target.value }))}
+                >
+                  <option value="auto">Auto</option>
+                  <option value="mtproto">MTProto (User Account)</option>
+                  <option value="bot_api">Bot API</option>
+                </select>
+                {(transportConfig.transport === 'bot_api' || transportConfig.transport === 'auto') && (
+                  <select
+                    className="h-8 rounded-md border border-border bg-background px-2 text-xs"
+                    value={transportConfig.botInstanceId ?? ''}
+                    onChange={(e) => setTransportConfig(prev => ({ ...prev, botInstanceId: e.target.value || undefined }))}
+                  >
+                    <option value="">No TG bot selected</option>
+                    {botInstances.filter(b => b.isActive && b.type !== 'discord').map(b => (
+                      <option key={b.id} value={b.id}>
+                        {b.name}{b.botUsername ? ` (@${b.botUsername})` : ''}
+                      </option>
+                    ))}
+                  </select>
+                )}
+              </>
+            )}
+
+            {/* Discord bot config */}
+            {(flowPlatform === 'discord' || flowPlatform === 'cross-platform') && (
+              <>
+                <label className="text-xs text-muted-foreground whitespace-nowrap">Discord Bot:</label>
+                <select
+                  className="h-8 rounded-md border border-border bg-background px-2 text-xs"
+                  value={transportConfig.discordBotInstanceId ?? ''}
+                  onChange={(e) => setTransportConfig(prev => ({ ...prev, discordBotInstanceId: e.target.value || undefined }))}
+                >
+                  <option value="">No Discord bot selected</option>
+                  {botInstances.filter(b => b.isActive && b.type === 'discord').map(b => (
+                    <option key={b.id} value={b.id}>
+                      {b.name}{b.botUsername ? ` (${b.botUsername})` : ''}
+                    </option>
+                  ))}
+                </select>
+              </>
             )}
           </div>
         </div>
@@ -1052,14 +1503,29 @@ export default function FlowEditorPage() {
               <ConditionPropertyPanel node={selectedNode} updateConfig={updateNodeConfig} />
             )}
 
+            {/* Discord condition panels */}
+            {hasDiscordConditionPanel && (
+              <DiscordConditionPropertyPanel node={selectedNode} updateConfig={updateNodeConfig} />
+            )}
+
             {/* Trigger configuration panels */}
-            {isTriggerNode && (
+            {isTriggerNode && !isDiscordTrigger && (
               <TriggerPropertyPanel node={selectedNode} updateConfig={updateNodeConfig} />
             )}
 
+            {/* Discord trigger panels */}
+            {isDiscordTrigger && (
+              <DiscordTriggerPropertyPanel node={selectedNode} updateConfig={updateNodeConfig} />
+            )}
+
             {/* Action configuration panels */}
-            {isConfigurableAction && !isBotActionNode && (
+            {isConfigurableAction && !isBotActionNode && !isDiscordAction && (
               <ActionPropertyPanel node={selectedNode} updateConfig={updateNodeConfig} botInstances={botInstances} />
+            )}
+
+            {/* Discord action panels */}
+            {isDiscordAction && (
+              <DiscordActionPropertyPanel node={selectedNode} updateConfig={updateNodeConfig} />
             )}
 
             {/* Bot action panel */}

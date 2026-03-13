@@ -25,6 +25,19 @@ export async function evaluateCondition(node: FlowNode, ctx: FlowContext): Promi
       return evaluateCallbackDataMatch(node, ctx);
     case 'user_is_bot':
       return evaluateUserIsBot(node, ctx);
+
+    // --- Discord Conditions ---
+    case 'discord_has_role':
+      return evaluateDiscordHasRole(node, ctx);
+    case 'discord_channel_type':
+      return evaluateDiscordChannelType(node, ctx);
+    case 'discord_is_bot':
+      return evaluateDiscordIsBot(node, ctx);
+    case 'discord_message_has_embed':
+      return evaluateDiscordMessageHasEmbed(node, ctx);
+    case 'discord_member_permissions':
+      return evaluateDiscordMemberPermissions(node, ctx);
+
     default:
       return true;
   }
@@ -178,4 +191,60 @@ function evaluateUserIsBot(node: FlowNode, ctx: FlowContext): boolean {
   const isBot = Boolean(ctx.triggerData.isBot ?? false);
   const matchBots = (node.config.matchBots as boolean) ?? true;
   return matchBots ? isBot : !isBot;
+}
+
+// ---------------------------------------------------------------------------
+// Discord conditions
+// ---------------------------------------------------------------------------
+
+/**
+ * Check if the triggering Discord member has a specific role.
+ * Config: { roleId: string }
+ */
+function evaluateDiscordHasRole(node: FlowNode, ctx: FlowContext): boolean {
+  const roleId = String(node.config.roleId ?? '');
+  if (!roleId) return false;
+  const roles = (ctx.triggerData.roles as string[]) ?? [];
+  return roles.includes(roleId);
+}
+
+/**
+ * Check if the Discord channel type matches the expected type.
+ * Config: { channelType: string }
+ */
+function evaluateDiscordChannelType(node: FlowNode, ctx: FlowContext): boolean {
+  const expected = String(node.config.channelType ?? '');
+  if (!expected) return true;
+  const actual = String(ctx.triggerData.channelType ?? '');
+  return actual === expected;
+}
+
+/**
+ * Check if the triggering Discord user is a bot.
+ * Config: { matchBots?: boolean }
+ */
+function evaluateDiscordIsBot(node: FlowNode, ctx: FlowContext): boolean {
+  const isBot = Boolean(ctx.triggerData.isBot ?? false);
+  const matchBots = (node.config.matchBots as boolean) ?? true;
+  return matchBots ? isBot : !isBot;
+}
+
+/**
+ * Check if the Discord message has embedded content.
+ * Config: {} (no config needed)
+ */
+function evaluateDiscordMessageHasEmbed(node: FlowNode, ctx: FlowContext): boolean {
+  const embeds = ctx.triggerData.embeds as unknown[] | undefined;
+  return Array.isArray(embeds) && embeds.length > 0;
+}
+
+/**
+ * Check if the Discord member has the required permissions.
+ * Config: { permissions: string[] } — list of permission strings (e.g. 'MANAGE_MESSAGES')
+ */
+function evaluateDiscordMemberPermissions(node: FlowNode, ctx: FlowContext): boolean {
+  const required = (node.config.permissions as string[]) ?? [];
+  if (required.length === 0) return true;
+  const memberPermissions = (ctx.triggerData.permissions as string[]) ?? [];
+  return required.every((perm) => memberPermissions.includes(perm));
 }

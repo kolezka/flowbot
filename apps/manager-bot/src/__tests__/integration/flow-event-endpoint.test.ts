@@ -39,7 +39,7 @@ describe('POST /api/flow-event', () => {
     const res = await jsonRequest(app, { eventType: 'user_joined', data: { userId: 1 } })
 
     expect(res.status).toBe(200)
-    const json = await res.json()
+    const json = (await res.json()) as Record<string, unknown>
     expect(json).toEqual({ success: true, result: upstreamResult })
     expect(globalThis.fetch).toHaveBeenCalledWith(
       'http://test-api:3000/api/flow/webhook',
@@ -56,7 +56,7 @@ describe('POST /api/flow-event', () => {
     const res = await jsonRequest(app, { data: { foo: 'bar' } })
 
     expect(res.status).toBe(400)
-    const json = await res.json()
+    const json = (await res.json()) as Record<string, unknown>
     expect(json.success).toBe(false)
     expect(json.error).toContain('eventType')
   })
@@ -73,7 +73,7 @@ describe('POST /api/flow-event', () => {
     const res = await jsonRequest(app, { eventType: 'some_event', data: {} })
 
     expect(res.status).toBe(502)
-    const json = await res.json()
+    const json = (await res.json()) as Record<string, unknown>
     expect(json.success).toBe(false)
     expect(json.error).toContain('422')
   })
@@ -86,7 +86,7 @@ describe('POST /api/flow-event', () => {
     const res = await jsonRequest(app, { eventType: 'some_event', data: {} })
 
     expect(res.status).toBe(500)
-    const json = await res.json()
+    const json = (await res.json()) as Record<string, unknown>
     expect(json.success).toBe(false)
     expect(json.error).toBe('ECONNREFUSED')
   })

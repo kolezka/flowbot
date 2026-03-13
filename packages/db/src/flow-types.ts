@@ -1,5 +1,7 @@
 export enum FlowNodeType {
-  // Triggers
+  // =====================
+  // Telegram Triggers
+  // =====================
   MESSAGE_RECEIVED = 'message_received',
   USER_JOINS = 'user_joins',
   USER_LEAVES = 'user_leaves',
@@ -15,7 +17,9 @@ export enum FlowNodeType {
   SCHEDULE = 'schedule',
   WEBHOOK = 'webhook',
 
-  // Conditions
+  // =====================
+  // Telegram Conditions
+  // =====================
   KEYWORD_MATCH = 'keyword_match',
   USER_ROLE = 'user_role',
   TIME_BASED = 'time_based',
@@ -28,7 +32,9 @@ export enum FlowNodeType {
   CALLBACK_DATA_MATCH = 'callback_data_match',
   USER_IS_BOT = 'user_is_bot',
 
-  // Actions
+  // =====================
+  // Telegram Actions
+  // =====================
   SEND_MESSAGE = 'send_message',
   SEND_PHOTO = 'send_photo',
   FORWARD_MESSAGE = 'forward_message',
@@ -66,9 +72,62 @@ export enum FlowNodeType {
   BOT_ACTION = 'bot_action',
   API_CALL = 'api_call',
   DELAY = 'delay',
+
+  // =====================
+  // Discord Triggers
+  // =====================
+  DISCORD_MESSAGE_RECEIVED = 'discord_message_received',
+  DISCORD_MEMBER_JOIN = 'discord_member_join',
+  DISCORD_MEMBER_LEAVE = 'discord_member_leave',
+  DISCORD_REACTION_ADD = 'discord_reaction_add',
+  DISCORD_REACTION_REMOVE = 'discord_reaction_remove',
+  DISCORD_VOICE_STATE_UPDATE = 'discord_voice_state_update',
+  DISCORD_INTERACTION_CREATE = 'discord_interaction_create',
+  DISCORD_CHANNEL_CREATE = 'discord_channel_create',
+  DISCORD_CHANNEL_DELETE = 'discord_channel_delete',
+  DISCORD_ROLE_UPDATE = 'discord_role_update',
+  DISCORD_SCHEDULED_EVENT = 'discord_scheduled_event',
+
+  // =====================
+  // Discord Conditions
+  // =====================
+  DISCORD_HAS_ROLE = 'discord_has_role',
+  DISCORD_CHANNEL_TYPE = 'discord_channel_type',
+  DISCORD_IS_BOT = 'discord_is_bot',
+  DISCORD_MESSAGE_HAS_EMBED = 'discord_message_has_embed',
+  DISCORD_MEMBER_PERMISSIONS = 'discord_member_permissions',
+
+  // =====================
+  // Discord Actions
+  // =====================
+  DISCORD_SEND_MESSAGE = 'discord_send_message',
+  DISCORD_SEND_EMBED = 'discord_send_embed',
+  DISCORD_SEND_DM = 'discord_send_dm',
+  DISCORD_EDIT_MESSAGE = 'discord_edit_message',
+  DISCORD_DELETE_MESSAGE = 'discord_delete_message',
+  DISCORD_ADD_REACTION = 'discord_add_reaction',
+  DISCORD_REMOVE_REACTION = 'discord_remove_reaction',
+  DISCORD_PIN_MESSAGE = 'discord_pin_message',
+  DISCORD_UNPIN_MESSAGE = 'discord_unpin_message',
+  DISCORD_BAN_MEMBER = 'discord_ban_member',
+  DISCORD_KICK_MEMBER = 'discord_kick_member',
+  DISCORD_TIMEOUT_MEMBER = 'discord_timeout_member',
+  DISCORD_ADD_ROLE = 'discord_add_role',
+  DISCORD_REMOVE_ROLE = 'discord_remove_role',
+  DISCORD_CREATE_ROLE = 'discord_create_role',
+  DISCORD_SET_NICKNAME = 'discord_set_nickname',
+  DISCORD_CREATE_CHANNEL = 'discord_create_channel',
+  DISCORD_DELETE_CHANNEL = 'discord_delete_channel',
+  DISCORD_MOVE_MEMBER = 'discord_move_member',
+  DISCORD_CREATE_THREAD = 'discord_create_thread',
+  DISCORD_SEND_THREAD_MESSAGE = 'discord_send_thread_message',
+  DISCORD_CREATE_INVITE = 'discord_create_invite',
+  DISCORD_CREATE_SCHEDULED_EVENT = 'discord_create_scheduled_event',
 }
 
 export type FlowNodeCategory = 'trigger' | 'condition' | 'action' | 'advanced';
+
+export type FlowPlatform = 'telegram' | 'discord';
 
 export interface FlowNodeConfig {
   [key: string]: unknown;
@@ -92,19 +151,35 @@ export interface FlowEdge {
   label?: string;
 }
 
-export type FlowTransportMode = 'mtproto' | 'bot_api' | 'auto';
+export type FlowTransportMode = 'mtproto' | 'bot_api' | 'discord_bot' | 'auto';
 
 export interface FlowTransportConfig {
+  /** Primary platform for this flow. Default: 'telegram' */
+  platform?: FlowPlatform;
   /** Which transport to use for action execution. Default: 'auto' */
   transport: FlowTransportMode;
-  /** Bot instance ID (used when transport is 'bot_api' or 'auto' with a bot selected) */
+  /** Bot instance ID (used when transport is 'bot_api', 'discord_bot', or 'auto') */
   botInstanceId?: string;
+  /** Discord bot instance ID (for cross-platform flows using both platforms) */
+  discordBotInstanceId?: string;
 }
 
 export interface FlowDefinitionData {
   nodes: FlowNode[];
   edges: FlowEdge[];
   transportConfig?: FlowTransportConfig;
+}
+
+/** Helper: returns the platform for a given node type */
+export function getNodePlatform(nodeType: FlowNodeType): FlowPlatform | null {
+  if (nodeType.startsWith('discord_')) return 'discord';
+  // General-purpose nodes (delay, api_call, webhook, schedule) are platform-agnostic
+  const agnostic: FlowNodeType[] = [
+    FlowNodeType.SCHEDULE, FlowNodeType.WEBHOOK, FlowNodeType.API_CALL,
+    FlowNodeType.DELAY, FlowNodeType.TIME_BASED,
+  ];
+  if (agnostic.includes(nodeType)) return null;
+  return 'telegram';
 }
 
 export const NODE_CATEGORIES: Record<FlowNodeType, FlowNodeCategory> = {
@@ -173,4 +248,46 @@ export const NODE_CATEGORIES: Record<FlowNodeType, FlowNodeCategory> = {
   [FlowNodeType.BOT_ACTION]: 'action',
   [FlowNodeType.API_CALL]: 'action',
   [FlowNodeType.DELAY]: 'action',
+  // Discord Triggers
+  [FlowNodeType.DISCORD_MESSAGE_RECEIVED]: 'trigger',
+  [FlowNodeType.DISCORD_MEMBER_JOIN]: 'trigger',
+  [FlowNodeType.DISCORD_MEMBER_LEAVE]: 'trigger',
+  [FlowNodeType.DISCORD_REACTION_ADD]: 'trigger',
+  [FlowNodeType.DISCORD_REACTION_REMOVE]: 'trigger',
+  [FlowNodeType.DISCORD_VOICE_STATE_UPDATE]: 'trigger',
+  [FlowNodeType.DISCORD_INTERACTION_CREATE]: 'trigger',
+  [FlowNodeType.DISCORD_CHANNEL_CREATE]: 'trigger',
+  [FlowNodeType.DISCORD_CHANNEL_DELETE]: 'trigger',
+  [FlowNodeType.DISCORD_ROLE_UPDATE]: 'trigger',
+  [FlowNodeType.DISCORD_SCHEDULED_EVENT]: 'trigger',
+  // Discord Conditions
+  [FlowNodeType.DISCORD_HAS_ROLE]: 'condition',
+  [FlowNodeType.DISCORD_CHANNEL_TYPE]: 'condition',
+  [FlowNodeType.DISCORD_IS_BOT]: 'condition',
+  [FlowNodeType.DISCORD_MESSAGE_HAS_EMBED]: 'condition',
+  [FlowNodeType.DISCORD_MEMBER_PERMISSIONS]: 'condition',
+  // Discord Actions
+  [FlowNodeType.DISCORD_SEND_MESSAGE]: 'action',
+  [FlowNodeType.DISCORD_SEND_EMBED]: 'action',
+  [FlowNodeType.DISCORD_SEND_DM]: 'action',
+  [FlowNodeType.DISCORD_EDIT_MESSAGE]: 'action',
+  [FlowNodeType.DISCORD_DELETE_MESSAGE]: 'action',
+  [FlowNodeType.DISCORD_ADD_REACTION]: 'action',
+  [FlowNodeType.DISCORD_REMOVE_REACTION]: 'action',
+  [FlowNodeType.DISCORD_PIN_MESSAGE]: 'action',
+  [FlowNodeType.DISCORD_UNPIN_MESSAGE]: 'action',
+  [FlowNodeType.DISCORD_BAN_MEMBER]: 'action',
+  [FlowNodeType.DISCORD_KICK_MEMBER]: 'action',
+  [FlowNodeType.DISCORD_TIMEOUT_MEMBER]: 'action',
+  [FlowNodeType.DISCORD_ADD_ROLE]: 'action',
+  [FlowNodeType.DISCORD_REMOVE_ROLE]: 'action',
+  [FlowNodeType.DISCORD_CREATE_ROLE]: 'action',
+  [FlowNodeType.DISCORD_SET_NICKNAME]: 'action',
+  [FlowNodeType.DISCORD_CREATE_CHANNEL]: 'action',
+  [FlowNodeType.DISCORD_DELETE_CHANNEL]: 'action',
+  [FlowNodeType.DISCORD_MOVE_MEMBER]: 'action',
+  [FlowNodeType.DISCORD_CREATE_THREAD]: 'action',
+  [FlowNodeType.DISCORD_SEND_THREAD_MESSAGE]: 'action',
+  [FlowNodeType.DISCORD_CREATE_INVITE]: 'action',
+  [FlowNodeType.DISCORD_CREATE_SCHEDULED_EVENT]: 'action',
 };

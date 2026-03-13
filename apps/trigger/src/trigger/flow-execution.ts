@@ -29,7 +29,7 @@ export const flowExecutionTask = task({
     try {
       const nodes = flow.nodesJson as unknown as FlowNode[];
       const edges = flow.edgesJson as unknown as FlowEdge[];
-      const transportConfig = (flow as any).transportConfig as { transport?: string; botInstanceId?: string } | undefined;
+      const transportConfig = (flow as any).transportConfig as { transport?: string; botInstanceId?: string; platform?: string; discordBotInstanceId?: string } | undefined;
 
       // Enrich trigger data with cross-bot event correlation context
       const enrichedTriggerData = await enrichTriggerData(payload.triggerData);

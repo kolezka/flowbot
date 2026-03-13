@@ -598,7 +598,8 @@ export interface FlowDefinition {
   description?: string;
   nodesJson: any[];
   edgesJson: any[];
-  transportConfig?: { transport: string; botInstanceId?: string };
+  transportConfig?: { transport: string; botInstanceId?: string; discordBotInstanceId?: string };
+  platform?: string;
   status: string;
   version: number;
   _count?: { executions: number };
@@ -1099,8 +1100,9 @@ class ApiClient {
   }
 
   // Bot Config
-  async getBotInstances(): Promise<BotInstance[]> {
-    return this.request<BotInstance[]>('/api/bot-config');
+  async getBotInstances(platform?: string): Promise<BotInstance[]> {
+    const qs = platform ? `?platform=${encodeURIComponent(platform)}` : '';
+    return this.request<BotInstance[]>(`/api/bot-config${qs}`);
   }
 
   async getBotInstance(botId: string): Promise<BotInstance> {
@@ -1256,11 +1258,11 @@ class ApiClient {
     return this.request<FlowDefinition>(`/api/flows/${id}`);
   }
 
-  async createFlow(data: { name: string; description?: string }): Promise<FlowDefinition> {
+  async createFlow(data: { name: string; description?: string; platform?: string }): Promise<FlowDefinition> {
     return this.request<FlowDefinition>('/api/flows', { method: 'POST', body: JSON.stringify(data) });
   }
 
-  async updateFlow(id: string, data: { name?: string; description?: string; nodesJson?: any; edgesJson?: any; transportConfig?: { transport: string; botInstanceId?: string } }): Promise<FlowDefinition> {
+  async updateFlow(id: string, data: { name?: string; description?: string; nodesJson?: any; edgesJson?: any; transportConfig?: { transport: string; botInstanceId?: string; discordBotInstanceId?: string }; platform?: string }): Promise<FlowDefinition> {
     return this.request<FlowDefinition>(`/api/flows/${id}`, { method: 'PATCH', body: JSON.stringify(data) });
   }
 

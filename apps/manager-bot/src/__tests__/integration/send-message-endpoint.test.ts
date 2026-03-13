@@ -38,7 +38,7 @@ describe('POST /api/send-message', () => {
     })
 
     expect(res.status).toBe(200)
-    const json = await res.json()
+    const json = (await res.json()) as Record<string, unknown>
     expect(json).toEqual({ success: true, messageId: 42 })
     expect(deps.botApi.sendMessage).toHaveBeenCalledWith('123', 'Hello world', {
       parse_mode: 'HTML',
@@ -54,7 +54,7 @@ describe('POST /api/send-message', () => {
     })
 
     expect(res.status).toBe(400)
-    const json = await res.json()
+    const json = (await res.json()) as Record<string, unknown>
     expect(json.success).toBe(false)
     expect(json.error).toContain('chatId')
   })
@@ -68,7 +68,7 @@ describe('POST /api/send-message', () => {
     })
 
     expect(res.status).toBe(400)
-    const json = await res.json()
+    const json = (await res.json()) as Record<string, unknown>
     expect(json.success).toBe(false)
     expect(json.error).toContain('text')
   })
@@ -84,7 +84,7 @@ describe('POST /api/send-message', () => {
     })
 
     expect(res.status).toBe(500)
-    const json = await res.json()
+    const json = (await res.json()) as Record<string, unknown>
     expect(json.success).toBe(false)
     expect(json.error).toBe('Telegram API down')
   })

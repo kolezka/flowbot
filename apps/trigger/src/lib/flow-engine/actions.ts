@@ -78,6 +78,55 @@ export async function executeAction(node: FlowNode, ctx: FlowContext): Promise<u
       return executeDeleteChatPhoto(node, ctx);
     case 'approve_join_request':
       return executeApproveJoinRequest(node, ctx);
+
+    // --- Discord Actions ---
+    case 'discord_send_message':
+      return executeDiscordSendMessage(node, ctx);
+    case 'discord_send_embed':
+      return executeDiscordSendEmbed(node, ctx);
+    case 'discord_send_dm':
+      return executeDiscordSendDM(node, ctx);
+    case 'discord_edit_message':
+      return executeDiscordEditMessage(node, ctx);
+    case 'discord_delete_message':
+      return executeDiscordDeleteMessage(node, ctx);
+    case 'discord_add_reaction':
+      return executeDiscordAddReaction(node, ctx);
+    case 'discord_remove_reaction':
+      return executeDiscordRemoveReaction(node, ctx);
+    case 'discord_pin_message':
+      return executeDiscordPinMessage(node, ctx);
+    case 'discord_unpin_message':
+      return executeDiscordUnpinMessage(node, ctx);
+    case 'discord_ban_member':
+      return executeDiscordBanMember(node, ctx);
+    case 'discord_kick_member':
+      return executeDiscordKickMember(node, ctx);
+    case 'discord_timeout_member':
+      return executeDiscordTimeoutMember(node, ctx);
+    case 'discord_add_role':
+      return executeDiscordAddRole(node, ctx);
+    case 'discord_remove_role':
+      return executeDiscordRemoveRole(node, ctx);
+    case 'discord_create_role':
+      return executeDiscordCreateRole(node, ctx);
+    case 'discord_set_nickname':
+      return executeDiscordSetNickname(node, ctx);
+    case 'discord_create_channel':
+      return executeDiscordCreateChannel(node, ctx);
+    case 'discord_delete_channel':
+      return executeDiscordDeleteChannel(node, ctx);
+    case 'discord_move_member':
+      return executeDiscordMoveMember(node, ctx);
+    case 'discord_create_thread':
+      return executeDiscordCreateThread(node, ctx);
+    case 'discord_send_thread_message':
+      return executeDiscordSendThreadMessage(node, ctx);
+    case 'discord_create_invite':
+      return executeDiscordCreateInvite(node, ctx);
+    case 'discord_create_scheduled_event':
+      return executeDiscordCreateScheduledEvent(node, ctx);
+
     default:
       throw new Error(`Unknown action type: ${node.type}`);
   }
@@ -795,4 +844,265 @@ async function executeApproveJoinRequest(node: FlowNode, ctx: FlowContext): Prom
   const userId = interpolate(String(node.config.userId ?? '{{trigger.userId}}'), ctx);
 
   return { action: 'approve_join_request', chatId, userId, executed: true };
+}
+
+// ---------------------------------------------------------------------------
+// Discord actions
+// ---------------------------------------------------------------------------
+
+async function executeDiscordSendMessage(node: FlowNode, ctx: FlowContext): Promise<unknown> {
+  const channelId = interpolate(String(node.config.channelId ?? '{{trigger.channelId}}'), ctx);
+  const content = interpolate(String(node.config.content ?? ''), ctx);
+
+  if (!content) {
+    throw new Error('discord_send_message requires content');
+  }
+
+  return { action: 'discord_send_message', platform: 'discord', channelId, content, executed: true };
+}
+
+async function executeDiscordSendEmbed(node: FlowNode, ctx: FlowContext): Promise<unknown> {
+  const channelId = interpolate(String(node.config.channelId ?? '{{trigger.channelId}}'), ctx);
+  const title = node.config.title ? interpolate(String(node.config.title), ctx) : undefined;
+  const description = node.config.description ? interpolate(String(node.config.description), ctx) : undefined;
+  const color = (node.config.color as number) ?? undefined;
+  const fields = (node.config.fields as Array<{ name: string; value: string; inline?: boolean }>) ?? [];
+  const footer = node.config.footer ? interpolate(String(node.config.footer), ctx) : undefined;
+  const image = node.config.image ? interpolate(String(node.config.image), ctx) : undefined;
+
+  return {
+    action: 'discord_send_embed',
+    platform: 'discord',
+    channelId,
+    embed: { title, description, color, fields, footer, image },
+    executed: true,
+  };
+}
+
+async function executeDiscordSendDM(node: FlowNode, ctx: FlowContext): Promise<unknown> {
+  const userId = interpolate(String(node.config.userId ?? '{{trigger.userId}}'), ctx);
+  const content = interpolate(String(node.config.content ?? ''), ctx);
+
+  if (!content) {
+    throw new Error('discord_send_dm requires content');
+  }
+
+  return { action: 'discord_send_dm', platform: 'discord', userId, content, executed: true };
+}
+
+async function executeDiscordEditMessage(node: FlowNode, ctx: FlowContext): Promise<unknown> {
+  const channelId = interpolate(String(node.config.channelId ?? '{{trigger.channelId}}'), ctx);
+  const messageId = interpolate(String(node.config.messageId ?? '{{trigger.messageId}}'), ctx);
+  const content = interpolate(String(node.config.content ?? ''), ctx);
+
+  if (!messageId) {
+    throw new Error('discord_edit_message requires messageId');
+  }
+
+  return { action: 'discord_edit_message', platform: 'discord', channelId, messageId, content, executed: true };
+}
+
+async function executeDiscordDeleteMessage(node: FlowNode, ctx: FlowContext): Promise<unknown> {
+  const channelId = interpolate(String(node.config.channelId ?? '{{trigger.channelId}}'), ctx);
+  const messageId = interpolate(String(node.config.messageId ?? '{{trigger.messageId}}'), ctx);
+
+  if (!messageId) {
+    throw new Error('discord_delete_message requires messageId');
+  }
+
+  return { action: 'discord_delete_message', platform: 'discord', channelId, messageId, executed: true };
+}
+
+async function executeDiscordAddReaction(node: FlowNode, ctx: FlowContext): Promise<unknown> {
+  const channelId = interpolate(String(node.config.channelId ?? '{{trigger.channelId}}'), ctx);
+  const messageId = interpolate(String(node.config.messageId ?? '{{trigger.messageId}}'), ctx);
+  const emoji = interpolate(String(node.config.emoji ?? ''), ctx);
+
+  if (!messageId || !emoji) {
+    throw new Error('discord_add_reaction requires messageId and emoji');
+  }
+
+  return { action: 'discord_add_reaction', platform: 'discord', channelId, messageId, emoji, executed: true };
+}
+
+async function executeDiscordRemoveReaction(node: FlowNode, ctx: FlowContext): Promise<unknown> {
+  const channelId = interpolate(String(node.config.channelId ?? '{{trigger.channelId}}'), ctx);
+  const messageId = interpolate(String(node.config.messageId ?? '{{trigger.messageId}}'), ctx);
+  const emoji = interpolate(String(node.config.emoji ?? ''), ctx);
+
+  if (!messageId || !emoji) {
+    throw new Error('discord_remove_reaction requires messageId and emoji');
+  }
+
+  return { action: 'discord_remove_reaction', platform: 'discord', channelId, messageId, emoji, executed: true };
+}
+
+async function executeDiscordPinMessage(node: FlowNode, ctx: FlowContext): Promise<unknown> {
+  const channelId = interpolate(String(node.config.channelId ?? '{{trigger.channelId}}'), ctx);
+  const messageId = interpolate(String(node.config.messageId ?? '{{trigger.messageId}}'), ctx);
+
+  if (!messageId) {
+    throw new Error('discord_pin_message requires messageId');
+  }
+
+  return { action: 'discord_pin_message', platform: 'discord', channelId, messageId, executed: true };
+}
+
+async function executeDiscordUnpinMessage(node: FlowNode, ctx: FlowContext): Promise<unknown> {
+  const channelId = interpolate(String(node.config.channelId ?? '{{trigger.channelId}}'), ctx);
+  const messageId = interpolate(String(node.config.messageId ?? '{{trigger.messageId}}'), ctx);
+
+  if (!messageId) {
+    throw new Error('discord_unpin_message requires messageId');
+  }
+
+  return { action: 'discord_unpin_message', platform: 'discord', channelId, messageId, executed: true };
+}
+
+async function executeDiscordBanMember(node: FlowNode, ctx: FlowContext): Promise<unknown> {
+  const guildId = interpolate(String(node.config.guildId ?? '{{trigger.guildId}}'), ctx);
+  const userId = interpolate(String(node.config.userId ?? '{{trigger.userId}}'), ctx);
+  const reason = node.config.reason ? interpolate(String(node.config.reason), ctx) : undefined;
+  const deleteMessageDays = (node.config.deleteMessageDays as number) ?? undefined;
+
+  return { action: 'discord_ban_member', platform: 'discord', guildId, userId, reason, deleteMessageDays, executed: true };
+}
+
+async function executeDiscordKickMember(node: FlowNode, ctx: FlowContext): Promise<unknown> {
+  const guildId = interpolate(String(node.config.guildId ?? '{{trigger.guildId}}'), ctx);
+  const userId = interpolate(String(node.config.userId ?? '{{trigger.userId}}'), ctx);
+  const reason = node.config.reason ? interpolate(String(node.config.reason), ctx) : undefined;
+
+  return { action: 'discord_kick_member', platform: 'discord', guildId, userId, reason, executed: true };
+}
+
+async function executeDiscordTimeoutMember(node: FlowNode, ctx: FlowContext): Promise<unknown> {
+  const guildId = interpolate(String(node.config.guildId ?? '{{trigger.guildId}}'), ctx);
+  const userId = interpolate(String(node.config.userId ?? '{{trigger.userId}}'), ctx);
+  const durationMs = (node.config.durationMs as number) ?? 60_000;
+  const reason = node.config.reason ? interpolate(String(node.config.reason), ctx) : undefined;
+
+  return { action: 'discord_timeout_member', platform: 'discord', guildId, userId, durationMs, reason, executed: true };
+}
+
+async function executeDiscordAddRole(node: FlowNode, ctx: FlowContext): Promise<unknown> {
+  const guildId = interpolate(String(node.config.guildId ?? '{{trigger.guildId}}'), ctx);
+  const userId = interpolate(String(node.config.userId ?? '{{trigger.userId}}'), ctx);
+  const roleId = interpolate(String(node.config.roleId ?? ''), ctx);
+
+  if (!roleId) {
+    throw new Error('discord_add_role requires roleId');
+  }
+
+  return { action: 'discord_add_role', platform: 'discord', guildId, userId, roleId, executed: true };
+}
+
+async function executeDiscordRemoveRole(node: FlowNode, ctx: FlowContext): Promise<unknown> {
+  const guildId = interpolate(String(node.config.guildId ?? '{{trigger.guildId}}'), ctx);
+  const userId = interpolate(String(node.config.userId ?? '{{trigger.userId}}'), ctx);
+  const roleId = interpolate(String(node.config.roleId ?? ''), ctx);
+
+  if (!roleId) {
+    throw new Error('discord_remove_role requires roleId');
+  }
+
+  return { action: 'discord_remove_role', platform: 'discord', guildId, userId, roleId, executed: true };
+}
+
+async function executeDiscordCreateRole(node: FlowNode, ctx: FlowContext): Promise<unknown> {
+  const guildId = interpolate(String(node.config.guildId ?? '{{trigger.guildId}}'), ctx);
+  const name = interpolate(String(node.config.name ?? ''), ctx);
+  const color = (node.config.color as number) ?? undefined;
+  const permissions = node.config.permissions ? String(node.config.permissions) : undefined;
+
+  if (!name) {
+    throw new Error('discord_create_role requires name');
+  }
+
+  return { action: 'discord_create_role', platform: 'discord', guildId, name, color, permissions, executed: true };
+}
+
+async function executeDiscordSetNickname(node: FlowNode, ctx: FlowContext): Promise<unknown> {
+  const guildId = interpolate(String(node.config.guildId ?? '{{trigger.guildId}}'), ctx);
+  const userId = interpolate(String(node.config.userId ?? '{{trigger.userId}}'), ctx);
+  const nickname = interpolate(String(node.config.nickname ?? ''), ctx);
+
+  return { action: 'discord_set_nickname', platform: 'discord', guildId, userId, nickname, executed: true };
+}
+
+async function executeDiscordCreateChannel(node: FlowNode, ctx: FlowContext): Promise<unknown> {
+  const guildId = interpolate(String(node.config.guildId ?? '{{trigger.guildId}}'), ctx);
+  const name = interpolate(String(node.config.name ?? ''), ctx);
+  const type = String(node.config.type ?? 'text');
+  const options = (node.config.options as Record<string, unknown>) ?? undefined;
+
+  if (!name) {
+    throw new Error('discord_create_channel requires name');
+  }
+
+  return { action: 'discord_create_channel', platform: 'discord', guildId, name, type, options, executed: true };
+}
+
+async function executeDiscordDeleteChannel(node: FlowNode, ctx: FlowContext): Promise<unknown> {
+  const channelId = interpolate(String(node.config.channelId ?? '{{trigger.channelId}}'), ctx);
+
+  if (!channelId) {
+    throw new Error('discord_delete_channel requires channelId');
+  }
+
+  return { action: 'discord_delete_channel', platform: 'discord', channelId, executed: true };
+}
+
+async function executeDiscordMoveMember(node: FlowNode, ctx: FlowContext): Promise<unknown> {
+  const guildId = interpolate(String(node.config.guildId ?? '{{trigger.guildId}}'), ctx);
+  const userId = interpolate(String(node.config.userId ?? '{{trigger.userId}}'), ctx);
+  const channelId = interpolate(String(node.config.channelId ?? ''), ctx);
+
+  if (!channelId) {
+    throw new Error('discord_move_member requires channelId');
+  }
+
+  return { action: 'discord_move_member', platform: 'discord', guildId, userId, channelId, executed: true };
+}
+
+async function executeDiscordCreateThread(node: FlowNode, ctx: FlowContext): Promise<unknown> {
+  const channelId = interpolate(String(node.config.channelId ?? '{{trigger.channelId}}'), ctx);
+  const name = interpolate(String(node.config.name ?? ''), ctx);
+  const options = (node.config.options as Record<string, unknown>) ?? undefined;
+
+  if (!name) {
+    throw new Error('discord_create_thread requires name');
+  }
+
+  return { action: 'discord_create_thread', platform: 'discord', channelId, name, options, executed: true };
+}
+
+async function executeDiscordSendThreadMessage(node: FlowNode, ctx: FlowContext): Promise<unknown> {
+  const threadId = interpolate(String(node.config.threadId ?? '{{trigger.threadId}}'), ctx);
+  const content = interpolate(String(node.config.content ?? ''), ctx);
+
+  if (!content) {
+    throw new Error('discord_send_thread_message requires content');
+  }
+
+  return { action: 'discord_send_thread_message', platform: 'discord', threadId, content, executed: true };
+}
+
+async function executeDiscordCreateInvite(node: FlowNode, ctx: FlowContext): Promise<unknown> {
+  const channelId = interpolate(String(node.config.channelId ?? '{{trigger.channelId}}'), ctx);
+  const options = (node.config.options as Record<string, unknown>) ?? undefined;
+
+  return { action: 'discord_create_invite', platform: 'discord', channelId, options, executed: true };
+}
+
+async function executeDiscordCreateScheduledEvent(node: FlowNode, ctx: FlowContext): Promise<unknown> {
+  const guildId = interpolate(String(node.config.guildId ?? '{{trigger.guildId}}'), ctx);
+  const name = interpolate(String(node.config.name ?? ''), ctx);
+  const options = (node.config.options as Record<string, unknown>) ?? {};
+
+  if (!name) {
+    throw new Error('discord_create_scheduled_event requires name');
+  }
+
+  return { action: 'discord_create_scheduled_event', platform: 'discord', guildId, name, options, executed: true };
 }

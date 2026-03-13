@@ -38,9 +38,11 @@ export class FlowsService {
   }
 
   async create(dto: CreateFlowDto) {
-    return this.prisma.flowDefinition.create({
-      data: { name: dto.name, description: dto.description },
-    });
+    const data: any = { name: dto.name, description: dto.description };
+    if (dto.platform) {
+      data.transportConfig = { platform: dto.platform, transport: 'auto' };
+    }
+    return this.prisma.flowDefinition.create({ data });
   }
 
   async update(id: string, dto: UpdateFlowDto) {
@@ -51,6 +53,12 @@ export class FlowsService {
     if (dto.nodesJson !== undefined) data.nodesJson = dto.nodesJson;
     if (dto.edgesJson !== undefined) data.edgesJson = dto.edgesJson;
     if (dto.transportConfig !== undefined) data.transportConfig = dto.transportConfig;
+    if (dto.platform !== undefined) {
+      // Merge platform into existing transportConfig
+      const existing = (await this.findOne(id)) as any;
+      const existingConfig = existing.transportConfig ?? {};
+      data.transportConfig = { ...existingConfig, platform: dto.platform };
+    }
 
     return this.prisma.flowDefinition.update({ where: { id }, data });
   }
@@ -560,6 +568,48 @@ export class FlowsService {
       case 'set_chat_description': return { chatId: '-100123456', description: 'New description', updated: true };
       case 'export_invite_link': return { inviteLink: 'https://t.me/+abc123xyz', chatId: '-100123456' };
       case 'get_chat_member': return { userId: 12345, status: 'member', canSendMessages: true };
+      // Discord Triggers
+      case 'discord_message_received': return { content: 'Hello!', author: { id: '123456789', username: 'TestUser' }, channelId: '987654321', guildId: '111222333' };
+      case 'discord_member_join': return { userId: '123456789', username: 'TestUser', guildId: '111222333' };
+      case 'discord_member_leave': return { userId: '123456789', username: 'TestUser', guildId: '111222333' };
+      case 'discord_reaction_add': return { userId: '123456789', messageId: '555666777', emoji: '👍', channelId: '987654321' };
+      case 'discord_reaction_remove': return { userId: '123456789', messageId: '555666777', emoji: '👍', channelId: '987654321' };
+      case 'discord_voice_state_update': return { userId: '123456789', channelId: '987654321', guildId: '111222333', selfMute: false };
+      case 'discord_interaction_create': return { interactionId: 'int_123', type: 2, commandName: 'test', userId: '123456789' };
+      case 'discord_channel_create': return { channelId: '987654321', name: 'new-channel', type: 'text', guildId: '111222333' };
+      case 'discord_channel_delete': return { channelId: '987654321', name: 'deleted-channel', guildId: '111222333' };
+      case 'discord_role_update': return { roleId: '444555666', name: 'Updated Role', guildId: '111222333' };
+      case 'discord_scheduled_event': return { eventId: 'evt_123', name: 'Test Event', guildId: '111222333' };
+      // Discord Conditions
+      case 'discord_has_role': return { hasRole: true, roleId: '444555666' };
+      case 'discord_channel_type': return { channelType: 'text', matched: true };
+      case 'discord_is_bot': return { isBot: false, matched: true };
+      case 'discord_message_has_embed': return { hasEmbed: true, embedCount: 1 };
+      case 'discord_member_permissions': return { hasPermissions: true, permissions: ['MANAGE_MESSAGES'] };
+      // Discord Actions
+      case 'discord_send_message': return { messageId: '888999000', sent: true, channelId: '987654321' };
+      case 'discord_send_embed': return { messageId: '888999001', sent: true, channelId: '987654321' };
+      case 'discord_send_dm': return { messageId: '888999002', sent: true, userId: '123456789' };
+      case 'discord_edit_message': return { messageId: '555666777', edited: true };
+      case 'discord_delete_message': return { messageId: '555666777', deleted: true };
+      case 'discord_add_reaction': return { messageId: '555666777', emoji: '👍', added: true };
+      case 'discord_remove_reaction': return { messageId: '555666777', emoji: '👍', removed: true };
+      case 'discord_pin_message': return { messageId: '555666777', pinned: true };
+      case 'discord_unpin_message': return { messageId: '555666777', unpinned: true };
+      case 'discord_ban_member': return { userId: '123456789', banned: true };
+      case 'discord_kick_member': return { userId: '123456789', kicked: true };
+      case 'discord_timeout_member': return { userId: '123456789', timedOut: true, durationMs: 60000 };
+      case 'discord_add_role': return { userId: '123456789', roleId: '444555666', added: true };
+      case 'discord_remove_role': return { userId: '123456789', roleId: '444555666', removed: true };
+      case 'discord_create_role': return { roleId: '777888999', name: 'New Role', created: true };
+      case 'discord_set_nickname': return { userId: '123456789', nickname: 'NewNick', updated: true };
+      case 'discord_create_channel': return { channelId: '999888777', name: 'new-channel', created: true };
+      case 'discord_delete_channel': return { channelId: '987654321', deleted: true };
+      case 'discord_move_member': return { userId: '123456789', channelId: '987654321', moved: true };
+      case 'discord_create_thread': return { threadId: '111000999', name: 'New Thread', created: true };
+      case 'discord_send_thread_message': return { messageId: '888999003', threadId: '111000999', sent: true };
+      case 'discord_create_invite': return { inviteCode: 'abc123', url: 'https://discord.gg/abc123' };
+      case 'discord_create_scheduled_event': return { eventId: 'evt_456', name: 'Scheduled Event', created: true };
       default: return { executed: true };
     }
   }

@@ -332,7 +332,8 @@ model FlowDefinition {
   description String?
   nodesJson   Json     @default("[]")
   edgesJson   Json     @default("[]")
-  transportConfig Json? // { transport: 'mtproto' | 'bot_api' | 'auto', botInstanceId?: string }
+  transportConfig Json? // { platform?: 'telegram'|'discord', transport: 'mtproto'|'bot_api'|'discord_bot'|'auto', botInstanceId?, discordBotInstanceId? }
+  platform    String   @default("telegram") // telegram | discord | cross_platform
   status      String   @default("draft") // draft | active | inactive
   version     Int      @default(1)
 
@@ -373,8 +374,10 @@ model BotInstance {
   name        String
   botToken    String
   botUsername String?
+  platform    String   @default("telegram") // telegram | discord
   type        String   @default("standard") // standard | manager
   apiUrl      String?  // HTTP API URL for this bot instance (e.g. http://localhost:3001)
+  metadata    Json?    // Platform-specific metadata (e.g. Discord guild IDs, intents)
   isActive    Boolean  @default(true)
   configVersion Int    @default(0)
   configHistory Json   @default("[]")
@@ -388,6 +391,7 @@ model BotInstance {
 
   @@unique([botUsername])
   @@index([isActive])
+  @@index([platform])
 }
 
 model BotCommand {

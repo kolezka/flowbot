@@ -61,7 +61,7 @@ describe('POST /api/execute-action', () => {
       const res = await execAction(app, 'send_message', { chatId: '100', text: 'hi' })
 
       expect(res.status).toBe(200)
-      const json = await res.json()
+      const json = (await res.json()) as Record<string, unknown>
       expect(json).toEqual({ success: true, result: { messageId: 1 } })
       expect(deps.botApi.sendMessage).toHaveBeenCalledWith('100', 'hi', expect.objectContaining({ parse_mode: 'HTML' }))
     })
@@ -121,7 +121,7 @@ describe('POST /api/execute-action', () => {
       const res = await execAction(app, 'forward_message', { toChatId: '200', fromChatId: '100', messageId: 5 })
 
       expect(res.status).toBe(200)
-      const json = await res.json()
+      const json = (await res.json()) as Record<string, unknown>
       expect(json.result).toEqual({ messageId: 13 })
       expect(deps.botApi.forwardMessage).toHaveBeenCalledWith('200', '100', 5)
     })
@@ -141,7 +141,7 @@ describe('POST /api/execute-action', () => {
       const res = await execAction(app, 'edit_message', { chatId: '100', messageId: 5, text: 'updated' })
 
       expect(res.status).toBe(200)
-      const json = await res.json()
+      const json = (await res.json()) as Record<string, unknown>
       expect(json.result).toEqual({ edited: true })
       expect(deps.botApi.editMessageText).toHaveBeenCalledWith('100', 5, 'updated', expect.any(Object))
     })
@@ -152,7 +152,7 @@ describe('POST /api/execute-action', () => {
       const res = await execAction(app, 'delete_message', { chatId: '100', messageId: 5 })
 
       expect(res.status).toBe(200)
-      const json = await res.json()
+      const json = (await res.json()) as Record<string, unknown>
       expect(json.result).toEqual({ deleted: true })
       expect(deps.botApi.deleteMessage).toHaveBeenCalledWith('100', 5)
     })
@@ -163,7 +163,7 @@ describe('POST /api/execute-action', () => {
       const res = await execAction(app, 'pin_message', { chatId: '100', messageId: 5 })
 
       expect(res.status).toBe(200)
-      const json = await res.json()
+      const json = (await res.json()) as Record<string, unknown>
       expect(json.result).toEqual({ pinned: true })
       expect(deps.botApi.pinChatMessage).toHaveBeenCalledWith('100', 5, expect.any(Object))
     })
@@ -174,7 +174,7 @@ describe('POST /api/execute-action', () => {
       const res = await execAction(app, 'unpin_message', { chatId: '100', messageId: 5 })
 
       expect(res.status).toBe(200)
-      const json = await res.json()
+      const json = (await res.json()) as Record<string, unknown>
       expect(json.result).toEqual({ unpinned: true })
       expect(deps.botApi.unpinChatMessage).toHaveBeenCalledWith('100', 5)
     })
@@ -198,7 +198,7 @@ describe('POST /api/execute-action', () => {
       const res = await execAction(app, 'ban_user', { chatId: '100', userId: 42 })
 
       expect(res.status).toBe(200)
-      const json = await res.json()
+      const json = (await res.json()) as Record<string, unknown>
       expect(json.result).toEqual({ banned: true })
       expect(deps.botApi.banChatMember).toHaveBeenCalledWith('100', 42)
     })
@@ -209,7 +209,7 @@ describe('POST /api/execute-action', () => {
       const res = await execAction(app, 'mute_user', { chatId: '100', userId: 42, permissions: {} })
 
       expect(res.status).toBe(200)
-      const json = await res.json()
+      const json = (await res.json()) as Record<string, unknown>
       expect(json.result).toEqual({ restricted: true })
       expect(deps.botApi.restrictChatMember).toHaveBeenCalled()
     })
@@ -220,7 +220,7 @@ describe('POST /api/execute-action', () => {
       const res = await execAction(app, 'promote_user', { chatId: '100', userId: 42, privileges: { canManageChat: true } })
 
       expect(res.status).toBe(200)
-      const json = await res.json()
+      const json = (await res.json()) as Record<string, unknown>
       expect(json.result).toEqual({ promoted: true })
       expect(deps.botApi.promoteChatMember).toHaveBeenCalledWith('100', 42, expect.objectContaining({ can_manage_chat: true }))
     })
@@ -235,7 +235,7 @@ describe('POST /api/execute-action', () => {
       const res = await execAction(app, 'set_chat_title', { chatId: '100', title: 'New Title' })
 
       expect(res.status).toBe(200)
-      const json = await res.json()
+      const json = (await res.json()) as Record<string, unknown>
       expect(json.result).toEqual({ updated: true })
       expect(deps.botApi.setChatTitle).toHaveBeenCalledWith('100', 'New Title')
     })
@@ -255,7 +255,7 @@ describe('POST /api/execute-action', () => {
       const res = await execAction(app, 'export_invite_link', { chatId: '100' })
 
       expect(res.status).toBe(200)
-      const json = await res.json()
+      const json = (await res.json()) as Record<string, unknown>
       expect(json.result).toEqual({ inviteLink: 'https://t.me/+invite' })
     })
 
@@ -265,7 +265,7 @@ describe('POST /api/execute-action', () => {
       const res = await execAction(app, 'leave_chat', { chatId: '100' })
 
       expect(res.status).toBe(200)
-      const json = await res.json()
+      const json = (await res.json()) as Record<string, unknown>
       expect(json.result).toEqual({ left: true })
       expect(deps.botApi.leaveChat).toHaveBeenCalledWith('100')
     })
@@ -285,7 +285,7 @@ describe('POST /api/execute-action', () => {
       })
 
       expect(res.status).toBe(200)
-      const json = await res.json()
+      const json = (await res.json()) as Record<string, unknown>
       expect(json.result).toEqual({ messageId: 15 })
       expect(deps.botApi.sendPoll).toHaveBeenCalledWith(
         '100',
@@ -306,7 +306,7 @@ describe('POST /api/execute-action', () => {
       })
 
       expect(res.status).toBe(200)
-      const json = await res.json()
+      const json = (await res.json()) as Record<string, unknown>
       expect(json.result).toEqual({ answered: true })
       expect(deps.botApi.answerCallbackQuery).toHaveBeenCalledWith('cq-1', expect.objectContaining({ text: 'Done!', show_alert: true }))
     })
@@ -325,7 +325,7 @@ describe('POST /api/execute-action', () => {
       })
 
       expect(res.status).toBe(400)
-      const json = await res.json()
+      const json = (await res.json()) as Record<string, unknown>
       expect(json.success).toBe(false)
       expect(json.error).toContain('action')
     })
@@ -336,7 +336,7 @@ describe('POST /api/execute-action', () => {
       const res = await execAction(app, 'nonexistent_action', { chatId: '100' })
 
       expect(res.status).toBe(400)
-      const json = await res.json()
+      const json = (await res.json()) as Record<string, unknown>
       expect(json.success).toBe(false)
       expect(json.error).toContain('Unknown action')
     })
@@ -348,7 +348,7 @@ describe('POST /api/execute-action', () => {
       const res = await execAction(app, 'send_message', { chatId: '100', text: 'hi' })
 
       expect(res.status).toBe(500)
-      const json = await res.json()
+      const json = (await res.json()) as Record<string, unknown>
       expect(json.success).toBe(false)
       expect(json.error).toBe('Bot token revoked')
     })
