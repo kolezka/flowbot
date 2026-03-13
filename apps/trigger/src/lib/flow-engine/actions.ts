@@ -6,29 +6,124 @@ export async function executeAction(node: FlowNode, ctx: FlowContext): Promise<u
   switch (node.type) {
     case 'send_message':
       return executeSendMessage(node, ctx);
+    case 'send_photo':
+      return executeSendPhoto(node, ctx);
     case 'forward_message':
       return executeForwardMessage(node, ctx);
+    case 'copy_message':
+      return executeCopyMessage(node, ctx);
+    case 'edit_message':
+      return executeEditMessage(node, ctx);
+    case 'delete_message':
+      return executeDeleteMessage(node, ctx);
+    case 'pin_message':
+      return executePinMessage(node, ctx);
+    case 'unpin_message':
+      return executeUnpinMessage(node, ctx);
     case 'ban_user':
       return executeBanUser(node, ctx);
     case 'mute_user':
       return executeMuteUser(node, ctx);
+    case 'restrict_user':
+      return executeRestrictUser(node, ctx);
+    case 'promote_user':
+      return executePromoteUser(node, ctx);
+    case 'create_poll':
+      return executeCreatePoll(node, ctx);
+    case 'answer_callback_query':
+      return executeAnswerCallbackQuery(node, ctx);
     case 'api_call':
       return executeApiCall(node, ctx);
     case 'delay':
       return executeDelay(node, ctx);
     case 'bot_action':
       return executeBotAction(node, ctx);
+    case 'send_video':
+      return executeSendVideo(node, ctx);
+    case 'send_document':
+      return executeSendDocument(node, ctx);
+    case 'send_sticker':
+      return executeSendSticker(node, ctx);
+    case 'send_location':
+      return executeSendLocation(node, ctx);
+    case 'send_voice':
+      return executeSendVoice(node, ctx);
+    case 'send_contact':
+      return executeSendContact(node, ctx);
+    case 'set_chat_title':
+      return executeSetChatTitle(node, ctx);
+    case 'set_chat_description':
+      return executeSetChatDescription(node, ctx);
+    case 'export_invite_link':
+      return executeExportInviteLink(node, ctx);
+    case 'get_chat_member':
+      return executeGetChatMember(node, ctx);
+    case 'send_animation':
+      return executeSendAnimation(node, ctx);
+    case 'send_venue':
+      return executeSendVenue(node, ctx);
+    case 'send_dice':
+      return executeSendDice(node, ctx);
+    case 'send_media_group':
+      return executeSendMediaGroup(node, ctx);
+    case 'send_audio':
+      return executeSendAudio(node, ctx);
+    case 'leave_chat':
+      return executeLeaveChat(node, ctx);
+    case 'get_chat_info':
+      return executeGetChatInfo(node, ctx);
+    case 'set_chat_photo':
+      return executeSetChatPhoto(node, ctx);
+    case 'delete_chat_photo':
+      return executeDeleteChatPhoto(node, ctx);
+    case 'approve_join_request':
+      return executeApproveJoinRequest(node, ctx);
     default:
       throw new Error(`Unknown action type: ${node.type}`);
   }
 }
 
+// ---------------------------------------------------------------------------
+// Messaging actions
+// ---------------------------------------------------------------------------
+
 async function executeSendMessage(node: FlowNode, ctx: FlowContext): Promise<unknown> {
   const chatId = interpolate(String(node.config.chatId ?? '{{trigger.chatId}}'), ctx);
   const text = interpolate(String(node.config.text ?? ''), ctx);
+  const parseMode = String(node.config.parseMode ?? 'HTML');
+  const disableNotification = Boolean(node.config.disableNotification ?? false);
+  const replyToMessageId = node.config.replyToMessageId
+    ? interpolate(String(node.config.replyToMessageId), ctx)
+    : undefined;
 
-  // In production this would call the transport layer
-  return { action: 'send_message', chatId, text, executed: true };
+  return {
+    action: 'send_message',
+    chatId,
+    text,
+    parseMode,
+    disableNotification,
+    replyToMessageId,
+    executed: true,
+  };
+}
+
+/**
+ * Send a photo message with optional caption.
+ * Config: { chatId, photoUrl, caption?, parseMode? }
+ */
+async function executeSendPhoto(node: FlowNode, ctx: FlowContext): Promise<unknown> {
+  const chatId = interpolate(String(node.config.chatId ?? '{{trigger.chatId}}'), ctx);
+  const photoUrl = interpolate(String(node.config.photoUrl ?? ''), ctx);
+  const caption = node.config.caption
+    ? interpolate(String(node.config.caption), ctx)
+    : undefined;
+  const parseMode = String(node.config.parseMode ?? 'HTML');
+
+  if (!photoUrl) {
+    throw new Error('send_photo requires photoUrl');
+  }
+
+  return { action: 'send_photo', chatId, photoUrl, caption, parseMode, executed: true };
 }
 
 async function executeForwardMessage(node: FlowNode, ctx: FlowContext): Promise<unknown> {
@@ -38,6 +133,270 @@ async function executeForwardMessage(node: FlowNode, ctx: FlowContext): Promise<
 
   return { action: 'forward_message', fromChatId, toChatId, messageId, executed: true };
 }
+
+/**
+ * Copy a message to another chat (like forward but without the "Forwarded from" header).
+ * Config: { fromChatId, toChatId, messageId? }
+ */
+async function executeCopyMessage(node: FlowNode, ctx: FlowContext): Promise<unknown> {
+  const fromChatId = interpolate(String(node.config.fromChatId ?? '{{trigger.chatId}}'), ctx);
+  const toChatId = interpolate(String(node.config.toChatId ?? ''), ctx);
+  const messageId = node.config.messageId
+    ? interpolate(String(node.config.messageId), ctx)
+    : ctx.triggerData.messageId;
+
+  if (!toChatId) {
+    throw new Error('copy_message requires toChatId');
+  }
+
+  return { action: 'copy_message', fromChatId, toChatId, messageId, executed: true };
+}
+
+/**
+ * Edit an existing message's text.
+ * Config: { chatId, messageId, text, parseMode? }
+ */
+async function executeEditMessage(node: FlowNode, ctx: FlowContext): Promise<unknown> {
+  const chatId = interpolate(String(node.config.chatId ?? '{{trigger.chatId}}'), ctx);
+  const messageId = node.config.messageId
+    ? interpolate(String(node.config.messageId), ctx)
+    : ctx.triggerData.messageId;
+  const text = interpolate(String(node.config.text ?? ''), ctx);
+  const parseMode = String(node.config.parseMode ?? 'HTML');
+
+  if (!messageId) {
+    throw new Error('edit_message requires messageId');
+  }
+
+  return { action: 'edit_message', chatId, messageId, text, parseMode, executed: true };
+}
+
+/**
+ * Delete a message from a chat.
+ * Config: { chatId, messageId }
+ */
+async function executeDeleteMessage(node: FlowNode, ctx: FlowContext): Promise<unknown> {
+  const chatId = interpolate(String(node.config.chatId ?? '{{trigger.chatId}}'), ctx);
+  const messageId = node.config.messageId
+    ? interpolate(String(node.config.messageId), ctx)
+    : ctx.triggerData.messageId;
+
+  if (!messageId) {
+    throw new Error('delete_message requires messageId');
+  }
+
+  return { action: 'delete_message', chatId, messageId, executed: true };
+}
+
+/**
+ * Pin a message in a chat.
+ * Config: { chatId, messageId, disableNotification? }
+ */
+async function executePinMessage(node: FlowNode, ctx: FlowContext): Promise<unknown> {
+  const chatId = interpolate(String(node.config.chatId ?? '{{trigger.chatId}}'), ctx);
+  const messageId = node.config.messageId
+    ? interpolate(String(node.config.messageId), ctx)
+    : ctx.triggerData.messageId;
+  const disableNotification = Boolean(node.config.disableNotification ?? false);
+
+  if (!messageId) {
+    throw new Error('pin_message requires messageId');
+  }
+
+  return { action: 'pin_message', chatId, messageId, disableNotification, executed: true };
+}
+
+/**
+ * Unpin a message or all messages in a chat.
+ * Config: { chatId, messageId? } — if messageId is omitted, unpins all messages.
+ */
+async function executeUnpinMessage(node: FlowNode, ctx: FlowContext): Promise<unknown> {
+  const chatId = interpolate(String(node.config.chatId ?? '{{trigger.chatId}}'), ctx);
+  const messageId = node.config.messageId
+    ? interpolate(String(node.config.messageId), ctx)
+    : undefined;
+
+  return { action: 'unpin_message', chatId, messageId, unpinAll: !messageId, executed: true };
+}
+
+/**
+ * Send a video message with optional caption.
+ * Config: { chatId, videoUrl, caption?, parseMode?, duration?, width?, height?, supportsStreaming? }
+ */
+async function executeSendVideo(node: FlowNode, ctx: FlowContext): Promise<unknown> {
+  const chatId = interpolate(String(node.config.chatId ?? '{{trigger.chatId}}'), ctx);
+  const videoUrl = interpolate(String(node.config.videoUrl ?? ''), ctx);
+  const caption = node.config.caption
+    ? interpolate(String(node.config.caption), ctx)
+    : undefined;
+  const parseMode = String(node.config.parseMode ?? 'HTML');
+  const duration = (node.config.duration as number) ?? undefined;
+  const width = (node.config.width as number) ?? undefined;
+  const height = (node.config.height as number) ?? undefined;
+  const supportsStreaming = Boolean(node.config.supportsStreaming ?? true);
+
+  if (!videoUrl) {
+    throw new Error('send_video requires videoUrl');
+  }
+
+  return { action: 'send_video', chatId, videoUrl, caption, parseMode, duration, width, height, supportsStreaming, executed: true };
+}
+
+/**
+ * Send a document/file message with optional caption.
+ * Config: { chatId, documentUrl, caption?, parseMode?, fileName? }
+ */
+async function executeSendDocument(node: FlowNode, ctx: FlowContext): Promise<unknown> {
+  const chatId = interpolate(String(node.config.chatId ?? '{{trigger.chatId}}'), ctx);
+  const documentUrl = interpolate(String(node.config.documentUrl ?? ''), ctx);
+  const caption = node.config.caption
+    ? interpolate(String(node.config.caption), ctx)
+    : undefined;
+  const parseMode = String(node.config.parseMode ?? 'HTML');
+  const fileName = node.config.fileName
+    ? interpolate(String(node.config.fileName), ctx)
+    : undefined;
+
+  if (!documentUrl) {
+    throw new Error('send_document requires documentUrl');
+  }
+
+  return { action: 'send_document', chatId, documentUrl, caption, parseMode, fileName, executed: true };
+}
+
+/**
+ * Send a sticker message.
+ * Config: { chatId, sticker (file_id or URL) }
+ */
+async function executeSendSticker(node: FlowNode, ctx: FlowContext): Promise<unknown> {
+  const chatId = interpolate(String(node.config.chatId ?? '{{trigger.chatId}}'), ctx);
+  const sticker = interpolate(String(node.config.sticker ?? ''), ctx);
+
+  if (!sticker) {
+    throw new Error('send_sticker requires sticker (file_id or URL)');
+  }
+
+  return { action: 'send_sticker', chatId, sticker, executed: true };
+}
+
+/**
+ * Send a location message.
+ * Config: { chatId, latitude, longitude, livePeriod? }
+ */
+async function executeSendLocation(node: FlowNode, ctx: FlowContext): Promise<unknown> {
+  const chatId = interpolate(String(node.config.chatId ?? '{{trigger.chatId}}'), ctx);
+  const latitude = Number(node.config.latitude ?? 0);
+  const longitude = Number(node.config.longitude ?? 0);
+  const livePeriod = (node.config.livePeriod as number) ?? undefined;
+
+  if (latitude === 0 && longitude === 0) {
+    throw new Error('send_location requires valid latitude and longitude');
+  }
+
+  return { action: 'send_location', chatId, latitude, longitude, livePeriod, executed: true };
+}
+
+/**
+ * Send a voice message.
+ * Config: { chatId, voiceUrl, caption?, parseMode?, duration? }
+ */
+async function executeSendVoice(node: FlowNode, ctx: FlowContext): Promise<unknown> {
+  const chatId = interpolate(String(node.config.chatId ?? '{{trigger.chatId}}'), ctx);
+  const voiceUrl = interpolate(String(node.config.voiceUrl ?? ''), ctx);
+  const caption = node.config.caption
+    ? interpolate(String(node.config.caption), ctx)
+    : undefined;
+  const parseMode = String(node.config.parseMode ?? 'HTML');
+  const duration = (node.config.duration as number) ?? undefined;
+
+  if (!voiceUrl) {
+    throw new Error('send_voice requires voiceUrl');
+  }
+
+  return { action: 'send_voice', chatId, voiceUrl, caption, parseMode, duration, executed: true };
+}
+
+/**
+ * Send a contact card.
+ * Config: { chatId, phoneNumber, firstName, lastName? }
+ */
+async function executeSendContact(node: FlowNode, ctx: FlowContext): Promise<unknown> {
+  const chatId = interpolate(String(node.config.chatId ?? '{{trigger.chatId}}'), ctx);
+  const phoneNumber = interpolate(String(node.config.phoneNumber ?? ''), ctx);
+  const firstName = interpolate(String(node.config.firstName ?? ''), ctx);
+  const lastName = node.config.lastName
+    ? interpolate(String(node.config.lastName), ctx)
+    : undefined;
+
+  if (!phoneNumber || !firstName) {
+    throw new Error('send_contact requires phoneNumber and firstName');
+  }
+
+  return { action: 'send_contact', chatId, phoneNumber, firstName, lastName, executed: true };
+}
+
+/**
+ * Set the title of a chat (group/supergroup/channel).
+ * Config: { chatId, title }
+ */
+async function executeSetChatTitle(node: FlowNode, ctx: FlowContext): Promise<unknown> {
+  const chatId = interpolate(String(node.config.chatId ?? '{{trigger.chatId}}'), ctx);
+  const title = interpolate(String(node.config.title ?? ''), ctx);
+
+  if (!title) {
+    throw new Error('set_chat_title requires title');
+  }
+  if (title.length > 128) {
+    throw new Error('Chat title must be 128 characters or fewer');
+  }
+
+  return { action: 'set_chat_title', chatId, title, executed: true };
+}
+
+/**
+ * Set the description of a chat (group/supergroup/channel).
+ * Config: { chatId, description }
+ */
+async function executeSetChatDescription(node: FlowNode, ctx: FlowContext): Promise<unknown> {
+  const chatId = interpolate(String(node.config.chatId ?? '{{trigger.chatId}}'), ctx);
+  const description = interpolate(String(node.config.description ?? ''), ctx);
+
+  if (description.length > 255) {
+    throw new Error('Chat description must be 255 characters or fewer');
+  }
+
+  return { action: 'set_chat_description', chatId, description, executed: true };
+}
+
+/**
+ * Export (generate) a chat invite link.
+ * Config: { chatId, name?, expireDate?, memberLimit? }
+ */
+async function executeExportInviteLink(node: FlowNode, ctx: FlowContext): Promise<unknown> {
+  const chatId = interpolate(String(node.config.chatId ?? '{{trigger.chatId}}'), ctx);
+  const name = node.config.name
+    ? interpolate(String(node.config.name), ctx)
+    : undefined;
+  const expireDate = (node.config.expireDate as number) ?? undefined;
+  const memberLimit = (node.config.memberLimit as number) ?? undefined;
+
+  return { action: 'export_invite_link', chatId, name, expireDate, memberLimit, executed: true };
+}
+
+/**
+ * Get information about a chat member.
+ * Config: { chatId, userId }
+ */
+async function executeGetChatMember(node: FlowNode, ctx: FlowContext): Promise<unknown> {
+  const chatId = interpolate(String(node.config.chatId ?? '{{trigger.chatId}}'), ctx);
+  const userId = interpolate(String(node.config.userId ?? '{{trigger.userId}}'), ctx);
+
+  return { action: 'get_chat_member', chatId, userId, executed: true };
+}
+
+// ---------------------------------------------------------------------------
+// User management actions
+// ---------------------------------------------------------------------------
 
 async function executeBanUser(node: FlowNode, ctx: FlowContext): Promise<unknown> {
   const chatId = interpolate(String(node.config.chatId ?? '{{trigger.chatId}}'), ctx);
@@ -54,6 +413,116 @@ async function executeMuteUser(node: FlowNode, ctx: FlowContext): Promise<unknow
 
   return { action: 'mute_user', chatId, userId, duration, executed: true };
 }
+
+/**
+ * Restrict a user's permissions in a chat.
+ * Config: { chatId, userId, permissions: { canSendMessages?, canSendMedia?, canSendPolls?,
+ *   canSendOther?, canAddWebPagePreviews?, canChangeInfo?, canInviteUsers?, canPinMessages? },
+ *   untilDate? (seconds from now) }
+ */
+async function executeRestrictUser(node: FlowNode, ctx: FlowContext): Promise<unknown> {
+  const chatId = interpolate(String(node.config.chatId ?? '{{trigger.chatId}}'), ctx);
+  const userId = interpolate(String(node.config.userId ?? '{{trigger.userId}}'), ctx);
+  const permissions = (node.config.permissions as Record<string, boolean>) ?? {
+    canSendMessages: false,
+    canSendMedia: false,
+    canSendPolls: false,
+    canSendOther: false,
+    canAddWebPagePreviews: false,
+    canChangeInfo: false,
+    canInviteUsers: false,
+    canPinMessages: false,
+  };
+  const untilDateSeconds = (node.config.untilDate as number) ?? 0;
+  const untilDate = untilDateSeconds > 0
+    ? Math.floor(Date.now() / 1000) + untilDateSeconds
+    : 0;
+
+  return { action: 'restrict_user', chatId, userId, permissions, untilDate, executed: true };
+}
+
+/**
+ * Promote a user to admin with specified privileges.
+ * Config: { chatId, userId, privileges: { canManageChat?, canDeleteMessages?, canManageVideoChats?,
+ *   canRestrictMembers?, canPromoteMembers?, canChangeInfo?, canInviteUsers?, canPostMessages?,
+ *   canEditMessages?, canPinMessages? } }
+ */
+async function executePromoteUser(node: FlowNode, ctx: FlowContext): Promise<unknown> {
+  const chatId = interpolate(String(node.config.chatId ?? '{{trigger.chatId}}'), ctx);
+  const userId = interpolate(String(node.config.userId ?? '{{trigger.userId}}'), ctx);
+  const privileges = (node.config.privileges as Record<string, boolean>) ?? {
+    canManageChat: true,
+    canDeleteMessages: false,
+    canRestrictMembers: false,
+    canPromoteMembers: false,
+    canChangeInfo: false,
+    canInviteUsers: true,
+    canPinMessages: false,
+  };
+
+  return { action: 'promote_user', chatId, userId, privileges, executed: true };
+}
+
+// ---------------------------------------------------------------------------
+// Interactive actions
+// ---------------------------------------------------------------------------
+
+/**
+ * Create a poll in a chat.
+ * Config: { chatId, question, options: string[], isAnonymous?, allowsMultipleAnswers?, type? ('regular' | 'quiz'), correctOptionId? }
+ */
+async function executeCreatePoll(node: FlowNode, ctx: FlowContext): Promise<unknown> {
+  const chatId = interpolate(String(node.config.chatId ?? '{{trigger.chatId}}'), ctx);
+  const question = interpolate(String(node.config.question ?? ''), ctx);
+  const options = (node.config.options as string[]) ?? [];
+  const isAnonymous = (node.config.isAnonymous as boolean) ?? true;
+  const allowsMultipleAnswers = (node.config.allowsMultipleAnswers as boolean) ?? false;
+  const pollType = String(node.config.pollType ?? 'regular');
+  const correctOptionId = (node.config.correctOptionId as number) ?? undefined;
+
+  if (!question) {
+    throw new Error('create_poll requires question');
+  }
+  if (options.length < 2) {
+    throw new Error('create_poll requires at least 2 options');
+  }
+
+  return {
+    action: 'create_poll',
+    chatId,
+    question,
+    options,
+    isAnonymous,
+    allowsMultipleAnswers,
+    pollType,
+    correctOptionId,
+    executed: true,
+  };
+}
+
+/**
+ * Answer a callback query (inline button press) with optional alert.
+ * Config: { callbackQueryId, text?, showAlert?, url? }
+ */
+async function executeAnswerCallbackQuery(node: FlowNode, ctx: FlowContext): Promise<unknown> {
+  const callbackQueryId = interpolate(
+    String(node.config.callbackQueryId ?? '{{trigger.callbackQueryId}}'),
+    ctx,
+  );
+  const text = node.config.text
+    ? interpolate(String(node.config.text), ctx)
+    : undefined;
+  const showAlert = Boolean(node.config.showAlert ?? false);
+  const url = node.config.url
+    ? interpolate(String(node.config.url), ctx)
+    : undefined;
+
+  return { action: 'answer_callback_query', callbackQueryId, text, showAlert, url, executed: true };
+}
+
+// ---------------------------------------------------------------------------
+// Utility actions
+// ---------------------------------------------------------------------------
 
 async function executeApiCall(node: FlowNode, ctx: FlowContext): Promise<unknown> {
   const url = interpolate(String(node.config.url ?? ''), ctx);
@@ -152,4 +621,178 @@ async function executeBotAction(node: FlowNode, ctx: FlowContext): Promise<unkno
   }
 
   return { action: 'bot_action', botInstanceId, botAction: action, status: response.status, data };
+}
+
+// ---------------------------------------------------------------------------
+// Additional messaging actions
+// ---------------------------------------------------------------------------
+
+/**
+ * Send an animation (GIF) message with optional caption.
+ * Config: { chatId, animationUrl, caption?, parseMode?, duration?, width?, height? }
+ */
+async function executeSendAnimation(node: FlowNode, ctx: FlowContext): Promise<unknown> {
+  const chatId = interpolate(String(node.config.chatId ?? '{{trigger.chatId}}'), ctx);
+  const animationUrl = interpolate(String(node.config.animationUrl ?? ''), ctx);
+  const caption = node.config.caption
+    ? interpolate(String(node.config.caption), ctx)
+    : undefined;
+  const parseMode = String(node.config.parseMode ?? 'HTML');
+  const duration = (node.config.duration as number) ?? undefined;
+  const width = (node.config.width as number) ?? undefined;
+  const height = (node.config.height as number) ?? undefined;
+
+  if (!animationUrl) {
+    throw new Error('send_animation requires animationUrl');
+  }
+
+  return { action: 'send_animation', chatId, animationUrl, caption, parseMode, duration, width, height, executed: true };
+}
+
+/**
+ * Send a venue (location with name and address).
+ * Config: { chatId, latitude, longitude, title, address, foursquareId?, foursquareType? }
+ */
+async function executeSendVenue(node: FlowNode, ctx: FlowContext): Promise<unknown> {
+  const chatId = interpolate(String(node.config.chatId ?? '{{trigger.chatId}}'), ctx);
+  const latitude = Number(node.config.latitude ?? 0);
+  const longitude = Number(node.config.longitude ?? 0);
+  const title = interpolate(String(node.config.title ?? ''), ctx);
+  const address = interpolate(String(node.config.address ?? ''), ctx);
+  const foursquareId = node.config.foursquareId
+    ? interpolate(String(node.config.foursquareId), ctx)
+    : undefined;
+  const foursquareType = node.config.foursquareType
+    ? interpolate(String(node.config.foursquareType), ctx)
+    : undefined;
+
+  if (!title || !address) {
+    throw new Error('send_venue requires title and address');
+  }
+  if (latitude === 0 && longitude === 0) {
+    throw new Error('send_venue requires valid latitude and longitude');
+  }
+
+  return { action: 'send_venue', chatId, latitude, longitude, title, address, foursquareId, foursquareType, executed: true };
+}
+
+/**
+ * Send an animated dice/emoji with a random value.
+ * Config: { chatId, emoji? ('🎲' | '🎯' | '🏀' | '⚽' | '🎳' | '🎰') }
+ */
+async function executeSendDice(node: FlowNode, ctx: FlowContext): Promise<unknown> {
+  const chatId = interpolate(String(node.config.chatId ?? '{{trigger.chatId}}'), ctx);
+  const emoji = String(node.config.emoji ?? '🎲');
+
+  return { action: 'send_dice', chatId, emoji, executed: true };
+}
+
+/**
+ * Send a group of photos/videos as an album (2-10 items).
+ * Config: { chatId, media: Array<{ type: 'photo' | 'video', url: string, caption?: string }> }
+ */
+async function executeSendMediaGroup(node: FlowNode, ctx: FlowContext): Promise<unknown> {
+  const chatId = interpolate(String(node.config.chatId ?? '{{trigger.chatId}}'), ctx);
+  const media = (node.config.media as Array<{ type: string; url: string; caption?: string }>) ?? [];
+
+  if (media.length < 2) {
+    throw new Error('send_media_group requires at least 2 media items');
+  }
+  if (media.length > 10) {
+    throw new Error('send_media_group allows at most 10 media items');
+  }
+
+  const resolvedMedia = media.map((item) => ({
+    type: item.type,
+    url: interpolate(String(item.url), ctx),
+    caption: item.caption ? interpolate(String(item.caption), ctx) : undefined,
+  }));
+
+  return { action: 'send_media_group', chatId, media: resolvedMedia, executed: true };
+}
+
+/**
+ * Send an audio file with metadata.
+ * Config: { chatId, audioUrl, caption?, parseMode?, duration?, performer?, title? }
+ */
+async function executeSendAudio(node: FlowNode, ctx: FlowContext): Promise<unknown> {
+  const chatId = interpolate(String(node.config.chatId ?? '{{trigger.chatId}}'), ctx);
+  const audioUrl = interpolate(String(node.config.audioUrl ?? ''), ctx);
+  const caption = node.config.caption
+    ? interpolate(String(node.config.caption), ctx)
+    : undefined;
+  const parseMode = String(node.config.parseMode ?? 'HTML');
+  const duration = (node.config.duration as number) ?? undefined;
+  const performer = node.config.performer
+    ? interpolate(String(node.config.performer), ctx)
+    : undefined;
+  const title = node.config.title
+    ? interpolate(String(node.config.title), ctx)
+    : undefined;
+
+  if (!audioUrl) {
+    throw new Error('send_audio requires audioUrl');
+  }
+
+  return { action: 'send_audio', chatId, audioUrl, caption, parseMode, duration, performer, title, executed: true };
+}
+
+// ---------------------------------------------------------------------------
+// Additional chat management actions
+// ---------------------------------------------------------------------------
+
+/**
+ * Make the bot leave a chat.
+ * Config: { chatId }
+ */
+async function executeLeaveChat(node: FlowNode, ctx: FlowContext): Promise<unknown> {
+  const chatId = interpolate(String(node.config.chatId ?? '{{trigger.chatId}}'), ctx);
+
+  return { action: 'leave_chat', chatId, executed: true };
+}
+
+/**
+ * Get information about a chat (title, description, member count, etc.).
+ * Config: { chatId }
+ */
+async function executeGetChatInfo(node: FlowNode, ctx: FlowContext): Promise<unknown> {
+  const chatId = interpolate(String(node.config.chatId ?? '{{trigger.chatId}}'), ctx);
+
+  return { action: 'get_chat_info', chatId, executed: true };
+}
+
+/**
+ * Set a chat's profile photo.
+ * Config: { chatId, photoUrl }
+ */
+async function executeSetChatPhoto(node: FlowNode, ctx: FlowContext): Promise<unknown> {
+  const chatId = interpolate(String(node.config.chatId ?? '{{trigger.chatId}}'), ctx);
+  const photoUrl = interpolate(String(node.config.photoUrl ?? ''), ctx);
+
+  if (!photoUrl) {
+    throw new Error('set_chat_photo requires photoUrl');
+  }
+
+  return { action: 'set_chat_photo', chatId, photoUrl, executed: true };
+}
+
+/**
+ * Delete a chat's profile photo.
+ * Config: { chatId }
+ */
+async function executeDeleteChatPhoto(node: FlowNode, ctx: FlowContext): Promise<unknown> {
+  const chatId = interpolate(String(node.config.chatId ?? '{{trigger.chatId}}'), ctx);
+
+  return { action: 'delete_chat_photo', chatId, executed: true };
+}
+
+/**
+ * Approve a chat join request.
+ * Config: { chatId, userId }
+ */
+async function executeApproveJoinRequest(node: FlowNode, ctx: FlowContext): Promise<unknown> {
+  const chatId = interpolate(String(node.config.chatId ?? '{{trigger.chatId}}'), ctx);
+  const userId = interpolate(String(node.config.userId ?? '{{trigger.userId}}'), ctx);
+
+  return { action: 'approve_join_request', chatId, userId, executed: true };
 }

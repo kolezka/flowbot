@@ -20,7 +20,6 @@ const baseConfigSchema = v.object({
   databaseUrl: v.string(),
   anthropicApiKey: v.optional(v.string()),
   aiModEnabled: v.optional(v.pipe(v.string(), v.transform(val => val === 'true'), v.boolean()), 'false'),
-  salesBotUsername: v.optional(v.string()),
   triggerSecretKey: v.optional(v.string()),
   triggerApiUrl: v.optional(v.string()),
   apiUrl: v.optional(v.string(), 'http://localhost:3000'),

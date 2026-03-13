@@ -16,13 +16,23 @@ export class FlowEventForwarder {
   /**
    * Forward a message event to flows with `message_received` triggers.
    */
-  async onMessage(chatId: bigint, userId: bigint, text: string, messageId: number): Promise<void> {
+  async onMessage(
+    chatId: bigint,
+    userId: bigint,
+    text: string,
+    messageId: number,
+    messageType: string = 'text',
+    hasMedia: boolean = false,
+  ): Promise<void> {
     const triggerData = {
       type: 'message_received',
       chatId: chatId.toString(),
       userId: userId.toString(),
       text,
       messageId,
+      messageType,
+      hasMedia,
+      mediaType: hasMedia ? messageType : undefined,
       timestamp: new Date().toISOString(),
     }
 
@@ -42,6 +52,227 @@ export class FlowEventForwarder {
     }
 
     await this.forwardToMatchingFlows('user_joins', triggerData, chatId)
+  }
+
+  /**
+   * Forward a user leave/kick event to flows with `user_leaves` triggers.
+   */
+  async onUserLeave(chatId: bigint, userId: bigint, username?: string, wasKicked: boolean = false): Promise<void> {
+    const triggerData = {
+      type: 'user_leaves',
+      chatId: chatId.toString(),
+      userId: userId.toString(),
+      userName: username ?? '',
+      wasKicked,
+      timestamp: new Date().toISOString(),
+    }
+
+    await this.forwardToMatchingFlows('user_leaves', triggerData, chatId)
+  }
+
+  /**
+   * Forward a callback query (inline button press) to flows with `callback_query` triggers.
+   */
+  async onCallbackQuery(
+    userId: bigint,
+    callbackQueryId: string,
+    data: string,
+    chatId?: bigint,
+    messageId?: number,
+  ): Promise<void> {
+    const triggerData = {
+      type: 'callback_query',
+      userId: userId.toString(),
+      callbackQueryId,
+      callbackData: data,
+      chatId: chatId?.toString() ?? '',
+      messageId,
+      timestamp: new Date().toISOString(),
+    }
+
+    await this.forwardToMatchingFlows('callback_query', triggerData, chatId)
+  }
+
+  /**
+   * Forward a bot command to flows with `command_received` triggers.
+   */
+  async onCommandReceived(
+    chatId: bigint,
+    userId: bigint,
+    command: string,
+    args: string,
+    messageId: number,
+  ): Promise<void> {
+    const triggerData = {
+      type: 'command_received',
+      chatId: chatId.toString(),
+      userId: userId.toString(),
+      command,
+      args,
+      messageId,
+      text: `${command} ${args}`.trim(),
+      timestamp: new Date().toISOString(),
+    }
+
+    await this.forwardToMatchingFlows('command_received', triggerData, chatId)
+  }
+
+  /**
+   * Forward an edited message event to flows with `message_edited` triggers.
+   */
+  async onMessageEdited(
+    chatId: bigint,
+    userId: bigint,
+    text: string,
+    messageId: number,
+  ): Promise<void> {
+    const triggerData = {
+      type: 'message_edited',
+      chatId: chatId.toString(),
+      userId: userId.toString(),
+      text,
+      messageId,
+      timestamp: new Date().toISOString(),
+    }
+
+    await this.forwardToMatchingFlows('message_edited', triggerData, chatId)
+  }
+
+  /**
+   * Forward a chat member status update to flows with `chat_member_updated` triggers.
+   */
+  async onChatMemberUpdated(
+    chatId: bigint,
+    userId: bigint,
+    oldStatus: string,
+    newStatus: string,
+    username?: string,
+  ): Promise<void> {
+    const triggerData = {
+      type: 'chat_member_updated',
+      chatId: chatId.toString(),
+      userId: userId.toString(),
+      userName: username ?? '',
+      oldStatus,
+      newStatus,
+      timestamp: new Date().toISOString(),
+    }
+
+    await this.forwardToMatchingFlows('chat_member_updated', triggerData, chatId)
+  }
+
+  /**
+   * Forward a poll answer event to flows with `poll_answer` triggers.
+   */
+  async onPollAnswer(
+    userId: bigint,
+    pollId: string,
+    optionIds: number[],
+  ): Promise<void> {
+    const triggerData = {
+      type: 'poll_answer',
+      userId: userId.toString(),
+      pollId,
+      optionIds,
+      timestamp: new Date().toISOString(),
+    }
+
+    await this.forwardToMatchingFlows('poll_answer', triggerData)
+  }
+
+  /**
+   * Forward an inline query event to flows with `inline_query` triggers.
+   */
+  async onInlineQuery(
+    userId: bigint,
+    queryId: string,
+    query: string,
+    offset: string,
+  ): Promise<void> {
+    const triggerData = {
+      type: 'inline_query',
+      userId: userId.toString(),
+      queryId,
+      query,
+      offset,
+      timestamp: new Date().toISOString(),
+    }
+
+    await this.forwardToMatchingFlows('inline_query', triggerData)
+  }
+
+  /**
+   * Forward the bot's own chat member status change to flows with `my_chat_member` triggers.
+   */
+  async onMyChatMemberUpdated(
+    chatId: bigint,
+    oldStatus: string,
+    newStatus: string,
+  ): Promise<void> {
+    const triggerData = {
+      type: 'my_chat_member',
+      chatId: chatId.toString(),
+      oldStatus,
+      newStatus,
+      timestamp: new Date().toISOString(),
+    }
+
+    await this.forwardToMatchingFlows('my_chat_member', triggerData, chatId)
+  }
+
+  /**
+   * Forward a chat title change event to flows with `new_chat_title` triggers.
+   */
+  async onNewChatTitle(
+    chatId: bigint,
+    userId: bigint,
+    title: string,
+  ): Promise<void> {
+    const triggerData = {
+      type: 'new_chat_title',
+      chatId: chatId.toString(),
+      userId: userId.toString(),
+      title,
+      timestamp: new Date().toISOString(),
+    }
+
+    await this.forwardToMatchingFlows('new_chat_title', triggerData, chatId)
+  }
+
+  /**
+   * Forward a chat photo change event to flows with `new_chat_photo` triggers.
+   */
+  async onNewChatPhoto(
+    chatId: bigint,
+    userId: bigint,
+  ): Promise<void> {
+    const triggerData = {
+      type: 'new_chat_photo',
+      chatId: chatId.toString(),
+      userId: userId.toString(),
+      timestamp: new Date().toISOString(),
+    }
+
+    await this.forwardToMatchingFlows('new_chat_photo', triggerData, chatId)
+  }
+
+  /**
+   * Forward a chat join request event to flows with `chat_join_request` triggers.
+   */
+  async onChatJoinRequest(
+    chatId: bigint,
+    userId: bigint,
+    username?: string,
+  ): Promise<void> {
+    const triggerData = {
+      type: 'chat_join_request',
+      chatId: chatId.toString(),
+      userId: userId.toString(),
+      userName: username ?? '',
+      timestamp: new Date().toISOString(),
+    }
+
+    await this.forwardToMatchingFlows('chat_join_request', triggerData, chatId)
   }
 
   /**

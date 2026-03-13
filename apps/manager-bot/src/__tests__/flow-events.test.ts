@@ -140,6 +140,9 @@ describe('FlowEventForwarder', () => {
           userId: '5678',
           text: 'Hello world',
           messageId: 42,
+          messageType: 'text',
+          hasMedia: false,
+          mediaType: undefined,
           timestamp: expect.any(String),
         },
       })

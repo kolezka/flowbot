@@ -21,8 +21,17 @@ const DEFAULT_CONFIG: ExecutorConfig = {
 
 /** Set of node types that produce side effects and must not be cached. */
 const NON_CACHEABLE_TYPES = new Set([
-  'delay', 'send_message', 'forward_message', 'ban_user', 'mute_user',
+  'delay', 'send_message', 'send_photo', 'forward_message', 'copy_message',
+  'edit_message', 'delete_message', 'pin_message', 'unpin_message',
+  'ban_user', 'mute_user', 'restrict_user', 'promote_user',
+  'create_poll', 'answer_callback_query',
   'bot_action', 'api_call', 'db_query', 'parallel_branch', 'notification',
+  'send_video', 'send_document', 'send_sticker', 'send_location',
+  'send_voice', 'send_contact', 'set_chat_title', 'set_chat_description',
+  'export_invite_link', 'get_chat_member',
+  'send_animation', 'send_venue', 'send_dice', 'send_media_group',
+  'send_audio', 'leave_chat', 'get_chat_info', 'set_chat_photo',
+  'delete_chat_photo', 'approve_join_request',
 ]);
 
 /**

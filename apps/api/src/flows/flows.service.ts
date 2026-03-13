@@ -495,21 +495,70 @@ export class FlowsService {
   private getSimulatedOutput(node: any): any {
     const type = node.data?.nodeType ?? node.type;
     switch (type) {
-      case 'message_received': return { text: 'Hello bot!', from: { id: 12345, name: 'Test User' } };
+      // Triggers
+      case 'message_received': return { text: 'Hello bot!', from: { id: 12345, name: 'Test User' }, messageType: 'text' };
       case 'user_joins': return { userId: 12345, username: 'testuser' };
+      case 'user_leaves': return { userId: 12345, username: 'testuser', wasKicked: false };
+      case 'callback_query': return { callbackQueryId: 'cq_123', callbackData: 'action:confirm', from: { id: 12345, name: 'Test User' } };
+      case 'command_received': return { command: '/start', args: 'ref123', from: { id: 12345, name: 'Test User' } };
+      case 'message_edited': return { messageId: 555, text: 'Edited message text', from: { id: 12345, name: 'Test User' } };
+      case 'chat_member_updated': return { userId: 12345, oldStatus: 'member', newStatus: 'administrator' };
       case 'schedule': return { triggeredAt: new Date().toISOString() };
       case 'webhook': return { payload: { key: 'value' } };
+      // Conditions
       case 'keyword_match': return { matched: true, keyword: 'test' };
       case 'user_role': return { role: 'member', allowed: true };
       case 'time_based': return { inRange: true };
+      case 'message_type': return { messageType: 'text', matched: true };
+      case 'chat_type': return { chatType: 'supergroup', matched: true };
+      case 'regex_match': return { matched: true, pattern: '\\d+', match: '42' };
+      case 'has_media': return { hasMedia: true, mediaType: 'photo' };
+      // Actions
       case 'send_message': return { messageId: 999, sent: true };
-      case 'forward_message': return { forwarded: true };
+      case 'send_photo': return { messageId: 1000, sent: true, photoUrl: 'https://example.com/photo.jpg' };
+      case 'forward_message': return { forwarded: true, messageId: 1001 };
+      case 'copy_message': return { messageId: 1002, copied: true };
+      case 'edit_message': return { messageId: 555, edited: true };
+      case 'delete_message': return { messageId: 555, deleted: true };
+      case 'pin_message': return { messageId: 555, pinned: true };
+      case 'unpin_message': return { unpinned: true };
       case 'ban_user': return { banned: true, userId: 12345 };
-      case 'mute_user': return { muted: true, userId: 12345 };
+      case 'mute_user': return { muted: true, userId: 12345, duration: 3600 };
+      case 'restrict_user': return { restricted: true, userId: 12345, permissions: { canSendMessages: false } };
+      case 'promote_user': return { promoted: true, userId: 12345, privileges: { canManageChat: true } };
+      case 'create_poll': return { pollId: 'poll_123', question: 'Test poll?', sent: true };
+      case 'answer_callback_query': return { answered: true, callbackQueryId: 'cq_123' };
       case 'api_call': return { statusCode: 200, body: { ok: true } };
       case 'delay': return { waited: '1s' };
+      case 'bot_action': return { action: 'sendMessage', status: 200, executed: true };
+      // Advanced
       case 'db_query': return { rows: 3 };
       case 'transform': return { transformed: true };
+      case 'loop': return { loopCount: 3 };
+      case 'switch': return { matchedCase: 'default' };
+      case 'parallel_branch': return { branchCount: 2, results: {} };
+      // New triggers
+      case 'poll_answer': return { userId: 12345, pollId: 'poll_456', optionIds: [0, 2] };
+      case 'inline_query': return { userId: 12345, queryId: 'iq_789', query: 'search term', offset: '' };
+      case 'my_chat_member': return { chatId: '-100123456', oldStatus: 'member', newStatus: 'kicked' };
+      case 'new_chat_title': return { chatId: '-100123456', userId: 12345, title: 'New Group Title' };
+      case 'new_chat_photo': return { chatId: '-100123456', userId: 12345, photoUpdated: true };
+      // New conditions
+      case 'user_is_admin': return { isAdmin: true, status: 'administrator' };
+      case 'message_length': return { length: 42, matched: true, threshold: 100 };
+      case 'callback_data_match': return { matched: true, pattern: 'action:*', callbackData: 'action:confirm' };
+      case 'user_is_bot': return { isBot: false, matched: true };
+      // New actions
+      case 'send_video': return { messageId: 1010, sent: true, videoUrl: 'https://example.com/video.mp4' };
+      case 'send_document': return { messageId: 1011, sent: true, documentUrl: 'https://example.com/file.pdf' };
+      case 'send_sticker': return { messageId: 1012, sent: true, sticker: 'CAACAgIAAxkBAAI...' };
+      case 'send_location': return { messageId: 1013, sent: true, latitude: 51.5074, longitude: -0.1278 };
+      case 'send_voice': return { messageId: 1014, sent: true, voiceUrl: 'https://example.com/voice.ogg' };
+      case 'send_contact': return { messageId: 1015, sent: true, phoneNumber: '+1234567890', firstName: 'John' };
+      case 'set_chat_title': return { chatId: '-100123456', title: 'New Title', updated: true };
+      case 'set_chat_description': return { chatId: '-100123456', description: 'New description', updated: true };
+      case 'export_invite_link': return { inviteLink: 'https://t.me/+abc123xyz', chatId: '-100123456' };
+      case 'get_chat_member': return { userId: 12345, status: 'member', canSendMessages: true };
       default: return { executed: true };
     }
   }
