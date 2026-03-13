@@ -11,4 +11,5 @@ export class UpdateFlowDto {
   @ApiPropertyOptional() @IsOptional() @IsString() description?: string;
   @ApiPropertyOptional() @IsOptional() nodesJson?: any;
   @ApiPropertyOptional() @IsOptional() edgesJson?: any;
+  @ApiPropertyOptional() @IsOptional() transportConfig?: { transport: string; botInstanceId?: string };
 }

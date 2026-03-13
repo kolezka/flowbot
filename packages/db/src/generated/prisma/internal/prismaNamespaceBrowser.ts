@@ -343,6 +343,7 @@ export const FlowDefinitionScalarFieldEnum = {
   description: 'description',
   nodesJson: 'nodesJson',
   edgesJson: 'edgesJson',
+  transportConfig: 'transportConfig',
   status: 'status',
   version: 'version',
   createdAt: 'createdAt',

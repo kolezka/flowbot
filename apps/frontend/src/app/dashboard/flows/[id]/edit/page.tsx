@@ -793,6 +793,7 @@ export default function FlowEditorPage() {
   const [loaded, setLoaded] = useState(false);
   const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
   const [botInstances, setBotInstances] = useState<BotInstance[]>([]);
+  const [transportConfig, setTransportConfig] = useState<{ transport: string; botInstanceId?: string }>({ transport: 'auto' });
 
   // Execution visualization state
   const { executionState, setExecutionState } = useExecutionState();
@@ -809,6 +810,7 @@ export default function FlowEditorPage() {
       const loadedEdges = (flow.edgesJson || []) as Edge[];
       setNodes(loadedNodes);
       setEdges(loadedEdges);
+      setTransportConfig(flow.transportConfig ?? { transport: 'auto' });
       setLoaded(true);
     }).catch(() => router.push("/dashboard/flows"));
   }, [flowId]);
@@ -863,7 +865,7 @@ export default function FlowEditorPage() {
   const handleSave = async () => {
     setSaving(true);
     try {
-      await api.updateFlow(flowId, { nodesJson: nodes, edgesJson: edges });
+      await api.updateFlow(flowId, { nodesJson: nodes, edgesJson: edges, transportConfig });
     } finally {
       setSaving(false);
     }
@@ -978,6 +980,33 @@ export default function FlowEditorPage() {
           ) : (
             <Button variant="outline" size="sm" onClick={handleDeactivate}><Square className="mr-1 h-4 w-4" />Deactivate</Button>
           )}
+          {/* Transport Settings */}
+          <div className="flex items-center gap-2 ml-2 pl-2 border-l border-border">
+            <label className="text-xs text-muted-foreground whitespace-nowrap">Transport:</label>
+            <select
+              className="h-8 rounded-md border border-border bg-background px-2 text-xs"
+              value={transportConfig.transport}
+              onChange={(e) => setTransportConfig(prev => ({ ...prev, transport: e.target.value }))}
+            >
+              <option value="auto">Auto</option>
+              <option value="mtproto">MTProto (User Account)</option>
+              <option value="bot_api">Bot API</option>
+            </select>
+            {(transportConfig.transport === 'bot_api' || transportConfig.transport === 'auto') && (
+              <select
+                className="h-8 rounded-md border border-border bg-background px-2 text-xs"
+                value={transportConfig.botInstanceId ?? ''}
+                onChange={(e) => setTransportConfig(prev => ({ ...prev, botInstanceId: e.target.value || undefined }))}
+              >
+                <option value="">No bot selected</option>
+                {botInstances.filter(b => b.isActive).map(b => (
+                  <option key={b.id} value={b.id}>
+                    {b.name}{b.botUsername ? ` (@${b.botUsername})` : ''}
+                  </option>
+                ))}
+              </select>
+            )}
+          </div>
         </div>
       </div>
 

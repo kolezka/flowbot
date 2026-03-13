@@ -29,6 +29,7 @@ export const flowExecutionTask = task({
     try {
       const nodes = flow.nodesJson as unknown as FlowNode[];
       const edges = flow.edgesJson as unknown as FlowEdge[];
+      const transportConfig = (flow as any).transportConfig as { transport?: string; botInstanceId?: string } | undefined;
 
       // Enrich trigger data with cross-bot event correlation context
       const enrichedTriggerData = await enrichTriggerData(payload.triggerData);
@@ -36,7 +37,7 @@ export const flowExecutionTask = task({
       const ctx = await executeFlow(nodes, edges, enrichedTriggerData);
 
       // Dispatch action results to Telegram
-      const dispatchResults = await dispatchActions(ctx);
+      const dispatchResults = await dispatchActions(ctx, transportConfig);
 
       // Merge dispatch metadata into node results
       for (const dr of dispatchResults) {

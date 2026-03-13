@@ -50,6 +50,7 @@ export class FlowsService {
     if (dto.description !== undefined) data.description = dto.description;
     if (dto.nodesJson !== undefined) data.nodesJson = dto.nodesJson;
     if (dto.edgesJson !== undefined) data.edgesJson = dto.edgesJson;
+    if (dto.transportConfig !== undefined) data.transportConfig = dto.transportConfig;
 
     return this.prisma.flowDefinition.update({ where: { id }, data });
   }

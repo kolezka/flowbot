@@ -332,6 +332,7 @@ model FlowDefinition {
   description String?
   nodesJson   Json     @default("[]")
   edgesJson   Json     @default("[]")
+  transportConfig Json? // { transport: 'mtproto' | 'bot_api' | 'auto', botInstanceId?: string }
   status      String   @default("draft") // draft | active | inactive
   version     Int      @default(1)
 

@@ -92,9 +92,19 @@ export interface FlowEdge {
   label?: string;
 }
 
+export type FlowTransportMode = 'mtproto' | 'bot_api' | 'auto';
+
+export interface FlowTransportConfig {
+  /** Which transport to use for action execution. Default: 'auto' */
+  transport: FlowTransportMode;
+  /** Bot instance ID (used when transport is 'bot_api' or 'auto' with a bot selected) */
+  botInstanceId?: string;
+}
+
 export interface FlowDefinitionData {
   nodes: FlowNode[];
   edges: FlowEdge[];
+  transportConfig?: FlowTransportConfig;
 }
 
 export const NODE_CATEGORIES: Record<FlowNodeType, FlowNodeCategory> = {

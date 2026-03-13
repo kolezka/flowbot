@@ -22,13 +22,24 @@ const BOT_API_ACTIONS = new Set(['bot_action']);
 /**
  * After flow execution, dispatch action results to Telegram.
  * Returns dispatch results for logging/persistence.
+ *
+ * @param transportConfig - Per-flow transport configuration. When transport is
+ *   'bot_api' and a botInstanceId is set, actions are dispatched via the bot's
+ *   HTTP API. When 'auto', bot API is tried first (if botInstanceId is set) and
+ *   falls back to MTProto. Default behaviour (undefined / 'mtproto') uses the
+ *   GramJS MTProto transport.
  */
 export async function dispatchActions(
   ctx: FlowContext,
-  managerBotApiUrl?: string,
+  transportConfig?: { transport?: string; botInstanceId?: string },
 ): Promise<DispatchResult[]> {
   const results: DispatchResult[] = [];
   let transport: GramJsTransport | null = null;
+
+  const mode = transportConfig?.transport ?? 'mtproto';
+  const botInstanceId = transportConfig?.botInstanceId;
+  const useBot = mode === 'bot_api' && !!botInstanceId;
+  const useAuto = mode === 'auto' && !!botInstanceId;
 
   for (const [nodeId, result] of ctx.nodeResults) {
     if (result.status !== 'success' || !result.output) continue;
@@ -44,11 +55,30 @@ export async function dispatchActions(
     if (BOT_API_ACTIONS.has(action)) continue;
 
     try {
-      // Lazy-init transport
-      if (!transport) {
-        transport = await getTelegramTransport();
+      let response: unknown;
+
+      if (useBot) {
+        // Forced bot_api mode
+        response = await dispatchViaBotApi(action, output, botInstanceId!);
+      } else if (useAuto) {
+        // Auto mode: try bot API first, fall back to MTProto
+        try {
+          response = await dispatchViaBotApi(action, output, botInstanceId!);
+        } catch (botErr) {
+          logger.warn(`Bot API dispatch failed for ${action}, falling back to MTProto: ${botErr instanceof Error ? botErr.message : String(botErr)}`);
+          if (!transport) {
+            transport = await getTelegramTransport();
+          }
+          response = await dispatchToTelegram(transport, action, output);
+        }
+      } else {
+        // MTProto mode (default)
+        if (!transport) {
+          transport = await getTelegramTransport();
+        }
+        response = await dispatchToTelegram(transport, action, output);
       }
-      const response = await dispatchToTelegram(transport, action, output);
+
       results.push({ nodeId, dispatched: true, response });
     } catch (error) {
       const msg = error instanceof Error ? error.message : String(error);
@@ -58,6 +88,38 @@ export async function dispatchActions(
   }
 
   return results;
+}
+
+async function dispatchViaBotApi(
+  action: string,
+  params: Record<string, unknown>,
+  botInstanceId: string,
+): Promise<unknown> {
+  const { getPrisma } = await import('../prisma.js');
+  const prisma = getPrisma();
+
+  const botInstance = await prisma.botInstance.findUnique({
+    where: { id: botInstanceId },
+    select: { apiUrl: true, isActive: true },
+  });
+
+  if (!botInstance?.apiUrl || !botInstance.isActive) {
+    throw new Error(`Bot instance ${botInstanceId} not available`);
+  }
+
+  const response = await fetch(`${botInstance.apiUrl}/api/execute-action`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ action, params }),
+    signal: AbortSignal.timeout(15_000),
+  });
+
+  if (!response.ok) {
+    const text = await response.text().catch(() => '');
+    throw new Error(`Bot API returned ${response.status}: ${text}`);
+  }
+
+  return response.json();
 }
 
 async function dispatchToTelegram(

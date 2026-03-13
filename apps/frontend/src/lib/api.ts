@@ -598,6 +598,7 @@ export interface FlowDefinition {
   description?: string;
   nodesJson: any[];
   edgesJson: any[];
+  transportConfig?: { transport: string; botInstanceId?: string };
   status: string;
   version: number;
   _count?: { executions: number };
@@ -1259,7 +1260,7 @@ class ApiClient {
     return this.request<FlowDefinition>('/api/flows', { method: 'POST', body: JSON.stringify(data) });
   }
 
-  async updateFlow(id: string, data: { name?: string; description?: string; nodesJson?: any; edgesJson?: any }): Promise<FlowDefinition> {
+  async updateFlow(id: string, data: { name?: string; description?: string; nodesJson?: any; edgesJson?: any; transportConfig?: { transport: string; botInstanceId?: string } }): Promise<FlowDefinition> {
     return this.request<FlowDefinition>(`/api/flows/${id}`, { method: 'PATCH', body: JSON.stringify(data) });
   }
 
