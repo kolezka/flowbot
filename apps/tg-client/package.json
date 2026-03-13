@@ -7,14 +7,18 @@
     "node": ">=20.0.0"
   },
   "scripts": {
-    "authenticate": "tsx ./src/scripts/authenticate.ts"
+    "authenticate": "tsx ./src/scripts/authenticate.ts",
+    "test": "vitest run",
+    "test:integration": "vitest run --config vitest.integration.config.ts"
   },
   "dependencies": {
     "telegram": "^2.26.22",
     "tsx": "4.20.4"
   },
   "devDependencies": {
+    "@tg-allegro/telegram-transport": "workspace:*",
     "@types/node": "^22.15.21",
-    "typescript": "^5.9.2"
+    "typescript": "^5.9.2",
+    "vitest": "^4.1.0"
   }
 }
