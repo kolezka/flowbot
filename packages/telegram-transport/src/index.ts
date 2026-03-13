@@ -3,7 +3,7 @@ export type { Logger } from './logger.js'
 
 // Transport layer
 export { type ITelegramTransport } from './transport/ITelegramTransport.js'
-export type { MessageResult, PeerInfo, SendOptions, ForwardOptions } from './transport/ITelegramTransport.js'
+export type { MessageResult, PeerInfo, SendOptions, ForwardOptions, MediaOptions, ChatPermissions, AdminPrivileges, ChatMemberInfo } from './transport/ITelegramTransport.js'
 export { GramJsTransport } from './transport/GramJsTransport.js'
 export { FakeTelegramTransport } from './transport/FakeTelegramTransport.js'
 export { CircuitBreaker } from './transport/CircuitBreaker.js'

@@ -2,10 +2,11 @@ import type { EntityLike } from 'telegram/define'
 
 import type { StringSession } from 'telegram/sessions/index.js'
 import type { Logger } from '../logger.js'
-import type { ForwardOptions, ITelegramTransport, MessageResult, PeerInfo, SendOptions } from './ITelegramTransport.js'
+import type { AdminPrivileges, ChatMemberInfo, ChatPermissions, ForwardOptions, ITelegramTransport, MediaOptions, MessageResult, PeerInfo, SendOptions } from './ITelegramTransport.js'
 import { TelegramClient } from 'telegram'
 
 import { Api } from 'telegram/tl/index.js'
+import { generateRandomLong, returnBigInt } from 'telegram/Helpers.js'
 import { TransportError } from './errors.js'
 
 function toEntityLike(peer: string | bigint): EntityLike {
@@ -143,5 +144,632 @@ export class GramJsTransport implements ITelegramTransport {
       this.logger.error({ err: error, username }, 'Failed to resolve username')
       throw new TransportError(`Failed to resolve username: ${username}`, error)
     }
+  }
+
+  // --- Media messaging ---
+
+  async sendPhoto(peer: string | bigint, photoUrl: string, options?: MediaOptions): Promise<MessageResult> {
+    try {
+      this.logger.debug({ peer, photoUrl }, 'Sending photo')
+      const result = await this.client.sendFile(toEntityLike(peer), {
+        file: photoUrl,
+        caption: options?.caption,
+        parseMode: options?.parseMode,
+        replyTo: options?.replyToMsgId,
+        silent: options?.silent,
+      })
+      this.logger.debug({ messageId: result.id }, 'Photo sent')
+      return messageToResult(result)
+    }
+    catch (error) {
+      this.logger.error({ err: error, peer }, 'Failed to send photo')
+      throw new TransportError('Failed to send photo', error)
+    }
+  }
+
+  async sendVideo(peer: string | bigint, videoUrl: string, options?: MediaOptions): Promise<MessageResult> {
+    try {
+      this.logger.debug({ peer, videoUrl }, 'Sending video')
+      const result = await this.client.sendFile(toEntityLike(peer), {
+        file: videoUrl,
+        caption: options?.caption,
+        parseMode: options?.parseMode,
+        replyTo: options?.replyToMsgId,
+        silent: options?.silent,
+      })
+      this.logger.debug({ messageId: result.id }, 'Video sent')
+      return messageToResult(result)
+    }
+    catch (error) {
+      this.logger.error({ err: error, peer }, 'Failed to send video')
+      throw new TransportError('Failed to send video', error)
+    }
+  }
+
+  async sendDocument(peer: string | bigint, documentUrl: string, options?: MediaOptions): Promise<MessageResult> {
+    try {
+      this.logger.debug({ peer, documentUrl }, 'Sending document')
+      const result = await this.client.sendFile(toEntityLike(peer), {
+        file: documentUrl,
+        forceDocument: true,
+        caption: options?.caption,
+        parseMode: options?.parseMode,
+        replyTo: options?.replyToMsgId,
+        silent: options?.silent,
+      })
+      this.logger.debug({ messageId: result.id }, 'Document sent')
+      return messageToResult(result)
+    }
+    catch (error) {
+      this.logger.error({ err: error, peer }, 'Failed to send document')
+      throw new TransportError('Failed to send document', error)
+    }
+  }
+
+  async sendSticker(peer: string | bigint, sticker: string, options?: { silent?: boolean }): Promise<MessageResult> {
+    try {
+      this.logger.debug({ peer, sticker }, 'Sending sticker')
+      const result = await this.client.sendFile(toEntityLike(peer), {
+        file: sticker,
+        silent: options?.silent,
+      })
+      this.logger.debug({ messageId: result.id }, 'Sticker sent')
+      return messageToResult(result)
+    }
+    catch (error) {
+      this.logger.error({ err: error, peer }, 'Failed to send sticker')
+      throw new TransportError('Failed to send sticker', error)
+    }
+  }
+
+  async sendVoice(peer: string | bigint, voiceUrl: string, options?: MediaOptions): Promise<MessageResult> {
+    try {
+      this.logger.debug({ peer, voiceUrl }, 'Sending voice')
+      const result = await this.client.sendFile(toEntityLike(peer), {
+        file: voiceUrl,
+        voiceNote: true,
+        caption: options?.caption,
+        parseMode: options?.parseMode,
+        replyTo: options?.replyToMsgId,
+        silent: options?.silent,
+      })
+      this.logger.debug({ messageId: result.id }, 'Voice sent')
+      return messageToResult(result)
+    }
+    catch (error) {
+      this.logger.error({ err: error, peer }, 'Failed to send voice')
+      throw new TransportError('Failed to send voice', error)
+    }
+  }
+
+  async sendAudio(peer: string | bigint, audioUrl: string, options?: MediaOptions): Promise<MessageResult> {
+    try {
+      this.logger.debug({ peer, audioUrl }, 'Sending audio')
+      const result = await this.client.sendFile(toEntityLike(peer), {
+        file: audioUrl,
+        caption: options?.caption,
+        parseMode: options?.parseMode,
+        replyTo: options?.replyToMsgId,
+        silent: options?.silent,
+      })
+      this.logger.debug({ messageId: result.id }, 'Audio sent')
+      return messageToResult(result)
+    }
+    catch (error) {
+      this.logger.error({ err: error, peer }, 'Failed to send audio')
+      throw new TransportError('Failed to send audio', error)
+    }
+  }
+
+  async sendAnimation(peer: string | bigint, animationUrl: string, options?: MediaOptions): Promise<MessageResult> {
+    try {
+      this.logger.debug({ peer, animationUrl }, 'Sending animation')
+      const result = await this.client.sendFile(toEntityLike(peer), {
+        file: animationUrl,
+        caption: options?.caption,
+        parseMode: options?.parseMode,
+        replyTo: options?.replyToMsgId,
+        silent: options?.silent,
+      })
+      this.logger.debug({ messageId: result.id }, 'Animation sent')
+      return messageToResult(result)
+    }
+    catch (error) {
+      this.logger.error({ err: error, peer }, 'Failed to send animation')
+      throw new TransportError('Failed to send animation', error)
+    }
+  }
+
+  async sendLocation(peer: string | bigint, latitude: number, longitude: number, options?: { livePeriod?: number, silent?: boolean }): Promise<MessageResult> {
+    try {
+      this.logger.debug({ peer, latitude, longitude }, 'Sending location')
+      const entity = await this.client.getInputEntity(toEntityLike(peer))
+      const result = await this.client.invoke(
+        new Api.messages.SendMedia({
+          peer: entity,
+          media: new Api.InputMediaGeoPoint({
+            geoPoint: new Api.InputGeoPoint({ lat: latitude, long: longitude }),
+          }),
+          message: '',
+          silent: options?.silent,
+          randomId: generateRandomLong(),
+        }),
+      )
+      const msg = this.extractMessageFromUpdates(result)
+      this.logger.debug({ messageId: msg.id }, 'Location sent')
+      return messageToResult(msg)
+    }
+    catch (error) {
+      this.logger.error({ err: error, peer }, 'Failed to send location')
+      throw new TransportError('Failed to send location', error)
+    }
+  }
+
+  async sendContact(peer: string | bigint, phoneNumber: string, firstName: string, lastName?: string): Promise<MessageResult> {
+    try {
+      this.logger.debug({ peer, phoneNumber, firstName }, 'Sending contact')
+      const entity = await this.client.getInputEntity(toEntityLike(peer))
+      const result = await this.client.invoke(
+        new Api.messages.SendMedia({
+          peer: entity,
+          media: new Api.InputMediaContact({
+            phoneNumber,
+            firstName,
+            lastName: lastName ?? '',
+            vcard: '',
+          }),
+          message: '',
+          randomId: generateRandomLong(),
+        }),
+      )
+      const msg = this.extractMessageFromUpdates(result)
+      this.logger.debug({ messageId: msg.id }, 'Contact sent')
+      return messageToResult(msg)
+    }
+    catch (error) {
+      this.logger.error({ err: error, peer }, 'Failed to send contact')
+      throw new TransportError('Failed to send contact', error)
+    }
+  }
+
+  async sendVenue(peer: string | bigint, latitude: number, longitude: number, title: string, address: string): Promise<MessageResult> {
+    try {
+      this.logger.debug({ peer, latitude, longitude, title }, 'Sending venue')
+      const entity = await this.client.getInputEntity(toEntityLike(peer))
+      const result = await this.client.invoke(
+        new Api.messages.SendMedia({
+          peer: entity,
+          media: new Api.InputMediaVenue({
+            geoPoint: new Api.InputGeoPoint({ lat: latitude, long: longitude }),
+            title,
+            address,
+            provider: '',
+            venueId: '',
+            venueType: '',
+          }),
+          message: '',
+          randomId: generateRandomLong(),
+        }),
+      )
+      const msg = this.extractMessageFromUpdates(result)
+      this.logger.debug({ messageId: msg.id }, 'Venue sent')
+      return messageToResult(msg)
+    }
+    catch (error) {
+      this.logger.error({ err: error, peer }, 'Failed to send venue')
+      throw new TransportError('Failed to send venue', error)
+    }
+  }
+
+  async sendDice(peer: string | bigint, emoji?: string): Promise<MessageResult> {
+    try {
+      this.logger.debug({ peer, emoji }, 'Sending dice')
+      const entity = await this.client.getInputEntity(toEntityLike(peer))
+      const result = await this.client.invoke(
+        new Api.messages.SendMedia({
+          peer: entity,
+          media: new Api.InputMediaDice({
+            emoticon: emoji ?? '\uD83C\uDFB2',
+          }),
+          message: '',
+          randomId: generateRandomLong(),
+        }),
+      )
+      const msg = this.extractMessageFromUpdates(result)
+      this.logger.debug({ messageId: msg.id }, 'Dice sent')
+      return messageToResult(msg)
+    }
+    catch (error) {
+      this.logger.error({ err: error, peer }, 'Failed to send dice')
+      throw new TransportError('Failed to send dice', error)
+    }
+  }
+
+  // --- Message management ---
+
+  async copyMessage(fromPeer: string | bigint, toPeer: string | bigint, messageId: number): Promise<MessageResult[]> {
+    try {
+      this.logger.debug({ fromPeer, toPeer, messageId }, 'Copying message')
+      const results = await this.forwardMessage(fromPeer, toPeer, [messageId], { dropAuthor: true })
+      this.logger.debug({ count: results.length }, 'Message copied')
+      return results
+    }
+    catch (error) {
+      this.logger.error({ err: error, fromPeer, toPeer, messageId }, 'Failed to copy message')
+      throw new TransportError('Failed to copy message', error)
+    }
+  }
+
+  async editMessage(peer: string | bigint, messageId: number, text: string, options?: SendOptions): Promise<MessageResult> {
+    try {
+      this.logger.debug({ peer, messageId }, 'Editing message')
+      const entity = await this.client.getInputEntity(toEntityLike(peer))
+      const result = await this.client.invoke(
+        new Api.messages.EditMessage({
+          peer: entity,
+          id: messageId,
+          message: text,
+        }),
+      )
+      const msg = this.extractMessageFromUpdates(result)
+      this.logger.debug({ messageId: msg.id }, 'Message edited')
+      return messageToResult(msg)
+    }
+    catch (error) {
+      this.logger.error({ err: error, peer, messageId }, 'Failed to edit message')
+      throw new TransportError('Failed to edit message', error)
+    }
+  }
+
+  async deleteMessages(peer: string | bigint, messageIds: number[]): Promise<boolean> {
+    try {
+      this.logger.debug({ peer, messageIds }, 'Deleting messages')
+      try {
+        const entity = await this.client.getInputEntity(toEntityLike(peer))
+        await this.client.invoke(
+          new Api.channels.DeleteMessages({
+            channel: entity,
+            id: messageIds,
+          }),
+        )
+      }
+      catch {
+        await this.client.invoke(
+          new Api.messages.DeleteMessages({
+            id: messageIds,
+            revoke: true,
+          }),
+        )
+      }
+      this.logger.debug({ count: messageIds.length }, 'Messages deleted')
+      return true
+    }
+    catch (error) {
+      this.logger.error({ err: error, peer, messageIds }, 'Failed to delete messages')
+      throw new TransportError('Failed to delete messages', error)
+    }
+  }
+
+  async pinMessage(peer: string | bigint, messageId: number, silent?: boolean): Promise<boolean> {
+    try {
+      this.logger.debug({ peer, messageId, silent }, 'Pinning message')
+      const entity = await this.client.getInputEntity(toEntityLike(peer))
+      await this.client.invoke(
+        new Api.messages.UpdatePinnedMessage({
+          peer: entity,
+          id: messageId,
+          silent,
+        }),
+      )
+      this.logger.debug({ messageId }, 'Message pinned')
+      return true
+    }
+    catch (error) {
+      this.logger.error({ err: error, peer, messageId }, 'Failed to pin message')
+      throw new TransportError('Failed to pin message', error)
+    }
+  }
+
+  async unpinMessage(peer: string | bigint, messageId?: number): Promise<boolean> {
+    try {
+      this.logger.debug({ peer, messageId }, 'Unpinning message')
+      const entity = await this.client.getInputEntity(toEntityLike(peer))
+      await this.client.invoke(
+        new Api.messages.UpdatePinnedMessage({
+          peer: entity,
+          id: messageId ?? 0,
+          unpin: true,
+        }),
+      )
+      this.logger.debug({ messageId }, 'Message unpinned')
+      return true
+    }
+    catch (error) {
+      this.logger.error({ err: error, peer, messageId }, 'Failed to unpin message')
+      throw new TransportError('Failed to unpin message', error)
+    }
+  }
+
+  // --- User management ---
+
+  async banUser(peer: string | bigint, userId: string | bigint): Promise<boolean> {
+    try {
+      this.logger.debug({ peer, userId }, 'Banning user')
+      const channel = await this.client.getInputEntity(toEntityLike(peer))
+      const participant = await this.client.getInputEntity(toEntityLike(userId))
+      await this.client.invoke(
+        new Api.channels.EditBanned({
+          channel,
+          participant,
+          bannedRights: new Api.ChatBannedRights({
+            untilDate: 0,
+            viewMessages: true,
+            sendMessages: true,
+            sendMedia: true,
+            sendStickers: true,
+            sendGifs: true,
+            sendGames: true,
+            sendInline: true,
+            embedLinks: true,
+          }),
+        }),
+      )
+      this.logger.debug({ userId }, 'User banned')
+      return true
+    }
+    catch (error) {
+      this.logger.error({ err: error, peer, userId }, 'Failed to ban user')
+      throw new TransportError('Failed to ban user', error)
+    }
+  }
+
+  async restrictUser(peer: string | bigint, userId: string | bigint, permissions: ChatPermissions, untilDate?: number): Promise<boolean> {
+    try {
+      this.logger.debug({ peer, userId, permissions }, 'Restricting user')
+      const channel = await this.client.getInputEntity(toEntityLike(peer))
+      const participant = await this.client.getInputEntity(toEntityLike(userId))
+      await this.client.invoke(
+        new Api.channels.EditBanned({
+          channel,
+          participant,
+          bannedRights: new Api.ChatBannedRights({
+            untilDate: untilDate ?? 0,
+            sendMessages: permissions.canSendMessages === false ? true : undefined,
+            sendMedia: permissions.canSendMedia === false ? true : undefined,
+            sendPolls: permissions.canSendPolls === false ? true : undefined,
+            sendStickers: permissions.canSendOther === false ? true : undefined,
+            sendGifs: permissions.canSendOther === false ? true : undefined,
+            sendGames: permissions.canSendOther === false ? true : undefined,
+            sendInline: permissions.canSendOther === false ? true : undefined,
+            embedLinks: permissions.canAddWebPagePreviews === false ? true : undefined,
+            changeInfo: permissions.canChangeInfo === false ? true : undefined,
+            inviteUsers: permissions.canInviteUsers === false ? true : undefined,
+            pinMessages: permissions.canPinMessages === false ? true : undefined,
+          }),
+        }),
+      )
+      this.logger.debug({ userId }, 'User restricted')
+      return true
+    }
+    catch (error) {
+      this.logger.error({ err: error, peer, userId }, 'Failed to restrict user')
+      throw new TransportError('Failed to restrict user', error)
+    }
+  }
+
+  async promoteUser(peer: string | bigint, userId: string | bigint, privileges: AdminPrivileges): Promise<boolean> {
+    try {
+      this.logger.debug({ peer, userId, privileges }, 'Promoting user')
+      const channel = await this.client.getInputEntity(toEntityLike(peer))
+      const user = await this.client.getInputEntity(toEntityLike(userId))
+      await this.client.invoke(
+        new Api.channels.EditAdmin({
+          channel,
+          userId: user,
+          adminRights: new Api.ChatAdminRights({
+            manageCall: privileges.canManageVideoChats,
+            deleteMessages: privileges.canDeleteMessages,
+            banUsers: privileges.canRestrictMembers,
+            addAdmins: privileges.canPromoteMembers,
+            changeInfo: privileges.canChangeInfo,
+            inviteUsers: privileges.canInviteUsers,
+            pinMessages: privileges.canPinMessages,
+            other: privileges.canManageChat,
+          }),
+          rank: '',
+        }),
+      )
+      this.logger.debug({ userId }, 'User promoted')
+      return true
+    }
+    catch (error) {
+      this.logger.error({ err: error, peer, userId }, 'Failed to promote user')
+      throw new TransportError('Failed to promote user', error)
+    }
+  }
+
+  // --- Chat management ---
+
+  async setChatTitle(peer: string | bigint, title: string): Promise<boolean> {
+    try {
+      this.logger.debug({ peer, title }, 'Setting chat title')
+      const entity = await this.client.getInputEntity(toEntityLike(peer))
+      await this.client.invoke(
+        new Api.channels.EditTitle({
+          channel: entity,
+          title,
+        }),
+      )
+      this.logger.debug({ title }, 'Chat title set')
+      return true
+    }
+    catch (error) {
+      this.logger.error({ err: error, peer }, 'Failed to set chat title')
+      throw new TransportError('Failed to set chat title', error)
+    }
+  }
+
+  async setChatDescription(peer: string | bigint, description: string): Promise<boolean> {
+    try {
+      this.logger.debug({ peer }, 'Setting chat description')
+      const entity = await this.client.getInputEntity(toEntityLike(peer))
+      await this.client.invoke(
+        new Api.messages.EditChatAbout({
+          peer: entity,
+          about: description,
+        }),
+      )
+      this.logger.debug('Chat description set')
+      return true
+    }
+    catch (error) {
+      this.logger.error({ err: error, peer }, 'Failed to set chat description')
+      throw new TransportError('Failed to set chat description', error)
+    }
+  }
+
+  async exportInviteLink(peer: string | bigint): Promise<string> {
+    try {
+      this.logger.debug({ peer }, 'Exporting invite link')
+      const entity = await this.client.getInputEntity(toEntityLike(peer))
+      const result = await this.client.invoke(
+        new Api.messages.ExportChatInvite({
+          peer: entity,
+        }),
+      )
+      const link = (result as Api.ChatInviteExported).link
+      this.logger.debug('Invite link exported')
+      return link
+    }
+    catch (error) {
+      this.logger.error({ err: error, peer }, 'Failed to export invite link')
+      throw new TransportError('Failed to export invite link', error)
+    }
+  }
+
+  async getChatMember(peer: string | bigint, userId: string | bigint): Promise<ChatMemberInfo> {
+    try {
+      this.logger.debug({ peer, userId }, 'Getting chat member')
+      const channel = await this.client.getInputEntity(toEntityLike(peer))
+      const participant = await this.client.getInputEntity(toEntityLike(userId))
+      const result = await this.client.invoke(
+        new Api.channels.GetParticipant({
+          channel,
+          participant,
+        }),
+      )
+      const p = result.participant
+      let status = 'member'
+      if (p instanceof Api.ChannelParticipantCreator) status = 'creator'
+      else if (p instanceof Api.ChannelParticipantAdmin) status = 'administrator'
+      else if (p instanceof Api.ChannelParticipantBanned) status = 'banned'
+      else if (p instanceof Api.ChannelParticipantLeft) status = 'left'
+
+      this.logger.debug({ userId, status }, 'Chat member retrieved')
+      return {
+        userId: String(userId),
+        status,
+      }
+    }
+    catch (error) {
+      this.logger.error({ err: error, peer, userId }, 'Failed to get chat member')
+      throw new TransportError('Failed to get chat member', error)
+    }
+  }
+
+  async leaveChat(peer: string | bigint): Promise<boolean> {
+    try {
+      this.logger.debug({ peer }, 'Leaving chat')
+      const entity = await this.client.getInputEntity(toEntityLike(peer))
+      await this.client.invoke(
+        new Api.channels.LeaveChannel({
+          channel: entity,
+        }),
+      )
+      this.logger.debug('Left chat')
+      return true
+    }
+    catch (error) {
+      this.logger.error({ err: error, peer }, 'Failed to leave chat')
+      throw new TransportError('Failed to leave chat', error)
+    }
+  }
+
+  // --- Interactive ---
+
+  async createPoll(peer: string | bigint, question: string, answers: string[], options?: { isAnonymous?: boolean, multipleChoice?: boolean }): Promise<MessageResult> {
+    try {
+      this.logger.debug({ peer, question, answerCount: answers.length }, 'Creating poll')
+      const entity = await this.client.getInputEntity(toEntityLike(peer))
+      const result = await this.client.invoke(
+        new Api.messages.SendMedia({
+          peer: entity,
+          media: new Api.InputMediaPoll({
+            poll: new Api.Poll({
+              id: generateRandomLong(),
+              question: new Api.TextWithEntities({ text: question, entities: [] }),
+              answers: answers.map((a, i) => new Api.PollAnswer({
+                text: new Api.TextWithEntities({ text: a, entities: [] }),
+                option: Buffer.from([i]),
+              })),
+              publicVoters: options?.isAnonymous === false ? true : undefined,
+              multipleChoice: options?.multipleChoice,
+            }),
+          }),
+          message: '',
+          randomId: generateRandomLong(),
+        }),
+      )
+      const msg = this.extractMessageFromUpdates(result)
+      this.logger.debug({ messageId: msg.id }, 'Poll created')
+      return messageToResult(msg)
+    }
+    catch (error) {
+      this.logger.error({ err: error, peer }, 'Failed to create poll')
+      throw new TransportError('Failed to create poll', error)
+    }
+  }
+
+  async answerCallbackQuery(queryId: string, options?: { text?: string, showAlert?: boolean, url?: string }): Promise<boolean> {
+    try {
+      this.logger.debug({ queryId }, 'Answering callback query')
+      await this.client.invoke(
+        new Api.messages.SetBotCallbackAnswer({
+          queryId: returnBigInt(queryId),
+          message: options?.text,
+          alert: options?.showAlert,
+          url: options?.url,
+        }),
+      )
+      this.logger.debug({ queryId }, 'Callback query answered')
+      return true
+    }
+    catch (error) {
+      this.logger.error({ err: error, queryId }, 'Failed to answer callback query')
+      throw new TransportError('Failed to answer callback query', error)
+    }
+  }
+
+  // --- Helper ---
+
+  private extractMessageFromUpdates(updates: Api.TypeUpdates): Api.Message {
+    if (updates instanceof Api.Updates || updates instanceof Api.UpdatesCombined) {
+      for (const update of updates.updates) {
+        if (update instanceof Api.UpdateNewMessage || update instanceof Api.UpdateNewChannelMessage) {
+          if (update.message instanceof Api.Message) {
+            return update.message
+          }
+        }
+      }
+    }
+    if (updates instanceof Api.UpdateShortSentMessage) {
+      return new Api.Message({
+        id: updates.id,
+        peerId: new Api.PeerUser({ userId: returnBigInt(0) }),
+        date: updates.date,
+        message: '',
+      })
+    }
+    throw new TransportError('Could not extract message from updates')
   }
 }

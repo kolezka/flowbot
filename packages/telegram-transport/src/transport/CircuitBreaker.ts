@@ -1,5 +1,5 @@
 import type { Logger } from '../logger.js'
-import type { ForwardOptions, ITelegramTransport, MessageResult, PeerInfo, SendOptions } from './ITelegramTransport.js'
+import type { AdminPrivileges, ChatMemberInfo, ChatPermissions, ForwardOptions, ITelegramTransport, MediaOptions, MessageResult, PeerInfo, SendOptions } from './ITelegramTransport.js'
 
 export enum CircuitState {
   CLOSED = 'CLOSED',
@@ -75,6 +75,115 @@ export class CircuitBreaker implements ITelegramTransport {
 
   async resolveUsername(username: string): Promise<PeerInfo> {
     return this.execute(() => this.transport.resolveUsername(username))
+  }
+
+  // Media messaging
+  async sendPhoto(peer: string | bigint, photoUrl: string, options?: MediaOptions): Promise<MessageResult> {
+    return this.execute(() => this.transport.sendPhoto(peer, photoUrl, options))
+  }
+
+  async sendVideo(peer: string | bigint, videoUrl: string, options?: MediaOptions): Promise<MessageResult> {
+    return this.execute(() => this.transport.sendVideo(peer, videoUrl, options))
+  }
+
+  async sendDocument(peer: string | bigint, documentUrl: string, options?: MediaOptions): Promise<MessageResult> {
+    return this.execute(() => this.transport.sendDocument(peer, documentUrl, options))
+  }
+
+  async sendSticker(peer: string | bigint, sticker: string, options?: { silent?: boolean }): Promise<MessageResult> {
+    return this.execute(() => this.transport.sendSticker(peer, sticker, options))
+  }
+
+  async sendVoice(peer: string | bigint, voiceUrl: string, options?: MediaOptions): Promise<MessageResult> {
+    return this.execute(() => this.transport.sendVoice(peer, voiceUrl, options))
+  }
+
+  async sendAudio(peer: string | bigint, audioUrl: string, options?: MediaOptions): Promise<MessageResult> {
+    return this.execute(() => this.transport.sendAudio(peer, audioUrl, options))
+  }
+
+  async sendAnimation(peer: string | bigint, animationUrl: string, options?: MediaOptions): Promise<MessageResult> {
+    return this.execute(() => this.transport.sendAnimation(peer, animationUrl, options))
+  }
+
+  async sendLocation(peer: string | bigint, latitude: number, longitude: number, options?: { livePeriod?: number, silent?: boolean }): Promise<MessageResult> {
+    return this.execute(() => this.transport.sendLocation(peer, latitude, longitude, options))
+  }
+
+  async sendContact(peer: string | bigint, phoneNumber: string, firstName: string, lastName?: string): Promise<MessageResult> {
+    return this.execute(() => this.transport.sendContact(peer, phoneNumber, firstName, lastName))
+  }
+
+  async sendVenue(peer: string | bigint, latitude: number, longitude: number, title: string, address: string): Promise<MessageResult> {
+    return this.execute(() => this.transport.sendVenue(peer, latitude, longitude, title, address))
+  }
+
+  async sendDice(peer: string | bigint, emoji?: string): Promise<MessageResult> {
+    return this.execute(() => this.transport.sendDice(peer, emoji))
+  }
+
+  // Message management
+  async copyMessage(fromPeer: string | bigint, toPeer: string | bigint, messageId: number): Promise<MessageResult[]> {
+    return this.execute(() => this.transport.copyMessage(fromPeer, toPeer, messageId))
+  }
+
+  async editMessage(peer: string | bigint, messageId: number, text: string, options?: SendOptions): Promise<MessageResult> {
+    return this.execute(() => this.transport.editMessage(peer, messageId, text, options))
+  }
+
+  async deleteMessages(peer: string | bigint, messageIds: number[]): Promise<boolean> {
+    return this.execute(() => this.transport.deleteMessages(peer, messageIds))
+  }
+
+  async pinMessage(peer: string | bigint, messageId: number, silent?: boolean): Promise<boolean> {
+    return this.execute(() => this.transport.pinMessage(peer, messageId, silent))
+  }
+
+  async unpinMessage(peer: string | bigint, messageId?: number): Promise<boolean> {
+    return this.execute(() => this.transport.unpinMessage(peer, messageId))
+  }
+
+  // User management
+  async banUser(peer: string | bigint, userId: string | bigint): Promise<boolean> {
+    return this.execute(() => this.transport.banUser(peer, userId))
+  }
+
+  async restrictUser(peer: string | bigint, userId: string | bigint, permissions: ChatPermissions, untilDate?: number): Promise<boolean> {
+    return this.execute(() => this.transport.restrictUser(peer, userId, permissions, untilDate))
+  }
+
+  async promoteUser(peer: string | bigint, userId: string | bigint, privileges: AdminPrivileges): Promise<boolean> {
+    return this.execute(() => this.transport.promoteUser(peer, userId, privileges))
+  }
+
+  // Chat management
+  async setChatTitle(peer: string | bigint, title: string): Promise<boolean> {
+    return this.execute(() => this.transport.setChatTitle(peer, title))
+  }
+
+  async setChatDescription(peer: string | bigint, description: string): Promise<boolean> {
+    return this.execute(() => this.transport.setChatDescription(peer, description))
+  }
+
+  async exportInviteLink(peer: string | bigint): Promise<string> {
+    return this.execute(() => this.transport.exportInviteLink(peer))
+  }
+
+  async getChatMember(peer: string | bigint, userId: string | bigint): Promise<ChatMemberInfo> {
+    return this.execute(() => this.transport.getChatMember(peer, userId))
+  }
+
+  async leaveChat(peer: string | bigint): Promise<boolean> {
+    return this.execute(() => this.transport.leaveChat(peer))
+  }
+
+  // Interactive
+  async createPoll(peer: string | bigint, question: string, answers: string[], options?: { isAnonymous?: boolean, multipleChoice?: boolean }): Promise<MessageResult> {
+    return this.execute(() => this.transport.createPoll(peer, question, answers, options))
+  }
+
+  async answerCallbackQuery(queryId: string, options?: { text?: string, showAlert?: boolean, url?: string }): Promise<boolean> {
+    return this.execute(() => this.transport.answerCallbackQuery(queryId, options))
   }
 
   private async execute<T>(fn: () => Promise<T>): Promise<T> {

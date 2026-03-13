@@ -1,4 +1,4 @@
-import type { ForwardOptions, ITelegramTransport, MessageResult, PeerInfo, SendOptions } from './ITelegramTransport.js'
+import type { AdminPrivileges, ChatMemberInfo, ChatPermissions, ForwardOptions, ITelegramTransport, MediaOptions, MessageResult, PeerInfo, SendOptions } from './ITelegramTransport.js'
 
 export interface SentMessage {
   peer: string | bigint
@@ -59,6 +59,115 @@ export class FakeTelegramTransport implements ITelegramTransport {
       accessHash: BigInt(username.length * 9999),
       type: 'user',
     }
+  }
+
+  // Media messaging
+  async sendPhoto(peer: string | bigint, _photoUrl: string, _options?: MediaOptions): Promise<MessageResult> {
+    return { id: this.nextId++, date: Math.floor(Date.now() / 1000), peerId: peer }
+  }
+
+  async sendVideo(peer: string | bigint, _videoUrl: string, _options?: MediaOptions): Promise<MessageResult> {
+    return { id: this.nextId++, date: Math.floor(Date.now() / 1000), peerId: peer }
+  }
+
+  async sendDocument(peer: string | bigint, _documentUrl: string, _options?: MediaOptions): Promise<MessageResult> {
+    return { id: this.nextId++, date: Math.floor(Date.now() / 1000), peerId: peer }
+  }
+
+  async sendSticker(peer: string | bigint, _sticker: string, _options?: { silent?: boolean }): Promise<MessageResult> {
+    return { id: this.nextId++, date: Math.floor(Date.now() / 1000), peerId: peer }
+  }
+
+  async sendVoice(peer: string | bigint, _voiceUrl: string, _options?: MediaOptions): Promise<MessageResult> {
+    return { id: this.nextId++, date: Math.floor(Date.now() / 1000), peerId: peer }
+  }
+
+  async sendAudio(peer: string | bigint, _audioUrl: string, _options?: MediaOptions): Promise<MessageResult> {
+    return { id: this.nextId++, date: Math.floor(Date.now() / 1000), peerId: peer }
+  }
+
+  async sendAnimation(peer: string | bigint, _animationUrl: string, _options?: MediaOptions): Promise<MessageResult> {
+    return { id: this.nextId++, date: Math.floor(Date.now() / 1000), peerId: peer }
+  }
+
+  async sendLocation(peer: string | bigint, _latitude: number, _longitude: number, _options?: { livePeriod?: number, silent?: boolean }): Promise<MessageResult> {
+    return { id: this.nextId++, date: Math.floor(Date.now() / 1000), peerId: peer }
+  }
+
+  async sendContact(peer: string | bigint, _phoneNumber: string, _firstName: string, _lastName?: string): Promise<MessageResult> {
+    return { id: this.nextId++, date: Math.floor(Date.now() / 1000), peerId: peer }
+  }
+
+  async sendVenue(peer: string | bigint, _latitude: number, _longitude: number, _title: string, _address: string): Promise<MessageResult> {
+    return { id: this.nextId++, date: Math.floor(Date.now() / 1000), peerId: peer }
+  }
+
+  async sendDice(peer: string | bigint, _emoji?: string): Promise<MessageResult> {
+    return { id: this.nextId++, date: Math.floor(Date.now() / 1000), peerId: peer }
+  }
+
+  // Message management
+  async copyMessage(_fromPeer: string | bigint, toPeer: string | bigint, _messageId: number): Promise<MessageResult[]> {
+    return [{ id: this.nextId++, date: Math.floor(Date.now() / 1000), peerId: toPeer }]
+  }
+
+  async editMessage(peer: string | bigint, _messageId: number, _text: string, _options?: SendOptions): Promise<MessageResult> {
+    return { id: this.nextId++, date: Math.floor(Date.now() / 1000), peerId: peer }
+  }
+
+  async deleteMessages(_peer: string | bigint, _messageIds: number[]): Promise<boolean> {
+    return true
+  }
+
+  async pinMessage(_peer: string | bigint, _messageId: number, _silent?: boolean): Promise<boolean> {
+    return true
+  }
+
+  async unpinMessage(_peer: string | bigint, _messageId?: number): Promise<boolean> {
+    return true
+  }
+
+  // User management
+  async banUser(_peer: string | bigint, _userId: string | bigint): Promise<boolean> {
+    return true
+  }
+
+  async restrictUser(_peer: string | bigint, _userId: string | bigint, _permissions: ChatPermissions, _untilDate?: number): Promise<boolean> {
+    return true
+  }
+
+  async promoteUser(_peer: string | bigint, _userId: string | bigint, _privileges: AdminPrivileges): Promise<boolean> {
+    return true
+  }
+
+  // Chat management
+  async setChatTitle(_peer: string | bigint, _title: string): Promise<boolean> {
+    return true
+  }
+
+  async setChatDescription(_peer: string | bigint, _description: string): Promise<boolean> {
+    return true
+  }
+
+  async exportInviteLink(_peer: string | bigint): Promise<string> {
+    return 'https://t.me/+fake_invite_link'
+  }
+
+  async getChatMember(_peer: string | bigint, userId: string | bigint): Promise<ChatMemberInfo> {
+    return { userId: String(userId), status: 'member' }
+  }
+
+  async leaveChat(_peer: string | bigint): Promise<boolean> {
+    return true
+  }
+
+  // Interactive
+  async createPoll(peer: string | bigint, _question: string, _answers: string[], _options?: { isAnonymous?: boolean, multipleChoice?: boolean }): Promise<MessageResult> {
+    return { id: this.nextId++, date: Math.floor(Date.now() / 1000), peerId: peer }
+  }
+
+  async answerCallbackQuery(_queryId: string, _options?: { text?: string, showAlert?: boolean, url?: string }): Promise<boolean> {
+    return true
   }
 
   getSentMessages(): readonly SentMessage[] {

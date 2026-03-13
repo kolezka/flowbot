@@ -3,6 +3,7 @@ import { getPrisma } from '../lib/prisma.js';
 import { executeFlow } from '../lib/flow-engine/index.js';
 import type { FlowNode, FlowEdge } from '../lib/flow-engine/index.js';
 import { enrichTriggerData } from '../lib/event-correlator.js';
+import { dispatchActions } from '../lib/flow-engine/dispatcher.js';
 
 export const flowExecutionTask = task({
   id: 'flow-execution',
@@ -33,6 +34,28 @@ export const flowExecutionTask = task({
       const enrichedTriggerData = await enrichTriggerData(payload.triggerData);
 
       const ctx = await executeFlow(nodes, edges, enrichedTriggerData);
+
+      // Dispatch action results to Telegram
+      const dispatchResults = await dispatchActions(ctx);
+
+      // Merge dispatch metadata into node results
+      for (const dr of dispatchResults) {
+        const existing = ctx.nodeResults.get(dr.nodeId);
+        if (existing) {
+          existing.output = {
+            ...(existing.output as Record<string, unknown> | undefined),
+            _dispatch: {
+              dispatched: dr.dispatched,
+              response: dr.response,
+              error: dr.error,
+            },
+          };
+          if (!dr.dispatched && dr.error) {
+            existing.status = 'error';
+            existing.error = `Dispatch failed: ${dr.error}`;
+          }
+        }
+      }
 
       const nodeResults = Object.fromEntries(
         Array.from(ctx.nodeResults.entries()).map(([k, v]) => [k, {
