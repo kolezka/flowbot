@@ -22,7 +22,10 @@ export class DiscordFlowEventForwarder {
     hasAttachments: boolean
     attachmentCount: number
   }): Promise<void> {
-    await this.forward('discord_message_received', data)
+    await this.forward('discord_message_received', {
+      ...data,
+      authorId: data.userId,
+    })
   }
 
   async onMemberJoin(data: {

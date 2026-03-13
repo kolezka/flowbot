@@ -136,9 +136,11 @@ describe('FlowEventForwarder', () => {
         flowId: 'flow-msg-1',
         triggerData: {
           type: 'message_received',
+          platform: 'telegram',
           chatId: '-1001234',
           userId: '5678',
           text: 'Hello world',
+          messageText: 'Hello world',
           messageId: 42,
           messageType: 'text',
           hasMedia: false,
@@ -204,6 +206,7 @@ describe('FlowEventForwarder', () => {
         flowId: 'flow-join-1',
         triggerData: {
           type: 'user_joins',
+          platform: 'telegram',
           chatId: '-1001234',
           userId: '9999',
           userName: 'testuser',

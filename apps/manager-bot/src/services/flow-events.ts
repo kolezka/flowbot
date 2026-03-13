@@ -26,9 +26,11 @@ export class FlowEventForwarder {
   ): Promise<void> {
     const triggerData = {
       type: 'message_received',
+      platform: 'telegram' as const,
       chatId: chatId.toString(),
       userId: userId.toString(),
       text,
+      messageText: text,
       messageId,
       messageType,
       hasMedia,
@@ -45,6 +47,7 @@ export class FlowEventForwarder {
   async onUserJoin(chatId: bigint, userId: bigint, username?: string): Promise<void> {
     const triggerData = {
       type: 'user_joins',
+      platform: 'telegram' as const,
       chatId: chatId.toString(),
       userId: userId.toString(),
       userName: username ?? '',
@@ -60,6 +63,7 @@ export class FlowEventForwarder {
   async onUserLeave(chatId: bigint, userId: bigint, username?: string, wasKicked: boolean = false): Promise<void> {
     const triggerData = {
       type: 'user_leaves',
+      platform: 'telegram' as const,
       chatId: chatId.toString(),
       userId: userId.toString(),
       userName: username ?? '',
@@ -82,6 +86,7 @@ export class FlowEventForwarder {
   ): Promise<void> {
     const triggerData = {
       type: 'callback_query',
+      platform: 'telegram' as const,
       userId: userId.toString(),
       callbackQueryId,
       callbackData: data,
@@ -105,6 +110,7 @@ export class FlowEventForwarder {
   ): Promise<void> {
     const triggerData = {
       type: 'command_received',
+      platform: 'telegram' as const,
       chatId: chatId.toString(),
       userId: userId.toString(),
       command,
@@ -128,6 +134,7 @@ export class FlowEventForwarder {
   ): Promise<void> {
     const triggerData = {
       type: 'message_edited',
+      platform: 'telegram' as const,
       chatId: chatId.toString(),
       userId: userId.toString(),
       text,
@@ -150,6 +157,7 @@ export class FlowEventForwarder {
   ): Promise<void> {
     const triggerData = {
       type: 'chat_member_updated',
+      platform: 'telegram' as const,
       chatId: chatId.toString(),
       userId: userId.toString(),
       userName: username ?? '',
@@ -171,6 +179,7 @@ export class FlowEventForwarder {
   ): Promise<void> {
     const triggerData = {
       type: 'poll_answer',
+      platform: 'telegram' as const,
       userId: userId.toString(),
       pollId,
       optionIds,
@@ -191,6 +200,7 @@ export class FlowEventForwarder {
   ): Promise<void> {
     const triggerData = {
       type: 'inline_query',
+      platform: 'telegram' as const,
       userId: userId.toString(),
       queryId,
       query,
@@ -211,6 +221,7 @@ export class FlowEventForwarder {
   ): Promise<void> {
     const triggerData = {
       type: 'my_chat_member',
+      platform: 'telegram' as const,
       chatId: chatId.toString(),
       oldStatus,
       newStatus,
@@ -230,6 +241,7 @@ export class FlowEventForwarder {
   ): Promise<void> {
     const triggerData = {
       type: 'new_chat_title',
+      platform: 'telegram' as const,
       chatId: chatId.toString(),
       userId: userId.toString(),
       title,
@@ -248,6 +260,7 @@ export class FlowEventForwarder {
   ): Promise<void> {
     const triggerData = {
       type: 'new_chat_photo',
+      platform: 'telegram' as const,
       chatId: chatId.toString(),
       userId: userId.toString(),
       timestamp: new Date().toISOString(),
@@ -266,6 +279,7 @@ export class FlowEventForwarder {
   ): Promise<void> {
     const triggerData = {
       type: 'chat_join_request',
+      platform: 'telegram' as const,
       chatId: chatId.toString(),
       userId: userId.toString(),
       userName: username ?? '',

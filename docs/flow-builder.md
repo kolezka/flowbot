@@ -32,6 +32,27 @@ Trigger nodes are entry points that start a flow. Every flow must have at least 
 
 Trigger nodes inject their event data into the flow context as `triggerData`, accessible via `{{trigger.*}}` variables.
 
+#### Discord Triggers
+
+| Type | Description | Config |
+|------|-------------|--------|
+| `discord_message_received` | Fires when a message is sent in a Discord channel | None required |
+| `discord_member_join` | Fires when a new member joins a Discord server | None required |
+| `discord_member_leave` | Fires when a member leaves a Discord server | None required |
+| `discord_reaction_add` | Fires when a reaction is added to a message | None required |
+| `discord_reaction_remove` | Fires when a reaction is removed from a message | None required |
+| `discord_interaction_create` | Fires when a slash command or interaction is used | None required |
+| `discord_voice_state_update` | Fires when a user joins/leaves/moves voice channels | None required |
+
+Discord triggers inject platform-specific data into `triggerData`:
+- `{{trigger.guildId}}` -- the Discord server ID
+- `{{trigger.channelId}}` -- the channel ID
+- `{{trigger.userId}}` -- the user's Discord ID
+- `{{trigger.username}}` -- the user's Discord username
+- `{{trigger.content}}` -- message text (for message triggers)
+- `{{trigger.platform}}` -- always `"discord"` for Discord events
+- `{{trigger.timestamp}}` -- ISO 8601 event timestamp
+
 ### Conditions
 
 Condition nodes evaluate a boolean expression. If the condition is `true`, execution continues to connected nodes. If `false`, the entire downstream subtree is skipped (short-circuited).
@@ -54,6 +75,24 @@ Condition nodes evaluate a boolean expression. If the condition is `true`, execu
 **TimeBased details:**
 - Uses the server's local time (`new Date().getHours()`).
 - The condition passes if `startHour <= currentHour < endHour`.
+
+#### Discord Conditions
+
+| Type | Description | Config |
+|------|-------------|--------|
+| `discord_has_role` | Checks if the triggering member has a specific role | `roleId` (string) |
+| `discord_channel_type` | Checks if the channel type matches the expected type | `channelType` (string, e.g. `"GUILD_TEXT"`, `"GUILD_VOICE"`) |
+| `discord_is_bot` | Checks if the triggering user is a bot | `matchBots` (boolean, default: `true`; set `false` to match non-bots) |
+| `discord_message_has_embed` | Checks if the message contains embeds | None required |
+| `discord_member_permissions` | Checks if the member has required permissions | `permissions` (string array, e.g. `["MANAGE_MESSAGES", "BAN_MEMBERS"]`) |
+
+**DiscordHasRole details:**
+- The role ID list is read from `triggerData.roles`.
+- The condition passes if the specified `roleId` is in the member's roles.
+
+**DiscordMemberPermissions details:**
+- Requires all listed permissions to pass.
+- Permission strings follow Discord's permission names (e.g. `MANAGE_MESSAGES`, `ADMINISTRATOR`).
 
 ### Actions
 
@@ -78,6 +117,36 @@ Action nodes perform side effects. They are never cached by the execution engine
 - Looks up the bot instance in the database by `botInstanceId`.
 - The bot must be active and have an `apiUrl` configured.
 - Calls `POST {apiUrl}/api/send-message` with the action and parameters.
+
+#### Discord Actions
+
+Discord actions are prefixed with `discord_` and dispatched to the Discord bot's HTTP API.
+
+| Type | Description | Config |
+|------|-------------|--------|
+| `discord_send_message` | Send a text message to a channel | `channelId` (default: `{{trigger.channelId}}`), `content` |
+| `discord_send_embed` | Send a rich embed | `channelId`, `embed` (object with title, description, color, fields, footer, thumbnail, image) |
+| `discord_send_dm` | Send a direct message to a user | `userId` (default: `{{trigger.userId}}`), `content` |
+| `discord_edit_message` | Edit an existing message | `channelId`, `messageId`, `content` |
+| `discord_delete_message` | Delete a message | `channelId`, `messageId` |
+| `discord_add_reaction` | Add a reaction emoji to a message | `channelId`, `messageId`, `emoji` |
+| `discord_remove_reaction` | Remove a reaction from a message | `channelId`, `messageId`, `emoji` |
+| `discord_pin_message` | Pin a message | `channelId`, `messageId` |
+| `discord_unpin_message` | Unpin a message | `channelId`, `messageId` |
+| `discord_ban_member` | Ban a member from the guild | `guildId` (default: `{{trigger.guildId}}`), `userId`; optional: `reason`, `deleteMessageDays` |
+| `discord_kick_member` | Kick a member | `guildId`, `userId`; optional: `reason` |
+| `discord_timeout_member` | Timeout (mute) a member | `guildId`, `userId`, `durationMs`; optional: `reason` |
+| `discord_add_role` | Add a role to a member | `guildId`, `userId`, `roleId` |
+| `discord_remove_role` | Remove a role from a member | `guildId`, `userId`, `roleId` |
+| `discord_create_role` | Create a new role | `guildId`, `name`; optional: `color`, `permissions` |
+| `discord_set_nickname` | Set a member's nickname | `guildId`, `userId`, `nickname` |
+| `discord_create_channel` | Create a channel | `guildId`, `name`; optional: `type`, `options` |
+| `discord_delete_channel` | Delete a channel | `channelId` |
+| `discord_move_member` | Move a member to a voice channel | `guildId`, `userId`, `channelId` |
+| `discord_create_thread` | Create a thread | `channelId`, `name`; optional: `options` |
+| `discord_send_thread_message` | Send a message to a thread | `threadId`, `content` |
+| `discord_create_invite` | Create a channel invite | `channelId`; optional: `options` |
+| `discord_create_scheduled_event` | Create a scheduled event | `guildId`, `name`; optional: `options` |
 
 ### Control Flow
 
@@ -120,13 +189,31 @@ The flow engine uses a template interpolation system to pass data between nodes.
 
 There are three sources of variables, resolved in this order:
 
-1. **Trigger data** (`{{trigger.*}}`) -- data from the event that started the flow.
+1. **Trigger data** (`{{trigger.*}}`) -- data from the event that started the flow. The available fields depend on which platform triggered the flow.
+
+   **Telegram trigger variables:**
    - `{{trigger.chatId}}` -- the chat where the event occurred.
    - `{{trigger.userId}}` -- the user who triggered the event.
    - `{{trigger.text}}` -- message text (for message triggers).
+   - `{{trigger.messageText}}` -- message text (alias for `text`, for cross-platform compatibility).
    - `{{trigger.userName}}` -- the user's display name.
    - `{{trigger.messageId}}` -- the message ID.
    - `{{trigger.userRole}}` -- the user's role in the group.
+
+   **Discord trigger variables:**
+   - `{{trigger.guildId}}` -- the Discord server (guild) ID.
+   - `{{trigger.channelId}}` -- the channel where the event occurred.
+   - `{{trigger.userId}}` -- the Discord user ID (snowflake).
+   - `{{trigger.authorId}}` -- the Discord user ID (alias for `userId`, for cross-platform clarity).
+   - `{{trigger.username}}` -- the Discord username.
+   - `{{trigger.content}}` -- message text content.
+   - `{{trigger.messageId}}` -- the message snowflake ID.
+
+   **Shared variables (all platforms):**
+   - `{{trigger.platform}}` -- `"telegram"` or `"discord"`.
+   - `{{trigger.timestamp}}` -- ISO 8601 timestamp of the event.
+
+   The template system resolves any key present in the trigger data dynamically -- there is no hardcoded list of supported variables. If a platform forwarder includes a field in `triggerData`, it is automatically accessible as `{{trigger.<fieldName>}}`.
 
 2. **Node results** (`{{node.<nodeId>.*}}`) -- output from previously executed nodes.
    - `{{node.action-1.status}}` -- HTTP status code from an API call node.
@@ -213,11 +300,25 @@ An expression consists of:
 ### Available Fields
 
 By default, conditions can reference these trigger data fields:
+
+**Telegram fields:**
 - `trigger.userId`
 - `trigger.chatId`
 - `trigger.text`
 - `trigger.userRole`
 - `trigger.messageId`
+
+**Discord fields:**
+- `trigger.userId`
+- `trigger.guildId`
+- `trigger.channelId`
+- `trigger.content`
+- `trigger.username`
+- `trigger.messageId`
+
+**Shared fields:**
+- `trigger.platform`
+- `trigger.timestamp`
 
 ### Example
 
@@ -261,6 +362,79 @@ Each version stores:
 - Create a version before making significant changes to a flow.
 - Create a version before activating a flow in production.
 - Use version descriptions (via `createdBy`) to annotate what changed.
+
+---
+
+## Platform Filtering
+
+When designing flows, nodes are platform-aware. The flow builder UI supports filtering nodes by platform to simplify the palette:
+
+- **All** -- shows all available triggers, conditions, and actions.
+- **Telegram** -- shows only Telegram-specific nodes (no `discord_` prefix).
+- **Discord** -- shows only Discord-specific nodes (`discord_` prefixed triggers, conditions, and actions).
+- **Shared** -- shows platform-agnostic nodes: `schedule`, `webhook`, `keyword_match`, `time_based`, `api_call`, `delay`, `transform`, `loop`, `switch`, `parallel_branch`, `db_query`, `notification`.
+
+Shared nodes work identically regardless of which platform triggered the flow. For example, a `keyword_match` condition reads from `triggerData.text` (Telegram) or `triggerData.content` (Discord) -- both are set by their respective trigger events.
+
+---
+
+## Cross-Platform Flow Examples
+
+### Discord Message to Telegram Notification
+
+A flow that watches for messages containing "alert" in a Discord channel and sends a notification to a Telegram group.
+
+```
+Nodes:
+  1. [Trigger] discord_message_received
+  2. [Condition] keyword_match
+       keywords: ["alert"]
+       mode: "any"
+  3. [Action] send_message (Telegram)
+       chatId: "-1001234567890"
+       text: "Alert from Discord ({{trigger.username}}): {{trigger.content}}"
+
+Edges:
+  1 -> 2 -> 3
+```
+
+### Telegram User Join to Discord Welcome
+
+A flow that notifies a Discord channel when someone joins a Telegram group.
+
+```
+Nodes:
+  1. [Trigger] user_joins
+  2. [Action] discord_send_embed
+       channelId: "1234567890123456789"
+       embed:
+         title: "New Telegram Member"
+         description: "{{trigger.userName}} just joined the Telegram group!"
+         color: 5025616
+
+Edges:
+  1 -> 2
+```
+
+### Multi-Platform Moderation Sync
+
+A flow that bans a user on Discord when they are banned on Telegram (using a webhook trigger from the moderation system).
+
+```
+Nodes:
+  1. [Trigger] webhook
+       (linked to a WebhookEndpoint that receives ban events)
+  2. [Condition] keyword_match
+       keywords: ["ban"]
+       mode: "any"
+  3. [Action] discord_ban_member
+       guildId: "987654321098765432"
+       userId: "{{trigger.discordUserId}}"
+       reason: "Cross-platform ban sync from Telegram"
+
+Edges:
+  1 -> 2 -> 3
+```
 
 ---
 

@@ -2,20 +2,22 @@
 
 ## System Overview
 
-Strefa Ruchu is a Telegram e-commerce and group management platform built as a pnpm monorepo with 8 workspaces.
+Strefa Ruchu is a multi-platform e-commerce and group management platform built as a pnpm monorepo with 10 workspaces. It supports both Telegram and Discord as messaging platforms.
 
 ```
 tg-allegro/
 ├── apps/
 │   ├── bot/              # E-commerce Telegram bot (grammY, Hono)
 │   ├── manager-bot/      # Group management Telegram bot (grammY, Hono)
+│   ├── discord-bot/      # Discord bot (discord.js, Hono)
 │   ├── api/              # REST API + WebSocket server (NestJS 11)
 │   ├── frontend/         # Admin dashboard (Next.js 16, Radix UI)
 │   ├── trigger/          # Background job worker (Trigger.dev v3)
 │   └── tg-client/        # DEPRECATED - MTProto auth script only
 ├── packages/
 │   ├── db/               # Prisma 7 schema + client (PostgreSQL)
-│   └── telegram-transport/ # GramJS client with CircuitBreaker
+│   ├── telegram-transport/ # GramJS client with CircuitBreaker
+│   └── discord-transport/  # discord.js transport with CircuitBreaker
 ├── docker-compose.yml    # PostgreSQL
 └── tsconfig.base.json    # Shared TypeScript config + path aliases
 ```
@@ -30,15 +32,33 @@ graph TD
     Bot[Bot<br/>grammY] -->|Prisma| DB
     ManagerBot[Manager Bot<br/>grammY] -->|Prisma| DB
     ManagerBot -->|HTTP| API
+    DiscordBot[Discord Bot<br/>discord.js] -->|HTTP| API
     Trigger[Trigger.dev<br/>Worker] -->|Prisma| DB
     Trigger -->|HTTP| ManagerBot
+    Trigger -->|HTTP| DiscordBot
     Trigger -->|GramJS| TgTransport[telegram-transport]
+    Trigger -->|discord.js| DcTransport[discord-transport]
     TgTransport -->|MTProto| Telegram[Telegram API]
+    DcTransport -->|Gateway/REST| Discord[Discord API]
     Bot -->|Bot API| Telegram
     ManagerBot -->|Bot API| Telegram
+    DiscordBot -->|Gateway/REST| Discord
 ```
 
 All workspaces share the `@tg-allegro/db` package for database access. TypeScript path aliases (`@tg-allegro/*`) are defined in `tsconfig.base.json`.
+
+### Multi-Platform Flow Architecture
+
+Flows can span both Telegram and Discord. The flow engine is platform-agnostic: trigger data is stored as a generic `Record<string, unknown>` and template variables are resolved dynamically via `{{trigger.*}}` syntax. This means a Discord trigger (e.g., `discord_message_received`) can feed data into Telegram actions (e.g., `send_message`) and vice versa.
+
+The dispatcher (`dispatcher.ts`) routes actions to the correct platform based on the action name prefix:
+- Actions prefixed with `discord_` are dispatched to the Discord bot's HTTP API.
+- All other actions are dispatched via Telegram (MTProto or Bot API, depending on transport configuration).
+
+Cross-platform flow example:
+1. A `discord_message_received` trigger fires in a Discord channel.
+2. A `keyword_match` condition checks `{{trigger.content}}` for keywords.
+3. A `send_message` action sends a notification to a Telegram chat using `{{trigger.content}}`.
 
 ---
 
@@ -225,6 +245,21 @@ Background job worker running Trigger.dev v3, self-hosted at `trigger.raqz.link`
   - `lib/flow-engine/` -- complete flow execution engine (executor, variables, conditions, actions, advanced nodes, templates)
   - `lib/event-correlator.ts` -- enriches trigger data with cross-bot context
 
+### Discord Bot (`apps/discord-bot`)
+
+The Discord bot built with discord.js and Hono.
+
+- **Runtime:** ESM via tsx
+- **Gateway intents:** Guilds, GuildMessages, GuildMembers, GuildMessageReactions, GuildVoiceStates, MessageContent, GuildScheduledEvents
+- **Structure:**
+  - `bot/index.ts` -- creates and configures the discord.js `Client`
+  - `bot/events/` -- event handlers for messages, member join/leave, reactions, interactions, voice state
+  - `services/flow-events.ts` -- `DiscordFlowEventForwarder` normalizes Discord events and POSTs them to the flow engine webhook
+  - `server/` -- Hono HTTP server with `/api/execute-action` endpoint (called by Trigger.dev dispatcher)
+  - `config.ts` -- environment configuration
+- **Flow integration:** Discord events are forwarded to the flow engine webhook as trigger data with `platform: 'discord'`. The forwarder tags all events with `platform` and `timestamp` fields.
+- **Environment:** `DISCORD_BOT_TOKEN`, `DISCORD_CLIENT_ID`, `DATABASE_URL`, `API_URL`, `PORT`
+
 ### telegram-transport (`packages/telegram-transport`)
 
 GramJS-based Telegram MTProto client with reliability features.
@@ -232,6 +267,17 @@ GramJS-based Telegram MTProto client with reliability features.
 - **CircuitBreaker:** Prevents cascading failures when Telegram API is down.
 - **ActionRunner:** Queues and executes Telegram operations with rate limiting.
 - **Used by:** Trigger.dev tasks for broadcast, cross-post, and scheduled message delivery.
+
+### discord-transport (`packages/discord-transport`)
+
+discord.js-based transport layer with reliability features, mirroring the telegram-transport architecture.
+
+- **Interface:** `IDiscordTransport` defines all supported Discord operations (messaging, moderation, channels, threads, roles, invites, scheduled events).
+- **Implementations:**
+  - `DiscordJsTransport` -- production implementation using discord.js
+  - `FakeDiscordTransport` -- in-memory mock for testing
+- **CircuitBreaker:** Same pattern as telegram-transport to prevent cascading failures.
+- **Used by:** Trigger.dev flow engine dispatcher for Discord action execution.
 
 ---
 
@@ -322,6 +368,7 @@ Application services run directly via their respective dev/build commands.
 | Shared | `DATABASE_URL` |
 | Bot | `BOT_TOKEN`, `BOT_MODE`, `BOT_ADMINS`, `LOG_LEVEL`, `SERVER_HOST`, `SERVER_PORT` |
 | Manager Bot | `BOT_TOKEN`, `BOT_MODE`, `BOT_ADMINS`, `LOG_LEVEL`, `SERVER_HOST`, `SERVER_PORT`, `API_SERVER_HOST`, `API_SERVER_PORT` |
+| Discord Bot | `DISCORD_BOT_TOKEN`, `DISCORD_CLIENT_ID`, `DATABASE_URL`, `API_URL`, `PORT` |
 | Trigger | `DATABASE_URL`, `TG_CLIENT_API_ID`, `TG_CLIENT_API_HASH`, `TG_CLIENT_SESSION`, `MANAGER_BOT_API_URL` |
 | API | `DATABASE_URL`, `PORT`, `FRONTEND_URL` |
 | Frontend | `NEXT_PUBLIC_API_URL` |
@@ -339,9 +386,10 @@ Application services run directly via their respective dev/build commands.
 2. Run migrations (`pnpm db prisma:migrate`)
 3. Generate Prisma client (`pnpm db generate && pnpm db build`)
 4. Start API (`pnpm api start:dev`)
-5. Start bots (`pnpm bot dev`, `pnpm manager-bot dev`)
-6. Start frontend (`pnpm frontend dev`)
-7. Start Trigger.dev worker (`pnpm trigger dev`)
+5. Start Telegram bots (`pnpm bot dev`, `pnpm manager-bot dev`)
+6. Start Discord bot (`pnpm discord-bot dev`)
+7. Start frontend (`pnpm frontend dev`)
+8. Start Trigger.dev worker (`pnpm trigger dev`)
 
 ---
 
