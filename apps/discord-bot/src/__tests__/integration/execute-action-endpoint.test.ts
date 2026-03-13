@@ -155,7 +155,7 @@ describe('POST /api/execute-action', () => {
     })
     const res = await app.fetch(req)
     expect(res.status).toBe(400)
-    const body = await res.json()
+    const body = (await res.json()) as any
     expect(body.success).toBe(false)
     expect(body.error).toContain('action is required')
   })
@@ -163,7 +163,7 @@ describe('POST /api/execute-action', () => {
   it('returns 400 for unknown action', async () => {
     const res = await executeAction('discord_unknown_action', {})
     expect(res.status).toBe(400)
-    const body = await res.json()
+    const body = (await res.json()) as any
     expect(body.success).toBe(false)
     expect(body.error).toContain('Unknown action')
   })
@@ -172,7 +172,7 @@ describe('POST /api/execute-action', () => {
     client._mockChannel.send.mockRejectedValueOnce(new Error('Discord API error'))
     const res = await executeAction('discord_send_message', { channelId: 'ch-1', content: 'Hello' })
     expect(res.status).toBe(500)
-    const body = await res.json()
+    const body = (await res.json()) as any
     expect(body.success).toBe(false)
     expect(body.error).toBe('Discord API error')
   })
@@ -182,7 +182,7 @@ describe('POST /api/execute-action', () => {
   it('discord_send_message sends a message to a channel', async () => {
     const res = await executeAction('discord_send_message', { channelId: 'ch-1', content: 'Hello' })
     expect(res.status).toBe(200)
-    const body = await res.json()
+    const body = (await res.json()) as any
     expect(body.success).toBe(true)
     expect(body.result.messageId).toBeDefined()
     expect(client._mockChannel.send).toHaveBeenCalledWith('Hello')
@@ -195,7 +195,7 @@ describe('POST /api/execute-action', () => {
       content: 'Check this:',
     })
     expect(res.status).toBe(200)
-    const body = await res.json()
+    const body = (await res.json()) as any
     expect(body.success).toBe(true)
     expect(body.result.messageId).toBeDefined()
     expect(client._mockChannel.send).toHaveBeenCalledWith(
@@ -206,7 +206,7 @@ describe('POST /api/execute-action', () => {
   it('discord_send_dm sends a DM to a user', async () => {
     const res = await executeAction('discord_send_dm', { userId: 'u-1', content: 'Hi there' })
     expect(res.status).toBe(200)
-    const body = await res.json()
+    const body = (await res.json()) as any
     expect(body.success).toBe(true)
     expect(body.result.messageId).toBeDefined()
     expect(client._mockUser.send).toHaveBeenCalledWith('Hi there')
@@ -219,7 +219,7 @@ describe('POST /api/execute-action', () => {
       content: 'Updated text',
     })
     expect(res.status).toBe(200)
-    const body = await res.json()
+    const body = (await res.json()) as any
     expect(body.success).toBe(true)
     expect(body.result.edited).toBe(true)
   })
@@ -230,7 +230,7 @@ describe('POST /api/execute-action', () => {
       messageId: 'msg-1',
     })
     expect(res.status).toBe(200)
-    const body = await res.json()
+    const body = (await res.json()) as any
     expect(body.success).toBe(true)
     expect(body.result.deleted).toBe(true)
   })
@@ -244,7 +244,7 @@ describe('POST /api/execute-action', () => {
       emoji: '👍',
     })
     expect(res.status).toBe(200)
-    const body = await res.json()
+    const body = (await res.json()) as any
     expect(body.success).toBe(true)
     expect(body.result.reacted).toBe(true)
   })
@@ -256,7 +256,7 @@ describe('POST /api/execute-action', () => {
       emoji: '👍',
     })
     expect(res.status).toBe(200)
-    const body = await res.json()
+    const body = (await res.json()) as any
     expect(body.success).toBe(true)
     expect(body.result.removed).toBe(true)
   })
@@ -269,7 +269,7 @@ describe('POST /api/execute-action', () => {
       messageId: 'msg-1',
     })
     expect(res.status).toBe(200)
-    const body = await res.json()
+    const body = (await res.json()) as any
     expect(body.success).toBe(true)
     expect(body.result.pinned).toBe(true)
   })
@@ -280,7 +280,7 @@ describe('POST /api/execute-action', () => {
       messageId: 'msg-1',
     })
     expect(res.status).toBe(200)
-    const body = await res.json()
+    const body = (await res.json()) as any
     expect(body.success).toBe(true)
     expect(body.result.unpinned).toBe(true)
   })
@@ -295,7 +295,7 @@ describe('POST /api/execute-action', () => {
       deleteMessageDays: 7,
     })
     expect(res.status).toBe(200)
-    const body = await res.json()
+    const body = (await res.json()) as any
     expect(body.success).toBe(true)
     expect(body.result.banned).toBe(true)
     expect(client._mockGuild.members.ban).toHaveBeenCalledWith('u-1', {
@@ -311,7 +311,7 @@ describe('POST /api/execute-action', () => {
       reason: 'Rule violation',
     })
     expect(res.status).toBe(200)
-    const body = await res.json()
+    const body = (await res.json()) as any
     expect(body.success).toBe(true)
     expect(body.result.kicked).toBe(true)
   })
@@ -324,7 +324,7 @@ describe('POST /api/execute-action', () => {
       reason: 'Cool down',
     })
     expect(res.status).toBe(200)
-    const body = await res.json()
+    const body = (await res.json()) as any
     expect(body.success).toBe(true)
     expect(body.result.timedOut).toBe(true)
   })
@@ -338,7 +338,7 @@ describe('POST /api/execute-action', () => {
       roleId: 'r-1',
     })
     expect(res.status).toBe(200)
-    const body = await res.json()
+    const body = (await res.json()) as any
     expect(body.success).toBe(true)
     expect(body.result.roleAdded).toBe(true)
   })
@@ -350,7 +350,7 @@ describe('POST /api/execute-action', () => {
       roleId: 'r-1',
     })
     expect(res.status).toBe(200)
-    const body = await res.json()
+    const body = (await res.json()) as any
     expect(body.success).toBe(true)
     expect(body.result.roleRemoved).toBe(true)
   })
@@ -362,7 +362,7 @@ describe('POST /api/execute-action', () => {
       color: 0xFF0000,
     })
     expect(res.status).toBe(200)
-    const body = await res.json()
+    const body = (await res.json()) as any
     expect(body.success).toBe(true)
     expect(body.result.roleId).toBe('role-1')
     expect(body.result.roleName).toBe('New Role')
@@ -375,7 +375,7 @@ describe('POST /api/execute-action', () => {
       nickname: 'CoolNick',
     })
     expect(res.status).toBe(200)
-    const body = await res.json()
+    const body = (await res.json()) as any
     expect(body.success).toBe(true)
     expect(body.result.nicknameSet).toBe(true)
   })
@@ -390,7 +390,7 @@ describe('POST /api/execute-action', () => {
       topic: 'General chat',
     })
     expect(res.status).toBe(200)
-    const body = await res.json()
+    const body = (await res.json()) as any
     expect(body.success).toBe(true)
     expect(body.result.channelId).toBe('new-ch-1')
   })
@@ -398,7 +398,7 @@ describe('POST /api/execute-action', () => {
   it('discord_delete_channel deletes a channel', async () => {
     const res = await executeAction('discord_delete_channel', { channelId: 'ch-1' })
     expect(res.status).toBe(200)
-    const body = await res.json()
+    const body = (await res.json()) as any
     expect(body.success).toBe(true)
     expect(body.result.deleted).toBe(true)
   })
@@ -410,7 +410,7 @@ describe('POST /api/execute-action', () => {
       channelId: 'vc-1',
     })
     expect(res.status).toBe(200)
-    const body = await res.json()
+    const body = (await res.json()) as any
     expect(body.success).toBe(true)
     expect(body.result.moved).toBe(true)
   })
@@ -423,7 +423,7 @@ describe('POST /api/execute-action', () => {
       name: 'Discussion',
     })
     expect(res.status).toBe(200)
-    const body = await res.json()
+    const body = (await res.json()) as any
     expect(body.success).toBe(true)
     expect(body.result.threadId).toBe('thread-1')
   })
@@ -434,7 +434,7 @@ describe('POST /api/execute-action', () => {
       content: 'Thread message',
     })
     expect(res.status).toBe(200)
-    const body = await res.json()
+    const body = (await res.json()) as any
     expect(body.success).toBe(true)
     expect(body.result.messageId).toBeDefined()
   })
@@ -448,7 +448,7 @@ describe('POST /api/execute-action', () => {
       maxUses: 10,
     })
     expect(res.status).toBe(200)
-    const body = await res.json()
+    const body = (await res.json()) as any
     expect(body.success).toBe(true)
     expect(body.result.inviteCode).toBe('abc123')
     expect(body.result.inviteUrl).toBe('https://discord.gg/abc123')
@@ -464,7 +464,7 @@ describe('POST /api/execute-action', () => {
       location: 'Online',
     })
     expect(res.status).toBe(200)
-    const body = await res.json()
+    const body = (await res.json()) as any
     expect(body.success).toBe(true)
     expect(body.result.eventId).toBe('event-1')
     expect(body.result.eventName).toBe('New Event')

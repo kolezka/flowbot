@@ -36,18 +36,18 @@ describe('GET /health', () => {
     const res = await app.fetch(req)
     expect(res.status).toBe(200)
 
-    const body = await res.json() as Record<string, unknown>
+    const body = await res.json() as any
     expect(body.status).toBe('ok')
     expect(typeof body.uptime).toBe('number')
 
     // Bot info
-    const bot = body.bot as Record<string, unknown>
+    const bot = body.bot as any
     expect(bot.ready).toBe(true)
     expect(bot.username).toBe('TestBot#1234')
     expect(bot.guilds).toBe(5)
 
     // Memory info
-    const memory = body.memory as Record<string, unknown>
+    const memory = body.memory as any
     expect(typeof memory.rss).toBe('number')
     expect(typeof memory.heapUsed).toBe('number')
     expect(typeof memory.heapTotal).toBe('number')
@@ -65,8 +65,8 @@ describe('GET /health', () => {
     const appWithNullUser = createServer(nullUserClient, config)
     const req = new Request('http://localhost/health')
     const res = await appWithNullUser.fetch(req)
-    const body = await res.json() as Record<string, unknown>
-    const bot = body.bot as Record<string, unknown>
+    const body = await res.json() as any
+    const bot = body.bot as any
     expect(bot.ready).toBe(false)
     expect(bot.username).toBe(null)
     expect(bot.guilds).toBe(0)

@@ -57,7 +57,7 @@ describe('POST /api/flow-event', () => {
     const res = await app.fetch(req)
     expect(res.status).toBe(200)
 
-    const body = await res.json()
+    const body = (await res.json()) as any
     expect(body.success).toBe(true)
     expect(body.result).toEqual(webhookResponse)
 
@@ -80,7 +80,7 @@ describe('POST /api/flow-event', () => {
 
     const res = await app.fetch(req)
     expect(res.status).toBe(400)
-    const body = await res.json()
+    const body = (await res.json()) as any
     expect(body.success).toBe(false)
     expect(body.error).toContain('eventType is required')
   })
@@ -103,7 +103,7 @@ describe('POST /api/flow-event', () => {
 
     const res = await app.fetch(req)
     expect(res.status).toBe(502)
-    const body = await res.json()
+    const body = (await res.json()) as any
     expect(body.success).toBe(false)
     expect(body.error).toContain('500')
   })
@@ -122,7 +122,7 @@ describe('POST /api/flow-event', () => {
 
     const res = await app.fetch(req)
     expect(res.status).toBe(500)
-    const body = await res.json()
+    const body = (await res.json()) as any
     expect(body.success).toBe(false)
     expect(body.error).toBe('Network failure')
   })
