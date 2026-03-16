@@ -5,6 +5,8 @@ import { CreateFlowDto, UpdateFlowDto } from './dto';
 @Injectable()
 export class FlowsService {
   private readonly logger = new Logger(FlowsService.name);
+  private triggerRegistryVersion = 0;
+  private triggerRegistryCache: any[] | null = null;
 
   constructor(private prisma: PrismaService) {}
 
@@ -130,18 +132,32 @@ export class FlowsService {
       throw new BadRequestException(`Flow validation failed: ${validation.errors.join(', ')}`);
     }
 
-    return this.prisma.flowDefinition.update({
+    // Check for circular run_flow references
+    const cycle = await this.detectRunFlowCycles(id);
+    if (cycle) {
+      throw new BadRequestException(
+        `Circular flow reference detected: ${cycle.join(' → ')}`,
+      );
+    }
+
+    const result = await this.prisma.flowDefinition.update({
       where: { id },
       data: { status: 'active' },
     });
+
+    await this.rebuildTriggerRegistry();
+    return result;
   }
 
   async deactivate(id: string) {
     await this.findOne(id);
-    return this.prisma.flowDefinition.update({
+    const result = await this.prisma.flowDefinition.update({
       where: { id },
       data: { status: 'inactive' },
     });
+
+    await this.rebuildTriggerRegistry();
+    return result;
   }
 
   // Version History
@@ -612,5 +628,119 @@ export class FlowsService {
       case 'discord_create_scheduled_event': return { eventId: 'evt_456', name: 'Scheduled Event', created: true };
       default: return { executed: true };
     }
+  }
+
+  // =========================================================================
+  // Trigger Registry
+  // =========================================================================
+
+  async getTriggerRegistry() {
+    if (this.triggerRegistryCache) {
+      return {
+        triggers: this.triggerRegistryCache,
+        version: this.triggerRegistryVersion,
+      };
+    }
+    return this.rebuildTriggerRegistry();
+  }
+
+  getTriggerRegistryVersion() {
+    return { version: this.triggerRegistryVersion };
+  }
+
+  async rebuildTriggerRegistry() {
+    const activeFlows = await this.prisma.flowDefinition.findMany({
+      where: { status: 'active' },
+      select: { id: true, nodesJson: true, platform: true },
+    });
+
+    const triggers: Array<{
+      flowId: string;
+      nodeType: string;
+      config: Record<string, unknown>;
+      platform: string;
+    }> = [];
+
+    for (const flow of activeFlows) {
+      const nodes = flow.nodesJson as Array<{
+        id: string;
+        type: string;
+        category: string;
+        config: Record<string, unknown>;
+      }>;
+
+      if (!Array.isArray(nodes)) continue;
+
+      for (const node of nodes) {
+        if (node.category === 'trigger') {
+          triggers.push({
+            flowId: flow.id,
+            nodeType: node.type,
+            config: node.config,
+            platform: flow.platform,
+          });
+        }
+      }
+    }
+
+    this.triggerRegistryCache = triggers;
+    this.triggerRegistryVersion++;
+    return { triggers, version: this.triggerRegistryVersion };
+  }
+
+  // =========================================================================
+  // Circular Reference Detection
+  // =========================================================================
+
+  async detectRunFlowCycles(flowId: string): Promise<string[] | null> {
+    const visited = new Set<string>();
+    const path: string[] = [];
+
+    const getReferencedFlows = async (fid: string): Promise<string[]> => {
+      const flow = await this.prisma.flowDefinition.findUnique({
+        where: { id: fid },
+        select: { nodesJson: true },
+      });
+      if (!flow) return [];
+      const nodes = flow.nodesJson as Array<{ type: string; config: { flowId?: string } }>;
+      if (!Array.isArray(nodes)) return [];
+      return nodes
+        .filter((n) => n.type === 'run_flow' && n.config?.flowId)
+        .map((n) => n.config.flowId!);
+    };
+
+    const dfs = async (current: string): Promise<boolean> => {
+      if (path.includes(current)) {
+        path.push(current);
+        return true;
+      }
+      if (visited.has(current)) return false;
+
+      path.push(current);
+      const refs = await getReferencedFlows(current);
+      for (const ref of refs) {
+        if (await dfs(ref)) return true;
+      }
+      path.pop();
+      visited.add(current);
+      return false;
+    };
+
+    const hasCycle = await dfs(flowId);
+    return hasCycle ? path : null;
+  }
+
+  // =========================================================================
+  // Context Keys
+  // =========================================================================
+
+  async getContextKeys(): Promise<Array<{ key: string; count: number }>> {
+    const result = await this.prisma.userFlowContext.groupBy({
+      by: ['key'],
+      _count: { key: true },
+      orderBy: { _count: { key: 'desc' } },
+      take: 100,
+    });
+    return result.map((r) => ({ key: r.key, count: r._count.key }));
   }
 }

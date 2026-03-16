@@ -41,6 +41,27 @@ export class FlowsController {
     return this.correlationService.getCorrelatedContext(BigInt(telegramId));
   }
 
+  @Get('trigger-registry')
+  @ApiOperation({ summary: 'Get active flow trigger registry for bot matching' })
+  @ApiResponse({ status: 200, description: 'Trigger registry with version' })
+  getTriggerRegistry() {
+    return this.service.getTriggerRegistry();
+  }
+
+  @Get('trigger-registry/version')
+  @ApiOperation({ summary: 'Get trigger registry version number' })
+  @ApiResponse({ status: 200, description: 'Registry version' })
+  getTriggerRegistryVersion() {
+    return this.service.getTriggerRegistryVersion();
+  }
+
+  @Get('context-keys')
+  @ApiOperation({ summary: 'Get distinct context keys for variable autocomplete' })
+  @ApiResponse({ status: 200, description: 'List of context keys with usage counts' })
+  getContextKeys() {
+    return this.service.getContextKeys();
+  }
+
   @Get('executions/:executionId')
   @ApiOperation({ summary: 'Get a single execution by ID' })
   @ApiParam({ name: 'executionId', type: String, description: 'Execution ID' })
@@ -57,7 +78,7 @@ export class FlowsController {
   @ApiResponse({ status: 404, description: 'Flow not found' })
   findOne(@Param('id') id: string) {
     // Reject reserved sub-route names that shouldn't match :id
-    const reserved = ['analytics', 'webhook', 'user-context', 'executions'];
+    const reserved = ['analytics', 'webhook', 'user-context', 'executions', 'trigger-registry', 'context-keys', 'folders', 'debug'];
     if (reserved.includes(id)) {
       throw new NotFoundException(`Flow not found`);
     }
