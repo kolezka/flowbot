@@ -878,7 +878,7 @@ export class GramJsTransport implements ITelegramTransport {
           title: name,
           iconColor: options?.iconColor,
           iconEmojiId: options?.iconEmojiId ? returnBigInt(options.iconEmojiId) : undefined,
-          randomId: Number(generateRandomLong() % BigInt(2147483647)),
+          randomId: generateRandomLong(),
         }),
       )
       // Extract topic ID from result

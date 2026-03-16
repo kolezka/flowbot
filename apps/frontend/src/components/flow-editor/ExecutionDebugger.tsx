@@ -1,7 +1,8 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { api } from "@/lib/api";
+
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000";
 
 interface NodeProgress {
   nodeId: string;
@@ -39,7 +40,7 @@ export function ExecutionDebugger({
 
     const interval = setInterval(async () => {
       try {
-        const res = await api.get(`/api/flows/executions/${executionId}`);
+        const res = await fetch(`${API_URL}/api/flows/executions/${executionId}`);
         const data = await res.json();
 
         if (data.nodeResults) {
@@ -74,7 +75,8 @@ export function ExecutionDebugger({
 
   const startDebugExecution = useCallback(async () => {
     try {
-      const res = await api.post(`/api/flows/${flowId}/test-execute`, {
+      const res = await fetch(`${API_URL}/api/flows/${flowId}/test-execute`, {
+        method: "POST",
         body: JSON.stringify({ triggerData: {} }),
         headers: { "Content-Type": "application/json" },
       });

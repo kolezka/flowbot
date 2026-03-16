@@ -3,7 +3,8 @@
 import { useState, useEffect } from "react";
 import { VariableAutocomplete, buildVariableList } from "../VariableAutocomplete";
 import type { PanelProps } from "./registry";
-import { api } from "@/lib/api";
+
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000";
 
 export function ContextPanel({
   nodeType,
@@ -14,8 +15,7 @@ export function ContextPanel({
   const [contextKeys, setContextKeys] = useState<string[]>([]);
 
   useEffect(() => {
-    api
-      .get("/api/flows/context-keys")
+    fetch(`${API_URL}/api/flows/context-keys`)
       .then((res) => res.json())
       .then((data: Array<{ key: string; count: number }>) => {
         setContextKeys(data.map((d) => d.key));

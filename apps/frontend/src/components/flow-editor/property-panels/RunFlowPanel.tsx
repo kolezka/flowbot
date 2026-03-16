@@ -2,7 +2,8 @@
 
 import { useState, useEffect } from "react";
 import type { PanelProps } from "./registry";
-import { api } from "@/lib/api";
+
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000";
 
 interface FlowSummary {
   id: string;
@@ -14,8 +15,7 @@ export function RunFlowPanel({ config, onChange }: PanelProps) {
   const [flows, setFlows] = useState<FlowSummary[]>([]);
 
   useEffect(() => {
-    api
-      .get("/api/flows?limit=100")
+    fetch(`${API_URL}/api/flows?limit=100`)
       .then((res) => res.json())
       .then((data: { data: FlowSummary[] }) => {
         setFlows(data.data);
