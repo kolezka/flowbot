@@ -52,11 +52,24 @@ export async function dispatchActions(
     // Skip internal actions
     if (INTERNAL_ACTIONS.has(action)) continue;
 
+    // Skip context/chaining actions (handled in-engine)
+    if (action === 'get_context' || action === 'set_context' || action === 'delete_context' ||
+        action === 'run_flow' || action === 'emit_event') continue;
+
     // Bot action -> already executed via HTTP in actions.ts
     if (BOT_API_ACTIONS.has(action)) continue;
 
     try {
       let response: unknown;
+
+      // Handle unified cross-platform actions
+      if (action.startsWith('unified_')) {
+        const unifiedResults = await dispatchUnifiedAction(
+          nodeId, action, output, transportConfig,
+        );
+        results.push(...unifiedResults);
+        continue;
+      }
 
       // Determine platform from action name prefix
       const platform = action.startsWith('discord_') ? 'discord' : 'telegram';
@@ -354,4 +367,109 @@ async function dispatchViaDiscordBotApi(
   }
 
   return response.json();
+}
+
+// ---------------------------------------------------------------------------
+// Unified cross-platform dispatch
+// ---------------------------------------------------------------------------
+
+export interface UnifiedDispatchError {
+  platform: 'telegram' | 'discord';
+  code: 'RATE_LIMITED' | 'FORBIDDEN' | 'NOT_FOUND' | 'INVALID_INPUT' | 'UNKNOWN';
+  message: string;
+  originalError?: unknown;
+}
+
+const UNIFIED_TO_TELEGRAM: Record<string, string> = {
+  unified_send_message: 'send_message',
+  unified_send_media: 'send_photo',
+  unified_delete_message: 'delete_message',
+  unified_ban_user: 'ban_user',
+  unified_kick_user: 'ban_user',
+  unified_pin_message: 'pin_message',
+  unified_send_dm: 'send_message',
+  unified_set_role: 'promote_user',
+};
+
+const UNIFIED_TO_DISCORD: Record<string, string> = {
+  unified_send_message: 'discord_send_message',
+  unified_send_media: 'discord_send_message',
+  unified_delete_message: 'discord_delete_message',
+  unified_ban_user: 'discord_ban_member',
+  unified_kick_user: 'discord_kick_member',
+  unified_pin_message: 'discord_pin_message',
+  unified_send_dm: 'discord_send_dm',
+  unified_set_role: 'discord_add_role',
+};
+
+async function dispatchUnifiedAction(
+  nodeId: string,
+  action: string,
+  output: Record<string, unknown>,
+  transportConfig?: { transport?: string; botInstanceId?: string; platform?: string; discordBotInstanceId?: string },
+): Promise<DispatchResult[]> {
+  const results: DispatchResult[] = [];
+  const platform = transportConfig?.platform ?? 'telegram';
+
+  if (platform === 'telegram' || platform === 'cross_platform') {
+    const telegramAction = UNIFIED_TO_TELEGRAM[action];
+    if (telegramAction) {
+      try {
+        const telegramParams: Record<string, unknown> = {
+          ...output,
+          action: telegramAction,
+          chatId: output.targetChatId,
+          userId: output.targetUserId,
+          ...(output.telegramOverrides as Record<string, unknown> ?? {}),
+        };
+        delete telegramParams.telegramOverrides;
+        delete telegramParams.discordOverrides;
+        delete telegramParams.targetChatId;
+        delete telegramParams.targetUserId;
+
+        let response: unknown;
+        if (transportConfig?.botInstanceId) {
+          response = await dispatchViaBotApi(telegramAction, telegramParams, transportConfig.botInstanceId);
+        } else {
+          const transport = await getTelegramTransport();
+          response = await dispatchToTelegram(transport, telegramAction, telegramParams);
+        }
+        results.push({ nodeId: `${nodeId}:telegram`, dispatched: true, response });
+      } catch (error) {
+        const msg = error instanceof Error ? error.message : String(error);
+        results.push({ nodeId: `${nodeId}:telegram`, dispatched: false, error: msg });
+      }
+    }
+  }
+
+  if (platform === 'discord' || platform === 'cross_platform') {
+    const discordAction = UNIFIED_TO_DISCORD[action];
+    if (discordAction) {
+      try {
+        const discordParams: Record<string, unknown> = {
+          ...output,
+          action: discordAction,
+          channelId: output.targetChatId,
+          userId: output.targetUserId,
+          ...(output.discordOverrides as Record<string, unknown> ?? {}),
+        };
+        delete discordParams.telegramOverrides;
+        delete discordParams.discordOverrides;
+        delete discordParams.targetChatId;
+        delete discordParams.targetUserId;
+
+        const effectiveBotId = transportConfig?.discordBotInstanceId ?? transportConfig?.botInstanceId;
+        if (!effectiveBotId) {
+          throw new Error('Discord dispatch requires discordBotInstanceId');
+        }
+        const response = await dispatchViaDiscordBotApi(discordAction, discordParams, effectiveBotId);
+        results.push({ nodeId: `${nodeId}:discord`, dispatched: true, response });
+      } catch (error) {
+        const msg = error instanceof Error ? error.message : String(error);
+        results.push({ nodeId: `${nodeId}:discord`, dispatched: false, error: msg });
+      }
+    }
+  }
+
+  return results;
 }

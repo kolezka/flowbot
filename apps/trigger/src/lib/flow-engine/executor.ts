@@ -38,6 +38,9 @@ const NON_CACHEABLE_TYPES = new Set([
   'delete_chat_photo', 'approve_join_request',
   'get_context', 'set_context', 'delete_context',
   'run_flow', 'emit_event',
+  'unified_send_message', 'unified_send_media', 'unified_delete_message',
+  'unified_ban_user', 'unified_kick_user', 'unified_pin_message',
+  'unified_send_dm', 'unified_set_role',
 ]);
 
 /**

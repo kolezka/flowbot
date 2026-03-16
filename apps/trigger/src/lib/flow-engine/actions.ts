@@ -80,6 +80,17 @@ export async function executeAction(node: FlowNode, ctx: FlowContext): Promise<u
     case 'approve_join_request':
       return executeApproveJoinRequest(node, ctx);
 
+    // --- Unified Cross-Platform Actions ---
+    case 'unified_send_message':
+    case 'unified_send_media':
+    case 'unified_delete_message':
+    case 'unified_ban_user':
+    case 'unified_kick_user':
+    case 'unified_pin_message':
+    case 'unified_send_dm':
+    case 'unified_set_role':
+      return executeUnifiedAction(node, ctx);
+
     // --- Context Actions ---
     case 'get_context':
       return executeGetContext(node, ctx);
@@ -1272,4 +1283,26 @@ async function executeEmitEvent(node: FlowNode, ctx: FlowContext): Promise<unkno
   }
 
   return { action: 'emit_event', eventName, listenersTriggered };
+}
+
+// ---------------------------------------------------------------------------
+// Unified cross-platform actions
+// ---------------------------------------------------------------------------
+
+async function executeUnifiedAction(node: FlowNode, ctx: FlowContext): Promise<unknown> {
+  const config = node.config as Record<string, unknown>;
+  const result: Record<string, unknown> = { action: node.type, executed: true };
+
+  if (config.text !== undefined) result.text = interpolate(String(config.text), ctx);
+  if (config.mediaUrl !== undefined) result.mediaUrl = interpolate(String(config.mediaUrl), ctx);
+  if (config.targetUserId !== undefined) result.targetUserId = interpolate(String(config.targetUserId), ctx);
+  if (config.targetChatId !== undefined) {
+    result.targetChatId = interpolate(String(config.targetChatId), ctx);
+  } else if (ctx.triggerData.chatId) {
+    result.targetChatId = String(ctx.triggerData.chatId);
+  }
+  if (config.telegramOverrides !== undefined) result.telegramOverrides = config.telegramOverrides;
+  if (config.discordOverrides !== undefined) result.discordOverrides = config.discordOverrides;
+
+  return result;
 }
