@@ -1,5 +1,6 @@
 import type { FlowNode, FlowContext } from './types.js';
 import { interpolate } from './variables.js';
+import { getContext } from './context-store.js';
 
 export async function evaluateCondition(node: FlowNode, ctx: FlowContext): Promise<boolean> {
   switch (node.type) {
@@ -25,6 +26,10 @@ export async function evaluateCondition(node: FlowNode, ctx: FlowContext): Promi
       return evaluateCallbackDataMatch(node, ctx);
     case 'user_is_bot':
       return evaluateUserIsBot(node, ctx);
+
+    // --- Context Conditions ---
+    case 'context_condition':
+      return evaluateContextCondition(node, ctx);
 
     // --- Discord Conditions ---
     case 'discord_has_role':
@@ -247,4 +252,38 @@ function evaluateDiscordMemberPermissions(node: FlowNode, ctx: FlowContext): boo
   if (required.length === 0) return true;
   const memberPermissions = (ctx.triggerData.permissions as string[]) ?? [];
   return required.every((perm) => memberPermissions.includes(perm));
+}
+
+// ---------------------------------------------------------------------------
+// Context conditions
+// ---------------------------------------------------------------------------
+
+async function evaluateContextCondition(node: FlowNode, ctx: FlowContext): Promise<boolean> {
+  const prisma = (ctx as any)._prisma;
+  if (!prisma) return false;
+
+  const { key, operator, value: expected } = node.config as {
+    key: string;
+    operator: 'equals' | 'exists' | 'gt' | 'lt' | 'contains';
+    value?: unknown;
+  };
+
+  const platformUserId = String(ctx.triggerData.platformUserId ?? ctx.triggerData.userId ?? '');
+  const platform = String(ctx.triggerData.platform ?? 'telegram');
+  const actual = await getContext(prisma, platformUserId, platform, key);
+
+  switch (operator) {
+    case 'exists':
+      return actual !== undefined;
+    case 'equals':
+      return actual === expected;
+    case 'gt':
+      return Number(actual) > Number(expected);
+    case 'lt':
+      return Number(actual) < Number(expected);
+    case 'contains':
+      return typeof actual === 'string' && typeof expected === 'string' && actual.includes(expected);
+    default:
+      return false;
+  }
 }
