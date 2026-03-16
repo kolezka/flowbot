@@ -11,6 +11,16 @@ export function interpolate(template: string, ctx: FlowContext): string {
       return value !== undefined ? String(value) : match;
     }
 
+    // Check context cache
+    if (trimmed.startsWith('context.')) {
+      const contextKey = trimmed.slice('context.'.length);
+      const contextCache = (ctx as any)._contextCache as Map<string, unknown> | undefined;
+      if (contextCache?.has(contextKey)) {
+        return String(contextCache.get(contextKey) ?? '');
+      }
+      return match;
+    }
+
     // Check node results
     if (trimmed.startsWith('node.')) {
       const [, nodeId, ...rest] = trimmed.split('.');
