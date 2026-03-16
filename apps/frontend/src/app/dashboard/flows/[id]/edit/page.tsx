@@ -27,6 +27,7 @@ import {
   applyExecutionStyles,
   useExecutionState,
 } from "@/components/flow-execution-overlay";
+import { NodePalette as ExtractedNodePalette } from "@/components/flow-editor/NodePalette";
 
 import { NODE_TYPES } from "@tg-allegro/flow-shared";
 
@@ -1373,7 +1374,7 @@ export default function FlowEditorPage() {
       {/* Canvas + Panels */}
       <div className="flex flex-1 flex-col min-h-0">
         <div className="flex flex-1 min-h-0">
-        <NodePalette onDragStart={() => {}} />
+        <ExtractedNodePalette onDragStart={() => {}} />
         <div className="flex-1" onDragOver={onDragOver} onDrop={onDrop}>
           <ReactFlow
             nodes={styledNodes}
