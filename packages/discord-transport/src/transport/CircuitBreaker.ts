@@ -161,6 +161,40 @@ export class CircuitBreaker implements IDiscordTransport {
     return this.execute(() => this.transport.createScheduledEvent(guildId, name, options))
   }
 
+  // SP2: Interactions
+  async replyInteraction(interactionId: string, params: { content?: string, embeds?: unknown[], components?: unknown[], ephemeral?: boolean }): Promise<void> {
+    return this.execute(() => this.transport.replyInteraction(interactionId, params))
+  }
+
+  async showModal(interactionId: string, params: { customId: string, title: string, components: unknown[] }): Promise<void> {
+    return this.execute(() => this.transport.showModal(interactionId, params))
+  }
+
+  async sendComponents(channelId: string, params: { content?: string, components: unknown[] }): Promise<DiscordMessageResult> {
+    return this.execute(() => this.transport.sendComponents(channelId, params))
+  }
+
+  async editInteraction(interactionId: string, params: { content?: string, embeds?: unknown[], components?: unknown[] }): Promise<void> {
+    return this.execute(() => this.transport.editInteraction(interactionId, params))
+  }
+
+  async deferReply(interactionId: string, ephemeral?: boolean): Promise<void> {
+    return this.execute(() => this.transport.deferReply(interactionId, ephemeral))
+  }
+
+  // SP2: Channel permissions & Forums
+  async setChannelPermissions(channelId: string, targetId: string, allow?: string, deny?: string): Promise<void> {
+    return this.execute(() => this.transport.setChannelPermissions(channelId, targetId, allow, deny))
+  }
+
+  async createForumPost(channelId: string, params: { name: string, content: string, tags?: string[] }): Promise<string> {
+    return this.execute(() => this.transport.createForumPost(channelId, params))
+  }
+
+  async registerCommands(guildId: string, commands: unknown[]): Promise<void> {
+    return this.execute(() => this.transport.registerCommands(guildId, commands))
+  }
+
   // --- Circuit breaker logic ---
 
   private async execute<T>(fn: () => Promise<T>): Promise<T> {

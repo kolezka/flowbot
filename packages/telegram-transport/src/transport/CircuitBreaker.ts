@@ -186,6 +186,37 @@ export class CircuitBreaker implements ITelegramTransport {
     return this.execute(() => this.transport.answerCallbackQuery(queryId, options))
   }
 
+  // SP2: Inline & Payments
+  async answerInlineQuery(queryId: string, results: unknown[], options?: { cacheTime?: number }): Promise<boolean> {
+    return this.execute(() => this.transport.answerInlineQuery(queryId, results, options))
+  }
+
+  async sendInvoice(peer: string | bigint, params: { title: string, description: string, payload: string, currency: string, prices: Array<{ label: string, amount: number }> }): Promise<MessageResult> {
+    return this.execute(() => this.transport.sendInvoice(peer, params))
+  }
+
+  async answerPreCheckoutQuery(queryId: string, ok: boolean, errorMessage?: string): Promise<boolean> {
+    return this.execute(() => this.transport.answerPreCheckoutQuery(queryId, ok, errorMessage))
+  }
+
+  // SP2: Bot configuration
+  async setChatMenuButton(peer: string | bigint, menuButton: { type: string, text?: string, url?: string }): Promise<boolean> {
+    return this.execute(() => this.transport.setChatMenuButton(peer, menuButton))
+  }
+
+  async setMyCommands(commands: Array<{ command: string, description: string }>, scope?: unknown): Promise<boolean> {
+    return this.execute(() => this.transport.setMyCommands(commands, scope))
+  }
+
+  // SP2: Media & Forum
+  async sendMediaGroup(peer: string | bigint, media: Array<{ type: string, url: string, caption?: string }>): Promise<MessageResult[]> {
+    return this.execute(() => this.transport.sendMediaGroup(peer, media))
+  }
+
+  async createForumTopic(peer: string | bigint, name: string, options?: { iconColor?: number, iconEmojiId?: string }): Promise<number> {
+    return this.execute(() => this.transport.createForumTopic(peer, name, options))
+  }
+
   private async execute<T>(fn: () => Promise<T>): Promise<T> {
     const now = Date.now()
 
