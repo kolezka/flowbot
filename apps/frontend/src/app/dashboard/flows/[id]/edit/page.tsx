@@ -28,124 +28,9 @@ import {
   useExecutionState,
 } from "@/components/flow-execution-overlay";
 
-const NODE_TYPES_CONFIG = [
-  // Triggers
-  { type: "message_received", label: "Message Received", category: "trigger", color: "#22c55e" },
-  { type: "user_joins", label: "User Joins", category: "trigger", color: "#22c55e" },
-  { type: "user_leaves", label: "User Leaves", category: "trigger", color: "#22c55e" },
-  { type: "callback_query", label: "Button Click", category: "trigger", color: "#22c55e" },
-  { type: "command_received", label: "Command", category: "trigger", color: "#22c55e" },
-  { type: "message_edited", label: "Message Edited", category: "trigger", color: "#22c55e" },
-  { type: "chat_member_updated", label: "Member Status", category: "trigger", color: "#22c55e" },
-  { type: "schedule", label: "Schedule", category: "trigger", color: "#22c55e" },
-  { type: "webhook", label: "Webhook", category: "trigger", color: "#22c55e" },
-  { type: "poll_answer", label: "Poll Answer", category: "trigger", color: "#22c55e" },
-  { type: "inline_query", label: "Inline Query", category: "trigger", color: "#22c55e" },
-  { type: "my_chat_member", label: "Bot Status Change", category: "trigger", color: "#22c55e" },
-  { type: "new_chat_title", label: "Chat Title Changed", category: "trigger", color: "#22c55e" },
-  { type: "new_chat_photo", label: "Chat Photo Changed", category: "trigger", color: "#22c55e" },
-  // Conditions
-  { type: "keyword_match", label: "Keyword Match", category: "condition", color: "#eab308" },
-  { type: "user_role", label: "User Role", category: "condition", color: "#eab308" },
-  { type: "time_based", label: "Time Based", category: "condition", color: "#eab308" },
-  { type: "message_type", label: "Message Type", category: "condition", color: "#eab308" },
-  { type: "chat_type", label: "Chat Type", category: "condition", color: "#eab308" },
-  { type: "regex_match", label: "Regex Match", category: "condition", color: "#eab308" },
-  { type: "has_media", label: "Has Media", category: "condition", color: "#eab308" },
-  { type: "user_is_admin", label: "Is Admin", category: "condition", color: "#eab308" },
-  { type: "message_length", label: "Message Length", category: "condition", color: "#eab308" },
-  { type: "callback_data_match", label: "Callback Data", category: "condition", color: "#eab308" },
-  { type: "user_is_bot", label: "Is Bot", category: "condition", color: "#eab308" },
-  // Actions — messaging
-  { type: "send_message", label: "Send Message", category: "action", color: "#3b82f6" },
-  { type: "send_photo", label: "Send Photo", category: "action", color: "#3b82f6" },
-  { type: "forward_message", label: "Forward Message", category: "action", color: "#3b82f6" },
-  { type: "copy_message", label: "Copy Message", category: "action", color: "#3b82f6" },
-  { type: "edit_message", label: "Edit Message", category: "action", color: "#3b82f6" },
-  { type: "delete_message", label: "Delete Message", category: "action", color: "#ef4444" },
-  { type: "pin_message", label: "Pin Message", category: "action", color: "#3b82f6" },
-  { type: "unpin_message", label: "Unpin Message", category: "action", color: "#3b82f6" },
-  { type: "send_video", label: "Send Video", category: "action", color: "#3b82f6" },
-  { type: "send_document", label: "Send Document", category: "action", color: "#3b82f6" },
-  { type: "send_sticker", label: "Send Sticker", category: "action", color: "#3b82f6" },
-  { type: "send_location", label: "Send Location", category: "action", color: "#3b82f6" },
-  { type: "send_voice", label: "Send Voice", category: "action", color: "#3b82f6" },
-  { type: "send_contact", label: "Send Contact", category: "action", color: "#3b82f6" },
-  { type: "set_chat_title", label: "Set Chat Title", category: "action", color: "#6366f1" },
-  { type: "set_chat_description", label: "Set Description", category: "action", color: "#6366f1" },
-  { type: "export_invite_link", label: "Invite Link", category: "action", color: "#6366f1" },
-  { type: "get_chat_member", label: "Get Member", category: "action", color: "#6366f1" },
-  // Actions — user management
-  { type: "ban_user", label: "Ban User", category: "action", color: "#ef4444" },
-  { type: "mute_user", label: "Mute User", category: "action", color: "#ef4444" },
-  { type: "restrict_user", label: "Restrict User", category: "action", color: "#ef4444" },
-  { type: "promote_user", label: "Promote User", category: "action", color: "#10b981" },
-  // Actions — interactive
-  { type: "create_poll", label: "Create Poll", category: "action", color: "#3b82f6" },
-  { type: "answer_callback_query", label: "Answer Button", category: "action", color: "#3b82f6" },
-  // Actions — utility
-  { type: "api_call", label: "API Call", category: "action", color: "#3b82f6" },
-  { type: "delay", label: "Delay", category: "action", color: "#8b5cf6" },
-  { type: "bot_action", label: "Bot Action", category: "action", color: "#f97316" },
-  // Context actions
-  { type: "get_context", label: "Get Context", category: "action", color: "#14b8a6" },
-  { type: "set_context", label: "Set Context", category: "action", color: "#14b8a6" },
-  { type: "delete_context", label: "Delete Context", category: "action", color: "#14b8a6" },
-  // Context condition
-  { type: "context_condition", label: "Context Check", category: "condition", color: "#14b8a6" },
-  // Flow chaining
-  { type: "run_flow", label: "Run Flow", category: "advanced", color: "#a855f7" },
-  { type: "emit_event", label: "Emit Event", category: "advanced", color: "#a855f7" },
-  { type: "custom_event", label: "Custom Event", category: "trigger", color: "#a855f7" },
-  // Advanced
-  { type: "parallel_branch", label: "Parallel Branch", category: "advanced", color: "#a855f7" },
-  { type: "db_query", label: "Database Query", category: "advanced", color: "#a855f7" },
-  { type: "loop", label: "Loop", category: "advanced", color: "#a855f7" },
-  { type: "switch", label: "Switch/Router", category: "advanced", color: "#a855f7" },
-  { type: "transform", label: "Transform", category: "advanced", color: "#a855f7" },
-  // Discord Triggers
-  { type: "discord_message_received", label: "Discord Message", category: "trigger", color: "#5865F2" },
-  { type: "discord_member_join", label: "Discord Member Join", category: "trigger", color: "#5865F2" },
-  { type: "discord_member_leave", label: "Discord Member Leave", category: "trigger", color: "#5865F2" },
-  { type: "discord_reaction_add", label: "Discord Reaction Add", category: "trigger", color: "#5865F2" },
-  { type: "discord_reaction_remove", label: "Discord Reaction Remove", category: "trigger", color: "#5865F2" },
-  { type: "discord_voice_state_update", label: "Discord Voice Update", category: "trigger", color: "#5865F2" },
-  { type: "discord_interaction_create", label: "Discord Interaction", category: "trigger", color: "#5865F2" },
-  { type: "discord_channel_create", label: "Discord Channel Create", category: "trigger", color: "#5865F2" },
-  { type: "discord_channel_delete", label: "Discord Channel Delete", category: "trigger", color: "#5865F2" },
-  { type: "discord_role_update", label: "Discord Role Update", category: "trigger", color: "#5865F2" },
-  { type: "discord_scheduled_event", label: "Discord Scheduled Event", category: "trigger", color: "#5865F2" },
-  // Discord Conditions
-  { type: "discord_has_role", label: "Discord Has Role", category: "condition", color: "#57F287" },
-  { type: "discord_channel_type", label: "Discord Channel Type", category: "condition", color: "#57F287" },
-  { type: "discord_is_bot", label: "Discord Is Bot", category: "condition", color: "#57F287" },
-  { type: "discord_message_has_embed", label: "Discord Has Embed", category: "condition", color: "#57F287" },
-  { type: "discord_member_permissions", label: "Discord Permissions", category: "condition", color: "#57F287" },
-  // Discord Actions
-  { type: "discord_send_message", label: "Discord Send Message", category: "action", color: "#5865F2" },
-  { type: "discord_send_embed", label: "Discord Send Embed", category: "action", color: "#5865F2" },
-  { type: "discord_send_dm", label: "Discord Send DM", category: "action", color: "#5865F2" },
-  { type: "discord_edit_message", label: "Discord Edit Message", category: "action", color: "#5865F2" },
-  { type: "discord_delete_message", label: "Discord Delete Message", category: "action", color: "#5865F2" },
-  { type: "discord_add_reaction", label: "Discord Add Reaction", category: "action", color: "#5865F2" },
-  { type: "discord_remove_reaction", label: "Discord Remove Reaction", category: "action", color: "#5865F2" },
-  { type: "discord_pin_message", label: "Discord Pin Message", category: "action", color: "#5865F2" },
-  { type: "discord_unpin_message", label: "Discord Unpin Message", category: "action", color: "#5865F2" },
-  { type: "discord_ban_member", label: "Discord Ban Member", category: "action", color: "#5865F2" },
-  { type: "discord_kick_member", label: "Discord Kick Member", category: "action", color: "#5865F2" },
-  { type: "discord_timeout_member", label: "Discord Timeout Member", category: "action", color: "#5865F2" },
-  { type: "discord_add_role", label: "Discord Add Role", category: "action", color: "#5865F2" },
-  { type: "discord_remove_role", label: "Discord Remove Role", category: "action", color: "#5865F2" },
-  { type: "discord_create_role", label: "Discord Create Role", category: "action", color: "#5865F2" },
-  { type: "discord_set_nickname", label: "Discord Set Nickname", category: "action", color: "#5865F2" },
-  { type: "discord_create_channel", label: "Discord Create Channel", category: "action", color: "#5865F2" },
-  { type: "discord_delete_channel", label: "Discord Delete Channel", category: "action", color: "#5865F2" },
-  { type: "discord_move_member", label: "Discord Move to Voice", category: "action", color: "#5865F2" },
-  { type: "discord_create_thread", label: "Discord Create Thread", category: "action", color: "#5865F2" },
-  { type: "discord_send_thread_message", label: "Discord Thread Message", category: "action", color: "#5865F2" },
-  { type: "discord_create_invite", label: "Discord Create Invite", category: "action", color: "#5865F2" },
-  { type: "discord_create_scheduled_event", label: "Discord Schedule Event", category: "action", color: "#5865F2" },
-];
+import { NODE_TYPES } from "@tg-allegro/flow-shared";
+
+const NODE_TYPES_CONFIG = NODE_TYPES;
 
 /** Node types that have a dedicated property panel. */
 const CONFIGURABLE_ACTIONS = new Set([
@@ -158,6 +43,13 @@ const CONFIGURABLE_ACTIONS = new Set([
   // Context & chaining
   "get_context", "set_context", "delete_context", "context_condition",
   "run_flow", "emit_event", "custom_event",
+  // New Telegram (SP2)
+  "answer_inline_query", "send_invoice", "answer_pre_checkout",
+  "set_chat_menu_button", "send_media_group", "create_forum_topic", "set_my_commands",
+  // Unified cross-platform
+  "unified_send_message", "unified_send_media", "unified_delete_message",
+  "unified_ban_user", "unified_kick_user", "unified_pin_message",
+  "unified_send_dm", "unified_set_role",
   // Discord actions
   "discord_send_message", "discord_send_embed", "discord_send_dm", "discord_edit_message",
   "discord_delete_message", "discord_add_reaction", "discord_remove_reaction",
@@ -166,6 +58,10 @@ const CONFIGURABLE_ACTIONS = new Set([
   "discord_set_nickname", "discord_create_channel", "discord_delete_channel",
   "discord_move_member", "discord_create_thread", "discord_send_thread_message",
   "discord_create_invite", "discord_create_scheduled_event",
+  // New Discord (SP2)
+  "discord_reply_interaction", "discord_show_modal", "discord_send_components",
+  "discord_edit_interaction", "discord_defer_reply", "discord_set_channel_permissions",
+  "discord_create_forum_post", "discord_register_commands",
 ]);
 
 const GENERAL_NODE_TYPES = new Set(["schedule", "webhook", "api_call", "delay", "time_based"]);

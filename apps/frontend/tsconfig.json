@@ -19,7 +19,8 @@
       }
     ],
     "paths": {
-      "@/*": ["./src/*"]
+      "@/*": ["./src/*"],
+      "@tg-allegro/flow-shared": ["../../packages/flow-shared/src/index.ts"]
     }
   },
   "include": [
