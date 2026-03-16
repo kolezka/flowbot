@@ -743,4 +743,68 @@ export class FlowsService {
     });
     return result.map((r) => ({ key: r.key, count: r._count.key }));
   }
+
+  // =========================================================================
+  // Flow Folders
+  // =========================================================================
+
+  private readonly MAX_FOLDER_DEPTH = 3;
+
+  async createFolder(name: string, parentId?: string) {
+    if (parentId) {
+      const depth = await this.getFolderDepth(parentId);
+      if (depth >= this.MAX_FOLDER_DEPTH) {
+        throw new BadRequestException(`Maximum folder depth (${this.MAX_FOLDER_DEPTH}) exceeded`);
+      }
+    }
+    return this.prisma.flowFolder.create({ data: { name, parentId } });
+  }
+
+  async getFolders() {
+    return this.prisma.flowFolder.findMany({
+      where: { parentId: null },
+      include: {
+        children: {
+          include: {
+            children: true,
+            flows: { select: { id: true, name: true, status: true } },
+          },
+        },
+        flows: { select: { id: true, name: true, status: true } },
+      },
+      orderBy: { order: 'asc' },
+    });
+  }
+
+  async updateFolder(id: string, data: { name?: string; parentId?: string; order?: number }) {
+    if (data.parentId) {
+      const depth = await this.getFolderDepth(data.parentId);
+      if (depth >= this.MAX_FOLDER_DEPTH) {
+        throw new BadRequestException(`Maximum folder depth (${this.MAX_FOLDER_DEPTH}) exceeded`);
+      }
+    }
+    return this.prisma.flowFolder.update({ where: { id }, data });
+  }
+
+  async deleteFolder(id: string) {
+    await this.prisma.flowDefinition.updateMany({
+      where: { folderId: id },
+      data: { folderId: null },
+    });
+    return this.prisma.flowFolder.delete({ where: { id } });
+  }
+
+  private async getFolderDepth(folderId: string): Promise<number> {
+    let depth = 0;
+    let currentId: string | null = folderId;
+    while (currentId) {
+      depth++;
+      const folder = await this.prisma.flowFolder.findUnique({
+        where: { id: currentId },
+        select: { parentId: true },
+      });
+      currentId = folder?.parentId ?? null;
+    }
+    return depth;
+  }
 }

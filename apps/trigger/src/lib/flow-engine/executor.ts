@@ -14,6 +14,7 @@ export interface ExecutorConfig {
     triggerAndWait: (taskId: string, payload: unknown) => Promise<unknown>;
     trigger: (taskId: string, payload: unknown) => Promise<void>;
   };
+  onNodeComplete?: (nodeId: string, result: NodeResult, ctx: FlowContext) => Promise<void>;
 }
 
 const DEFAULT_CONFIG: ExecutorConfig = {
@@ -295,6 +296,11 @@ export async function executeFlow(
         completedAt: new Date(),
       };
       ctx.nodeResults.set(nodeId, result);
+
+      // Notify callback (used by debugger)
+      if (cfg.onNodeComplete) {
+        await cfg.onNodeComplete(nodeId, result, ctx);
+      }
 
       // Continue to next nodes only if condition passed
       if (shouldContinue) {

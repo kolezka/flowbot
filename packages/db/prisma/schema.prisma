@@ -337,12 +337,28 @@ model FlowDefinition {
   status      String   @default("draft") // draft | active | inactive
   version     Int      @default(1)
 
+  folderId String?
+  folder   FlowFolder? @relation(fields: [folderId], references: [id])
+
   executions FlowExecution[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   @@index([status])
+  @@index([folderId])
+}
+
+model FlowFolder {
+  id        String          @id @default(cuid())
+  name      String
+  parentId  String?
+  parent    FlowFolder?     @relation("FolderTree", fields: [parentId], references: [id])
+  children  FlowFolder[]    @relation("FolderTree")
+  order     Int             @default(0)
+  flows     FlowDefinition[]
+  createdAt DateTime        @default(now())
+  updatedAt DateTime        @updatedAt
 }
 
 model FlowExecution {

@@ -62,6 +62,39 @@ export class FlowsController {
     return this.service.getContextKeys();
   }
 
+  // --- Flow Folders ---
+
+  @Post('folders')
+  @ApiOperation({ summary: 'Create a flow folder' })
+  @ApiResponse({ status: 201, description: 'Folder created' })
+  createFolder(@Body() body: { name: string; parentId?: string }) {
+    return this.service.createFolder(body.name, body.parentId);
+  }
+
+  @Get('folders')
+  @ApiOperation({ summary: 'Get all flow folders as tree' })
+  @ApiResponse({ status: 200, description: 'Folder tree with flows' })
+  getFolders() {
+    return this.service.getFolders();
+  }
+
+  @Patch('folders/:folderId')
+  @ApiOperation({ summary: 'Update a flow folder' })
+  @ApiParam({ name: 'folderId', type: String })
+  updateFolder(
+    @Param('folderId') id: string,
+    @Body() body: { name?: string; parentId?: string; order?: number },
+  ) {
+    return this.service.updateFolder(id, body);
+  }
+
+  @Delete('folders/:folderId')
+  @ApiOperation({ summary: 'Delete a flow folder (moves flows to root)' })
+  @ApiParam({ name: 'folderId', type: String })
+  deleteFolder(@Param('folderId') id: string) {
+    return this.service.deleteFolder(id);
+  }
+
   @Get('executions/:executionId')
   @ApiOperation({ summary: 'Get a single execution by ID' })
   @ApiParam({ name: 'executionId', type: String, description: 'Execution ID' })
