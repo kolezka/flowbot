@@ -473,6 +473,37 @@ model FlowVersion {
 }
 
 // ==========================================
+// Flow Context & Events
+// ==========================================
+
+model UserFlowContext {
+  id             String   @id @default(cuid())
+  platformUserId String
+  platform       String   // "telegram" | "discord"
+  key            String
+  value          Json
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@unique([platformUserId, platform, key])
+  @@index([platformUserId, platform])
+}
+
+model FlowEvent {
+  id                String   @id @default(cuid())
+  eventName         String
+  payload           Json
+  sourceFlowId      String
+  sourceExecutionId String
+  createdAt         DateTime @default(now())
+  expiresAt         DateTime @default(dbgenerated("NOW() + INTERVAL '30 days'"))
+
+  @@index([eventName])
+  @@index([sourceFlowId])
+  @@index([expiresAt])
+}
+
+// ==========================================
 // Webhook Ingress Models
 // ==========================================
 
