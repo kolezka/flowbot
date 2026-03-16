@@ -18,8 +18,17 @@ Telegram e-commerce and group management platform. pnpm monorepo with 8 workspac
 ### Broadcast Composer
 ![Broadcast](docs/screenshots/broadcast.png)
 
+### Flow Builder
+![Flows](docs/screenshots/flows.png)
+
 ### Moderation Logs
 ![Moderation Logs](docs/screenshots/moderation-logs.png)
+
+### Bot Config
+![Bot Config](docs/screenshots/bot-config.png)
+
+### Webhooks
+![Webhooks](docs/screenshots/webhooks.png)
 
 > All screenshots are available in [`docs/screenshots/`](docs/screenshots/).
 
