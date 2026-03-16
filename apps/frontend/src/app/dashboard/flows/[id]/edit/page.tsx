@@ -87,6 +87,16 @@ const NODE_TYPES_CONFIG = [
   { type: "api_call", label: "API Call", category: "action", color: "#3b82f6" },
   { type: "delay", label: "Delay", category: "action", color: "#8b5cf6" },
   { type: "bot_action", label: "Bot Action", category: "action", color: "#f97316" },
+  // Context actions
+  { type: "get_context", label: "Get Context", category: "action", color: "#14b8a6" },
+  { type: "set_context", label: "Set Context", category: "action", color: "#14b8a6" },
+  { type: "delete_context", label: "Delete Context", category: "action", color: "#14b8a6" },
+  // Context condition
+  { type: "context_condition", label: "Context Check", category: "condition", color: "#14b8a6" },
+  // Flow chaining
+  { type: "run_flow", label: "Run Flow", category: "advanced", color: "#a855f7" },
+  { type: "emit_event", label: "Emit Event", category: "advanced", color: "#a855f7" },
+  { type: "custom_event", label: "Custom Event", category: "trigger", color: "#a855f7" },
   // Advanced
   { type: "parallel_branch", label: "Parallel Branch", category: "advanced", color: "#a855f7" },
   { type: "db_query", label: "Database Query", category: "advanced", color: "#a855f7" },
@@ -145,6 +155,9 @@ const CONFIGURABLE_ACTIONS = new Set([
   "send_video", "send_document", "send_sticker", "send_location",
   "send_voice", "send_contact", "set_chat_title", "set_chat_description",
   "export_invite_link", "get_chat_member",
+  // Context & chaining
+  "get_context", "set_context", "delete_context", "context_condition",
+  "run_flow", "emit_event", "custom_event",
   // Discord actions
   "discord_send_message", "discord_send_embed", "discord_send_dm", "discord_edit_message",
   "discord_delete_message", "discord_add_reaction", "discord_remove_reaction",
