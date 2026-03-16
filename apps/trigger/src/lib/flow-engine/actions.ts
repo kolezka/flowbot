@@ -88,6 +88,12 @@ export async function executeAction(node: FlowNode, ctx: FlowContext): Promise<u
     case 'delete_context':
       return executeDeleteContext(node, ctx);
 
+    // --- Flow Chaining ---
+    case 'run_flow':
+      return executeRunFlow(node, ctx);
+    case 'emit_event':
+      return executeEmitEvent(node, ctx);
+
     // --- Discord Actions ---
     case 'discord_send_message':
       return executeDiscordSendMessage(node, ctx);
@@ -1156,4 +1162,114 @@ async function executeDeleteContext(node: FlowNode, ctx: FlowContext): Promise<u
   const platform = String(ctx.triggerData.platform ?? 'telegram');
   await deleteContext(prisma, platformUserId, platform, key);
   return { action: 'delete_context', key, executed: true };
+}
+
+// ---------------------------------------------------------------------------
+// Flow chaining actions
+// ---------------------------------------------------------------------------
+
+const MAX_CHAIN_DEPTH = 5;
+
+async function executeRunFlow(node: FlowNode, ctx: FlowContext): Promise<unknown> {
+  const callbacks = (ctx as any)._taskCallbacks as {
+    triggerAndWait: (taskId: string, payload: unknown) => Promise<unknown>;
+    trigger: (taskId: string, payload: unknown) => Promise<void>;
+  } | undefined;
+
+  if (!callbacks) throw new Error('run_flow requires taskCallbacks in executor config');
+
+  const { flowId, waitForResult, inputVariables } = node.config as {
+    flowId: string;
+    waitForResult: boolean;
+    inputVariables?: Record<string, string>;
+  };
+
+  const currentDepth = Number(ctx.triggerData._chainDepth ?? 0);
+  if (currentDepth >= MAX_CHAIN_DEPTH) {
+    throw new Error(`Maximum chain depth (${MAX_CHAIN_DEPTH}) exceeded`);
+  }
+
+  const childTriggerData: Record<string, unknown> = {
+    ...inputVariables,
+    _chainDepth: currentDepth + 1,
+  };
+
+  if (waitForResult) {
+    const result = await callbacks.triggerAndWait('flow-execution', {
+      flowId,
+      triggerData: childTriggerData,
+    });
+    const output = (result as any)?.ok ? (result as any).output : result;
+    return { action: 'run_flow', flowId, waitForResult: true, output };
+  } else {
+    await callbacks.trigger('flow-execution', {
+      flowId,
+      triggerData: childTriggerData,
+    });
+    return { action: 'run_flow', flowId, waitForResult: false, fired: true };
+  }
+}
+
+async function executeEmitEvent(node: FlowNode, ctx: FlowContext): Promise<unknown> {
+  const prisma = (ctx as any)._prisma;
+  const callbacks = (ctx as any)._taskCallbacks;
+  if (!prisma) throw new Error('emit_event requires prisma in executor config');
+
+  const { eventName, payload: rawPayload } = node.config as {
+    eventName: string;
+    payload?: Record<string, string>;
+  };
+
+  // Interpolate payload values
+  const payload: Record<string, unknown> = {};
+  if (rawPayload) {
+    for (const [k, v] of Object.entries(rawPayload)) {
+      payload[k] = interpolate(String(v), ctx);
+    }
+  }
+
+  // Write audit record
+  await prisma.flowEvent.create({
+    data: {
+      eventName,
+      payload,
+      sourceFlowId: ctx.flowId,
+      sourceExecutionId: ctx.executionId,
+    },
+  });
+
+  // Find active flows with custom_event triggers matching this event name
+  const listenerFlows = await prisma.flowDefinition.findMany({
+    where: {
+      status: 'active',
+      id: { not: ctx.flowId },
+    },
+    select: { id: true, nodesJson: true },
+  });
+
+  let listenersTriggered = 0;
+
+  for (const flow of listenerFlows) {
+    const nodes = flow.nodesJson as Array<{ type: string; config: { eventName?: string } }>;
+    const hasMatchingTrigger = nodes.some(
+      (n) => n.type === 'custom_event' && n.config?.eventName === eventName,
+    );
+
+    if (hasMatchingTrigger && callbacks?.trigger) {
+      const chainDepth = Number(ctx.triggerData._chainDepth ?? 0);
+      await callbacks.trigger('flow-execution', {
+        flowId: flow.id,
+        triggerData: {
+          event: eventName,
+          ...payload,
+          _chainDepth: chainDepth + 1,
+          _sourceFlowId: ctx.flowId,
+          _sourceExecutionId: ctx.executionId,
+        },
+      });
+      listenersTriggered++;
+    }
+  }
+
+  return { action: 'emit_event', eventName, listenersTriggered };
 }
