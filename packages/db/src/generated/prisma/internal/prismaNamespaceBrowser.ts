@@ -66,6 +66,7 @@ export const ModelName = {
   ClientLog: 'ClientLog',
   ClientSession: 'ClientSession',
   FlowDefinition: 'FlowDefinition',
+  FlowFolder: 'FlowFolder',
   FlowExecution: 'FlowExecution',
   BotInstance: 'BotInstance',
   BotCommand: 'BotCommand',
@@ -73,6 +74,8 @@ export const ModelName = {
   BotMenu: 'BotMenu',
   BotMenuButton: 'BotMenuButton',
   FlowVersion: 'FlowVersion',
+  UserFlowContext: 'UserFlowContext',
+  FlowEvent: 'FlowEvent',
   WebhookEndpoint: 'WebhookEndpoint'
 } as const
 
@@ -347,11 +350,24 @@ export const FlowDefinitionScalarFieldEnum = {
   platform: 'platform',
   status: 'status',
   version: 'version',
+  folderId: 'folderId',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const
 
 export type FlowDefinitionScalarFieldEnum = (typeof FlowDefinitionScalarFieldEnum)[keyof typeof FlowDefinitionScalarFieldEnum]
+
+
+export const FlowFolderScalarFieldEnum = {
+  id: 'id',
+  name: 'name',
+  parentId: 'parentId',
+  order: 'order',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type FlowFolderScalarFieldEnum = (typeof FlowFolderScalarFieldEnum)[keyof typeof FlowFolderScalarFieldEnum]
 
 
 export const FlowExecutionScalarFieldEnum = {
@@ -451,6 +467,32 @@ export const FlowVersionScalarFieldEnum = {
 } as const
 
 export type FlowVersionScalarFieldEnum = (typeof FlowVersionScalarFieldEnum)[keyof typeof FlowVersionScalarFieldEnum]
+
+
+export const UserFlowContextScalarFieldEnum = {
+  id: 'id',
+  platformUserId: 'platformUserId',
+  platform: 'platform',
+  key: 'key',
+  value: 'value',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type UserFlowContextScalarFieldEnum = (typeof UserFlowContextScalarFieldEnum)[keyof typeof UserFlowContextScalarFieldEnum]
+
+
+export const FlowEventScalarFieldEnum = {
+  id: 'id',
+  eventName: 'eventName',
+  payload: 'payload',
+  sourceFlowId: 'sourceFlowId',
+  sourceExecutionId: 'sourceExecutionId',
+  createdAt: 'createdAt',
+  expiresAt: 'expiresAt'
+} as const
+
+export type FlowEventScalarFieldEnum = (typeof FlowEventScalarFieldEnum)[keyof typeof FlowEventScalarFieldEnum]
 
 
 export const WebhookEndpointScalarFieldEnum = {

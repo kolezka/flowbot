@@ -115,6 +115,11 @@ export type ClientSession = Prisma.ClientSessionModel
  */
 export type FlowDefinition = Prisma.FlowDefinitionModel
 /**
+ * Model FlowFolder
+ * 
+ */
+export type FlowFolder = Prisma.FlowFolderModel
+/**
  * Model FlowExecution
  * 
  */
@@ -149,6 +154,16 @@ export type BotMenuButton = Prisma.BotMenuButtonModel
  * 
  */
 export type FlowVersion = Prisma.FlowVersionModel
+/**
+ * Model UserFlowContext
+ * 
+ */
+export type UserFlowContext = Prisma.UserFlowContextModel
+/**
+ * Model FlowEvent
+ * 
+ */
+export type FlowEvent = Prisma.FlowEventModel
 /**
  * Model WebhookEndpoint
  * 

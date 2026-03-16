@@ -41,6 +41,7 @@ export type FlowDefinitionMinAggregateOutputType = {
   platform: string | null
   status: string | null
   version: number | null
+  folderId: string | null
   createdAt: Date | null
   updatedAt: Date | null
 }
@@ -52,6 +53,7 @@ export type FlowDefinitionMaxAggregateOutputType = {
   platform: string | null
   status: string | null
   version: number | null
+  folderId: string | null
   createdAt: Date | null
   updatedAt: Date | null
 }
@@ -66,6 +68,7 @@ export type FlowDefinitionCountAggregateOutputType = {
   platform: number
   status: number
   version: number
+  folderId: number
   createdAt: number
   updatedAt: number
   _all: number
@@ -87,6 +90,7 @@ export type FlowDefinitionMinAggregateInputType = {
   platform?: true
   status?: true
   version?: true
+  folderId?: true
   createdAt?: true
   updatedAt?: true
 }
@@ -98,6 +102,7 @@ export type FlowDefinitionMaxAggregateInputType = {
   platform?: true
   status?: true
   version?: true
+  folderId?: true
   createdAt?: true
   updatedAt?: true
 }
@@ -112,6 +117,7 @@ export type FlowDefinitionCountAggregateInputType = {
   platform?: true
   status?: true
   version?: true
+  folderId?: true
   createdAt?: true
   updatedAt?: true
   _all?: true
@@ -213,6 +219,7 @@ export type FlowDefinitionGroupByOutputType = {
   platform: string
   status: string
   version: number
+  folderId: string | null
   createdAt: Date
   updatedAt: Date
   _count: FlowDefinitionCountAggregateOutputType | null
@@ -250,8 +257,10 @@ export type FlowDefinitionWhereInput = {
   platform?: Prisma.StringFilter<"FlowDefinition"> | string
   status?: Prisma.StringFilter<"FlowDefinition"> | string
   version?: Prisma.IntFilter<"FlowDefinition"> | number
+  folderId?: Prisma.StringNullableFilter<"FlowDefinition"> | string | null
   createdAt?: Prisma.DateTimeFilter<"FlowDefinition"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"FlowDefinition"> | Date | string
+  folder?: Prisma.XOR<Prisma.FlowFolderNullableScalarRelationFilter, Prisma.FlowFolderWhereInput> | null
   executions?: Prisma.FlowExecutionListRelationFilter
 }
 
@@ -265,8 +274,10 @@ export type FlowDefinitionOrderByWithRelationInput = {
   platform?: Prisma.SortOrder
   status?: Prisma.SortOrder
   version?: Prisma.SortOrder
+  folderId?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
+  folder?: Prisma.FlowFolderOrderByWithRelationInput
   executions?: Prisma.FlowExecutionOrderByRelationAggregateInput
 }
 
@@ -283,8 +294,10 @@ export type FlowDefinitionWhereUniqueInput = Prisma.AtLeast<{
   platform?: Prisma.StringFilter<"FlowDefinition"> | string
   status?: Prisma.StringFilter<"FlowDefinition"> | string
   version?: Prisma.IntFilter<"FlowDefinition"> | number
+  folderId?: Prisma.StringNullableFilter<"FlowDefinition"> | string | null
   createdAt?: Prisma.DateTimeFilter<"FlowDefinition"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"FlowDefinition"> | Date | string
+  folder?: Prisma.XOR<Prisma.FlowFolderNullableScalarRelationFilter, Prisma.FlowFolderWhereInput> | null
   executions?: Prisma.FlowExecutionListRelationFilter
 }, "id">
 
@@ -298,6 +311,7 @@ export type FlowDefinitionOrderByWithAggregationInput = {
   platform?: Prisma.SortOrder
   status?: Prisma.SortOrder
   version?: Prisma.SortOrder
+  folderId?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   _count?: Prisma.FlowDefinitionCountOrderByAggregateInput
@@ -320,6 +334,7 @@ export type FlowDefinitionScalarWhereWithAggregatesInput = {
   platform?: Prisma.StringWithAggregatesFilter<"FlowDefinition"> | string
   status?: Prisma.StringWithAggregatesFilter<"FlowDefinition"> | string
   version?: Prisma.IntWithAggregatesFilter<"FlowDefinition"> | number
+  folderId?: Prisma.StringNullableWithAggregatesFilter<"FlowDefinition"> | string | null
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"FlowDefinition"> | Date | string
   updatedAt?: Prisma.DateTimeWithAggregatesFilter<"FlowDefinition"> | Date | string
 }
@@ -336,6 +351,7 @@ export type FlowDefinitionCreateInput = {
   version?: number
   createdAt?: Date | string
   updatedAt?: Date | string
+  folder?: Prisma.FlowFolderCreateNestedOneWithoutFlowsInput
   executions?: Prisma.FlowExecutionCreateNestedManyWithoutFlowInput
 }
 
@@ -349,6 +365,7 @@ export type FlowDefinitionUncheckedCreateInput = {
   platform?: string
   status?: string
   version?: number
+  folderId?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   executions?: Prisma.FlowExecutionUncheckedCreateNestedManyWithoutFlowInput
@@ -366,6 +383,7 @@ export type FlowDefinitionUpdateInput = {
   version?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  folder?: Prisma.FlowFolderUpdateOneWithoutFlowsNestedInput
   executions?: Prisma.FlowExecutionUpdateManyWithoutFlowNestedInput
 }
 
@@ -379,6 +397,7 @@ export type FlowDefinitionUncheckedUpdateInput = {
   platform?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.StringFieldUpdateOperationsInput | string
   version?: Prisma.IntFieldUpdateOperationsInput | number
+  folderId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   executions?: Prisma.FlowExecutionUncheckedUpdateManyWithoutFlowNestedInput
@@ -394,6 +413,7 @@ export type FlowDefinitionCreateManyInput = {
   platform?: string
   status?: string
   version?: number
+  folderId?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -422,6 +442,7 @@ export type FlowDefinitionUncheckedUpdateManyInput = {
   platform?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.StringFieldUpdateOperationsInput | string
   version?: Prisma.IntFieldUpdateOperationsInput | number
+  folderId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -436,6 +457,7 @@ export type FlowDefinitionCountOrderByAggregateInput = {
   platform?: Prisma.SortOrder
   status?: Prisma.SortOrder
   version?: Prisma.SortOrder
+  folderId?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -451,6 +473,7 @@ export type FlowDefinitionMaxOrderByAggregateInput = {
   platform?: Prisma.SortOrder
   status?: Prisma.SortOrder
   version?: Prisma.SortOrder
+  folderId?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -462,6 +485,7 @@ export type FlowDefinitionMinOrderByAggregateInput = {
   platform?: Prisma.SortOrder
   status?: Prisma.SortOrder
   version?: Prisma.SortOrder
+  folderId?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -470,9 +494,61 @@ export type FlowDefinitionSumOrderByAggregateInput = {
   version?: Prisma.SortOrder
 }
 
+export type FlowDefinitionListRelationFilter = {
+  every?: Prisma.FlowDefinitionWhereInput
+  some?: Prisma.FlowDefinitionWhereInput
+  none?: Prisma.FlowDefinitionWhereInput
+}
+
+export type FlowDefinitionOrderByRelationAggregateInput = {
+  _count?: Prisma.SortOrder
+}
+
 export type FlowDefinitionScalarRelationFilter = {
   is?: Prisma.FlowDefinitionWhereInput
   isNot?: Prisma.FlowDefinitionWhereInput
+}
+
+export type FlowDefinitionCreateNestedManyWithoutFolderInput = {
+  create?: Prisma.XOR<Prisma.FlowDefinitionCreateWithoutFolderInput, Prisma.FlowDefinitionUncheckedCreateWithoutFolderInput> | Prisma.FlowDefinitionCreateWithoutFolderInput[] | Prisma.FlowDefinitionUncheckedCreateWithoutFolderInput[]
+  connectOrCreate?: Prisma.FlowDefinitionCreateOrConnectWithoutFolderInput | Prisma.FlowDefinitionCreateOrConnectWithoutFolderInput[]
+  createMany?: Prisma.FlowDefinitionCreateManyFolderInputEnvelope
+  connect?: Prisma.FlowDefinitionWhereUniqueInput | Prisma.FlowDefinitionWhereUniqueInput[]
+}
+
+export type FlowDefinitionUncheckedCreateNestedManyWithoutFolderInput = {
+  create?: Prisma.XOR<Prisma.FlowDefinitionCreateWithoutFolderInput, Prisma.FlowDefinitionUncheckedCreateWithoutFolderInput> | Prisma.FlowDefinitionCreateWithoutFolderInput[] | Prisma.FlowDefinitionUncheckedCreateWithoutFolderInput[]
+  connectOrCreate?: Prisma.FlowDefinitionCreateOrConnectWithoutFolderInput | Prisma.FlowDefinitionCreateOrConnectWithoutFolderInput[]
+  createMany?: Prisma.FlowDefinitionCreateManyFolderInputEnvelope
+  connect?: Prisma.FlowDefinitionWhereUniqueInput | Prisma.FlowDefinitionWhereUniqueInput[]
+}
+
+export type FlowDefinitionUpdateManyWithoutFolderNestedInput = {
+  create?: Prisma.XOR<Prisma.FlowDefinitionCreateWithoutFolderInput, Prisma.FlowDefinitionUncheckedCreateWithoutFolderInput> | Prisma.FlowDefinitionCreateWithoutFolderInput[] | Prisma.FlowDefinitionUncheckedCreateWithoutFolderInput[]
+  connectOrCreate?: Prisma.FlowDefinitionCreateOrConnectWithoutFolderInput | Prisma.FlowDefinitionCreateOrConnectWithoutFolderInput[]
+  upsert?: Prisma.FlowDefinitionUpsertWithWhereUniqueWithoutFolderInput | Prisma.FlowDefinitionUpsertWithWhereUniqueWithoutFolderInput[]
+  createMany?: Prisma.FlowDefinitionCreateManyFolderInputEnvelope
+  set?: Prisma.FlowDefinitionWhereUniqueInput | Prisma.FlowDefinitionWhereUniqueInput[]
+  disconnect?: Prisma.FlowDefinitionWhereUniqueInput | Prisma.FlowDefinitionWhereUniqueInput[]
+  delete?: Prisma.FlowDefinitionWhereUniqueInput | Prisma.FlowDefinitionWhereUniqueInput[]
+  connect?: Prisma.FlowDefinitionWhereUniqueInput | Prisma.FlowDefinitionWhereUniqueInput[]
+  update?: Prisma.FlowDefinitionUpdateWithWhereUniqueWithoutFolderInput | Prisma.FlowDefinitionUpdateWithWhereUniqueWithoutFolderInput[]
+  updateMany?: Prisma.FlowDefinitionUpdateManyWithWhereWithoutFolderInput | Prisma.FlowDefinitionUpdateManyWithWhereWithoutFolderInput[]
+  deleteMany?: Prisma.FlowDefinitionScalarWhereInput | Prisma.FlowDefinitionScalarWhereInput[]
+}
+
+export type FlowDefinitionUncheckedUpdateManyWithoutFolderNestedInput = {
+  create?: Prisma.XOR<Prisma.FlowDefinitionCreateWithoutFolderInput, Prisma.FlowDefinitionUncheckedCreateWithoutFolderInput> | Prisma.FlowDefinitionCreateWithoutFolderInput[] | Prisma.FlowDefinitionUncheckedCreateWithoutFolderInput[]
+  connectOrCreate?: Prisma.FlowDefinitionCreateOrConnectWithoutFolderInput | Prisma.FlowDefinitionCreateOrConnectWithoutFolderInput[]
+  upsert?: Prisma.FlowDefinitionUpsertWithWhereUniqueWithoutFolderInput | Prisma.FlowDefinitionUpsertWithWhereUniqueWithoutFolderInput[]
+  createMany?: Prisma.FlowDefinitionCreateManyFolderInputEnvelope
+  set?: Prisma.FlowDefinitionWhereUniqueInput | Prisma.FlowDefinitionWhereUniqueInput[]
+  disconnect?: Prisma.FlowDefinitionWhereUniqueInput | Prisma.FlowDefinitionWhereUniqueInput[]
+  delete?: Prisma.FlowDefinitionWhereUniqueInput | Prisma.FlowDefinitionWhereUniqueInput[]
+  connect?: Prisma.FlowDefinitionWhereUniqueInput | Prisma.FlowDefinitionWhereUniqueInput[]
+  update?: Prisma.FlowDefinitionUpdateWithWhereUniqueWithoutFolderInput | Prisma.FlowDefinitionUpdateWithWhereUniqueWithoutFolderInput[]
+  updateMany?: Prisma.FlowDefinitionUpdateManyWithWhereWithoutFolderInput | Prisma.FlowDefinitionUpdateManyWithWhereWithoutFolderInput[]
+  deleteMany?: Prisma.FlowDefinitionScalarWhereInput | Prisma.FlowDefinitionScalarWhereInput[]
 }
 
 export type FlowDefinitionCreateNestedOneWithoutExecutionsInput = {
@@ -489,6 +565,80 @@ export type FlowDefinitionUpdateOneRequiredWithoutExecutionsNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.FlowDefinitionUpdateToOneWithWhereWithoutExecutionsInput, Prisma.FlowDefinitionUpdateWithoutExecutionsInput>, Prisma.FlowDefinitionUncheckedUpdateWithoutExecutionsInput>
 }
 
+export type FlowDefinitionCreateWithoutFolderInput = {
+  id?: string
+  name: string
+  description?: string | null
+  nodesJson?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  edgesJson?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  transportConfig?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  platform?: string
+  status?: string
+  version?: number
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  executions?: Prisma.FlowExecutionCreateNestedManyWithoutFlowInput
+}
+
+export type FlowDefinitionUncheckedCreateWithoutFolderInput = {
+  id?: string
+  name: string
+  description?: string | null
+  nodesJson?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  edgesJson?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  transportConfig?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  platform?: string
+  status?: string
+  version?: number
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  executions?: Prisma.FlowExecutionUncheckedCreateNestedManyWithoutFlowInput
+}
+
+export type FlowDefinitionCreateOrConnectWithoutFolderInput = {
+  where: Prisma.FlowDefinitionWhereUniqueInput
+  create: Prisma.XOR<Prisma.FlowDefinitionCreateWithoutFolderInput, Prisma.FlowDefinitionUncheckedCreateWithoutFolderInput>
+}
+
+export type FlowDefinitionCreateManyFolderInputEnvelope = {
+  data: Prisma.FlowDefinitionCreateManyFolderInput | Prisma.FlowDefinitionCreateManyFolderInput[]
+  skipDuplicates?: boolean
+}
+
+export type FlowDefinitionUpsertWithWhereUniqueWithoutFolderInput = {
+  where: Prisma.FlowDefinitionWhereUniqueInput
+  update: Prisma.XOR<Prisma.FlowDefinitionUpdateWithoutFolderInput, Prisma.FlowDefinitionUncheckedUpdateWithoutFolderInput>
+  create: Prisma.XOR<Prisma.FlowDefinitionCreateWithoutFolderInput, Prisma.FlowDefinitionUncheckedCreateWithoutFolderInput>
+}
+
+export type FlowDefinitionUpdateWithWhereUniqueWithoutFolderInput = {
+  where: Prisma.FlowDefinitionWhereUniqueInput
+  data: Prisma.XOR<Prisma.FlowDefinitionUpdateWithoutFolderInput, Prisma.FlowDefinitionUncheckedUpdateWithoutFolderInput>
+}
+
+export type FlowDefinitionUpdateManyWithWhereWithoutFolderInput = {
+  where: Prisma.FlowDefinitionScalarWhereInput
+  data: Prisma.XOR<Prisma.FlowDefinitionUpdateManyMutationInput, Prisma.FlowDefinitionUncheckedUpdateManyWithoutFolderInput>
+}
+
+export type FlowDefinitionScalarWhereInput = {
+  AND?: Prisma.FlowDefinitionScalarWhereInput | Prisma.FlowDefinitionScalarWhereInput[]
+  OR?: Prisma.FlowDefinitionScalarWhereInput[]
+  NOT?: Prisma.FlowDefinitionScalarWhereInput | Prisma.FlowDefinitionScalarWhereInput[]
+  id?: Prisma.StringFilter<"FlowDefinition"> | string
+  name?: Prisma.StringFilter<"FlowDefinition"> | string
+  description?: Prisma.StringNullableFilter<"FlowDefinition"> | string | null
+  nodesJson?: Prisma.JsonFilter<"FlowDefinition">
+  edgesJson?: Prisma.JsonFilter<"FlowDefinition">
+  transportConfig?: Prisma.JsonNullableFilter<"FlowDefinition">
+  platform?: Prisma.StringFilter<"FlowDefinition"> | string
+  status?: Prisma.StringFilter<"FlowDefinition"> | string
+  version?: Prisma.IntFilter<"FlowDefinition"> | number
+  folderId?: Prisma.StringNullableFilter<"FlowDefinition"> | string | null
+  createdAt?: Prisma.DateTimeFilter<"FlowDefinition"> | Date | string
+  updatedAt?: Prisma.DateTimeFilter<"FlowDefinition"> | Date | string
+}
+
 export type FlowDefinitionCreateWithoutExecutionsInput = {
   id?: string
   name: string
@@ -501,6 +651,7 @@ export type FlowDefinitionCreateWithoutExecutionsInput = {
   version?: number
   createdAt?: Date | string
   updatedAt?: Date | string
+  folder?: Prisma.FlowFolderCreateNestedOneWithoutFlowsInput
 }
 
 export type FlowDefinitionUncheckedCreateWithoutExecutionsInput = {
@@ -513,6 +664,7 @@ export type FlowDefinitionUncheckedCreateWithoutExecutionsInput = {
   platform?: string
   status?: string
   version?: number
+  folderId?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -545,9 +697,69 @@ export type FlowDefinitionUpdateWithoutExecutionsInput = {
   version?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  folder?: Prisma.FlowFolderUpdateOneWithoutFlowsNestedInput
 }
 
 export type FlowDefinitionUncheckedUpdateWithoutExecutionsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  nodesJson?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  edgesJson?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  transportConfig?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  platform?: Prisma.StringFieldUpdateOperationsInput | string
+  status?: Prisma.StringFieldUpdateOperationsInput | string
+  version?: Prisma.IntFieldUpdateOperationsInput | number
+  folderId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+}
+
+export type FlowDefinitionCreateManyFolderInput = {
+  id?: string
+  name: string
+  description?: string | null
+  nodesJson?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  edgesJson?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  transportConfig?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  platform?: string
+  status?: string
+  version?: number
+  createdAt?: Date | string
+  updatedAt?: Date | string
+}
+
+export type FlowDefinitionUpdateWithoutFolderInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  nodesJson?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  edgesJson?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  transportConfig?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  platform?: Prisma.StringFieldUpdateOperationsInput | string
+  status?: Prisma.StringFieldUpdateOperationsInput | string
+  version?: Prisma.IntFieldUpdateOperationsInput | number
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  executions?: Prisma.FlowExecutionUpdateManyWithoutFlowNestedInput
+}
+
+export type FlowDefinitionUncheckedUpdateWithoutFolderInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  nodesJson?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  edgesJson?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  transportConfig?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  platform?: Prisma.StringFieldUpdateOperationsInput | string
+  status?: Prisma.StringFieldUpdateOperationsInput | string
+  version?: Prisma.IntFieldUpdateOperationsInput | number
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  executions?: Prisma.FlowExecutionUncheckedUpdateManyWithoutFlowNestedInput
+}
+
+export type FlowDefinitionUncheckedUpdateManyWithoutFolderInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -602,8 +814,10 @@ export type FlowDefinitionSelect<ExtArgs extends runtime.Types.Extensions.Intern
   platform?: boolean
   status?: boolean
   version?: boolean
+  folderId?: boolean
   createdAt?: boolean
   updatedAt?: boolean
+  folder?: boolean | Prisma.FlowDefinition$folderArgs<ExtArgs>
   executions?: boolean | Prisma.FlowDefinition$executionsArgs<ExtArgs>
   _count?: boolean | Prisma.FlowDefinitionCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["flowDefinition"]>
@@ -618,8 +832,10 @@ export type FlowDefinitionSelectCreateManyAndReturn<ExtArgs extends runtime.Type
   platform?: boolean
   status?: boolean
   version?: boolean
+  folderId?: boolean
   createdAt?: boolean
   updatedAt?: boolean
+  folder?: boolean | Prisma.FlowDefinition$folderArgs<ExtArgs>
 }, ExtArgs["result"]["flowDefinition"]>
 
 export type FlowDefinitionSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
@@ -632,8 +848,10 @@ export type FlowDefinitionSelectUpdateManyAndReturn<ExtArgs extends runtime.Type
   platform?: boolean
   status?: boolean
   version?: boolean
+  folderId?: boolean
   createdAt?: boolean
   updatedAt?: boolean
+  folder?: boolean | Prisma.FlowDefinition$folderArgs<ExtArgs>
 }, ExtArgs["result"]["flowDefinition"]>
 
 export type FlowDefinitionSelectScalar = {
@@ -646,21 +864,28 @@ export type FlowDefinitionSelectScalar = {
   platform?: boolean
   status?: boolean
   version?: boolean
+  folderId?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }
 
-export type FlowDefinitionOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "name" | "description" | "nodesJson" | "edgesJson" | "transportConfig" | "platform" | "status" | "version" | "createdAt" | "updatedAt", ExtArgs["result"]["flowDefinition"]>
+export type FlowDefinitionOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "name" | "description" | "nodesJson" | "edgesJson" | "transportConfig" | "platform" | "status" | "version" | "folderId" | "createdAt" | "updatedAt", ExtArgs["result"]["flowDefinition"]>
 export type FlowDefinitionInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  folder?: boolean | Prisma.FlowDefinition$folderArgs<ExtArgs>
   executions?: boolean | Prisma.FlowDefinition$executionsArgs<ExtArgs>
   _count?: boolean | Prisma.FlowDefinitionCountOutputTypeDefaultArgs<ExtArgs>
 }
-export type FlowDefinitionIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {}
-export type FlowDefinitionIncludeUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {}
+export type FlowDefinitionIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  folder?: boolean | Prisma.FlowDefinition$folderArgs<ExtArgs>
+}
+export type FlowDefinitionIncludeUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  folder?: boolean | Prisma.FlowDefinition$folderArgs<ExtArgs>
+}
 
 export type $FlowDefinitionPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   name: "FlowDefinition"
   objects: {
+    folder: Prisma.$FlowFolderPayload<ExtArgs> | null
     executions: Prisma.$FlowExecutionPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
@@ -673,6 +898,7 @@ export type $FlowDefinitionPayload<ExtArgs extends runtime.Types.Extensions.Inte
     platform: string
     status: string
     version: number
+    folderId: string | null
     createdAt: Date
     updatedAt: Date
   }, ExtArgs["result"]["flowDefinition"]>
@@ -1069,6 +1295,7 @@ readonly fields: FlowDefinitionFieldRefs;
  */
 export interface Prisma__FlowDefinitionClient<T, Null = never, ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
   readonly [Symbol.toStringTag]: "PrismaPromise"
+  folder<T extends Prisma.FlowDefinition$folderArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.FlowDefinition$folderArgs<ExtArgs>>): Prisma.Prisma__FlowFolderClient<runtime.Types.Result.GetResult<Prisma.$FlowFolderPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
   executions<T extends Prisma.FlowDefinition$executionsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.FlowDefinition$executionsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$FlowExecutionPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
@@ -1108,6 +1335,7 @@ export interface FlowDefinitionFieldRefs {
   readonly platform: Prisma.FieldRef<"FlowDefinition", 'String'>
   readonly status: Prisma.FieldRef<"FlowDefinition", 'String'>
   readonly version: Prisma.FieldRef<"FlowDefinition", 'Int'>
+  readonly folderId: Prisma.FieldRef<"FlowDefinition", 'String'>
   readonly createdAt: Prisma.FieldRef<"FlowDefinition", 'DateTime'>
   readonly updatedAt: Prisma.FieldRef<"FlowDefinition", 'DateTime'>
 }
@@ -1359,6 +1587,10 @@ export type FlowDefinitionCreateManyAndReturnArgs<ExtArgs extends runtime.Types.
    */
   data: Prisma.FlowDefinitionCreateManyInput | Prisma.FlowDefinitionCreateManyInput[]
   skipDuplicates?: boolean
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.FlowDefinitionIncludeCreateManyAndReturn<ExtArgs> | null
 }
 
 /**
@@ -1429,6 +1661,10 @@ export type FlowDefinitionUpdateManyAndReturnArgs<ExtArgs extends runtime.Types.
    * Limit how many FlowDefinitions to update.
    */
   limit?: number
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.FlowDefinitionIncludeUpdateManyAndReturn<ExtArgs> | null
 }
 
 /**
@@ -1495,6 +1731,25 @@ export type FlowDefinitionDeleteManyArgs<ExtArgs extends runtime.Types.Extension
    * Limit how many FlowDefinitions to delete.
    */
   limit?: number
+}
+
+/**
+ * FlowDefinition.folder
+ */
+export type FlowDefinition$folderArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the FlowFolder
+   */
+  select?: Prisma.FlowFolderSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the FlowFolder
+   */
+  omit?: Prisma.FlowFolderOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.FlowFolderInclude<ExtArgs> | null
+  where?: Prisma.FlowFolderWhereInput
 }
 
 /**
