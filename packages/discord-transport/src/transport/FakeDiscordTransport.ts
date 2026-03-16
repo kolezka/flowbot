@@ -425,4 +425,26 @@ export class FakeDiscordTransport implements IDiscordTransport {
     this.createdEvents = []
     this.nextId = 1
   }
+
+  // SP2: Interactions
+  async replyInteraction(_interactionId: string, _params: { content?: string, embeds?: unknown[], components?: unknown[], ephemeral?: boolean }): Promise<void> {}
+
+  async showModal(_interactionId: string, _params: { customId: string, title: string, components: unknown[] }): Promise<void> {}
+
+  async sendComponents(channelId: string, _params: { content?: string, components: unknown[] }): Promise<DiscordMessageResult> {
+    return { id: String(this.nextId++), channelId, timestamp: Date.now() }
+  }
+
+  async editInteraction(_interactionId: string, _params: { content?: string, embeds?: unknown[], components?: unknown[] }): Promise<void> {}
+
+  async deferReply(_interactionId: string, _ephemeral?: boolean): Promise<void> {}
+
+  // SP2: Channel permissions & Forums
+  async setChannelPermissions(_channelId: string, _targetId: string, _allow?: string, _deny?: string): Promise<void> {}
+
+  async createForumPost(_channelId: string, _params: { name: string, content: string, tags?: string[] }): Promise<string> {
+    return String(this.nextId++)
+  }
+
+  async registerCommands(_guildId: string, _commands: unknown[]): Promise<void> {}
 }

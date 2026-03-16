@@ -106,4 +106,16 @@ export interface IDiscordTransport {
   createInvite: (channelId: string, options?: DiscordInviteOptions) => Promise<string>
   moveMember: (guildId: string, userId: string, channelId: string) => Promise<boolean>
   createScheduledEvent: (guildId: string, name: string, options: DiscordScheduledEventOptions) => Promise<string>
+
+  // Interactions (SP2)
+  replyInteraction: (interactionId: string, params: { content?: string, embeds?: unknown[], components?: unknown[], ephemeral?: boolean }) => Promise<void>
+  showModal: (interactionId: string, params: { customId: string, title: string, components: unknown[] }) => Promise<void>
+  sendComponents: (channelId: string, params: { content?: string, components: unknown[] }) => Promise<DiscordMessageResult>
+  editInteraction: (interactionId: string, params: { content?: string, embeds?: unknown[], components?: unknown[] }) => Promise<void>
+  deferReply: (interactionId: string, ephemeral?: boolean) => Promise<void>
+
+  // Channel permissions & Forums (SP2)
+  setChannelPermissions: (channelId: string, targetId: string, allow?: string, deny?: string) => Promise<void>
+  createForumPost: (channelId: string, params: { name: string, content: string, tags?: string[] }) => Promise<string>
+  registerCommands: (guildId: string, commands: unknown[]) => Promise<void>
 }

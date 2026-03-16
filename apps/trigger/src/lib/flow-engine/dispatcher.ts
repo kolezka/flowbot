@@ -315,6 +315,50 @@ async function dispatchToTelegram(
         },
       );
 
+    // --- SP2: Inline & Payments ---
+    case 'answer_inline_query':
+      return transport.answerInlineQuery(
+        String(params.queryId ?? ''),
+        (params.results as unknown[]) ?? [],
+        { cacheTime: params.cacheTime ? Number(params.cacheTime) : undefined },
+      );
+
+    case 'send_invoice':
+      return transport.sendInvoice(chatId, {
+        title: String(params.title ?? ''),
+        description: String(params.description ?? ''),
+        payload: String(params.payload ?? ''),
+        currency: String(params.currency ?? 'USD'),
+        prices: (params.prices as Array<{ label: string, amount: number }>) ?? [],
+      });
+
+    case 'answer_pre_checkout':
+      return transport.answerPreCheckoutQuery(
+        String(params.queryId ?? ''),
+        Boolean(params.ok),
+        params.errorMessage ? String(params.errorMessage) : undefined,
+      );
+
+    // --- SP2: Bot configuration ---
+    case 'set_chat_menu_button':
+      return transport.setChatMenuButton(chatId, params.menuButton as { type: string, text?: string, url?: string });
+
+    case 'set_my_commands':
+      return transport.setMyCommands(
+        (params.commands as Array<{ command: string, description: string }>) ?? [],
+        params.scope,
+      );
+
+    // --- SP2: Media & Forum ---
+    case 'send_media_group':
+      return transport.sendMediaGroup(chatId, (params.media as Array<{ type: string, url: string, caption?: string }>) ?? []);
+
+    case 'create_forum_topic':
+      return transport.createForumTopic(chatId, String(params.name ?? ''), {
+        iconColor: params.iconColor ? Number(params.iconColor) : undefined,
+        iconEmojiId: params.iconEmojiId ? String(params.iconEmojiId) : undefined,
+      });
+
     // Catch-all for not-yet-implemented actions
     default:
       logger.warn(`Telegram action '${action}' dispatch not yet implemented`);

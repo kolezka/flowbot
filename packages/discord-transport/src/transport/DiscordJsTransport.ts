@@ -450,4 +450,84 @@ export class DiscordJsTransport implements IDiscordTransport {
       throw new TransportError('Failed to create scheduled event', error)
     }
   }
+
+  // --- SP2: Interactions ---
+
+  async replyInteraction(_interactionId: string, _params: { content?: string, embeds?: unknown[], components?: unknown[], ephemeral?: boolean }): Promise<void> {
+    // Interaction replies must be handled through the discord.js interaction object
+    // which is only available during the interaction event handler, not via transport.
+    // This method exists for interface compliance; actual replies happen in the bot event handler.
+    throw new TransportError('Interaction replies must be handled via bot event handler, not transport')
+  }
+
+  async showModal(_interactionId: string, _params: { customId: string, title: string, components: unknown[] }): Promise<void> {
+    throw new TransportError('Modal display must be handled via bot event handler, not transport')
+  }
+
+  async sendComponents(channelId: string, params: { content?: string, components: unknown[] }): Promise<DiscordMessageResult> {
+    try {
+      const channel = await this.client.channels.fetch(channelId)
+      if (!channel?.isTextBased() || !('send' in channel)) {
+        throw new Error(`Channel ${channelId} is not a text channel`)
+      }
+      const msg = await channel.send({
+        content: params.content ?? '',
+        components: params.components as any,
+      })
+      return { id: msg.id, channelId: msg.channelId, timestamp: msg.createdTimestamp }
+    } catch (error) {
+      throw new TransportError('Failed to send components', error)
+    }
+  }
+
+  async editInteraction(_interactionId: string, _params: { content?: string, embeds?: unknown[], components?: unknown[] }): Promise<void> {
+    throw new TransportError('Interaction edits must be handled via bot event handler, not transport')
+  }
+
+  async deferReply(_interactionId: string, _ephemeral?: boolean): Promise<void> {
+    throw new TransportError('Defer reply must be handled via bot event handler, not transport')
+  }
+
+  // --- SP2: Channel permissions & Forums ---
+
+  async setChannelPermissions(channelId: string, targetId: string, allow?: string, deny?: string): Promise<void> {
+    try {
+      const channel = await this.client.channels.fetch(channelId)
+      if (!channel || !('permissionOverwrites' in channel)) {
+        throw new Error(`Channel ${channelId} does not support permission overwrites`)
+      }
+      await (channel as any).permissionOverwrites.edit(targetId, {
+        ...(allow ? Object.fromEntries(allow.split(',').map(p => [p.trim(), true])) : {}),
+        ...(deny ? Object.fromEntries(deny.split(',').map(p => [p.trim(), false])) : {}),
+      })
+    } catch (error) {
+      throw new TransportError('Failed to set channel permissions', error)
+    }
+  }
+
+  async createForumPost(channelId: string, params: { name: string, content: string, tags?: string[] }): Promise<string> {
+    try {
+      const channel = await this.client.channels.fetch(channelId)
+      if (!channel || channel.type !== 15) { // 15 = GuildForum
+        throw new Error(`Channel ${channelId} is not a forum channel`)
+      }
+      const thread = await (channel as any).threads.create({
+        name: params.name,
+        message: { content: params.content },
+        appliedTags: params.tags,
+      })
+      return thread.id
+    } catch (error) {
+      throw new TransportError('Failed to create forum post', error)
+    }
+  }
+
+  async registerCommands(guildId: string, commands: unknown[]): Promise<void> {
+    try {
+      const guild = await this.client.guilds.fetch(guildId)
+      await guild.commands.set(commands as any)
+    } catch (error) {
+      throw new TransportError('Failed to register commands', error)
+    }
+  }
 }

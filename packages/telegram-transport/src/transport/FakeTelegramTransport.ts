@@ -170,6 +170,37 @@ export class FakeTelegramTransport implements ITelegramTransport {
     return true
   }
 
+  // SP2: Inline & Payments
+  async answerInlineQuery(_queryId: string, _results: unknown[], _options?: { cacheTime?: number }): Promise<boolean> {
+    return true
+  }
+
+  async sendInvoice(peer: string | bigint, _params: { title: string, description: string, payload: string, currency: string, prices: Array<{ label: string, amount: number }> }): Promise<MessageResult> {
+    return { id: this.nextId++, date: Math.floor(Date.now() / 1000), peerId: peer }
+  }
+
+  async answerPreCheckoutQuery(_queryId: string, _ok: boolean, _errorMessage?: string): Promise<boolean> {
+    return true
+  }
+
+  // SP2: Bot configuration
+  async setChatMenuButton(_peer: string | bigint, _menuButton: { type: string, text?: string, url?: string }): Promise<boolean> {
+    return true
+  }
+
+  async setMyCommands(_commands: Array<{ command: string, description: string }>, _scope?: unknown): Promise<boolean> {
+    return true
+  }
+
+  // SP2: Media & Forum
+  async sendMediaGroup(peer: string | bigint, media: Array<{ type: string, url: string, caption?: string }>): Promise<MessageResult[]> {
+    return media.map(() => ({ id: this.nextId++, date: Math.floor(Date.now() / 1000), peerId: peer }))
+  }
+
+  async createForumTopic(_peer: string | bigint, _name: string, _options?: { iconColor?: number, iconEmojiId?: string }): Promise<number> {
+    return this.nextId++
+  }
+
   getSentMessages(): readonly SentMessage[] {
     return this.sentMessages
   }

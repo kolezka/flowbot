@@ -752,6 +752,150 @@ export class GramJsTransport implements ITelegramTransport {
 
   // --- Helper ---
 
+  // --- SP2: Inline & Payments ---
+
+  async answerInlineQuery(queryId: string, results: unknown[], options?: { cacheTime?: number }): Promise<boolean> {
+    try {
+      this.logger.debug({ queryId, resultCount: results.length }, 'Answering inline query')
+      await this.client.invoke(
+        new Api.messages.SetInlineBotResults({
+          queryId: returnBigInt(queryId),
+          results: [], // GramJS inline result conversion needed per result type
+          cacheTime: options?.cacheTime ?? 300,
+        }),
+      )
+      return true
+    } catch (error) {
+      this.logger.error({ err: error, queryId }, 'Failed to answer inline query')
+      throw new TransportError('Failed to answer inline query', error)
+    }
+  }
+
+  async sendInvoice(peer: string | bigint, params: { title: string, description: string, payload: string, currency: string, prices: Array<{ label: string, amount: number }> }): Promise<MessageResult> {
+    try {
+      this.logger.debug({ peer, title: params.title }, 'Sending invoice')
+      const entity = await this.client.getInputEntity(toEntityLike(peer))
+      const result = await this.client.invoke(
+        new Api.messages.SendMedia({
+          peer: entity,
+          media: new Api.InputMediaInvoice({
+            title: params.title,
+            description: params.description,
+            payload: Buffer.from(params.payload),
+            invoice: new Api.Invoice({
+              currency: params.currency,
+              prices: params.prices.map((p) => new Api.LabeledPrice({ label: p.label, amount: returnBigInt(p.amount) })),
+            }),
+            provider: '',
+            providerData: new Api.DataJSON({ data: '{}' }),
+          }),
+          randomId: generateRandomLong(),
+          message: '',
+        }),
+      )
+      const msg = this.extractMessageFromUpdates(result)
+      return { id: msg.id, date: msg.date, peerId: peer }
+    } catch (error) {
+      this.logger.error({ err: error, peer }, 'Failed to send invoice')
+      throw new TransportError('Failed to send invoice', error)
+    }
+  }
+
+  async answerPreCheckoutQuery(queryId: string, ok: boolean, errorMessage?: string): Promise<boolean> {
+    try {
+      this.logger.debug({ queryId, ok }, 'Answering pre-checkout query')
+      await this.client.invoke(
+        new Api.messages.SetBotPrecheckoutResults({
+          queryId: returnBigInt(queryId),
+          success: ok ? true : undefined,
+          error: ok ? undefined : errorMessage,
+        }),
+      )
+      return true
+    } catch (error) {
+      this.logger.error({ err: error, queryId }, 'Failed to answer pre-checkout query')
+      throw new TransportError('Failed to answer pre-checkout query', error)
+    }
+  }
+
+  // --- SP2: Bot configuration ---
+
+  async setChatMenuButton(_peer: string | bigint, _menuButton: { type: string, text?: string, url?: string }): Promise<boolean> {
+    // Bot API only feature — MTProto equivalent requires Bot API method forwarding
+    this.logger.warn('setChatMenuButton is only available via Bot API, not MTProto')
+    return false
+  }
+
+  async setMyCommands(commands: Array<{ command: string, description: string }>, _scope?: unknown): Promise<boolean> {
+    try {
+      this.logger.debug({ commandCount: commands.length }, 'Setting bot commands')
+      await this.client.invoke(
+        new Api.bots.SetBotCommands({
+          scope: new Api.BotCommandScopeDefault(),
+          langCode: '',
+          commands: commands.map((c) => new Api.BotCommand({ command: c.command, description: c.description })),
+        }),
+      )
+      return true
+    } catch (error) {
+      this.logger.error({ err: error }, 'Failed to set bot commands')
+      throw new TransportError('Failed to set bot commands', error)
+    }
+  }
+
+  // --- SP2: Media & Forum ---
+
+  async sendMediaGroup(peer: string | bigint, media: Array<{ type: string, url: string, caption?: string }>): Promise<MessageResult[]> {
+    try {
+      this.logger.debug({ peer, mediaCount: media.length }, 'Sending media group')
+      // For now, send each media individually — proper multi-media requires InputMediaUploadedPhoto/Document
+      const results: MessageResult[] = []
+      for (const item of media) {
+        let result: MessageResult
+        if (item.type === 'photo') {
+          result = await this.sendPhoto(peer, item.url, { caption: item.caption })
+        } else if (item.type === 'video') {
+          result = await this.sendVideo(peer, item.url, { caption: item.caption })
+        } else {
+          result = await this.sendDocument(peer, item.url, { caption: item.caption })
+        }
+        results.push(result)
+      }
+      return results
+    } catch (error) {
+      this.logger.error({ err: error, peer }, 'Failed to send media group')
+      throw new TransportError('Failed to send media group', error)
+    }
+  }
+
+  async createForumTopic(peer: string | bigint, name: string, options?: { iconColor?: number, iconEmojiId?: string }): Promise<number> {
+    try {
+      this.logger.debug({ peer, name }, 'Creating forum topic')
+      const entity = await this.client.getInputEntity(toEntityLike(peer))
+      const result = await this.client.invoke(
+        new Api.channels.CreateForumTopic({
+          channel: entity,
+          title: name,
+          iconColor: options?.iconColor,
+          iconEmojiId: options?.iconEmojiId ? returnBigInt(options.iconEmojiId) : undefined,
+          randomId: Number(generateRandomLong() % BigInt(2147483647)),
+        }),
+      )
+      // Extract topic ID from result
+      if (result instanceof Api.Updates || result instanceof Api.UpdatesCombined) {
+        for (const update of result.updates) {
+          if (update instanceof Api.UpdateNewChannelMessage && update.message instanceof Api.Message) {
+            return update.message.id
+          }
+        }
+      }
+      return 0
+    } catch (error) {
+      this.logger.error({ err: error, peer, name }, 'Failed to create forum topic')
+      throw new TransportError('Failed to create forum topic', error)
+    }
+  }
+
   private extractMessageFromUpdates(updates: Api.TypeUpdates): Api.Message {
     if (updates instanceof Api.Updates || updates instanceof Api.UpdatesCombined) {
       for (const update of updates.updates) {

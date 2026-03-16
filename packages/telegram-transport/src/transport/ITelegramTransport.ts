@@ -100,4 +100,17 @@ export interface ITelegramTransport {
   // Interactive
   createPoll: (peer: string | bigint, question: string, answers: string[], options?: { isAnonymous?: boolean, multipleChoice?: boolean }) => Promise<MessageResult>
   answerCallbackQuery: (queryId: string, options?: { text?: string, showAlert?: boolean, url?: string }) => Promise<boolean>
+
+  // Inline & Payments (SP2)
+  answerInlineQuery: (queryId: string, results: unknown[], options?: { cacheTime?: number }) => Promise<boolean>
+  sendInvoice: (peer: string | bigint, params: { title: string, description: string, payload: string, currency: string, prices: Array<{ label: string, amount: number }> }) => Promise<MessageResult>
+  answerPreCheckoutQuery: (queryId: string, ok: boolean, errorMessage?: string) => Promise<boolean>
+
+  // Bot configuration (SP2)
+  setChatMenuButton: (peer: string | bigint, menuButton: { type: string, text?: string, url?: string }) => Promise<boolean>
+  setMyCommands: (commands: Array<{ command: string, description: string }>, scope?: unknown) => Promise<boolean>
+
+  // Media & Forum (SP2)
+  sendMediaGroup: (peer: string | bigint, media: Array<{ type: string, url: string, caption?: string }>) => Promise<MessageResult[]>
+  createForumTopic: (peer: string | bigint, name: string, options?: { iconColor?: number, iconEmojiId?: string }) => Promise<number>
 }
