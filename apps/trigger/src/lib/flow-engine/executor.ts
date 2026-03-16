@@ -41,6 +41,13 @@ const NON_CACHEABLE_TYPES = new Set([
   'unified_send_message', 'unified_send_media', 'unified_delete_message',
   'unified_ban_user', 'unified_kick_user', 'unified_pin_message',
   'unified_send_dm', 'unified_set_role',
+  // SP2: New Telegram actions
+  'answer_inline_query', 'send_invoice', 'answer_pre_checkout',
+  'set_chat_menu_button', 'create_forum_topic', 'set_my_commands',
+  // SP2: New Discord actions
+  'discord_reply_interaction', 'discord_show_modal', 'discord_send_components',
+  'discord_edit_interaction', 'discord_defer_reply', 'discord_set_channel_permissions',
+  'discord_create_forum_post', 'discord_register_commands',
 ]);
 
 /**

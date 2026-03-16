@@ -80,6 +80,40 @@ export async function executeAction(node: FlowNode, ctx: FlowContext): Promise<u
     case 'approve_join_request':
       return executeApproveJoinRequest(node, ctx);
 
+    // --- New Telegram Actions (SP2) ---
+    case 'answer_inline_query':
+      return executeAnswerInlineQuery(node, ctx);
+    case 'send_invoice':
+      return executeSendInvoice(node, ctx);
+    case 'answer_pre_checkout':
+      return executeAnswerPreCheckout(node, ctx);
+    case 'set_chat_menu_button':
+      return executeSetChatMenuButton(node, ctx);
+    case 'send_media_group':
+      return executeSendMediaGroupAction(node, ctx);
+    case 'create_forum_topic':
+      return executeCreateForumTopic(node, ctx);
+    case 'set_my_commands':
+      return executeSetMyCommands(node, ctx);
+
+    // --- New Discord Actions (SP2) ---
+    case 'discord_reply_interaction':
+      return executeDiscordReplyInteraction(node, ctx);
+    case 'discord_show_modal':
+      return executeDiscordShowModal(node, ctx);
+    case 'discord_send_components':
+      return executeDiscordSendComponents(node, ctx);
+    case 'discord_edit_interaction':
+      return executeDiscordEditInteraction(node, ctx);
+    case 'discord_defer_reply':
+      return executeDiscordDeferReply(node, ctx);
+    case 'discord_set_channel_permissions':
+      return executeDiscordSetChannelPermissions(node, ctx);
+    case 'discord_create_forum_post':
+      return executeDiscordCreateForumPost(node, ctx);
+    case 'discord_register_commands':
+      return executeDiscordRegisterCommands(node, ctx);
+
     // --- Unified Cross-Platform Actions ---
     case 'unified_send_message':
     case 'unified_send_media':
@@ -1305,4 +1339,122 @@ async function executeUnifiedAction(node: FlowNode, ctx: FlowContext): Promise<u
   if (config.discordOverrides !== undefined) result.discordOverrides = config.discordOverrides;
 
   return result;
+}
+
+// ---------------------------------------------------------------------------
+// New Telegram actions (SP2)
+// ---------------------------------------------------------------------------
+
+async function executeAnswerInlineQuery(node: FlowNode, ctx: FlowContext): Promise<unknown> {
+  const queryId = interpolate(String(node.config.queryId ?? '{{trigger.queryId}}'), ctx);
+  const results = node.config.results ?? [];
+  const cacheTime = node.config.cacheTime;
+  return { action: 'answer_inline_query', queryId, results, cacheTime, executed: true };
+}
+
+async function executeSendInvoice(node: FlowNode, ctx: FlowContext): Promise<unknown> {
+  const chatId = interpolate(String(node.config.chatId ?? '{{trigger.chatId}}'), ctx);
+  const title = interpolate(String(node.config.title ?? ''), ctx);
+  const description = interpolate(String(node.config.description ?? ''), ctx);
+  const payload = interpolate(String(node.config.payload ?? ''), ctx);
+  const currency = String(node.config.currency ?? 'USD');
+  const prices = node.config.prices ?? [];
+  return { action: 'send_invoice', chatId, title, description, payload, currency, prices, executed: true };
+}
+
+async function executeAnswerPreCheckout(node: FlowNode, ctx: FlowContext): Promise<unknown> {
+  const queryId = interpolate(String(node.config.queryId ?? '{{trigger.queryId}}'), ctx);
+  const ok = Boolean(node.config.ok ?? true);
+  const errorMessage = node.config.errorMessage ? interpolate(String(node.config.errorMessage), ctx) : undefined;
+  return { action: 'answer_pre_checkout', queryId, ok, errorMessage, executed: true };
+}
+
+async function executeSetChatMenuButton(node: FlowNode, ctx: FlowContext): Promise<unknown> {
+  const chatId = interpolate(String(node.config.chatId ?? '{{trigger.chatId}}'), ctx);
+  const menuButton = node.config.menuButton ?? {};
+  return { action: 'set_chat_menu_button', chatId, menuButton, executed: true };
+}
+
+async function executeSendMediaGroupAction(node: FlowNode, ctx: FlowContext): Promise<unknown> {
+  const chatId = interpolate(String(node.config.chatId ?? '{{trigger.chatId}}'), ctx);
+  const media = node.config.media ?? [];
+  return { action: 'send_media_group', chatId, media, executed: true };
+}
+
+async function executeCreateForumTopic(node: FlowNode, ctx: FlowContext): Promise<unknown> {
+  const chatId = interpolate(String(node.config.chatId ?? '{{trigger.chatId}}'), ctx);
+  const name = interpolate(String(node.config.name ?? ''), ctx);
+  const iconColor = node.config.iconColor;
+  const iconEmojiId = node.config.iconEmojiId;
+  return { action: 'create_forum_topic', chatId, name, iconColor, iconEmojiId, executed: true };
+}
+
+async function executeSetMyCommands(node: FlowNode, ctx: FlowContext): Promise<unknown> {
+  const commands = node.config.commands ?? [];
+  const scope = node.config.scope;
+  return { action: 'set_my_commands', commands, scope, executed: true };
+}
+
+// ---------------------------------------------------------------------------
+// New Discord actions (SP2)
+// ---------------------------------------------------------------------------
+
+async function executeDiscordReplyInteraction(node: FlowNode, ctx: FlowContext): Promise<unknown> {
+  const interactionId = interpolate(String(node.config.interactionId ?? '{{trigger.interactionId}}'), ctx);
+  const content = node.config.content ? interpolate(String(node.config.content), ctx) : undefined;
+  const embeds = node.config.embeds;
+  const components = node.config.components;
+  const ephemeral = Boolean(node.config.ephemeral ?? false);
+  return { action: 'discord_reply_interaction', platform: 'discord', interactionId, content, embeds, components, ephemeral, executed: true };
+}
+
+async function executeDiscordShowModal(node: FlowNode, ctx: FlowContext): Promise<unknown> {
+  const interactionId = interpolate(String(node.config.interactionId ?? '{{trigger.interactionId}}'), ctx);
+  const customId = interpolate(String(node.config.customId ?? ''), ctx);
+  const title = interpolate(String(node.config.title ?? ''), ctx);
+  const components = node.config.components ?? [];
+  return { action: 'discord_show_modal', platform: 'discord', interactionId, customId, title, components, executed: true };
+}
+
+async function executeDiscordSendComponents(node: FlowNode, ctx: FlowContext): Promise<unknown> {
+  const channelId = interpolate(String(node.config.channelId ?? '{{trigger.channelId}}'), ctx);
+  const content = node.config.content ? interpolate(String(node.config.content), ctx) : undefined;
+  const components = node.config.components ?? [];
+  return { action: 'discord_send_components', platform: 'discord', channelId, content, components, executed: true };
+}
+
+async function executeDiscordEditInteraction(node: FlowNode, ctx: FlowContext): Promise<unknown> {
+  const interactionId = interpolate(String(node.config.interactionId ?? '{{trigger.interactionId}}'), ctx);
+  const content = node.config.content ? interpolate(String(node.config.content), ctx) : undefined;
+  const embeds = node.config.embeds;
+  const components = node.config.components;
+  return { action: 'discord_edit_interaction', platform: 'discord', interactionId, content, embeds, components, executed: true };
+}
+
+async function executeDiscordDeferReply(node: FlowNode, ctx: FlowContext): Promise<unknown> {
+  const interactionId = interpolate(String(node.config.interactionId ?? '{{trigger.interactionId}}'), ctx);
+  const ephemeral = Boolean(node.config.ephemeral ?? false);
+  return { action: 'discord_defer_reply', platform: 'discord', interactionId, ephemeral, executed: true };
+}
+
+async function executeDiscordSetChannelPermissions(node: FlowNode, ctx: FlowContext): Promise<unknown> {
+  const channelId = interpolate(String(node.config.channelId ?? '{{trigger.channelId}}'), ctx);
+  const targetId = interpolate(String(node.config.targetId ?? ''), ctx);
+  const allow = node.config.allow;
+  const deny = node.config.deny;
+  return { action: 'discord_set_channel_permissions', platform: 'discord', channelId, targetId, allow, deny, executed: true };
+}
+
+async function executeDiscordCreateForumPost(node: FlowNode, ctx: FlowContext): Promise<unknown> {
+  const channelId = interpolate(String(node.config.channelId ?? '{{trigger.channelId}}'), ctx);
+  const name = interpolate(String(node.config.name ?? ''), ctx);
+  const content = interpolate(String(node.config.content ?? ''), ctx);
+  const tags = node.config.tags;
+  return { action: 'discord_create_forum_post', platform: 'discord', channelId, name, content, tags, executed: true };
+}
+
+async function executeDiscordRegisterCommands(node: FlowNode, ctx: FlowContext): Promise<unknown> {
+  const guildId = interpolate(String(node.config.guildId ?? '{{trigger.guildId}}'), ctx);
+  const commands = node.config.commands ?? [];
+  return { action: 'discord_register_commands', platform: 'discord', guildId, commands, executed: true };
 }
