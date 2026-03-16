@@ -10,6 +10,10 @@ export interface ExecutorConfig {
   enableNodeCache: boolean;
   maxCacheSize: number;
   prisma?: any;
+  taskCallbacks?: {
+    triggerAndWait: (taskId: string, payload: unknown) => Promise<unknown>;
+    trigger: (taskId: string, payload: unknown) => Promise<void>;
+  };
 }
 
 const DEFAULT_CONFIG: ExecutorConfig = {
@@ -32,6 +36,8 @@ const NON_CACHEABLE_TYPES = new Set([
   'send_animation', 'send_venue', 'send_dice', 'send_media_group',
   'send_audio', 'leave_chat', 'get_chat_info', 'set_chat_photo',
   'delete_chat_photo', 'approve_join_request',
+  'get_context', 'set_context', 'delete_context',
+  'run_flow', 'emit_event',
 ]);
 
 /**
@@ -175,6 +181,14 @@ export async function executeFlow(
     triggerData,
     nodeResults: new Map(),
   };
+
+  // Attach prisma and task callbacks to context for action nodes
+  if (cfg.prisma) {
+    (ctx as any)._prisma = cfg.prisma;
+  }
+  if (cfg.taskCallbacks) {
+    (ctx as any)._taskCallbacks = cfg.taskCallbacks;
+  }
 
   // Wrap variables.set to track pending writes for batch persistence
   const originalSet = ctx.variables.set.bind(ctx.variables);

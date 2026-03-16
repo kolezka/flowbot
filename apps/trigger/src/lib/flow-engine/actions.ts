@@ -1,6 +1,7 @@
 import type { FlowNode, FlowContext } from './types.js';
 import { interpolate } from './variables.js';
 import { getPrisma } from '../prisma.js';
+import { getContext, setContext, deleteContext } from './context-store.js';
 
 export async function executeAction(node: FlowNode, ctx: FlowContext): Promise<unknown> {
   switch (node.type) {
@@ -78,6 +79,14 @@ export async function executeAction(node: FlowNode, ctx: FlowContext): Promise<u
       return executeDeleteChatPhoto(node, ctx);
     case 'approve_join_request':
       return executeApproveJoinRequest(node, ctx);
+
+    // --- Context Actions ---
+    case 'get_context':
+      return executeGetContext(node, ctx);
+    case 'set_context':
+      return executeSetContext(node, ctx);
+    case 'delete_context':
+      return executeDeleteContext(node, ctx);
 
     // --- Discord Actions ---
     case 'discord_send_message':
@@ -1105,4 +1114,46 @@ async function executeDiscordCreateScheduledEvent(node: FlowNode, ctx: FlowConte
   }
 
   return { action: 'discord_create_scheduled_event', platform: 'discord', guildId, name, options, executed: true };
+}
+
+// ---------------------------------------------------------------------------
+// Context actions
+// ---------------------------------------------------------------------------
+
+async function executeGetContext(node: FlowNode, ctx: FlowContext): Promise<unknown> {
+  const prisma = (ctx as any)._prisma;
+  if (!prisma) throw new Error('get_context requires prisma in executor config');
+  const { key, defaultValue } = node.config as { key: string; defaultValue?: unknown };
+  const platformUserId = String(ctx.triggerData.platformUserId ?? ctx.triggerData.userId ?? '');
+  const platform = String(ctx.triggerData.platform ?? 'telegram');
+  const value = await getContext(prisma, platformUserId, platform, key, defaultValue);
+
+  // Populate context cache for {{context.*}} interpolation
+  if (!(ctx as any)._contextCache) {
+    (ctx as any)._contextCache = new Map<string, unknown>();
+  }
+  (ctx as any)._contextCache.set(key, value);
+
+  return { action: 'get_context', key, value };
+}
+
+async function executeSetContext(node: FlowNode, ctx: FlowContext): Promise<unknown> {
+  const prisma = (ctx as any)._prisma;
+  if (!prisma) throw new Error('set_context requires prisma in executor config');
+  const { key, value: rawValue } = node.config as { key: string; value: string };
+  const interpolatedValue = interpolate(String(rawValue), ctx);
+  const platformUserId = String(ctx.triggerData.platformUserId ?? ctx.triggerData.userId ?? '');
+  const platform = String(ctx.triggerData.platform ?? 'telegram');
+  await setContext(prisma, platformUserId, platform, key, interpolatedValue);
+  return { action: 'set_context', key, value: interpolatedValue, executed: true };
+}
+
+async function executeDeleteContext(node: FlowNode, ctx: FlowContext): Promise<unknown> {
+  const prisma = (ctx as any)._prisma;
+  if (!prisma) throw new Error('delete_context requires prisma in executor config');
+  const { key } = node.config as { key: string };
+  const platformUserId = String(ctx.triggerData.platformUserId ?? ctx.triggerData.userId ?? '');
+  const platform = String(ctx.triggerData.platform ?? 'telegram');
+  await deleteContext(prisma, platformUserId, platform, key);
+  return { action: 'delete_context', key, executed: true };
 }
