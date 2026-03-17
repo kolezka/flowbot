@@ -18,8 +18,11 @@ Telegram & Discord e-commerce and group management platform with a visual flow b
 ### Broadcast Composer
 ![Broadcast](docs/screenshots/broadcast.png)
 
-### Flow Builder
+### Flows
 ![Flows](docs/screenshots/flows.png)
+
+### Moderation Groups
+![Moderation Groups](docs/screenshots/moderation-groups.png)
 
 ### Moderation Logs
 ![Moderation Logs](docs/screenshots/moderation-logs.png)
