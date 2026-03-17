@@ -21,6 +21,15 @@ Telegram & Discord e-commerce and group management platform with a visual flow b
 ### Flows
 ![Flows](docs/screenshots/flows.png)
 
+### Flow Editor
+![Flow Editor](docs/screenshots/flow-editor.png)
+
+### Flow Templates
+![Flow Templates](docs/screenshots/flow-templates.png)
+
+### Flow Analytics
+![Flow Analytics](docs/screenshots/flow-analytics.png)
+
 ### Moderation Groups
 ![Moderation Groups](docs/screenshots/moderation-groups.png)
 
