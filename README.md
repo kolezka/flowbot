@@ -1,6 +1,6 @@
 # Strefa Ruchu
 
-Telegram e-commerce and group management platform. pnpm monorepo with 8 workspaces, 28 Prisma models, 80+ API endpoints, 35+ dashboard pages, and 7 Trigger.dev background tasks.
+Telegram & Discord e-commerce and group management platform with a visual flow builder. pnpm monorepo with 11 workspaces, 26 Prisma models, 80+ API endpoints, 35+ dashboard pages, 8 Trigger.dev background tasks, and a 136-node flow automation engine.
 
 ---
 
@@ -46,16 +46,20 @@ graph TD
         API[NestJS 11 API<br/>REST · WebSocket · SSE]
         Bot[E-Commerce Bot<br/>grammY · Hono]
         MB[Manager Bot<br/>grammY · Hono]
-        Trigger[Trigger.dev Worker<br/>7 Background Tasks]
+        DB_BOT[Discord Bot<br/>discord.js · Hono]
+        Trigger[Trigger.dev Worker<br/>8 Background Tasks]
     end
 
     subgraph "Data & Transport"
-        DB[(PostgreSQL<br/>Prisma 7 · 28 Models)]
-        Transport[telegram-transport<br/>GramJS · CircuitBreaker]
+        DB[(PostgreSQL<br/>Prisma 7 · 26 Models)]
+        TGTransport[telegram-transport<br/>GramJS · CircuitBreaker]
+        DCTransport[discord-transport<br/>discord.js · CircuitBreaker]
+        FlowShared[flow-shared<br/>136 Node Types]
     end
 
     subgraph "External"
         TG[Telegram API]
+        DC[Discord API]
     end
 
     FE -->|HTTP REST| API
@@ -63,13 +67,19 @@ graph TD
     API --> DB
     Bot --> DB
     MB --> DB
+    DB_BOT --> DB
     MB -->|HTTP| API
     Trigger --> DB
     Trigger -->|HTTP| MB
-    Trigger --> Transport
-    Transport -->|MTProto| TG
+    Trigger -->|HTTP| DB_BOT
+    Trigger --> TGTransport
+    Trigger --> DCTransport
+    Trigger --> FlowShared
+    TGTransport -->|MTProto| TG
+    DCTransport -->|Gateway| DC
     Bot -->|Bot API| TG
     MB -->|Bot API| TG
+    DB_BOT -->|Gateway| DC
 ```
 
 ---
@@ -80,11 +90,14 @@ graph TD
 |-----------|------|-------|--------|
 | **Bot** | `apps/bot` | grammY, Hono, Pino, Valibot | ESM (tsx) |
 | **Manager Bot** | `apps/manager-bot` | grammY, Hono, Pino, Valibot | ESM (tsx) |
+| **Discord Bot** | `apps/discord-bot` | discord.js, Hono, Pino | ESM |
 | **API** | `apps/api` | NestJS 11, Swagger, class-validator | CommonJS |
 | **Frontend** | `apps/frontend` | Next.js 16, Radix UI, Tailwind CSS 4 | ESM |
 | **Trigger** | `apps/trigger` | Trigger.dev v3 | ESM |
 | **DB** | `packages/db` | Prisma 7, PostgreSQL | — |
 | **telegram-transport** | `packages/telegram-transport` | GramJS, CircuitBreaker, ActionRunner | ESM |
+| **discord-transport** | `packages/discord-transport` | discord.js, CircuitBreaker | ESM |
+| **flow-shared** | `packages/flow-shared` | Node type registry (136 types) | ESM |
 | **tg-client** | `apps/tg-client` | _DEPRECATED_ — MTProto auth script only | ESM |
 
 ---
@@ -191,7 +204,7 @@ REST API server with WebSocket and SSE real-time support.
 | `categories` | `/api/categories/*` | Category tree CRUD |
 | `cart` | `/api/cart/*` | Shopping cart operations |
 | `broadcast` | `/api/broadcast/*` | Broadcast management + Trigger.dev dispatch |
-| `flows` | `/api/flows/*` | Flow CRUD, versioning, execution, analytics, webhooks |
+| `flows` | `/api/flows/*` | Flow CRUD, versioning, execution, analytics, webhooks, trigger registry, context keys, folders |
 | `webhooks` | `/api/webhooks/*` | Webhook endpoint management |
 | `bot-config` | `/api/bot-config/*` | Bot instance configuration (commands, responses, menus) |
 | `moderation` | `/api/moderation/*` | Groups, members, warnings, logs, crosspost, scheduled messages |
@@ -225,7 +238,7 @@ Admin dashboard with visual flow builder, real-time updates, and comprehensive m
 
 **Features:**
 - **Dashboard Overview:** Stat cards, activity feed, mini charts
-- **Flow Builder:** Visual drag-and-drop editor (React Flow) with node palette, property editor, execution visualization
+- **Flow Builder:** Visual drag-and-drop editor (React Flow) with 136 node types, searchable palette with recently-used tracking, typed property panels, variable autocomplete (`{{trigger.*}}`), execution debugger with timeline, subflow nodes, sticky notes, and cross-platform (Telegram + Discord) support
 - **Moderation:** Group management, member actions, warning viewer, audit log
 - **Analytics:** Member growth charts, moderation activity, spam trends (Recharts)
 - **Bot Config:** Command editor, response editor, menu builder with Telegram preview
@@ -259,7 +272,13 @@ apps/frontend/src/
 │   └── layout.tsx                # Root layout with theme + sidebar
 ├── components/
 │   ├── ui/                       # Radix UI primitives (30+ components)
-│   ├── flow-builder/             # React Flow nodes, edges, palette
+│   ├── flow-editor/              # Flow builder components
+│   │   ├── NodePalette.tsx       # Searchable node palette with recent/collapsible
+│   │   ├── VariableAutocomplete.tsx  # {{variable}} autocomplete input
+│   │   ├── ExecutionDebugger.tsx  # Step-through debugger with timeline
+│   │   ├── SubflowNode.tsx       # Custom ReactFlow node for subflows
+│   │   ├── StickyNote.tsx        # Annotation node for canvas
+│   │   └── property-panels/      # Typed config panels (registry pattern)
 │   └── ...                       # Feature-specific components
 ├── lib/
 │   ├── api.ts                    # Centralized fetch wrapper with auth
@@ -284,6 +303,7 @@ Background job processor running 7 tasks on a self-hosted Trigger.dev instance.
 | `cross-post` | `telegram` | On-demand | Syndicates messages across multiple groups |
 | `scheduled-message` | `telegram` | `* * * * *` | Delivers due scheduled messages every minute |
 | `flow-execution` | `flows` | On-demand | Executes flow definitions via the BFS engine |
+| `flow-event-cleanup` | default | `0 3 * * *` | Prunes expired flow events daily at 3 AM |
 | `analytics-snapshot` | default | `0 2 * * *` | Captures daily group analytics at 2 AM |
 | `health-check` | default | `*/5 * * * *` | System health monitoring every 5 minutes |
 
@@ -297,6 +317,7 @@ apps/trigger/src/
 │   ├── cross-post.ts
 │   ├── scheduled-message.ts
 │   ├── flow-execution.ts
+│   ├── flow-event-cleanup.ts
 │   ├── analytics-snapshot.ts
 │   └── health-check.ts
 ├── lib/
@@ -305,16 +326,18 @@ apps/trigger/src/
 │   ├── manager-bot.ts        # HTTP client for manager bot API
 │   ├── event-correlator.ts   # Cross-bot context enrichment
 │   └── flow-engine/          # Complete flow execution engine
-│       ├── executor.ts       # BFS graph walker
-│       ├── variables.ts      # {{template}} interpolation
-│       ├── conditions.ts     # Condition evaluators
-│       ├── actions.ts        # Action executors
+│       ├── executor.ts       # BFS graph walker with LRU cache, debug hooks
+│       ├── variables.ts      # {{trigger/node/context}} interpolation
+│       ├── conditions.ts     # 17 condition evaluators (Telegram + Discord + context)
+│       ├── actions.ts        # 80+ action executors (Telegram, Discord, unified, context, chaining)
+│       ├── dispatcher.ts     # Post-execution routing (MTProto, Bot API, Discord, unified)
+│       ├── context-store.ts  # Persistent per-user key-value context (UserFlowContext)
 │       ├── advanced-nodes.ts # Loop, parallel, switch, transform, db_query
 │       └── templates.ts      # Built-in flow templates
 └── trigger.config.ts
 ```
 
-**Flow Engine:** The flow execution engine performs BFS traversal of node graphs, supporting 17 node types including triggers, conditions, actions, loops, parallel branches, switches, transforms, and database queries. Variables flow between nodes via `{{template.interpolation}}` syntax.
+**Flow Engine:** The flow execution engine performs BFS traversal of node graphs with 136 node types across Telegram, Discord, and cross-platform. Features include shared user context (`get_context`/`set_context`), flow chaining (`run_flow` with `triggerAndWait`, `emit_event`/`custom_event`), 8 unified cross-platform actions, variable interpolation (`{{trigger.*}}`, `{{node.*}}`, `{{context.*}}`), LRU result caching, chain depth safeguards (max 5), and an `onNodeComplete` callback for debugging.
 
 ---
 
@@ -324,7 +347,7 @@ apps/trigger/src/
 
 Shared Prisma 7 schema and client for PostgreSQL.
 
-**28 Models across 7 domains:**
+**26 Models across 8 domains:**
 
 ```mermaid
 erDiagram
@@ -343,6 +366,7 @@ erDiagram
 
     FlowDefinition ||--o{ FlowExecution : has
     FlowDefinition ||--o{ FlowVersion : versioned_by
+    FlowDefinition }o--o| FlowFolder : in_folder
 
     BotInstance ||--o{ BotCommand : has
     BotInstance ||--o{ BotResponse : has
@@ -356,7 +380,7 @@ erDiagram
 | Analytics | `GroupAnalyticsSnapshot`, `ReputationScore` |
 | Cross-App | `UserIdentity`, `CrossPostTemplate`, `BroadcastMessage`, `OrderEvent` |
 | TG Client | `ClientSession`, `ClientLog` |
-| Flow Engine | `FlowDefinition`, `FlowExecution`, `FlowVersion` |
+| Flow Engine | `FlowDefinition`, `FlowExecution`, `FlowVersion`, `FlowFolder`, `FlowEvent`, `UserFlowContext` |
 | Bot Config | `BotInstance`, `BotCommand`, `BotResponse`, `BotMenu`, `BotMenuButton` |
 | Webhooks | `WebhookEndpoint` |
 
@@ -376,6 +400,31 @@ GramJS-based Telegram MTProto client with reliability features.
 - **FakeTelegramTransport** — Test double for unit tests
 
 **Used by:** Trigger.dev tasks for all Telegram message delivery that requires MTProto (broadcast, cross-post, scheduled messages, order notifications).
+
+---
+
+### discord-transport (`packages/discord-transport`)
+
+discord.js-based Discord client with the same reliability patterns as telegram-transport.
+
+**Components:**
+- **DiscordJsTransport** — discord.js client implementing `IDiscordTransport` interface (messaging, moderation, channels, threads, interactions, forums)
+- **CircuitBreaker** — Same pattern as telegram-transport
+- **FakeDiscordTransport** — Test double for unit tests
+
+**Used by:** Trigger.dev flow engine for Discord action dispatch (send messages, manage members, handle interactions, create channels/threads).
+
+---
+
+### flow-shared (`packages/flow-shared`)
+
+Shared node type registry for the flow builder — single source of truth used by both frontend and trigger engine.
+
+**136 node types** across 5 categories:
+- **Triggers** (23): Telegram events (14), Discord events (16), general (3 — schedule, webhook, custom_event)
+- **Conditions** (17): Telegram (11), Discord (5), context (1)
+- **Actions** (80+): Telegram messaging (22), Telegram management (9), Discord messaging/management (30), unified cross-platform (8), context (3), utility (3)
+- **Advanced** (7): run_flow, emit_event, parallel_branch, db_query, loop, switch, transform
 
 ---
 
@@ -479,13 +528,10 @@ pnpm frontend build
 
 ```bash
 # Unit tests
-pnpm api test                           # Jest (235 tests)
-pnpm manager-bot test                   # Vitest (99 tests)
-pnpm telegram-transport test            # Vitest (24 tests)
-pnpm trigger test                       # Vitest (106 tests)
-
-# E2E tests
-pnpm frontend test:e2e                  # Playwright (80+ tests)
+pnpm api test                           # Jest (171 tests)
+pnpm manager-bot test                   # Vitest (105 tests)
+pnpm telegram-transport test            # Vitest (32 tests)
+pnpm trigger test                       # Vitest (196 tests)
 
 # Specific test
 pnpm api test -- --testPathPattern=users
@@ -534,17 +580,19 @@ tg-allegro/
 ├── apps/
 │   ├── bot/                  # E-commerce Telegram bot
 │   ├── manager-bot/          # Group management Telegram bot
+│   ├── discord-bot/          # Discord group management bot
 │   ├── api/                  # NestJS REST API + WebSocket + SSE
 │   ├── frontend/             # Next.js admin dashboard
-│   ├── trigger/              # Trigger.dev background worker
+│   ├── trigger/              # Trigger.dev background worker (8 tasks)
 │   └── tg-client/            # DEPRECATED — MTProto auth script only
 ├── packages/
-│   ├── db/                   # Prisma 7 schema + client
-│   └── telegram-transport/   # GramJS client with CircuitBreaker
+│   ├── db/                   # Prisma 7 schema + client (26 models)
+│   ├── telegram-transport/   # GramJS MTProto client with CircuitBreaker
+│   ├── discord-transport/    # discord.js client with CircuitBreaker
+│   └── flow-shared/          # Shared flow node type registry (136 types)
 ├── docs/
-│   ├── architecture.md       # Detailed architecture documentation
-│   ├── flow-builder.md       # Flow builder user guide
-│   └── plans/                # Design documents
+│   ├── screenshots/          # Dashboard screenshots
+│   └── superpowers/          # Design specs + implementation plans
 ├── docker-compose.yml        # PostgreSQL
 ├── tsconfig.base.json        # Shared TypeScript config + path aliases
 └── package.json              # Workspace scripts
@@ -557,8 +605,8 @@ tg-allegro/
 - **Authentication:** JWT bearer tokens via global `AuthGuard`. Public routes use `@Public()` decorator.
 - **CORS:** Restricted to `FRONTEND_URL`.
 - **Webhook Security:** Unique auto-generated tokens (cuid) per endpoint.
-- **Flow Engine Safety:** `db_query` node uses allowlist of permitted Prisma queries, max 100 records.
-- **Transport Resilience:** CircuitBreaker prevents cascading failures to Telegram API.
+- **Flow Engine Safety:** `db_query` node uses allowlist of permitted Prisma queries, max 100 records. `run_flow` chaining enforces max depth of 5 to prevent infinite loops. Circular reference detection on flow activation. `discord_register_commands` is admin-only.
+- **Transport Resilience:** CircuitBreaker prevents cascading failures to Telegram and Discord APIs.
 
 ---
 
@@ -576,6 +624,7 @@ tg-allegro/
 | Flow Editor | React Flow (@xyflow/react) |
 | Telegram Bots | grammY |
 | Telegram MTProto | GramJS |
+| Discord | discord.js |
 | Background Jobs | Trigger.dev v3 |
 | HTTP Servers | Hono (bots), Express (API) |
 | Real-Time | Socket.IO + SSE |
