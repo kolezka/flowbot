@@ -164,7 +164,7 @@ jobs:
       - run: pnpm db generate
       - run: pnpm db build
       - run: pnpm db prisma:push
-      - run: pnpm api test:e2e -- --forceExit
+      - run: pnpm api test:e2e
 
   frontend-e2e:
     name: Frontend E2E Tests (Playwright)
