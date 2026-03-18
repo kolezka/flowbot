@@ -41,7 +41,7 @@ export default defineConfig({
   ],
   webServer: [
     {
-      command: 'DASHBOARD_SECRET=admin DATABASE_URL=postgresql://postgres:postgres@localhost:5432/strefaruchu_db pnpm api start:dev',
+      command: 'DASHBOARD_SECRET=admin DATABASE_URL=postgresql://postgres:postgres@localhost:5432/flowbot_db pnpm api start:dev',
       url: 'http://localhost:3000/api/docs',
       reuseExistingServer: !process.env.CI,
       timeout: 60_000,

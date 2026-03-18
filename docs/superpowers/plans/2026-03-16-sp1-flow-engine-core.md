@@ -61,7 +61,7 @@ model FlowEvent {
 - [ ] **Step 3: Run migration**
 
 ```bash
-cd /root/Development/tg-allegro
+cd /root/Development/flowbot
 pnpm db prisma:push
 pnpm db generate
 pnpm db build
@@ -220,7 +220,7 @@ describe('context-store', () => {
 - [ ] **Step 2: Run tests to verify they fail**
 
 ```bash
-cd /root/Development/tg-allegro && pnpm trigger test -- --testPathPattern=context-store
+cd /root/Development/flowbot && pnpm trigger test -- --testPathPattern=context-store
 ```
 
 Expected: FAIL — module `context-store.js` not found.
@@ -304,7 +304,7 @@ export async function listContextKeys(
 - [ ] **Step 4: Run tests to verify they pass**
 
 ```bash
-cd /root/Development/tg-allegro && pnpm trigger test -- --testPathPattern=context-store
+cd /root/Development/flowbot && pnpm trigger test -- --testPathPattern=context-store
 ```
 
 Expected: All 6 tests PASS.
@@ -426,7 +426,7 @@ describe('context action nodes', () => {
 - [ ] **Step 2: Run tests to verify they fail**
 
 ```bash
-cd /root/Development/tg-allegro && pnpm trigger test -- --testPathPattern=context-actions
+cd /root/Development/flowbot && pnpm trigger test -- --testPathPattern=context-actions
 ```
 
 Expected: FAIL — no matching case for `get_context`.
@@ -531,7 +531,7 @@ export { getContext, setContext, deleteContext, listContextKeys } from './contex
 - [ ] **Step 7: Run tests to verify they pass**
 
 ```bash
-cd /root/Development/tg-allegro && pnpm trigger test -- --testPathPattern=context-actions
+cd /root/Development/flowbot && pnpm trigger test -- --testPathPattern=context-actions
 ```
 
 Expected: All tests PASS.
@@ -539,7 +539,7 @@ Expected: All tests PASS.
 - [ ] **Step 8: Run full flow-engine test suite**
 
 ```bash
-cd /root/Development/tg-allegro && pnpm trigger test
+cd /root/Development/flowbot && pnpm trigger test
 ```
 
 Expected: All existing tests still pass.
@@ -657,7 +657,7 @@ describe('context_condition evaluator', () => {
 - [ ] **Step 2: Run tests to verify they fail**
 
 ```bash
-cd /root/Development/tg-allegro && pnpm trigger test -- --testPathPattern=context-condition
+cd /root/Development/flowbot && pnpm trigger test -- --testPathPattern=context-condition
 ```
 
 Expected: FAIL — `context_condition` returns `false` (unhandled type).
@@ -715,7 +715,7 @@ async function evaluateContextCondition(node: FlowNode, ctx: FlowContext): Promi
 - [ ] **Step 4: Run tests to verify they pass**
 
 ```bash
-cd /root/Development/tg-allegro && pnpm trigger test -- --testPathPattern=context-condition
+cd /root/Development/flowbot && pnpm trigger test -- --testPathPattern=context-condition
 ```
 
 Expected: All 6 tests PASS.
@@ -723,7 +723,7 @@ Expected: All 6 tests PASS.
 - [ ] **Step 5: Run full test suite**
 
 ```bash
-cd /root/Development/tg-allegro && pnpm trigger test
+cd /root/Development/flowbot && pnpm trigger test
 ```
 
 Expected: All tests pass.
@@ -792,7 +792,7 @@ describe('context.* variable interpolation', () => {
 - [ ] **Step 2: Run tests to verify they fail**
 
 ```bash
-cd /root/Development/tg-allegro && pnpm trigger test -- --testPathPattern=context-variables
+cd /root/Development/flowbot && pnpm trigger test -- --testPathPattern=context-variables
 ```
 
 Expected: FAIL — `context.*` not resolved.
@@ -826,7 +826,7 @@ if (!(ctx as any)._contextCache) {
 - [ ] **Step 4: Run tests to verify they pass**
 
 ```bash
-cd /root/Development/tg-allegro && pnpm trigger test -- --testPathPattern=context-variables
+cd /root/Development/flowbot && pnpm trigger test -- --testPathPattern=context-variables
 ```
 
 Expected: PASS.
@@ -834,7 +834,7 @@ Expected: PASS.
 - [ ] **Step 5: Run full test suite**
 
 ```bash
-cd /root/Development/tg-allegro && pnpm trigger test
+cd /root/Development/flowbot && pnpm trigger test
 ```
 
 Expected: All tests pass.
@@ -872,7 +872,7 @@ In the editor page, find the node types config array. Add a new "Context" sectio
 - [ ] **Step 2: Verify frontend builds**
 
 ```bash
-cd /root/Development/tg-allegro && pnpm frontend build
+cd /root/Development/flowbot && pnpm frontend build
 ```
 
 Expected: Build succeeds.
@@ -1002,7 +1002,7 @@ describe('run_flow action', () => {
 - [ ] **Step 2: Run tests to verify they fail**
 
 ```bash
-cd /root/Development/tg-allegro && pnpm trigger test -- --testPathPattern=flow-chaining
+cd /root/Development/flowbot && pnpm trigger test -- --testPathPattern=flow-chaining
 ```
 
 Expected: FAIL.
@@ -1105,7 +1105,7 @@ if (chainDepth > 5) {
 - [ ] **Step 7: Run tests to verify they pass**
 
 ```bash
-cd /root/Development/tg-allegro && pnpm trigger test -- --testPathPattern=flow-chaining
+cd /root/Development/flowbot && pnpm trigger test -- --testPathPattern=flow-chaining
 ```
 
 Expected: All 4 tests PASS.
@@ -1113,7 +1113,7 @@ Expected: All 4 tests PASS.
 - [ ] **Step 8: Run full test suite**
 
 ```bash
-cd /root/Development/tg-allegro && pnpm trigger test
+cd /root/Development/flowbot && pnpm trigger test
 ```
 
 Expected: All tests pass.
@@ -1240,7 +1240,7 @@ describe('emit_event action', () => {
 - [ ] **Step 2: Run tests to verify they fail**
 
 ```bash
-cd /root/Development/tg-allegro && pnpm trigger test -- --testPathPattern=flow-events
+cd /root/Development/flowbot && pnpm trigger test -- --testPathPattern=flow-events
 ```
 
 Expected: FAIL.
@@ -1332,7 +1332,7 @@ In `executor.ts`:
 - [ ] **Step 5: Run tests to verify they pass**
 
 ```bash
-cd /root/Development/tg-allegro && pnpm trigger test -- --testPathPattern=flow-events
+cd /root/Development/flowbot && pnpm trigger test -- --testPathPattern=flow-events
 ```
 
 Expected: All tests PASS.
@@ -1340,7 +1340,7 @@ Expected: All tests PASS.
 - [ ] **Step 6: Run full test suite**
 
 ```bash
-cd /root/Development/tg-allegro && pnpm trigger test
+cd /root/Development/flowbot && pnpm trigger test
 ```
 
 Expected: All pass.
@@ -1373,7 +1373,7 @@ git commit -m "feat(flow-engine): add emit_event action and custom_event trigger
 - [ ] **Step 2: Verify frontend builds**
 
 ```bash
-cd /root/Development/tg-allegro && pnpm frontend build
+cd /root/Development/flowbot && pnpm frontend build
 ```
 
 Expected: Build succeeds.
@@ -1423,7 +1423,7 @@ describe('flow-event-cleanup logic', () => {
 - [ ] **Step 2: Run test to verify it fails**
 
 ```bash
-cd /root/Development/tg-allegro && pnpm trigger test -- --testPathPattern=flow-event-cleanup
+cd /root/Development/flowbot && pnpm trigger test -- --testPathPattern=flow-event-cleanup
 ```
 
 Expected: FAIL.
@@ -1457,7 +1457,7 @@ export const flowEventCleanupTask = schedules.task({
 - [ ] **Step 4: Run tests to verify they pass**
 
 ```bash
-cd /root/Development/tg-allegro && pnpm trigger test -- --testPathPattern=flow-event-cleanup
+cd /root/Development/flowbot && pnpm trigger test -- --testPathPattern=flow-event-cleanup
 ```
 
 Expected: PASS.
@@ -1576,7 +1576,7 @@ In `flows.service.ts`, add `await this.rebuildTriggerRegistry()` at the end of:
 - [ ] **Step 4: Run API tests**
 
 ```bash
-cd /root/Development/tg-allegro && pnpm api test
+cd /root/Development/flowbot && pnpm api test
 ```
 
 Expected: Existing tests pass (new endpoints tested manually or in integration).
@@ -1641,7 +1641,7 @@ describe('matchTriggers', () => {
 - [ ] **Step 2: Run tests to verify they fail**
 
 ```bash
-cd /root/Development/tg-allegro && pnpm manager-bot test -- --testPathPattern=flow-trigger
+cd /root/Development/flowbot && pnpm manager-bot test -- --testPathPattern=flow-trigger
 ```
 
 Expected: FAIL.
@@ -1853,7 +1853,7 @@ export function createFlowTriggerMiddleware(
 - [ ] **Step 4: Run tests to verify they pass**
 
 ```bash
-cd /root/Development/tg-allegro && pnpm manager-bot test -- --testPathPattern=flow-trigger
+cd /root/Development/flowbot && pnpm manager-bot test -- --testPathPattern=flow-trigger
 ```
 
 Expected: All tests PASS.
@@ -1893,7 +1893,7 @@ bot.use(createFlowTriggerMiddleware(
 - [ ] **Step 6: Run full test suite**
 
 ```bash
-cd /root/Development/tg-allegro && pnpm manager-bot test
+cd /root/Development/flowbot && pnpm manager-bot test
 ```
 
 Expected: All tests pass.
@@ -1971,7 +1971,7 @@ if (cycle) {
 - [ ] **Step 2: Run API tests**
 
 ```bash
-cd /root/Development/tg-allegro && pnpm api test
+cd /root/Development/flowbot && pnpm api test
 ```
 
 Expected: All pass.
@@ -2019,7 +2019,7 @@ async getContextKeys() {
 - [ ] **Step 3: Run API tests**
 
 ```bash
-cd /root/Development/tg-allegro && pnpm api test
+cd /root/Development/flowbot && pnpm api test
 ```
 
 Expected: All pass.
@@ -2038,7 +2038,7 @@ git commit -m "feat(api): add context-keys endpoint for variable autocomplete"
 - [ ] **Step 1: Run trigger typecheck**
 
 ```bash
-cd /root/Development/tg-allegro && pnpm trigger typecheck
+cd /root/Development/flowbot && pnpm trigger typecheck
 ```
 
 Expected: No errors.
@@ -2046,7 +2046,7 @@ Expected: No errors.
 - [ ] **Step 2: Run all trigger tests**
 
 ```bash
-cd /root/Development/tg-allegro && pnpm trigger test
+cd /root/Development/flowbot && pnpm trigger test
 ```
 
 Expected: All pass.
@@ -2054,7 +2054,7 @@ Expected: All pass.
 - [ ] **Step 3: Run manager-bot tests**
 
 ```bash
-cd /root/Development/tg-allegro && pnpm manager-bot test
+cd /root/Development/flowbot && pnpm manager-bot test
 ```
 
 Expected: All pass.
@@ -2062,7 +2062,7 @@ Expected: All pass.
 - [ ] **Step 4: Run API tests**
 
 ```bash
-cd /root/Development/tg-allegro && pnpm api test
+cd /root/Development/flowbot && pnpm api test
 ```
 
 Expected: All pass.
@@ -2070,7 +2070,7 @@ Expected: All pass.
 - [ ] **Step 5: Build frontend**
 
 ```bash
-cd /root/Development/tg-allegro && pnpm frontend build
+cd /root/Development/flowbot && pnpm frontend build
 ```
 
 Expected: Build succeeds.

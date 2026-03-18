@@ -34,8 +34,8 @@
 
     "baseUrl": ".",
     "paths": {
-      "@tg-allegro/db": ["./packages/db/src/index.ts"],
-      "@tg-allegro/*": ["./packages/*/src"]
+      "@flowbot/db": ["./packages/db/src/index.ts"],
+      "@flowbot/*": ["./packages/*/src"]
     }
 
   }

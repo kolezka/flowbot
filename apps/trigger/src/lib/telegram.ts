@@ -1,6 +1,6 @@
 import { pino } from 'pino'
 import { StringSession } from 'telegram/sessions/index.js'
-import { GramJsTransport, CircuitBreaker, ActionRunner } from '@tg-allegro/telegram-transport'
+import { GramJsTransport, CircuitBreaker, ActionRunner } from '@flowbot/telegram-transport'
 
 let transport: GramJsTransport | null = null
 let circuitBreaker: CircuitBreaker | null = null

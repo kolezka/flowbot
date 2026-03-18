@@ -1,4 +1,4 @@
-import type { GroupConfig } from '@tg-allegro/db'
+import type { GroupConfig } from '@flowbot/db'
 
 export type EscalationAction = 'none' | 'mute' | 'ban'
 

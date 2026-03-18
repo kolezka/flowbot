@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { FakeTelegramTransport } from '@tg-allegro/telegram-transport'
+import { FakeTelegramTransport } from '@flowbot/telegram-transport'
 
 describe('FakeTelegramTransport', () => {
   it('connects and sends a message', async () => {

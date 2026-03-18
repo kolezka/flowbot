@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import type { OnModuleInit, OnModuleDestroy } from '@nestjs/common';
 import { PrismaPg } from '@prisma/adapter-pg';
 
-import { PrismaClient } from '@tg-allegro/db';
+import { PrismaClient } from '@flowbot/db';
 
 @Injectable()
 export class PrismaService

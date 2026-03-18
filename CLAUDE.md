@@ -2,7 +2,7 @@
 
 ## Project Overview
 
-Telegram e-commerce bot ("Strefa Ruchu") with admin dashboard, group management bot, visual flow builder, and Trigger.dev background job worker. pnpm monorepo with 8 workspaces, 28 Prisma models, 80+ API endpoints, 35+ dashboard pages, 7 Trigger.dev tasks.
+Telegram e-commerce bot ("Flowbot") with admin dashboard, group management bot, visual flow builder, and Trigger.dev background job worker. pnpm monorepo with 8 workspaces, 28 Prisma models, 80+ API endpoints, 35+ dashboard pages, 7 Trigger.dev tasks.
 
 ### Workspaces
 
@@ -18,8 +18,8 @@ Telegram e-commerce bot ("Strefa Ruchu") with admin dashboard, group management 
 | `packages/telegram-transport` | GramJS, CircuitBreaker, ActionRunner | ESM |
 
 ### Path Aliases (`tsconfig.base.json`)
-- `@tg-allegro/db` → `packages/db/src/index.ts`
-- `@tg-allegro/*` → `packages/*/src`
+- `@flowbot/db` → `packages/db/src/index.ts`
+- `@flowbot/*` → `packages/*/src`
 
 ## Commands
 
@@ -84,7 +84,7 @@ Schema at `packages/db/prisma/schema.prisma`. After changes: `pnpm db generate &
 | API | `DATABASE_URL`, `PORT`, `FRONTEND_URL` |
 | Frontend | `NEXT_PUBLIC_API_URL` |
 
-Docker Compose: PostgreSQL on port 5432 (postgres/postgres/strefaruchu_db).
+Docker Compose: PostgreSQL on port 5432 (postgres/postgres/flowbot_db).
 
 ## TypeScript
 

@@ -33,7 +33,7 @@ New application `apps/manager-bot`: a Telegram group management and community ad
 - **Framework**: grammY (same as existing bot — reuse ecosystem knowledge, plugins, patterns)
 - **Module system**: ESM (matching `apps/bot` and `packages/db`)
 - **Bot token**: Separate bot token from `apps/bot` (completely independent bot identity)
-- **Database**: Shared PostgreSQL via `@tg-allegro/db` with new manager-bot-specific models
+- **Database**: Shared PostgreSQL via `@flowbot/db` with new manager-bot-specific models
 - **Separation from sales bot**: No code sharing beyond shared infra (`packages/db`, root tsconfig). Manager-bot has its own features, context type, session data, commands, and i18n.
 - **Group focus**: Bot operates in group/supergroup chats (not private DMs as primary mode)
 - **Plugin stack**: auto-retry + ratelimiter + transformer-throttler + hydrate + conversations + runner

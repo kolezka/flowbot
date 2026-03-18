@@ -480,7 +480,7 @@ This eliminates the duplicate node type definitions currently split between fron
 
 **Migration plan:**
 1. Move `NODE_TYPES_CONFIG` from the editor page to `packages/flow-shared/src/node-registry.ts`
-2. Import from `@tg-allegro/flow-shared` in the frontend
+2. Import from `@flowbot/flow-shared` in the frontend
 3. Use the same registry in `actions.ts` / `conditions.ts` for exhaustiveness checks
 4. This migration happens in Phase 2A (first phase of SP2) as a prerequisite for adding unified nodes
 

@@ -122,7 +122,7 @@ API/Bot writes AutomationJob(status: PENDING)
   → Updates job (status: COMPLETED | FAILED)
 ```
 
-No Redis, no message broker, no HTTP calls between services. Uses existing `@tg-allegro/db` Prisma layer.
+No Redis, no message broker, no HTTP calls between services. Uses existing `@flowbot/db` Prisma layer.
 
 ### 4. Session Management
 
@@ -167,7 +167,7 @@ Valibot schema following the bot's pattern:
 
 | Aspect | Existing Convention | tg-client Approach |
 |--------|--------------------|--------------------|
-| Package naming | `@tg-allegro/bot` | `@tg-allegro/tg-client` |
+| Package naming | `@flowbot/bot` | `@flowbot/tg-client` |
 | Module system | ESM for bot/db | ESM |
 | Config validation | Valibot | Valibot |
 | Logging | Pino | Pino |

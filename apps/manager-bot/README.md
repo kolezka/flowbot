@@ -1,6 +1,6 @@
 # Manager Bot
 
-Telegram group management and moderation bot built with grammY. Part of the tg-allegro monorepo.
+Telegram group management and moderation bot built with grammY. Part of the flowbot monorepo.
 
 ## Features
 

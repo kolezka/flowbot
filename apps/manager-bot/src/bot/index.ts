@@ -1,4 +1,4 @@
-import type { PrismaClient } from '@tg-allegro/db'
+import type { PrismaClient } from '@flowbot/db'
 import type { BotConfig } from 'grammy'
 import type { Config } from '../config.js'
 import type { Logger } from '../logger.js'

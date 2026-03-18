@@ -1,4 +1,4 @@
-import { createPrismaClient } from '@tg-allegro/db'
+import { createPrismaClient } from '@flowbot/db'
 
 let prisma: ReturnType<typeof createPrismaClient> | null = null
 

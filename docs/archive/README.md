@@ -4,7 +4,7 @@
 
 Phase 2 builds on the completed Phase 1 (Tasks 001-010, documented in `ui-*` files) which established the dashboard foundation: sidebar navigation, group config editor, scheduled messages, cross-post templates, automation jobs monitoring, reputation dashboard, analytics charts, member actions, and authentication.
 
-Phase 2 addresses the remaining UI gaps for manager-bot and tg-allegro, focusing on operational visibility, workflow completeness, and admin experience.
+Phase 2 addresses the remaining UI gaps for manager-bot and flowbot, focusing on operational visibility, workflow completeness, and admin experience.
 
 ## Goals
 

@@ -1,4 +1,4 @@
-import type { CrossPostTemplate, PrismaClient } from '@tg-allegro/db'
+import type { CrossPostTemplate, PrismaClient } from '@flowbot/db'
 
 export class CrossPostTemplateRepository {
   constructor(private prisma: PrismaClient) {}

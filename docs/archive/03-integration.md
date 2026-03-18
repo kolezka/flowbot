@@ -5,11 +5,11 @@
 ### Package Setup
 
 `apps/tg-client/package.json`:
-- Name: `@tg-allegro/tg-client`
+- Name: `@flowbot/tg-client`
 - `"type": "module"` (ESM, matching bot and db)
 - `"private": true` (not published)
 - Scripts: `dev`, `build`, `start`, `start:force`, `typecheck`, `lint`, `format`, `test`, `authenticate`
-- Dependencies: `telegram` (GramJS), `pino`, `pino-pretty`, `valibot`, `hono`, `@hono/node-server`, `@tg-allegro/db`
+- Dependencies: `telegram` (GramJS), `pino`, `pino-pretty`, `valibot`, `hono`, `@hono/node-server`, `@flowbot/db`
 - DevDependencies: `typescript`, `tsc-watch`, `tsx`, `@antfu/eslint-config`, `vitest`
 
 ### TypeScript Configuration
@@ -20,13 +20,13 @@
 - Include: `src/**/*`
 - Exclude: `node_modules`, `dist`
 
-No changes to `tsconfig.base.json` — the wildcard `@tg-allegro/*` resolves `packages/*/src` and is only for shared packages. Apps don't need path aliases in the base config.
+No changes to `tsconfig.base.json` — the wildcard `@flowbot/*` resolves `packages/*/src` and is only for shared packages. Apps don't need path aliases in the base config.
 
 ### Root Package Changes
 
-Add to `/home/me/Development/tg-allegro/package.json` scripts:
+Add to `/home/me/Development/flowbot/package.json` scripts:
 ```
-"tg-client": "pnpm --filter @tg-allegro/tg-client"
+"tg-client": "pnpm --filter @flowbot/tg-client"
 ```
 
 Usage: `pnpm tg-client dev`, `pnpm tg-client build`, `pnpm tg-client authenticate`
@@ -198,7 +198,7 @@ pnpm db generate
 # 4. Create .env in apps/tg-client/
 # TG_CLIENT_API_ID=...
 # TG_CLIENT_API_HASH=...
-# DATABASE_URL=postgresql://postgres:postgres@localhost:5432/strefaruchu_db
+# DATABASE_URL=postgresql://postgres:postgres@localhost:5432/flowbot_db
 
 # 5. First-time auth (interactive)
 pnpm tg-client authenticate

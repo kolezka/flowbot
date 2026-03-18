@@ -29,7 +29,7 @@
 
 ```json
 {
-  "name": "@tg-allegro/flow-shared",
+  "name": "@flowbot/flow-shared",
   "version": "0.1.0",
   "type": "module",
   "main": "src/index.ts",
@@ -167,7 +167,7 @@ export type { NodeTypeDefinition } from './node-registry.js'
 - [ ] **Step 5: Install and verify**
 
 ```bash
-cd /root/Development/tg-allegro && pnpm install
+cd /root/Development/flowbot && pnpm install
 ```
 
 - [ ] **Step 6: Update frontend to import from flow-shared**
@@ -175,7 +175,7 @@ cd /root/Development/tg-allegro && pnpm install
 In `apps/frontend/src/app/dashboard/flows/[id]/edit/page.tsx`, replace the inline `NODE_TYPES_CONFIG` array with:
 
 ```typescript
-import { NODE_TYPES } from '@tg-allegro/flow-shared'
+import { NODE_TYPES } from '@flowbot/flow-shared'
 ```
 
 Then update all references from `NODE_TYPES_CONFIG` to `NODE_TYPES`. Adjust the filter/map logic as needed to match the new `NodeTypeDefinition` shape.
@@ -183,7 +183,7 @@ Then update all references from `NODE_TYPES_CONFIG` to `NODE_TYPES`. Adjust the 
 - [ ] **Step 7: Verify frontend builds**
 
 ```bash
-cd /root/Development/tg-allegro && pnpm frontend build
+cd /root/Development/flowbot && pnpm frontend build
 ```
 
 Expected: Build succeeds.
@@ -192,7 +192,7 @@ Expected: Build succeeds.
 
 ```bash
 git add packages/flow-shared/ apps/frontend/src/app/dashboard/flows/[id]/edit/page.tsx pnpm-lock.yaml
-git commit -m "refactor: extract node types to @tg-allegro/flow-shared package"
+git commit -m "refactor: extract node types to @flowbot/flow-shared package"
 ```
 
 ---
@@ -275,7 +275,7 @@ describe('unified action executors', () => {
 - [ ] **Step 2: Run tests to verify they fail**
 
 ```bash
-cd /root/Development/tg-allegro && pnpm trigger test -- --testPathPattern=unified-actions
+cd /root/Development/flowbot && pnpm trigger test -- --testPathPattern=unified-actions
 ```
 
 - [ ] **Step 3: Add unified action executors to actions.ts**
@@ -324,7 +324,7 @@ async function executeUnifiedAction(node: FlowNode, ctx: FlowContext): Promise<u
 - [ ] **Step 5: Run tests to verify they pass**
 
 ```bash
-cd /root/Development/tg-allegro && pnpm trigger test -- --testPathPattern=unified-actions
+cd /root/Development/flowbot && pnpm trigger test -- --testPathPattern=unified-actions
 ```
 
 - [ ] **Step 6: Commit**
@@ -449,13 +449,13 @@ if (action.startsWith('unified_')) {
 - [ ] **Step 4: Run tests**
 
 ```bash
-cd /root/Development/tg-allegro && pnpm trigger test -- --testPathPattern=dispatch-unified
+cd /root/Development/flowbot && pnpm trigger test -- --testPathPattern=dispatch-unified
 ```
 
 - [ ] **Step 5: Run full test suite**
 
 ```bash
-cd /root/Development/tg-allegro && pnpm trigger test
+cd /root/Development/flowbot && pnpm trigger test
 ```
 
 - [ ] **Step 6: Commit**
@@ -508,7 +508,7 @@ Use GramJS API calls. For each method, find the corresponding GramJS function:
 - [ ] **Step 4: Run transport tests**
 
 ```bash
-cd /root/Development/tg-allegro && pnpm telegram-transport test
+cd /root/Development/flowbot && pnpm telegram-transport test
 ```
 
 - [ ] **Step 5: Commit**
@@ -545,7 +545,7 @@ Map each new action type to the corresponding transport method call in `dispatch
 - [ ] **Step 5: Run tests**
 
 ```bash
-cd /root/Development/tg-allegro && pnpm trigger test
+cd /root/Development/flowbot && pnpm trigger test
 ```
 
 - [ ] **Step 6: Commit**
@@ -592,7 +592,7 @@ Use discord.js API:
 - [ ] **Step 4: Run transport tests**
 
 ```bash
-cd /root/Development/tg-allegro && pnpm run --filter @tg-allegro/discord-transport test
+cd /root/Development/flowbot && pnpm run --filter @flowbot/discord-transport test
 ```
 
 - [ ] **Step 5: Commit**
@@ -627,7 +627,7 @@ Map each new Discord action to the corresponding `dispatchViaDiscordBotApi` call
 - [ ] **Step 5: Run tests**
 
 ```bash
-cd /root/Development/tg-allegro && pnpm trigger test
+cd /root/Development/flowbot && pnpm trigger test
 ```
 
 - [ ] **Step 6: Commit**
@@ -644,7 +644,7 @@ git commit -m "feat(flow-engine): add new Discord action executors (interactions
 - [ ] **Step 1: Typecheck all workspaces**
 
 ```bash
-cd /root/Development/tg-allegro
+cd /root/Development/flowbot
 pnpm trigger typecheck
 pnpm telegram-transport typecheck
 pnpm frontend build

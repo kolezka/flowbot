@@ -1,5 +1,5 @@
 {
-  "name": "@tg-allegro/discord-transport",
+  "name": "@flowbot/discord-transport",
   "type": "module",
   "version": "0.1.0",
   "private": true,

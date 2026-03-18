@@ -48,7 +48,7 @@ Add the following variables to your `.env` file (or the `apps/discord-bot/.env` 
 # Required
 DISCORD_BOT_TOKEN=your-bot-token-here
 DISCORD_CLIENT_ID=your-application-id-here
-DATABASE_URL=postgresql://postgres:postgres@localhost:5432/strefaruchu_db
+DATABASE_URL=postgresql://postgres:postgres@localhost:5432/flowbot_db
 
 # Optional
 API_URL=http://localhost:3000   # URL of the NestJS API (default: http://localhost:3000)

@@ -1,6 +1,6 @@
 # apps/trigger & packages/telegram-transport
 
-Generated documentation for the `@tg-allegro/trigger` app and the `@tg-allegro/telegram-transport` package.
+Generated documentation for the `@flowbot/trigger` app and the `@flowbot/telegram-transport` package.
 
 ---
 
@@ -29,10 +29,10 @@ Generated documentation for the `@tg-allegro/trigger` app and the `@tg-allegro/t
 
 ## Overview
 
-These two workspaces work together to execute background jobs for the tg-allegro Telegram group management platform:
+These two workspaces work together to execute background jobs for the flowbot Telegram group management platform:
 
-- **`@tg-allegro/trigger`** (`apps/trigger`) -- A Trigger.dev v3 worker that runs scheduled and on-demand tasks: broadcasts, cross-posts, scheduled messages, analytics snapshots, health checks, and visual-flow execution. It depends on the transport package for Telegram API operations.
-- **`@tg-allegro/telegram-transport`** (`packages/telegram-transport`) -- A shared library providing a transport abstraction over the GramJS Telegram client, a circuit breaker for resilience, an action runner with retry/backoff, and individual action executors (send message, broadcast, cross-post, forward, welcome DM). Payloads are validated with Valibot schemas.
+- **`@flowbot/trigger`** (`apps/trigger`) -- A Trigger.dev v3 worker that runs scheduled and on-demand tasks: broadcasts, cross-posts, scheduled messages, analytics snapshots, health checks, and visual-flow execution. It depends on the transport package for Telegram API operations.
+- **`@flowbot/telegram-transport`** (`packages/telegram-transport`) -- A shared library providing a transport abstraction over the GramJS Telegram client, a circuit breaker for resilience, an action runner with retry/backoff, and individual action executors (send message, broadcast, cross-post, forward, welcome DM). Payloads are validated with Valibot schemas.
 
 ---
 
@@ -42,11 +42,11 @@ These two workspaces work together to execute background jobs for the tg-allegro
 
 | Field | Value |
 |-------|-------|
-| Name | `@tg-allegro/trigger` |
+| Name | `@flowbot/trigger` |
 | Type | ESM (`"type": "module"`) |
 | Node | `>=20.0.0` |
 | Trigger.dev SDK | `^3.0.0` |
-| Key dependencies | `@tg-allegro/telegram-transport`, `@tg-allegro/db`, `telegram` (GramJS), `pino` |
+| Key dependencies | `@flowbot/telegram-transport`, `@flowbot/db`, `telegram` (GramJS), `pino` |
 
 ### Trigger.dev Configuration
 
@@ -199,7 +199,7 @@ Uses `upsert` so re-running the same day is idempotent. Errors for individual gr
 
 #### `src/lib/prisma.ts`
 
-Singleton Prisma client factory. Creates a client from `@tg-allegro/db` using the `DATABASE_URL` environment variable.
+Singleton Prisma client factory. Creates a client from `@flowbot/db` using the `DATABASE_URL` environment variable.
 
 #### `src/lib/telegram.ts`
 
@@ -362,7 +362,7 @@ Test files in `apps/trigger/src/__tests__/`:
 
 | Field | Value |
 |-------|-------|
-| Name | `@tg-allegro/telegram-transport` |
+| Name | `@flowbot/telegram-transport` |
 | Type | ESM (`"type": "module"`) |
 | Node | `>=20.0.0` |
 | Entry | `./src/index.ts` |

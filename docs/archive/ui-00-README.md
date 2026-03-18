@@ -1,8 +1,8 @@
-# UI Enhancement Plan — Manager-Bot & TG-Allegro Dashboard
+# UI Enhancement Plan — Manager-Bot & Flowbot Dashboard
 
 ## Overview
 
-This plan identifies missing UI capabilities for the manager-bot (group moderation) and tg-allegro (e-commerce + automation) systems, and proposes concrete tasks to fill those gaps.
+This plan identifies missing UI capabilities for the manager-bot (group moderation) and flowbot (e-commerce + automation) systems, and proposes concrete tasks to fill those gaps.
 
 ## Goals
 

@@ -1,7 +1,7 @@
 import { logger } from '@trigger.dev/sdk/v3';
 import { getTelegramTransport } from '../telegram.js';
 import type { FlowContext } from './types.js';
-import type { GramJsTransport } from '@tg-allegro/telegram-transport';
+import type { GramJsTransport } from '@flowbot/telegram-transport';
 
 export interface DispatchResult {
   nodeId: string;

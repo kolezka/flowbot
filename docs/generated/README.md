@@ -1,10 +1,10 @@
-# tg-allegro — Full Repository Documentation
+# flowbot — Full Repository Documentation
 
 > **Auto-generated:** 2026-03-12
 
 ## Project Summary
 
-**tg-allegro** ("Strefa Ruchu") is a Telegram e-commerce and group management platform built as a pnpm monorepo with 8 workspaces. It includes two Telegram bots, a NestJS REST API, a Next.js admin dashboard, a Trigger.dev background job worker, and shared packages for database access and Telegram transport.
+**flowbot** ("flowbot") is a Telegram e-commerce and group management platform built as a pnpm monorepo with 8 workspaces. It includes two Telegram bots, a NestJS REST API, a Next.js admin dashboard, a Trigger.dev background job worker, and shared packages for database access and Telegram transport.
 
 ### Key Numbers
 

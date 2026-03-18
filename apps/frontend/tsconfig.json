@@ -20,7 +20,7 @@
     ],
     "paths": {
       "@/*": ["./src/*"],
-      "@tg-allegro/flow-shared": ["../../packages/flow-shared/src/index.ts"]
+      "@flowbot/flow-shared": ["../../packages/flow-shared/src/index.ts"]
     }
   },
   "include": [

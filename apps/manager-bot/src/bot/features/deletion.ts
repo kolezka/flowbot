@@ -1,4 +1,4 @@
-import type { PrismaClient } from '@tg-allegro/db'
+import type { PrismaClient } from '@flowbot/db'
 import type { Context } from '../context.js'
 import { Composer } from 'grammy'
 import { ModerationLogRepository } from '../../repositories/ModerationLogRepository.js'

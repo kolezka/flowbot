@@ -2,7 +2,7 @@
 
 > **For Claude:** REQUIRED SUB-SKILL: Use superpowers:executing-plans to implement this plan task-by-task.
 
-**Goal:** Transform the Strefa Ruchu platform into a full automation platform with visual flow builder, real-time dashboard, bot configuration UI, TG client management, comprehensive tests, and polished UX.
+**Goal:** Transform the flowbot platform into a full automation platform with visual flow builder, real-time dashboard, bot configuration UI, TG client management, comprehensive tests, and polished UX.
 
 **Architecture:** Monorepo with 8 workspaces. New features add NestJS modules to apps/api, React pages to apps/frontend, Prisma models to packages/db, and Trigger.dev tasks to apps/trigger. Real-time via Socket.io WebSocket gateway with SSE fallback.
 
@@ -18,7 +18,7 @@ Establish comprehensive test coverage across all workspaces. Every service, tran
 
 ### Test Configurations
 
-- **telegram-transport & trigger:** Add `vitest.config.ts` with workspace-level TypeScript path aliases, `@tg-allegro/db` mocked via `vi.mock`. Coverage thresholds at 80% for statements and branches.
+- **telegram-transport & trigger:** Add `vitest.config.ts` with workspace-level TypeScript path aliases, `@flowbot/db` mocked via `vi.mock`. Coverage thresholds at 80% for statements and branches.
 - **frontend:** Add `playwright.config.ts` targeting `http://localhost:3001`, with `webServer` auto-start. Three projects: chromium, firefox, webkit. Store traces on failure.
 - **API:** Create `PrismaServiceMockFactory` in `apps/api/test/helpers/prisma-mock.ts` returning a deep-mocked `PrismaService` with `jest.fn()` stubs for every model method (`findMany`, `findUnique`, `create`, `update`, `delete`, `count`).
 
@@ -56,7 +56,7 @@ Modernize the frontend with dark mode, loading states, toast notifications, and 
 
 ### ThemeProvider
 
-Create `apps/frontend/src/components/providers/ThemeProvider.tsx` wrapping `next-themes` with `attribute="class"`, `defaultTheme="system"`, and `storageKey="strefaruchu-theme"`. Add a `ThemeToggle` dropdown in the dashboard header using `DropdownMenu` from Radix. All Tailwind classes use `dark:` variants. Update `tailwind.config.ts` with `darkMode: "class"`.
+Create `apps/frontend/src/components/providers/ThemeProvider.tsx` wrapping `next-themes` with `attribute="class"`, `defaultTheme="system"`, and `storageKey="flowbot-theme"`. Add a `ThemeToggle` dropdown in the dashboard header using `DropdownMenu` from Radix. All Tailwind classes use `dark:` variants. Update `tailwind.config.ts` with `darkMode: "class"`.
 
 ### Toast Notifications
 

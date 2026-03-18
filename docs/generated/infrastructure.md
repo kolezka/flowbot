@@ -1,6 +1,6 @@
-# tg-allegro Infrastructure Documentation
+# flowbot Infrastructure Documentation
 
-> Auto-generated documentation for the tg-allegro monorepo.
+> Auto-generated documentation for the flowbot monorepo.
 > Last updated: 2026-03-12
 
 ---
@@ -23,7 +23,7 @@
 
 ## Project Overview
 
-**Strefa Ruchu** is a Telegram e-commerce and group management platform. It provides:
+**flowbot** is a Telegram e-commerce and group management platform. It provides:
 
 - An **e-commerce bot** for product browsing, shopping carts, and order management via Telegram.
 - A **manager bot** for group moderation, anti-spam, CAPTCHA verification, scheduled messages, cross-posting, and keyword filtering.
@@ -42,7 +42,7 @@ The platform is built as a **pnpm monorepo** with 8 workspaces across 3 director
 ### Workspace Map
 
 ```
-tg-allegro/
+flowbot/
 ├── apps/
 │   ├── api/                 # REST API + WebSocket + SSE (NestJS 11)
 │   ├── bot/                 # E-commerce Telegram bot (grammy + Hono)
@@ -65,24 +65,24 @@ tg-allegro/
 
 | Workspace | Package Name | Module System | Runtime | Key Dependencies |
 |-----------|-------------|---------------|---------|-----------------|
-| `apps/api` | `@tg-allegro/api` | CommonJS | Node.js (nest CLI) | NestJS 11, Prisma, Socket.IO, Swagger, Trigger.dev SDK |
-| `apps/bot` | `@tg-allegro/bot` | ESM | tsx | grammy 1.36, Hono, Pino, Valibot |
-| `apps/frontend` | `@tg-allegro/frontend` | ESM | Next.js 16 | React 19, Radix UI, XY Flow, Recharts, Socket.IO Client, Tailwind CSS 4 |
-| `apps/manager-bot` | `@tg-allegro/manager-bot` | ESM | tsx | grammy 1.36, Hono, Anthropic SDK, Trigger.dev SDK, Pino |
-| `apps/tg-client` | `@tg-allegro/tg-client` | ESM | tsx | telegram (GramJS) |
-| `apps/trigger` | `@tg-allegro/trigger` | ESM | Trigger.dev CLI | Trigger.dev SDK/Build, telegram (GramJS), Pino |
-| `packages/db` | `@tg-allegro/db` | ESM | tsc | Prisma Client 7, @prisma/adapter-pg |
-| `packages/telegram-transport` | `@tg-allegro/telegram-transport` | ESM | tsc | telegram (GramJS), Pino, Valibot |
+| `apps/api` | `@flowbot/api` | CommonJS | Node.js (nest CLI) | NestJS 11, Prisma, Socket.IO, Swagger, Trigger.dev SDK |
+| `apps/bot` | `@flowbot/bot` | ESM | tsx | grammy 1.36, Hono, Pino, Valibot |
+| `apps/frontend` | `@flowbot/frontend` | ESM | Next.js 16 | React 19, Radix UI, XY Flow, Recharts, Socket.IO Client, Tailwind CSS 4 |
+| `apps/manager-bot` | `@flowbot/manager-bot` | ESM | tsx | grammy 1.36, Hono, Anthropic SDK, Trigger.dev SDK, Pino |
+| `apps/tg-client` | `@flowbot/tg-client` | ESM | tsx | telegram (GramJS) |
+| `apps/trigger` | `@flowbot/trigger` | ESM | Trigger.dev CLI | Trigger.dev SDK/Build, telegram (GramJS), Pino |
+| `packages/db` | `@flowbot/db` | ESM | tsc | Prisma Client 7, @prisma/adapter-pg |
+| `packages/telegram-transport` | `@flowbot/telegram-transport` | ESM | tsc | telegram (GramJS), Pino, Valibot |
 
 ### Workspace Dependencies (Internal)
 
 ```
-@tg-allegro/manager-bot  --> @tg-allegro/db (workspace:*)
-@tg-allegro/trigger       --> @tg-allegro/db (workspace:*)
-@tg-allegro/trigger       --> @tg-allegro/telegram-transport (workspace:*)
+@flowbot/manager-bot  --> @flowbot/db (workspace:*)
+@flowbot/trigger       --> @flowbot/db (workspace:*)
+@flowbot/trigger       --> @flowbot/telegram-transport (workspace:*)
 ```
 
-All other workspaces reference `@tg-allegro/db` via the TypeScript path alias (`tsconfig.base.json`) rather than a `workspace:*` dependency.
+All other workspaces reference `@flowbot/db` via the TypeScript path alias (`tsconfig.base.json`) rather than a `workspace:*` dependency.
 
 ---
 
@@ -160,7 +160,7 @@ services:
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
-      POSTGRES_DB: strefaruchu_db
+      POSTGRES_DB: flowbot_db
     ports:
       - '5432:5432'
     volumes:
@@ -178,7 +178,7 @@ volumes:
 ### Key Details
 
 - **Image:** `postgres:18-alpine` (minimal Alpine-based image).
-- **Database name:** `strefaruchu_db`.
+- **Database name:** `flowbot_db`.
 - **Credentials:** `postgres` / `postgres` (development defaults).
 - **Persistence:** Named volume `postgres_data` ensures data survives container restarts.
 - **Health check:** `pg_isready` polls every 5 seconds with 5 retries.
@@ -221,14 +221,14 @@ Defined in `tsconfig.base.json`:
 {
   "baseUrl": ".",
   "paths": {
-    "@tg-allegro/db": ["./packages/db/src/index.ts"],
-    "@tg-allegro/*": ["./packages/*/src"]
+    "@flowbot/db": ["./packages/db/src/index.ts"],
+    "@flowbot/*": ["./packages/*/src"]
   }
 }
 ```
 
-- `@tg-allegro/db` resolves to the db package's entry point explicitly.
-- `@tg-allegro/*` is a wildcard that maps to any package under `packages/*/src`.
+- `@flowbot/db` resolves to the db package's entry point explicitly.
+- `@flowbot/*` is a wildcard that maps to any package under `packages/*/src`.
 
 ### Project References (`tsconfig.json`)
 
@@ -334,14 +334,14 @@ pnpm db prisma:studio         # Open Prisma Studio GUI
 
 | Script | Command | Description |
 |--------|---------|-------------|
-| `pnpm bot <cmd>` | `pnpm --filter @tg-allegro/bot <cmd>` | Run command in bot workspace |
-| `pnpm db <cmd>` | `pnpm --filter @tg-allegro/db <cmd>` | Run command in db workspace |
-| `pnpm frontend <cmd>` | `pnpm --filter @tg-allegro/frontend <cmd>` | Run command in frontend workspace |
-| `pnpm api <cmd>` | `pnpm --filter @tg-allegro/api <cmd>` | Run command in api workspace |
-| `pnpm manager-bot <cmd>` | `pnpm --filter @tg-allegro/manager-bot <cmd>` | Run command in manager-bot workspace |
-| `pnpm tg-client <cmd>` | `pnpm --filter @tg-allegro/tg-client <cmd>` | Run command in tg-client workspace |
-| `pnpm telegram-transport <cmd>` | `pnpm --filter @tg-allegro/telegram-transport <cmd>` | Run command in telegram-transport workspace |
-| `pnpm trigger <cmd>` | `pnpm --filter @tg-allegro/trigger <cmd>` | Run command in trigger workspace |
+| `pnpm bot <cmd>` | `pnpm --filter @flowbot/bot <cmd>` | Run command in bot workspace |
+| `pnpm db <cmd>` | `pnpm --filter @flowbot/db <cmd>` | Run command in db workspace |
+| `pnpm frontend <cmd>` | `pnpm --filter @flowbot/frontend <cmd>` | Run command in frontend workspace |
+| `pnpm api <cmd>` | `pnpm --filter @flowbot/api <cmd>` | Run command in api workspace |
+| `pnpm manager-bot <cmd>` | `pnpm --filter @flowbot/manager-bot <cmd>` | Run command in manager-bot workspace |
+| `pnpm tg-client <cmd>` | `pnpm --filter @flowbot/tg-client <cmd>` | Run command in tg-client workspace |
+| `pnpm telegram-transport <cmd>` | `pnpm --filter @flowbot/telegram-transport <cmd>` | Run command in telegram-transport workspace |
+| `pnpm trigger <cmd>` | `pnpm --filter @flowbot/trigger <cmd>` | Run command in trigger workspace |
 
 ---
 
@@ -353,7 +353,7 @@ Variables are stored in `.env` files per workspace (gitignored).
 
 | Variable | Used By | Description |
 |----------|---------|-------------|
-| `DATABASE_URL` | db, api, manager-bot, trigger | PostgreSQL connection string (e.g., `postgresql://postgres:postgres@localhost:5432/strefaruchu_db?schema=public`) |
+| `DATABASE_URL` | db, api, manager-bot, trigger | PostgreSQL connection string (e.g., `postgresql://postgres:postgres@localhost:5432/flowbot_db?schema=public`) |
 | `BOT_TOKEN` | bot, manager-bot | Telegram Bot API token |
 | `BOT_MODE` | bot, manager-bot | `polling` (dev) or `webhook` (prod) |
 | `BOT_ADMINS` | bot, manager-bot | Comma-separated list of admin Telegram user IDs |

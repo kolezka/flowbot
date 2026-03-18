@@ -1,5 +1,5 @@
 {
-  "name": "@tg-allegro/discord-bot",
+  "name": "@flowbot/discord-bot",
   "version": "0.1.0",
   "private": true,
   "type": "module",
@@ -16,7 +16,7 @@
   },
   "dependencies": {
     "@hono/node-server": "1.14.2",
-    "@tg-allegro/db": "workspace:*",
+    "@flowbot/db": "workspace:*",
     "discord.js": "^14.16.0",
     "hono": "4.10.3"
   },

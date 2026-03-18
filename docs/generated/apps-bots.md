@@ -49,9 +49,9 @@
 
 ### 1.1 Overview
 
-Package: `@tg-allegro/bot`
+Package: `@flowbot/bot`
 
-A private-chat Telegram bot built with **grammY** that serves as the user-facing entry point. It provides a menu-driven interface for users to view their profile, change language, and interact with the platform. The bot persists user data via Prisma (`@tg-allegro/db`) and supports dynamic command registration from a database-managed configuration.
+A private-chat Telegram bot built with **grammY** that serves as the user-facing entry point. It provides a menu-driven interface for users to view their profile, change language, and interact with the platform. The bot persists user data via Prisma (`@flowbot/db`) and supports dynamic command registration from a database-managed configuration.
 
 **Key dependencies:**
 - `grammy` (1.36.1) -- Telegram Bot framework
@@ -245,7 +245,7 @@ The `languageFeature` is only registered if `i18n.locales.length > 1`.
 
 ### 2.1 Overview
 
-Package: `@tg-allegro/manager-bot`
+Package: `@flowbot/manager-bot`
 
 A comprehensive Telegram group management bot built with **grammY**. It handles moderation (warn/mute/ban/kick), anti-spam, anti-link protection, keyword filters, AI-powered content moderation (via Anthropic Claude), CAPTCHA verification for new members, welcome messages, scheduled messages, cross-posting, reputation scoring, product promotion, analytics, and flow-based event forwarding via Trigger.dev.
 
@@ -254,7 +254,7 @@ A comprehensive Telegram group management bot built with **grammY**. It handles 
 - `@trigger.dev/sdk` -- Background task execution for cross-posting and flow engine
 - `@grammyjs/auto-retry` -- Automatic API retry on rate limits
 - `@grammyjs/ratelimiter`, `@grammyjs/transformer-throttler` -- Outbound rate limiting
-- `@tg-allegro/db` (workspace dependency) -- Shared Prisma client and models
+- `@flowbot/db` (workspace dependency) -- Shared Prisma client and models
 
 ### 2.2 Entry Point & Startup
 

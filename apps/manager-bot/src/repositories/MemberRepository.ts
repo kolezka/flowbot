@@ -1,4 +1,4 @@
-import type { PrismaClient } from '@tg-allegro/db'
+import type { PrismaClient } from '@flowbot/db'
 
 export class MemberRepository {
   constructor(private prisma: PrismaClient) {}

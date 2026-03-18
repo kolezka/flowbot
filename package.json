@@ -1,15 +1,15 @@
 {
-  "name": "tg-allegro",
+  "name": "flowbot",
   "packageManager": "pnpm@10.32.1",
   "scripts": {
-    "bot": "pnpm --filter @tg-allegro/bot",
-    "db": "pnpm --filter @tg-allegro/db",
-    "frontend": "pnpm --filter @tg-allegro/frontend",
-    "api": "pnpm --filter @tg-allegro/api",
-    "manager-bot": "pnpm --filter @tg-allegro/manager-bot",
-    "tg-client": "pnpm --filter @tg-allegro/tg-client",
-    "telegram-transport": "pnpm --filter @tg-allegro/telegram-transport",
-    "trigger": "pnpm --filter @tg-allegro/trigger"
+    "bot": "pnpm --filter @flowbot/bot",
+    "db": "pnpm --filter @flowbot/db",
+    "frontend": "pnpm --filter @flowbot/frontend",
+    "api": "pnpm --filter @flowbot/api",
+    "manager-bot": "pnpm --filter @flowbot/manager-bot",
+    "tg-client": "pnpm --filter @flowbot/tg-client",
+    "telegram-transport": "pnpm --filter @flowbot/telegram-transport",
+    "trigger": "pnpm --filter @flowbot/trigger"
   },
   "devDependencies": {
     "@types/node": "^25.3.0"

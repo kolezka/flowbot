@@ -2,14 +2,14 @@
 
 ## Monorepo Structure
 
-pnpm monorepo ("Strefa Ruchu") with four workspaces:
+pnpm monorepo ("flowbot") with four workspaces:
 
 | Workspace | Package | Type | Framework | Purpose |
 |-----------|---------|------|-----------|---------|
-| `apps/bot` | `@tg-allegro/bot` | ESM | grammY, Hono, Pino, Valibot | Telegram e-commerce bot |
-| `apps/api` | `@tg-allegro/api` | CJS | NestJS 11, Swagger | REST API + admin backend |
-| `apps/frontend` | `@tg-allegro/frontend` | ESM | Next.js 16, Radix UI, Tailwind | Admin dashboard |
-| `packages/db` | `@tg-allegro/db` | ESM | Prisma 7, PostgreSQL | Shared database layer |
+| `apps/bot` | `@flowbot/bot` | ESM | grammY, Hono, Pino, Valibot | Telegram e-commerce bot |
+| `apps/api` | `@flowbot/api` | CJS | NestJS 11, Swagger | REST API + admin backend |
+| `apps/frontend` | `@flowbot/frontend` | ESM | Next.js 16, Radix UI, Tailwind | Admin dashboard |
+| `packages/db` | `@flowbot/db` | ESM | Prisma 7, PostgreSQL | Shared database layer |
 
 `pnpm-workspace.yaml` also declares `workers/*` but the directory does not exist — placeholder for future use.
 
@@ -18,7 +18,7 @@ pnpm monorepo ("Strefa Ruchu") with four workspaces:
 - **pnpm** with workspace protocol
 - Root `package.json` defines filter shortcuts: `pnpm bot dev`, `pnpm api start:dev`, etc.
 - Root `tsconfig.base.json` shared by all workspaces: ESNext target, strict mode, `experimentalDecorators` + `emitDecoratorMetadata` (NestJS), `noUncheckedIndexedAccess`
-- Path aliases: `@tg-allegro/db` → `packages/db/src/index.ts`, `@tg-allegro/*` → `packages/*/src`
+- Path aliases: `@flowbot/db` → `packages/db/src/index.ts`, `@flowbot/*` → `packages/*/src`
 - Docker Compose: PostgreSQL 18 Alpine on port 5432
 
 ## Bot App Conventions (Reference for New App)
@@ -41,7 +41,7 @@ The bot establishes the patterns the new app should follow:
 - Child loggers scoped per-operation (e.g., `logger.child({ update_id })`)
 
 ### Database (`src/database.ts`)
-- Two-line singleton: `import { createPrismaClient } from '@tg-allegro/db'` → `export const prismaClient = createPrismaClient(config.databaseUrl)`
+- Two-line singleton: `import { createPrismaClient } from '@flowbot/db'` → `export const prismaClient = createPrismaClient(config.databaseUrl)`
 
 ### Bot Structure
 - Feature-based organization: `src/bot/features/` with Composer instances
@@ -74,7 +74,7 @@ Five models: User, Category, Product, Cart, CartItem. Relevant to the new app:
 ## Assumptions
 
 1. The new app follows bot conventions (ESM, Valibot, Pino, same dev workflow)
-2. `@tg-allegro/db` is the single source of truth for database access
+2. `@flowbot/db` is the single source of truth for database access
 3. New Prisma models can be added to the shared schema
 4. The new app gets its own bot token / Telegram credentials
 5. Docker Compose additions are acceptable for new services if needed

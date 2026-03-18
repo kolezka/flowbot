@@ -1,5 +1,5 @@
 {
-  "name": "@tg-allegro/api",
+  "name": "@flowbot/api",
   "scripts": {
     "build": "nest build",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",

@@ -1,6 +1,6 @@
 # apps/api -- Comprehensive Documentation
 
-> **Package:** `@tg-allegro/api`
+> **Package:** `@flowbot/api`
 > **Framework:** NestJS v11 (Express platform)
 > **Port:** `3000` (configurable via `PORT` env)
 > **Swagger UI:** `http://localhost:3000/api/docs`
@@ -39,7 +39,7 @@
 
 ## Overview & Architecture
 
-The `apps/api` workspace is the **User Dashboard API** for the tg-allegro Telegram bot management platform. It serves as the backend for a web dashboard that provides:
+The `apps/api` workspace is the **User Dashboard API** for the flowbot Telegram bot management platform. It serves as the backend for a web dashboard that provides:
 
 - **User management** -- paginated user lists, banning, unified cross-bot profiles
 - **Group moderation** -- managed groups, members, warnings, quarantine, scheduled messages, crosspost templates
@@ -59,7 +59,7 @@ The `apps/api` workspace is the **User Dashboard API** for the tg-allegro Telegr
 | Framework | NestJS 11 |
 | HTTP | Express |
 | Database | PostgreSQL via Prisma (with `@prisma/adapter-pg`) |
-| ORM | Prisma Client (from `@tg-allegro/db` workspace package) |
+| ORM | Prisma Client (from `@flowbot/db` workspace package) |
 | WebSocket | Socket.IO via `@nestjs/platform-socket.io` |
 | Task Queue | Trigger.dev SDK v3 |
 | Validation | class-validator + class-transformer |

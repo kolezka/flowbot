@@ -1,5 +1,5 @@
 {
-  "name": "@tg-allegro/trigger",
+  "name": "@flowbot/trigger",
   "type": "module",
   "version": "0.1.0",
   "private": true,
@@ -16,8 +16,8 @@
   "dependencies": {
     "@trigger.dev/sdk": "^3.0.0",
     "@trigger.dev/build": "^3.0.0",
-    "@tg-allegro/telegram-transport": "workspace:*",
-    "@tg-allegro/db": "workspace:*",
+    "@flowbot/telegram-transport": "workspace:*",
+    "@flowbot/db": "workspace:*",
     "telegram": "^2.26.22",
     "pino": "9.9.0",
     "pino-pretty": "13.0.0"

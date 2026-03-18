@@ -1,5 +1,5 @@
 {
-  "name": "@tg-allegro/tg-client",
+  "name": "@flowbot/tg-client",
   "type": "module",
   "version": "0.1.0",
   "private": true,
@@ -16,7 +16,7 @@
     "tsx": "4.20.4"
   },
   "devDependencies": {
-    "@tg-allegro/telegram-transport": "workspace:*",
+    "@flowbot/telegram-transport": "workspace:*",
     "@types/node": "^22.15.21",
     "typescript": "^5.9.2",
     "vitest": "^4.1.0"

@@ -1,4 +1,4 @@
-# @tg-allegro/tg-client
+# @flowbot/tg-client
 
 Telegram MTProto automation client using [GramJS](https://gram.js.org/). Provides reliable, scheduled message delivery and forwarding via the Telegram user API (MTProto), as opposed to the Bot API used by the other bot apps.
 
@@ -52,7 +52,7 @@ Obtain `api_id` and `api_hash` from [my.telegram.org](https://my.telegram.org/).
 # Required
 TG_CLIENT_API_ID=12345678
 TG_CLIENT_API_HASH=your_api_hash_here
-DATABASE_URL=postgresql://postgres:postgres@localhost:5432/strefaruchu_db
+DATABASE_URL=postgresql://postgres:postgres@localhost:5432/flowbot_db
 
 # Optional
 TG_CLIENT_SESSION=            # Base64 GramJS session string (skip auth if set)

@@ -29,7 +29,7 @@ import {
 } from "@/components/flow-execution-overlay";
 import { NodePalette as ExtractedNodePalette } from "@/components/flow-editor/NodePalette";
 
-import { NODE_TYPES } from "@tg-allegro/flow-shared";
+import { NODE_TYPES } from "@flowbot/flow-shared";
 
 const NODE_TYPES_CONFIG = NODE_TYPES;
 

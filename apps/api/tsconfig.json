@@ -17,7 +17,7 @@
     "forceConsistentCasingInFileNames": false,
     "noFallthroughCasesInSwitch": false,
     "paths": {
-      "@tg-allegro/db": ["../../packages/db/src"]
+      "@flowbot/db": ["../../packages/db/src"]
     }
   },
   "include": ["src/**/*"],

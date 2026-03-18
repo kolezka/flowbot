@@ -1,4 +1,4 @@
-import type { PrismaClient } from '@tg-allegro/db'
+import type { PrismaClient } from '@flowbot/db'
 import type { Middleware } from 'grammy'
 import type { Context } from '../context.js'
 import { isAdmin } from '../filters/is-admin.js'

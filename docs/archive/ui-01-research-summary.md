@@ -12,7 +12,7 @@ pnpm monorepo with 6 workspaces:
 - `packages/db` — Shared Prisma database layer
 
 ### Database
-PostgreSQL with Prisma 7. 18 models spanning e-commerce, moderation, analytics, automation, and identity domains. All apps share the same database through `@tg-allegro/db`.
+PostgreSQL with Prisma 7. 18 models spanning e-commerce, moderation, analytics, automation, and identity domains. All apps share the same database through `@flowbot/db`.
 
 ### Communication Pattern
 Apps communicate through the shared database (no message queue, no direct API calls between bots). The tg-client picks up jobs from the database. The API reads all data directly from PostgreSQL.
@@ -103,7 +103,7 @@ Simple top-bar with buttons: Users, Products, Categories, Carts, Broadcast, Mode
 - **Reputation leaderboard** — API exists but no dedicated dashboard view
 - **Member moderation actions** — can't warn/mute/ban from dashboard
 
-## TG-Allegro (E-commerce Bot) Findings
+## Flowbot (E-commerce Bot) Findings
 
 ### Dashboard Coverage
 E-commerce features are well covered: products, categories, users, carts all have CRUD UI. Broadcast has a composer page.

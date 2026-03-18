@@ -1,5 +1,5 @@
 {
-  "name": "@tg-allegro/bot",
+  "name": "@flowbot/bot",
   "type": "module",
   "version": "0.1.0",
   "private": true,

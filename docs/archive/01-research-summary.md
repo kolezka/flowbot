@@ -69,7 +69,7 @@ Charts: recharts (Line, Bar, ResponsiveContainer)
 - **AI moderation activity** — Configurable via group config but no visibility into detections
 - **Admin cache stats** — Bot has internal metrics but not exposed
 
-## TG-Allegro (TG Client) Findings
+## Flowbot (TG Client) Findings
 
 ### Features with Web UI (Phase 1 partial)
 - Automation job listing (BroadcastMessage table — status, payload, results)

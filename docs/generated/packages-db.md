@@ -1,8 +1,8 @@
-# @tg-allegro/db
+# @flowbot/db
 
 ## Overview
 
-`@tg-allegro/db` is the shared database package for the tg-allegro monorepo. It provides a PostgreSQL-backed Prisma ORM layer used across all applications in the system -- Telegram bots, a group manager, a flow builder, a TG client, and a webhook ingress service.
+`@flowbot/db` is the shared database package for the flowbot monorepo. It provides a PostgreSQL-backed Prisma ORM layer used across all applications in the system -- Telegram bots, a group manager, a flow builder, a TG client, and a webhook ingress service.
 
 The package:
 

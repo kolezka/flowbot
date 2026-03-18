@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useMemo, useEffect } from "react";
-import { NODE_TYPES, type NodeTypeDefinition } from "@tg-allegro/flow-shared";
+import { NODE_TYPES, type NodeTypeDefinition } from "@flowbot/flow-shared";
 
 type PlatformFilter = "all" | "telegram" | "discord" | "general";
 

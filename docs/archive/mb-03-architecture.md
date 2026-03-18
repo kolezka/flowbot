@@ -431,7 +431,7 @@ Native ESM support, Jest-compatible API. Same recommendation as the tg-client pl
 
 - Same infrastructure as the sales bot (Node.js process)
 - Separate bot token (registered via @BotFather)
-- Same PostgreSQL database (shared via `@tg-allegro/db`)
+- Same PostgreSQL database (shared via `@flowbot/db`)
 - Same Docker Compose for local development
 - No additional infrastructure required for MVP
 

@@ -17,11 +17,11 @@ All tasks reference the architecture in [mb-03-architecture.md](./mb-03-architec
 **Tier**: MVP
 
 **Implementation Notes**:
-- Create `apps/manager-bot/package.json`: name `@tg-allegro/manager-bot`, `"type": "module"`, `"private": true`
+- Create `apps/manager-bot/package.json`: name `@flowbot/manager-bot`, `"type": "module"`, `"private": true`
 - Create `apps/manager-bot/tsconfig.json` extending `../../tsconfig.base.json` with `outDir: dist`, `noEmit: false`
-- Add `"manager-bot": "pnpm --filter @tg-allegro/manager-bot"` to root `package.json` scripts
+- Add `"manager-bot": "pnpm --filter @flowbot/manager-bot"` to root `package.json` scripts
 - Add project reference in root `tsconfig.json`
-- Dependencies: `grammy`, `@grammyjs/auto-retry`, `@grammyjs/hydrate`, `@grammyjs/parse-mode`, `@grammyjs/runner`, `@grammyjs/ratelimiter`, `@grammyjs/transformer-throttler`, `hono`, `@hono/node-server`, `pino`, `pino-pretty`, `valibot`, `callback-data`, `@tg-allegro/db`
+- Dependencies: `grammy`, `@grammyjs/auto-retry`, `@grammyjs/hydrate`, `@grammyjs/parse-mode`, `@grammyjs/runner`, `@grammyjs/ratelimiter`, `@grammyjs/transformer-throttler`, `hono`, `@hono/node-server`, `pino`, `pino-pretty`, `valibot`, `callback-data`, `@flowbot/db`
 - DevDependencies: `typescript`, `tsc-watch`, `tsx`, `@antfu/eslint-config`, `eslint`, `vitest`
 - Scripts: `dev` (tsc-watch + tsx), `build` (tsc --noEmit false), `start`, `start:force`, `lint`, `format`, `typecheck`, `test`
 - Run `pnpm install` to verify workspace resolution
@@ -29,7 +29,7 @@ All tasks reference the architecture in [mb-03-architecture.md](./mb-03-architec
 **Acceptance Criteria**:
 - `pnpm manager-bot typecheck` passes
 - `pnpm manager-bot lint` passes
-- pnpm recognizes workspace in `pnpm ls --filter @tg-allegro/manager-bot`
+- pnpm recognizes workspace in `pnpm ls --filter @flowbot/manager-bot`
 
 ---
 
@@ -97,7 +97,7 @@ All tasks reference the architecture in [mb-03-architecture.md](./mb-03-architec
 **Implementation Notes**:
 - Create `src/database.ts` — two-line singleton:
   ```
-  import { createPrismaClient } from '@tg-allegro/db'
+  import { createPrismaClient } from '@flowbot/db'
   export const prismaClient = createPrismaClient(config.databaseUrl)
   ```
 - Identical pattern to `apps/bot/src/database.ts`

@@ -1,4 +1,4 @@
-# Playwright E2E Test Plan — Strefa Ruchu Dashboard
+# Playwright E2E Test Plan — flowbot Dashboard
 
 > **Status:** Implementation in progress — see `.ralph/playwright-test-plan.md` for live progress
 > **Date:** 2026-03-10
@@ -288,10 +288,10 @@ postgres-test:
   environment:
     POSTGRES_USER: postgres
     POSTGRES_PASSWORD: postgres
-    POSTGRES_DB: strefaruchu_test
+    POSTGRES_DB: flowbot_test
 ```
 
-**Task:** Create `.env.test` with `DATABASE_URL=postgresql://postgres:postgres@localhost:5433/strefaruchu_test`.
+**Task:** Create `.env.test` with `DATABASE_URL=postgresql://postgres:postgres@localhost:5433/flowbot_test`.
 
 ### 4.2 Database Seeding
 

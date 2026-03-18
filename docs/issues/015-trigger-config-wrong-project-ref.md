@@ -7,12 +7,12 @@
 
 ## Description
 
-The `trigger.config.ts` file contained the project reference `proj_trigger_tg_allegro` which does not exist on the self-hosted Trigger.dev instance at `trigger.raqz.link`. The actual project ref is `proj_hilpmfmsfxxbgutxovgl`.
+The `trigger.config.ts` file contained the project reference `proj_trigger_flowbot` which does not exist on the self-hosted Trigger.dev instance at `trigger.raqz.link`. The actual project ref is `proj_hilpmfmsfxxbgutxovgl`.
 
 ## Error Message
 
 ```
-ERROR: Failed to initialize dev environment: 404 "Project not found". Using project ref proj_trigger_tg_allegro
+ERROR: Failed to initialize dev environment: 404 "Project not found". Using project ref proj_trigger_flowbot
 ```
 
 ## Fix Applied
@@ -20,7 +20,7 @@ ERROR: Failed to initialize dev environment: 404 "Project not found". Using proj
 Changed `apps/trigger/trigger.config.ts`:
 ```typescript
 // Before
-project: "proj_trigger_tg_allegro",
+project: "proj_trigger_flowbot",
 // After
 project: "proj_hilpmfmsfxxbgutxovgl",
 ```

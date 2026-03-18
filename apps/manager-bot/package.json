@@ -1,5 +1,5 @@
 {
-  "name": "@tg-allegro/manager-bot",
+  "name": "@flowbot/manager-bot",
   "type": "module",
   "version": "0.1.0",
   "private": true,
@@ -30,7 +30,7 @@
     "@grammyjs/transformer-throttler": "^1.2.1",
     "@grammyjs/types": "3.20.0",
     "@hono/node-server": "1.14.2",
-    "@tg-allegro/db": "workspace:*",
+    "@flowbot/db": "workspace:*",
     "@trigger.dev/sdk": "^3.3.17",
     "callback-data": "1.1.1",
     "grammy": "1.36.1",

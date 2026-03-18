@@ -2,10 +2,10 @@
 
 ## System Overview
 
-Strefa Ruchu is a multi-platform e-commerce and group management platform built as a pnpm monorepo with 10 workspaces. It supports both Telegram and Discord as messaging platforms.
+flowbot is a multi-platform e-commerce and group management platform built as a pnpm monorepo with 10 workspaces. It supports both Telegram and Discord as messaging platforms.
 
 ```
-tg-allegro/
+flowbot/
 ├── apps/
 │   ├── bot/              # E-commerce Telegram bot (grammY, Hono)
 │   ├── manager-bot/      # Group management Telegram bot (grammY, Hono)
@@ -45,7 +45,7 @@ graph TD
     DiscordBot -->|Gateway/REST| Discord
 ```
 
-All workspaces share the `@tg-allegro/db` package for database access. TypeScript path aliases (`@tg-allegro/*`) are defined in `tsconfig.base.json`.
+All workspaces share the `@flowbot/db` package for database access. TypeScript path aliases (`@flowbot/*`) are defined in `tsconfig.base.json`.
 
 ### Multi-Platform Flow Architecture
 
@@ -349,7 +349,7 @@ services:
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
-      POSTGRES_DB: strefaruchu_db
+      POSTGRES_DB: flowbot_db
     ports:
       - '5432:5432'
     healthcheck:

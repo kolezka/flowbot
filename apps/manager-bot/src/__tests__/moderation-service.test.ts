@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { checkEscalation } from '../services/moderation.js'
-import type { GroupConfig } from '@tg-allegro/db'
+import type { GroupConfig } from '@flowbot/db'
 
 function makeConfig(overrides: Partial<GroupConfig> = {}): GroupConfig {
   return {

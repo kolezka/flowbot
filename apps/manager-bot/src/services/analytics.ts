@@ -1,4 +1,4 @@
-import type { PrismaClient } from '@tg-allegro/db'
+import type { PrismaClient } from '@flowbot/db'
 import type { Logger } from '../logger.js'
 
 const FLUSH_INTERVAL_MS = 5 * 60 * 1000 // 5 minutes

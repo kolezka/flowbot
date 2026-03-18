@@ -9,9 +9,9 @@
 **Inputs/Dependencies**: Root `package.json`, `tsconfig.base.json`, bot's `package.json` and `tsconfig.json` as reference.
 
 **Implementation Notes**:
-- Create `apps/tg-client/package.json` with `"type": "module"`, `"private": true`, name `@tg-allegro/tg-client`
+- Create `apps/tg-client/package.json` with `"type": "module"`, `"private": true`, name `@flowbot/tg-client`
 - Create `apps/tg-client/tsconfig.json` extending `../../tsconfig.base.json`
-- Add `"tg-client": "pnpm --filter @tg-allegro/tg-client"` to root `package.json` scripts
+- Add `"tg-client": "pnpm --filter @flowbot/tg-client"` to root `package.json` scripts
 - Add root `tsconfig.json` project reference for `apps/tg-client`
 - Install dependencies: `telegram`, `pino`, `pino-pretty`, `valibot`, `hono`, `@hono/node-server`
 - Install devDependencies: `typescript`, `tsc-watch`, `tsx`, `@antfu/eslint-config`, `eslint`, `vitest`
@@ -74,7 +74,7 @@
 
 **Implementation Notes**:
 - Create `src/database.ts` — two-line singleton mirroring bot
-- `import { createPrismaClient } from '@tg-allegro/db'`
+- `import { createPrismaClient } from '@flowbot/db'`
 - `export const prismaClient = createPrismaClient(config.databaseUrl)`
 
 **Acceptance Criteria**:

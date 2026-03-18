@@ -189,7 +189,7 @@ export interface IDiscordTransport {
 #### Task 3.1 — Initialize app
 - Create `apps/discord-bot/` with:
   ```
-  package.json (deps: discord.js, hono, @tg-allegro/db, @tg-allegro/discord-transport)
+  package.json (deps: discord.js, hono, @flowbot/db, @flowbot/discord-transport)
   tsconfig.json
   src/
     index.ts            — entry point

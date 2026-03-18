@@ -11,7 +11,7 @@ const config: Config = {
   coverageDirectory: '../coverage',
   testEnvironment: 'node',
   moduleNameMapper: {
-    '^@tg-allegro/db$': '<rootDir>/__mocks__/@tg-allegro/db',
+    '^@flowbot/db$': '<rootDir>/__mocks__/@flowbot/db',
   },
 };
 

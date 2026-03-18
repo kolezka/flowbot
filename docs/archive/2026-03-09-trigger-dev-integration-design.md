@@ -73,7 +73,7 @@ packages/telegram-transport/
         order-notification.ts
         cross-post.ts
         send-message.ts
-  package.json                  # @tg-allegro/telegram-transport
+  package.json                  # @flowbot/telegram-transport
   tsconfig.json
 ```
 
@@ -100,7 +100,7 @@ apps/trigger/
       analytics-snapshot.ts
       health-check.ts
   trigger.config.ts
-  package.json             # @tg-allegro/trigger
+  package.json             # @flowbot/trigger
   tsconfig.json
 ```
 
@@ -210,7 +210,7 @@ export default defineConfig({
 ```bash
 TRIGGER_SECRET_KEY=tr_dev_pd7r4ISDoUW36jlJSVLH
 TRIGGER_API_URL=https://trigger.raqz.link
-DATABASE_URL=postgresql://postgres:postgres@localhost:5432/strefaruchu_db
+DATABASE_URL=postgresql://postgres:postgres@localhost:5432/flowbot_db
 TG_CLIENT_API_ID=...
 TG_CLIENT_API_HASH=...
 TG_CLIENT_SESSION=...

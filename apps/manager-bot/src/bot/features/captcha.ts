@@ -1,4 +1,4 @@
-import type { PrismaClient } from '@tg-allegro/db'
+import type { PrismaClient } from '@flowbot/db'
 import type { Context } from '../context.js'
 import { createCallbackData } from 'callback-data'
 import { Composer, InlineKeyboard } from 'grammy'

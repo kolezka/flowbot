@@ -22,9 +22,9 @@
       "Bash(pnpm prisma:generate:*)",
       "Bash(pnpm build:*)",
       "Bash(pnpm add:*)",
-      "Bash(pnpm --filter @tg-allegro/frontend add:*)",
+      "Bash(pnpm --filter @flowbot/frontend add:*)",
       "Bash(pnpm:*)",
-      "Bash(DATABASE_URL=\"postgresql://postgres:postgres@localhost:5432/strefaruchu_db?schema=public\" npx prisma migrate dev:*)",
+      "Bash(DATABASE_URL=\"postgresql://postgres:postgres@localhost:5432/flowbot_db?schema=public\" npx prisma migrate dev:*)",
       "Bash(wc:*)",
       "Bash(grep:*)",
       "Bash(xargs:*)"

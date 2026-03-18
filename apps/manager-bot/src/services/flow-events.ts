@@ -1,4 +1,4 @@
-import type { PrismaClient } from '@tg-allegro/db'
+import type { PrismaClient } from '@flowbot/db'
 import type { Logger } from '../logger.js'
 import { tasks } from '@trigger.dev/sdk/v3'
 

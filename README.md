@@ -1,4 +1,4 @@
-# Strefa Ruchu
+# Flowbot
 
 Telegram & Discord e-commerce and group management platform with a visual flow builder. pnpm monorepo with 11 workspaces, 26 Prisma models, 80+ API endpoints, 35+ dashboard pages, 8 Trigger.dev background tasks, and a 136-node flow automation engine.
 
@@ -396,7 +396,7 @@ erDiagram
 | Bot Config | `BotInstance`, `BotCommand`, `BotResponse`, `BotMenu`, `BotMenuButton` |
 | Webhooks | `WebhookEndpoint` |
 
-**Path aliases:** `@tg-allegro/db` → `packages/db/src/index.ts`
+**Path aliases:** `@flowbot/db` → `packages/db/src/index.ts`
 
 ---
 
@@ -570,7 +570,7 @@ pnpm telegram-transport typecheck
 | API | `DATABASE_URL`, `PORT`, `FRONTEND_URL` |
 | Frontend | `NEXT_PUBLIC_API_URL` |
 
-Docker Compose: PostgreSQL on port 5432 (`postgres`/`postgres`/`strefaruchu_db`).
+Docker Compose: PostgreSQL on port 5432 (`postgres`/`postgres`/`flowbot_db`).
 
 ---
 
@@ -588,7 +588,7 @@ Docker Compose: PostgreSQL on port 5432 (`postgres`/`postgres`/`strefaruchu_db`)
 ## Project Structure
 
 ```
-tg-allegro/
+flowbot/
 ├── apps/
 │   ├── bot/                  # E-commerce Telegram bot
 │   ├── manager-bot/          # Group management Telegram bot

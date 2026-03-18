@@ -1,4 +1,4 @@
-import type { GroupConfig, PrismaClient } from '@tg-allegro/db'
+import type { GroupConfig, PrismaClient } from '@flowbot/db'
 
 export class GroupConfigRepository {
   constructor(private prisma: PrismaClient) {}

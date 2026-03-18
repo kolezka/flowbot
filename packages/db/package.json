@@ -1,5 +1,5 @@
 {
-  "name": "@tg-allegro/db",
+  "name": "@flowbot/db",
   "type": "module",
   "exports": {
     ".": {

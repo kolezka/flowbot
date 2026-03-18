@@ -2,14 +2,14 @@
 
 ## Monorepo Structure
 
-pnpm monorepo ("Strefa Ruchu") with four existing workspaces:
+pnpm monorepo ("flowbot") with four existing workspaces:
 
 | Workspace | Package | Type | Framework | Purpose |
 |-----------|---------|------|-----------|---------|
-| `apps/bot` | `@tg-allegro/bot` | ESM | grammY, Hono, Pino, Valibot | Telegram e-commerce/sales bot |
-| `apps/api` | `@tg-allegro/api` | CJS | NestJS 11, Swagger | REST API + admin backend |
-| `apps/frontend` | `@tg-allegro/frontend` | ESM | Next.js 16, Radix UI, Tailwind | Admin dashboard |
-| `packages/db` | `@tg-allegro/db` | ESM | Prisma 7, PostgreSQL | Shared database layer |
+| `apps/bot` | `@flowbot/bot` | ESM | grammY, Hono, Pino, Valibot | Telegram e-commerce/sales bot |
+| `apps/api` | `@flowbot/api` | CJS | NestJS 11, Swagger | REST API + admin backend |
+| `apps/frontend` | `@flowbot/frontend` | ESM | Next.js 16, Radix UI, Tailwind | Admin dashboard |
+| `packages/db` | `@flowbot/db` | ESM | Prisma 7, PostgreSQL | Shared database layer |
 
 `pnpm-workspace.yaml` also declares `workers/*` — directory does not yet exist.
 
@@ -18,7 +18,7 @@ pnpm monorepo ("Strefa Ruchu") with four existing workspaces:
 - **Package manager**: pnpm with workspace protocol
 - **Root scripts**: Filter shortcuts (`pnpm bot dev`, `pnpm api start:dev`, etc.)
 - **TypeScript**: Strict mode, ESNext target, `tsconfig.base.json` shared by all workspaces
-- **Path aliases**: `@tg-allegro/db` → `packages/db/src/index.ts`, `@tg-allegro/*` → `packages/*/src`
+- **Path aliases**: `@flowbot/db` → `packages/db/src/index.ts`, `@flowbot/*` → `packages/*/src`
 - **Docker**: PostgreSQL 18 Alpine on port 5432
 - **CI/CD**: None configured
 - **Testing**: Jest in `apps/api` only. `apps/bot` has no tests.
@@ -32,7 +32,7 @@ The `apps/bot` establishes all conventions the manager-bot should follow:
 - **Entry point** (`main.ts`): Dual-mode polling/webhook, graceful shutdown with `isShuttingDown` flag, SIGINT/SIGTERM handlers
 - **Config** (`config.ts`): Valibot schemas, discriminated union for polling vs webhook, `process.loadEnvFile()`, SNAKE_CASE → camelCase transform
 - **Logger** (`logger.ts`): Pino with conditional `pino-pretty` (debug) vs `pino/file` (production)
-- **Database** (`database.ts`): Two-line singleton via `createPrismaClient(config.databaseUrl)` from `@tg-allegro/db`
+- **Database** (`database.ts`): Two-line singleton via `createPrismaClient(config.databaseUrl)` from `@flowbot/db`
 - **Server** (`server/index.ts`): Hono with request ID, logger middleware, `webhookCallback(bot, 'hono', { secretToken })`
 
 ### Bot Layer (COPY pattern, completely different features)
@@ -73,7 +73,7 @@ The `apps/bot` establishes all conventions the manager-bot should follow:
 
 | Shared Resource | How |
 |----------------|-----|
-| `@tg-allegro/db` | Same Prisma client factory, new models added to schema |
+| `@flowbot/db` | Same Prisma client factory, new models added to schema |
 | `tsconfig.base.json` | Extend for TypeScript configuration |
 | Root `package.json` | Add filter shortcut |
 | Docker Compose PostgreSQL | Same database instance |
@@ -105,7 +105,7 @@ The `apps/bot` establishes all conventions the manager-bot should follow:
 `apps/manager-bot` should be a fully independent application that:
 1. Follows the exact same infrastructure patterns as `apps/bot` (config, logging, server, entry point)
 2. Has zero code dependencies on `apps/bot` (no imports between them)
-3. Shares only `@tg-allegro/db` for database access
+3. Shares only `@flowbot/db` for database access
 4. Adds its own Prisma models to the shared schema
 5. Uses its own bot token, features, context type, session data, and i18n
 6. Registers as a standard pnpm workspace under `apps/manager-bot`

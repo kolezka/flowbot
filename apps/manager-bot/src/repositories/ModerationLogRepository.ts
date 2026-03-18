@@ -1,4 +1,4 @@
-import type { ModerationLog, Prisma, PrismaClient } from '@tg-allegro/db'
+import type { ModerationLog, Prisma, PrismaClient } from '@flowbot/db'
 import { logChannelService } from '../services/log-channel.js'
 
 export class ModerationLogRepository {

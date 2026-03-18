@@ -1,4 +1,4 @@
-import { PrismaClient, User } from '@tg-allegro/db';
+import { PrismaClient, User } from '@flowbot/db';
 import { prismaClient } from '../database';
 import { UserDataUpsertDTO } from '../dto/UserDataUpsertDTO';
 

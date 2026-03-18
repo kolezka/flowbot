@@ -7,6 +7,6 @@
     "^.+\\.(t|j)s$": "ts-jest"
   },
   "moduleNameMapper": {
-    "^@tg-allegro/db$": "<rootDir>/../src/__mocks__/@tg-allegro/db"
+    "^@flowbot/db$": "<rootDir>/../src/__mocks__/@flowbot/db"
   }
 }
