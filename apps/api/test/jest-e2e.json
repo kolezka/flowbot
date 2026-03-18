@@ -7,6 +7,6 @@
     "^.+\\.(t|j)s$": "ts-jest"
   },
   "moduleNameMapper": {
-    "^@tg-allegro/db$": "<rootDir>/../../../packages/db/dist/index.js"
+    "^@tg-allegro/db$": "<rootDir>/../../packages/db/dist/index.js"
   }
 }
