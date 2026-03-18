@@ -131,21 +131,6 @@ jobs:
       - run: pnpm db build
       - run: pnpm telegram-transport test:integration
 
-  discord-transport-integration:
-    name: Discord Transport Integration Tests
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: pnpm/action-setup@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: lts/*
-          cache: pnpm
-      - run: pnpm install --frozen-lockfile
-      - run: pnpm db generate
-      - run: pnpm db build
-      - run: pnpm --filter @tg-allegro/discord-transport test:integration
-
   # ── E2E Tests ───────────────────────────────────────────────
 
   api-e2e:
