@@ -1,5 +1,6 @@
 {
   "name": "tg-allegro",
+  "packageManager": "pnpm@10.32.1",
   "scripts": {
     "bot": "pnpm --filter @tg-allegro/bot",
     "db": "pnpm --filter @tg-allegro/db",
