@@ -467,7 +467,7 @@ export function Sidebar() {
       <aside className="hidden md:flex md:w-64 md:shrink-0 md:flex-col border-r border-border bg-card">
         <div className="flex h-16 items-center justify-between border-b border-border px-6">
           <Link href="/dashboard" className="text-lg font-bold">
-            Allegro Dashboard
+            Flowbot Dashboard
           </Link>
           <ConnectionStatus />
         </div>
@@ -504,7 +504,7 @@ export function Sidebar() {
                 className="text-lg font-bold"
                 onClick={() => setOpen(false)}
               >
-                Allegro Dashboard
+                Flowbot Dashboard
               </Link>
               <Button
                 variant="ghost"

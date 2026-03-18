@@ -15,7 +15,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Allegro Dashboard",
+  title: "Flowbot Dashboard",
   description: "Telegram bot dashboard for user management",
 };
 

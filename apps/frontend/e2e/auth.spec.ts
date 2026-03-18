@@ -4,7 +4,7 @@ test.describe('Authentication', () => {
   test('shows login page with password field', async ({ page }) => {
     await page.goto('/login');
 
-    await expect(page.getByText('Allegro Dashboard')).toBeVisible();
+    await expect(page.getByText('Flowbot Dashboard')).toBeVisible();
     await expect(page.getByLabel('Password')).toBeVisible();
     await expect(page.getByRole('button', { name: /sign in/i })).toBeVisible();
   });

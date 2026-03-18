@@ -6,7 +6,7 @@
 
 ## Overview
 
-Manual QA testing was performed on the Allegro Dashboard using Playwright browser automation. The following issues were identified and documented.
+Manual QA testing was performed on the Flowbot Dashboard using Playwright browser automation. The following issues were identified and documented.
 
 ## Issues Found
 

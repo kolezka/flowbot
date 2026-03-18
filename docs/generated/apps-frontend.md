@@ -1,4 +1,4 @@
-# apps/frontend -- Allegro Dashboard
+# apps/frontend -- Flowbot Dashboard
 
 > Comprehensive documentation for the `@flowbot/frontend` workspace -- the administrative dashboard for the flowbot Telegram bot platform.
 

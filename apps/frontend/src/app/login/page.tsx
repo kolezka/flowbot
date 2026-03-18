@@ -49,7 +49,7 @@ export default function LoginPage() {
     <div className="flex min-h-screen items-center justify-center bg-background p-4">
       <Card className="w-full max-w-sm">
         <CardHeader className="text-center">
-          <CardTitle className="text-2xl">Allegro Dashboard</CardTitle>
+          <CardTitle className="text-2xl">Flowbot Dashboard</CardTitle>
           <CardDescription>
             Enter the dashboard password to continue.
           </CardDescription>

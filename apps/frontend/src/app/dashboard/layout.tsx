@@ -23,7 +23,7 @@ export default function DashboardLayout({
               {/* Mobile header */}
               <header className="flex h-14 items-center gap-3 border-b bg-card px-4 md:hidden">
                 <MobileSidebarTrigger />
-                <span className="text-lg font-bold">Allegro Dashboard</span>
+                <span className="text-lg font-bold">Flowbot Dashboard</span>
               </header>
               <main id="main-content" className="flex-1 overflow-y-auto p-6">
                 {children}
