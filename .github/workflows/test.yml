@@ -7,25 +7,11 @@ on:
     branches: [main]
 
 jobs:
-  api-tests:
-    name: API Tests (Jest)
+  # ── Unit Tests ──────────────────────────────────────────────
+
+  api-unit:
+    name: API Unit Tests (Jest)
     runs-on: ubuntu-latest
-    services:
-      postgres:
-        image: postgres:16
-        env:
-          POSTGRES_USER: postgres
-          POSTGRES_PASSWORD: postgres
-          POSTGRES_DB: strefaruchu_db
-        ports:
-          - 5432:5432
-        options: >-
-          --health-cmd pg_isready
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
-    env:
-      DATABASE_URL: postgresql://postgres:postgres@localhost:5432/strefaruchu_db
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
@@ -38,8 +24,8 @@ jobs:
       - run: pnpm db build
       - run: pnpm api test
 
-  manager-bot-tests:
-    name: Manager Bot Tests (Vitest)
+  manager-bot-unit:
+    name: Manager Bot Unit Tests (Vitest)
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -53,8 +39,8 @@ jobs:
       - run: pnpm db build
       - run: pnpm manager-bot test
 
-  telegram-transport-tests:
-    name: Telegram Transport Tests (Vitest)
+  telegram-transport-unit:
+    name: Telegram Transport Unit Tests (Vitest)
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -68,8 +54,8 @@ jobs:
       - run: pnpm db build
       - run: pnpm telegram-transport test
 
-  discord-transport-tests:
-    name: Discord Transport Tests (Vitest)
+  discord-transport-unit:
+    name: Discord Transport Unit Tests (Vitest)
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -83,8 +69,87 @@ jobs:
       - run: pnpm db build
       - run: pnpm --filter @tg-allegro/discord-transport test
 
-  trigger-tests:
-    name: Trigger Tests (Vitest)
+  trigger-unit:
+    name: Trigger Unit Tests (Vitest)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: lts/*
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm db generate
+      - run: pnpm db build
+      - run: pnpm trigger test
+
+  discord-bot-unit:
+    name: Discord Bot Unit Tests (Vitest)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: lts/*
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm db generate
+      - run: pnpm db build
+      - run: pnpm --filter @tg-allegro/discord-bot test
+
+  # ── Integration Tests ───────────────────────────────────────
+
+  manager-bot-integration:
+    name: Manager Bot Integration Tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: lts/*
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm db generate
+      - run: pnpm db build
+      - run: pnpm manager-bot test:integration
+
+  telegram-transport-integration:
+    name: Telegram Transport Integration Tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: lts/*
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm db generate
+      - run: pnpm db build
+      - run: pnpm telegram-transport test:integration
+
+  discord-transport-integration:
+    name: Discord Transport Integration Tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: lts/*
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm db generate
+      - run: pnpm db build
+      - run: pnpm --filter @tg-allegro/discord-transport test:integration
+
+  # ── E2E Tests ───────────────────────────────────────────────
+
+  api-e2e:
+    name: API E2E Tests (Jest)
     runs-on: ubuntu-latest
     services:
       postgres:
@@ -112,10 +177,11 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - run: pnpm db generate
       - run: pnpm db build
-      - run: pnpm trigger test
+      - run: pnpm db prisma:push
+      - run: pnpm api test:e2e
 
-  discord-bot-tests:
-    name: Discord Bot Tests (Vitest)
+  frontend-e2e:
+    name: Frontend E2E Tests (Playwright)
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -127,4 +193,7 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - run: pnpm db generate
       - run: pnpm db build
-      - run: pnpm --filter @tg-allegro/discord-bot test
+      - run: pnpm --filter @tg-allegro/frontend exec playwright install --with-deps
+      - run: pnpm frontend test:e2e
+    env:
+      NEXT_PUBLIC_API_URL: http://localhost:3000
