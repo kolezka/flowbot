@@ -136,6 +136,7 @@ jobs:
   api-e2e:
     name: API E2E Tests (Jest)
     runs-on: ubuntu-latest
+    timeout-minutes: 5
     services:
       postgres:
         image: postgres:16
@@ -163,7 +164,7 @@ jobs:
       - run: pnpm db generate
       - run: pnpm db build
       - run: pnpm db prisma:push
-      - run: pnpm api test:e2e
+      - run: pnpm api test:e2e -- --forceExit
 
   frontend-e2e:
     name: Frontend E2E Tests (Playwright)
