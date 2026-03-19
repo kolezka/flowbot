@@ -5,6 +5,7 @@ import { MembersController } from './members.controller';
 import { MembersService } from './members.service';
 import { TelegramCommunityStrategy } from './strategies/telegram-community.strategy';
 import { DiscordCommunityStrategy } from './strategies/discord-community.strategy';
+import { WhatsAppCommunityStrategy } from './strategies/whatsapp-community.strategy';
 import { CommunityWarningsController } from './community-warnings.controller';
 import { CommunityWarningsService } from './community-warnings.service';
 import { CommunityLogsController } from './community-logs.controller';
@@ -25,6 +26,7 @@ import { CommunityScheduledService } from './community-scheduled.service';
     MembersService,
     TelegramCommunityStrategy,
     DiscordCommunityStrategy,
+    WhatsAppCommunityStrategy,
     CommunityWarningsService,
     CommunityLogsService,
     CommunityScheduledService,
