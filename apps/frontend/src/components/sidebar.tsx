@@ -149,6 +149,15 @@ const navigation: NavSection[] = [
     ],
   },
   {
+    label: "Connections",
+    icon: Globe,
+    children: [
+      { label: "Overview", href: "/dashboard/connections", icon: Globe },
+      { label: "Add Connection", href: "/dashboard/connections/auth", icon: Radio },
+      { label: "Health", href: "/dashboard/connections/health", icon: Activity },
+    ],
+  },
+  {
     label: "TG Client",
     icon: Smartphone,
     children: [

@@ -683,6 +683,54 @@ export interface ApiError {
   status?: number;
 }
 
+// Connection types
+export interface PlatformConnectionType {
+  id: string;
+  platform: string;
+  name: string;
+  connectionType: string;
+  status: string;
+  metadata?: Record<string, unknown>;
+  errorCount: number;
+  lastErrorMessage?: string;
+  lastActiveAt?: string;
+  botInstanceId?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface ConnectionHealth {
+  totalConnections: number;
+  activeConnections: number;
+  errorConnections: number;
+  platforms: Record<string, { total: number; active: number; error: number }>;
+}
+
+export interface ConnectionLog {
+  id: string;
+  connectionId: string;
+  level: string;
+  message: string;
+  details?: Record<string, unknown>;
+  createdAt: string;
+}
+
+export interface ConnectionsResponse {
+  data: PlatformConnectionType[];
+  total: number;
+  page: number;
+  limit: number;
+  totalPages: number;
+}
+
+export interface ConnectionLogsResponse {
+  data: ConnectionLog[];
+  total: number;
+  page: number;
+  limit: number;
+  totalPages: number;
+}
+
 // Community types
 export interface Community {
   id: string;
@@ -1616,6 +1664,69 @@ class ApiClient {
     if (params?.limit) searchParams.set("limit", String(params.limit));
     return this.request<{ data: any[]; total: number; page: number; limit: number; totalPages: number }>(`/api/communities/${communityId}/logs?${searchParams}`);
   }
+
+  // Connections
+  async getConnections(params?: {
+    page?: number;
+    limit?: number;
+    platform?: string;
+    status?: string;
+  }): Promise<ConnectionsResponse> {
+    const searchParams = new URLSearchParams();
+    if (params?.page) searchParams.set("page", String(params.page));
+    if (params?.limit) searchParams.set("limit", String(params.limit));
+    if (params?.platform) searchParams.set("platform", params.platform);
+    if (params?.status) searchParams.set("status", params.status);
+    return this.request<ConnectionsResponse>(`/api/connections?${searchParams}`);
+  }
+
+  async getConnectionHealth(): Promise<ConnectionHealth> {
+    return this.request<ConnectionHealth>('/api/connections/health');
+  }
+
+  async getConnection(id: string): Promise<PlatformConnectionType> {
+    return this.request<PlatformConnectionType>(`/api/connections/${id}`);
+  }
+
+  async createConnection(data: {
+    platform: string;
+    name: string;
+    connectionType: string;
+    metadata?: Record<string, unknown>;
+    botInstanceId?: string;
+  }): Promise<PlatformConnectionType> {
+    return this.request<PlatformConnectionType>('/api/connections', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  }
+
+  async startConnectionAuth(id: string, params: Record<string, unknown>): Promise<{ connectionId: string; status: string; sessionId?: string }> {
+    return this.request<{ connectionId: string; status: string; sessionId?: string }>(`/api/connections/${id}/auth/start`, {
+      method: 'POST',
+      body: JSON.stringify(params),
+    });
+  }
+
+  async submitConnectionAuthStep(id: string, step: string, data: Record<string, unknown>): Promise<{ connectionId: string; status: string }> {
+    return this.request<{ connectionId: string; status: string }>(`/api/connections/${id}/auth/${step}`, {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  }
+
+  async getConnectionLogs(id: string, params?: { page?: number; limit?: number }): Promise<ConnectionLogsResponse> {
+    const searchParams = new URLSearchParams();
+    if (params?.page) searchParams.set("page", String(params.page));
+    if (params?.limit) searchParams.set("limit", String(params.limit));
+    return this.request<ConnectionLogsResponse>(`/api/connections/${id}/logs?${searchParams}`);
+  }
+
+  async deactivateConnection(id: string): Promise<PlatformConnectionType> {
+    return this.request<PlatformConnectionType>(`/api/connections/${id}/deactivate`, {
+      method: 'POST',
+    });
+  }
 }
 
 export const api = new ApiClient();
@@ -1708,4 +1819,42 @@ export async function getCommunityLogs(communityId: string, params?: {
   limit?: number;
 }): Promise<{ data: any[]; total: number; page: number; limit: number; totalPages: number }> {
   return api.getCommunityLogs(communityId, params);
+}
+
+export async function getConnections(params?: {
+  page?: number;
+  limit?: number;
+  platform?: string;
+  status?: string;
+}): Promise<ConnectionsResponse> {
+  return api.getConnections(params);
+}
+
+export async function getConnectionHealth(): Promise<ConnectionHealth> {
+  return api.getConnectionHealth();
+}
+
+export async function getConnection(id: string): Promise<PlatformConnectionType> {
+  return api.getConnection(id);
+}
+
+export async function createConnection(data: {
+  platform: string;
+  name: string;
+  connectionType: string;
+  metadata?: Record<string, unknown>;
+  botInstanceId?: string;
+}): Promise<PlatformConnectionType> {
+  return api.createConnection(data);
+}
+
+export async function getConnectionLogs(id: string, params?: {
+  page?: number;
+  limit?: number;
+}): Promise<ConnectionLogsResponse> {
+  return api.getConnectionLogs(id, params);
+}
+
+export async function deactivateConnection(id: string): Promise<PlatformConnectionType> {
+  return api.deactivateConnection(id);
 }
