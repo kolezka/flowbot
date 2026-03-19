@@ -2,6 +2,15 @@ import { Injectable, NotFoundException, BadRequestException, Logger } from '@nes
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateFlowDto, UpdateFlowDto } from './dto';
 
+const USER_ACCOUNT_ACTIONS = new Set([
+  'user_get_chat_history', 'user_search_messages', 'user_get_all_members',
+  'user_get_chat_info', 'user_get_contacts', 'user_get_dialogs',
+  'user_join_chat', 'user_leave_chat', 'user_create_group',
+  'user_create_channel', 'user_invite_users', 'user_send_message',
+  'user_send_media', 'user_forward_message', 'user_delete_messages',
+  'user_update_profile', 'user_set_status', 'user_get_profile_photos',
+]);
+
 @Injectable()
 export class FlowsService {
   private readonly logger = new Logger(FlowsService.name);
@@ -121,6 +130,25 @@ export class FlowsService {
     for (const edge of edges) {
       if (!nodeIds.has(edge.source)) errors.push(`Edge references non-existent source node: ${edge.source}`);
       if (!nodeIds.has(edge.target)) errors.push(`Edge references non-existent target node: ${edge.target}`);
+    }
+
+    // Check for user account nodes without a connection
+    const transportConfig = flow.transportConfig as Record<string, unknown> | null;
+    const hasFlowConnection = !!transportConfig?.platformConnectionId;
+
+    for (const node of nodes) {
+      const nodeType = (node.data as Record<string, unknown>)?.type as string ?? node.type;
+      if (USER_ACCOUNT_ACTIONS.has(nodeType)) {
+        const nodeData = node.data as Record<string, unknown> | undefined;
+        const hasNodeOverride = !!nodeData?.connectionOverride;
+
+        if (!hasFlowConnection && !hasNodeOverride) {
+          errors.push(
+            `Node "${(node.data as any)?.label ?? nodeType}" requires a User Account connection. ` +
+            `Select one in flow settings or set a per-node override.`,
+          );
+        }
+      }
     }
 
     return { valid: errors.length === 0, errors };
