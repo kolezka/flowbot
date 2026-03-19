@@ -134,7 +134,7 @@ Remove from `apps/api/src/common/testing/prisma-mock.factory.ts`:
 
 - [ ] **Step 3: Run API tests**
 
-Run: `cd /root/Development/flowbot && pnpm api test 2>&1 | tail -20`
+Run: `cd /root/Development/tg-allegro && pnpm api test 2>&1 | tail -20`
 Expected: All remaining tests pass
 
 - [ ] **Step 4: Commit**
@@ -198,12 +198,12 @@ Remove from `packages/telegram-transport/src/index.ts`:
 
 - [ ] **Step 2: Run telegram-transport tests**
 
-Run: `cd /root/Development/flowbot && pnpm telegram-transport test 2>&1 | tail -20`
+Run: `cd /root/Development/tg-allegro && pnpm telegram-transport test 2>&1 | tail -20`
 Expected: All remaining tests pass
 
 - [ ] **Step 3: Run typecheck**
 
-Run: `cd /root/Development/flowbot && pnpm telegram-transport typecheck 2>&1 | tail -10`
+Run: `cd /root/Development/tg-allegro && pnpm telegram-transport typecheck 2>&1 | tail -10`
 Expected: No errors
 
 - [ ] **Step 4: Commit**
@@ -230,7 +230,7 @@ rm apps/trigger/src/__tests__/order-notification-logic.test.ts
 
 - [ ] **Step 2: Run trigger tests**
 
-Run: `cd /root/Development/flowbot && pnpm trigger test 2>&1 | tail -20`
+Run: `cd /root/Development/tg-allegro && pnpm trigger test 2>&1 | tail -20`
 Expected: All remaining tests pass
 
 - [ ] **Step 3: Commit**
@@ -360,7 +360,7 @@ In `apps/frontend/e2e/automation.spec.ts`:
 
 - [ ] **Step 5: Verify frontend builds**
 
-Run: `cd /root/Development/flowbot && pnpm frontend build 2>&1 | tail -20`
+Run: `cd /root/Development/tg-allegro && pnpm frontend build 2>&1 | tail -20`
 Expected: Build succeeds
 
 - [ ] **Step 6: Commit**
@@ -378,14 +378,14 @@ git commit -m "feat: remove e-commerce UI, API client methods, sidebar links, an
 
 - [ ] **Step 1: Regenerate Prisma client (removes stale generated types)**
 
-Run: `cd /root/Development/flowbot && pnpm db generate && pnpm db build`
+Run: `cd /root/Development/tg-allegro && pnpm db generate && pnpm db build`
 Expected: Prisma client regenerates without Product/Category/Cart/CartItem/OrderEvent types
 
 ### Task 15: Create database migration
 
 - [ ] **Step 1: Create migration to drop e-commerce tables**
 
-Run: `cd /root/Development/flowbot && pnpm db prisma:migrate -- --name remove-ecommerce-tables`
+Run: `cd /root/Development/tg-allegro && pnpm db prisma:migrate -- --name remove-ecommerce-tables`
 Expected: Migration file created that drops Product, Category, Cart, CartItem, OrderEvent tables
 
 **WARNING:** This migration is destructive. Review the generated SQL before applying to any non-dev database.

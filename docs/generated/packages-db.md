@@ -1,12 +1,14 @@
 # @flowbot/db
 
+> Auto-generated: 2026-03-19
+
 ## Overview
 
-`@flowbot/db` is the shared database package for the flowbot monorepo. It provides a PostgreSQL-backed Prisma ORM layer used across all applications in the system -- Telegram bots, a group manager, a flow builder, a TG client, and a webhook ingress service.
+`@flowbot/db` is the shared database package for the Flowbot monorepo. It provides a PostgreSQL-backed Prisma ORM layer used across all applications in the system -- Telegram bots, Discord bot, group manager, flow builder, TG client, and webhook ingress service.
 
 The package:
 
-- Defines the full database schema via Prisma (22 models)
+- Defines the full database schema via Prisma (26 models)
 - Exports a factory function (`createPrismaClient`) that creates a Prisma client using the `@prisma/adapter-pg` PostgreSQL adapter
 - Re-exports all generated Prisma types for use by consuming packages
 - Provides a cross-app identity service for resolving and linking Telegram users
@@ -14,9 +16,9 @@ The package:
 
 ---
 
-## Database Models
+## Database Models (26)
 
-### User
+### 1. User
 
 Core user model representing a Telegram user known to any bot in the system.
 
@@ -27,7 +29,7 @@ Core user model representing a Telegram user known to any bot in the system.
 | username | String? | | Telegram username |
 | firstName | String? | | First name |
 | lastName | String? | | Last name |
-| languageCode | String? | | Language code from Telegram context |
+| languageCode | String? | | Language code |
 | lastChatId | BigInt? | | Last chat where the user was seen |
 | lastSeenAt | DateTime? | | Timestamp of last activity |
 | lastMessageAt | DateTime? | | Timestamp of last message |
@@ -42,16 +44,13 @@ Core user model representing a Telegram user known to any bot in the system.
 | createdAt | DateTime | default: now() | Record creation time |
 | updatedAt | DateTime | @updatedAt | Last update time |
 
-**Relations:**
-- `referredBy` -> User (self-referential, via `referredByUserId`)
-- `referrals` -> User[] (inverse of referredBy)
-- `identity` -> UserIdentity (one-to-one)
+Relations: `referredBy` -> User (self-referential), `referrals` -> User[], `identity` -> UserIdentity
 
-**Indexes:** `isBanned`, `lastSeenAt`, `username`, `createdAt`
+Indexes: `isBanned`, `lastSeenAt`, `username`, `createdAt`
 
 ---
 
-### UserIdentity
+### 2. UserIdentity
 
 Cross-app identity record that links a Telegram ID to a User and tracks reputation.
 
@@ -64,14 +63,11 @@ Cross-app identity record that links a Telegram ID to a User and tracks reputati
 | firstSeenAt | DateTime | default: now() | When first observed |
 | updatedAt | DateTime | @updatedAt | Last update time |
 
-**Relations:**
-- `user` -> User? (one-to-one)
-
-**Indexes:** `telegramId`, `userId`
+Relations: `user` -> User? (one-to-one)
 
 ---
 
-### ManagedGroup
+### 3. ManagedGroup
 
 Represents a Telegram group managed by the manager bot.
 
@@ -83,291 +79,106 @@ Represents a Telegram group managed by the manager bot.
 | isActive | Boolean | default: true | Whether management is active |
 | joinedAt | DateTime | default: now() | When the bot joined |
 | leftAt | DateTime? | | When the bot left |
-| createdAt | DateTime | default: now() | Record creation time |
-| updatedAt | DateTime | @updatedAt | Last update time |
 
-**Relations:**
-- `config` -> GroupConfig (one-to-one)
-- `members` -> GroupMember[]
-- `warnings` -> Warning[]
-- `moderationLogs` -> ModerationLog[]
-- `scheduledMessages` -> ScheduledMessage[]
-- `analyticsSnapshots` -> GroupAnalyticsSnapshot[]
-
-**Indexes:** `chatId`
+Relations: `config`, `members`, `warnings`, `moderationLogs`, `scheduledMessages`, `analyticsSnapshots`
 
 ---
 
-### GroupConfig
+### 4. GroupConfig
 
-Configuration for a managed group. Controls welcome messages, anti-spam, captcha, quarantine, AI moderation, and more.
+Configuration for a managed group (30+ settings).
 
-| Field | Type | Constraints | Description |
-|---|---|---|---|
-| id | String | PK, cuid | Unique identifier |
-| groupId | String | unique, FK -> ManagedGroup.id | Parent group |
-| welcomeEnabled | Boolean | default: true | Enable welcome messages |
-| welcomeMessage | String? | | Custom welcome text |
-| rulesText | String? | | Group rules text |
-| warnThresholdMute | Int | default: 3 | Warnings before mute |
-| warnThresholdBan | Int | default: 5 | Warnings before ban |
-| warnDecayDays | Int | default: 30 | Days until warning expires |
-| defaultMuteDurationS | Int | default: 3600 | Default mute duration (seconds) |
-| antiSpamEnabled | Boolean | default: true | Enable anti-spam |
-| antiSpamMaxMessages | Int | default: 10 | Max messages in window |
-| antiSpamWindowSeconds | Int | default: 10 | Anti-spam time window |
-| antiLinkEnabled | Boolean | default: false | Block links |
-| antiLinkWhitelist | String[] | | Whitelisted link domains |
-| slowModeDelay | Int | default: 0 | Slow-mode delay (seconds) |
-| logChannelId | BigInt? | | Channel for log output |
-| autoDeleteCommandsS | Int | default: 10 | Auto-delete bot commands after N seconds |
-| captchaEnabled | Boolean | default: false | Enable join captcha |
-| captchaMode | String | default: "button" | Captcha type |
-| captchaTimeoutS | Int | default: 60 | Captcha timeout (seconds) |
-| quarantineEnabled | Boolean | default: false | Enable new-member quarantine |
-| quarantineDurationS | Int | default: 86400 | Quarantine duration (seconds) |
-| silentMode | Boolean | default: false | Suppress bot messages in group |
-| keywordFiltersEnabled | Boolean | default: false | Enable keyword filtering |
-| keywordFilters | String[] | | Blocked keywords |
-| aiModEnabled | Boolean | default: false | Enable AI moderation |
-| aiModThreshold | Float | default: 0.8 | AI moderation confidence threshold |
-| notificationEvents | String[] | | Events that trigger notifications |
-| pipelineEnabled | Boolean | default: false | Enable onboarding pipeline |
-| pipelineDmTemplate | String? | | DM template for pipeline |
-| pipelineDeeplink | String? | | Deeplink for pipeline |
-| createdAt | DateTime | default: now() | Record creation time |
-| updatedAt | DateTime | @updatedAt | Last update time |
+Key fields: `welcomeEnabled`, `welcomeMessage`, `rulesText`, `warnThresholdMute` (3), `warnThresholdBan` (5), `warnDecayDays` (30), `defaultMuteDurationS` (3600), `antiSpamEnabled`, `antiSpamMaxMessages` (10), `antiSpamWindowSeconds` (10), `antiLinkEnabled`, `antiLinkWhitelist`, `slowModeDelay`, `logChannelId`, `autoDeleteCommandsS` (10), `captchaEnabled`, `captchaMode` ("button"), `captchaTimeoutS` (60), `quarantineEnabled`, `quarantineDurationS` (86400), `silentMode`, `keywordFiltersEnabled`, `keywordFilters`, `aiModEnabled`, `aiModThreshold` (0.8), `notificationEvents`, `pipelineEnabled`, `pipelineDmTemplate`, `pipelineDeeplink`.
 
-**Relations:**
-- `group` -> ManagedGroup (cascade delete)
+Relation: `group` -> ManagedGroup (cascade delete)
 
 ---
 
-### GroupMember
+### 5. GroupMember
 
 Tracks membership of a Telegram user within a managed group.
 
-| Field | Type | Constraints | Description |
-|---|---|---|---|
-| id | String | PK, cuid | Unique identifier |
-| groupId | String | FK -> ManagedGroup.id | Parent group |
-| telegramId | BigInt | | Telegram user ID |
-| role | String | default: "member" | Role in the group |
-| joinedAt | DateTime | default: now() | When the user joined |
-| messageCount | Int | default: 0 | Messages in this group |
-| lastSeenAt | DateTime | default: now() | Last activity |
-| isQuarantined | Boolean | default: false | Currently quarantined |
-| quarantineExpiresAt | DateTime? | | When quarantine expires |
-| createdAt | DateTime | default: now() | Record creation time |
-| updatedAt | DateTime | @updatedAt | Last update time |
+Key fields: `groupId`, `telegramId`, `role` ("member"), `joinedAt`, `messageCount`, `lastSeenAt`, `isQuarantined`, `quarantineExpiresAt`.
 
-**Relations:**
-- `group` -> ManagedGroup (cascade delete)
-- `warnings` -> Warning[]
-
-**Unique constraint:** `(groupId, telegramId)`
-**Indexes:** `groupId`, `telegramId`, `(groupId, role)`, `lastSeenAt`
+Unique constraint: `(groupId, telegramId)`
 
 ---
 
-### Warning
+### 6. Warning
 
 A moderation warning issued to a group member.
 
-| Field | Type | Constraints | Description |
-|---|---|---|---|
-| id | String | PK, cuid | Unique identifier |
-| groupId | String | FK -> ManagedGroup.id | Parent group |
-| memberId | String | FK -> GroupMember.id | Warned member |
-| issuerId | BigInt | | Telegram ID of issuer |
-| reason | String? | | Reason for warning |
-| isActive | Boolean | default: true | Whether warning is active |
-| expiresAt | DateTime? | | Auto-expiration time |
-| createdAt | DateTime | default: now() | When issued |
-
-**Relations:**
-- `group` -> ManagedGroup (cascade delete)
-- `member` -> GroupMember (cascade delete)
-
-**Indexes:** `groupId`, `memberId`, `(isActive, expiresAt)`, `(groupId, issuerId)`, `(groupId, isActive)`
+Key fields: `groupId`, `memberId`, `issuerId`, `reason`, `isActive`, `expiresAt`.
 
 ---
 
-### ModerationLog
+### 7. ModerationLog
 
-Audit trail for all moderation actions in a group.
+Audit trail for all moderation actions.
 
-| Field | Type | Constraints | Description |
-|---|---|---|---|
-| id | String | PK, cuid | Unique identifier |
-| groupId | String | FK -> ManagedGroup.id | Parent group |
-| action | String | | Action type (e.g. ban, mute, warn) |
-| actorId | BigInt | | Telegram ID of moderator |
-| targetId | BigInt? | | Telegram ID of target |
-| reason | String? | | Reason for action |
-| details | Json? | | Additional structured data |
-| automated | Boolean | default: false | Whether action was automated |
-| createdAt | DateTime | default: now() | When the action occurred |
-
-**Relations:**
-- `group` -> ManagedGroup (cascade delete)
-
-**Indexes:** `(groupId, createdAt)`, `targetId`, `action`, `actorId`, `automated`
+Key fields: `groupId`, `action`, `actorId`, `targetId`, `reason`, `details` (Json), `automated`.
 
 ---
 
-### ScheduledMessage
+### 8. ScheduledMessage
 
 A message scheduled for future delivery in a group.
 
-| Field | Type | Constraints | Description |
-|---|---|---|---|
-| id | String | PK, cuid | Unique identifier |
-| groupId | String | FK -> ManagedGroup.id | Parent group |
-| chatId | BigInt | | Target chat ID |
-| text | String | | Message content |
-| createdBy | BigInt | | Telegram ID of creator |
-| sendAt | DateTime | | Scheduled send time |
-| sent | Boolean | default: false | Whether it has been sent |
-| sentAt | DateTime? | | Actual send time |
-| createdAt | DateTime | default: now() | Record creation time |
-
-**Relations:**
-- `group` -> ManagedGroup (cascade delete)
-
-**Indexes:** `(sendAt, sent)`, `groupId`, `chatId`, `createdBy`
+Key fields: `groupId`, `chatId`, `text`, `createdBy`, `sendAt`, `sent`, `sentAt`.
 
 ---
 
-### GroupAnalyticsSnapshot
+### 9. GroupAnalyticsSnapshot
 
 Daily analytics snapshot for a managed group.
 
-| Field | Type | Constraints | Description |
-|---|---|---|---|
-| id | String | PK, cuid | Unique identifier |
-| groupId | String | FK -> ManagedGroup.id | Parent group |
-| date | DateTime | @db.Date | Snapshot date |
-| memberCount | Int | default: 0 | Total members |
-| newMembers | Int | default: 0 | New members that day |
-| leftMembers | Int | default: 0 | Members who left |
-| messageCount | Int | default: 0 | Messages sent |
-| spamDetected | Int | default: 0 | Spam incidents detected |
-| linksBlocked | Int | default: 0 | Links blocked |
-| warningsIssued | Int | default: 0 | Warnings issued |
-| mutesIssued | Int | default: 0 | Mutes issued |
-| bansIssued | Int | default: 0 | Bans issued |
-| deletedMessages | Int | default: 0 | Messages deleted |
-| createdAt | DateTime | default: now() | Record creation time |
-| updatedAt | DateTime | @updatedAt | Last update time |
+Key fields: `groupId`, `date`, `memberCount`, `newMembers`, `leftMembers`, `messageCount`, `spamDetected`, `linksBlocked`, `warningsIssued`, `mutesIssued`, `bansIssued`, `deletedMessages`.
 
-**Relations:**
-- `group` -> ManagedGroup (cascade delete)
-
-**Unique constraint:** `(groupId, date)`
-**Indexes:** `groupId`, `date`
+Unique constraint: `(groupId, date)`
 
 ---
 
-### ReputationScore
+### 10. ReputationScore
 
-Detailed reputation breakdown for a Telegram user (independent of UserIdentity).
+Detailed reputation breakdown for a Telegram user.
 
-| Field | Type | Constraints | Description |
-|---|---|---|---|
-| id | String | PK, cuid | Unique identifier |
-| telegramId | BigInt | unique | Telegram user ID |
-| totalScore | Int | default: 0 | Composite reputation |
-| messageFactor | Int | default: 0 | Points from messaging activity |
-| tenureFactor | Int | default: 0 | Points from account age |
-| warningPenalty | Int | default: 0 | Deductions from warnings |
-| moderationBonus | Int | default: 0 | Bonus from positive moderation |
-| lastCalculated | DateTime | default: now() | When score was last computed |
-| createdAt | DateTime | default: now() | Record creation time |
-| updatedAt | DateTime | @updatedAt | Last update time |
-
-**Indexes:** `telegramId`, `totalScore`
+Key fields: `telegramId` (unique), `totalScore`, `messageFactor`, `tenureFactor`, `warningPenalty`, `moderationBonus`, `lastCalculated`.
 
 ---
 
-### CrossPostTemplate
+### 11. CrossPostTemplate
 
-Template for cross-posting messages to multiple groups simultaneously.
+Template for cross-posting messages to multiple groups.
 
-| Field | Type | Constraints | Description |
-|---|---|---|---|
-| id | String | PK, cuid | Unique identifier |
-| name | String | unique | Template name |
-| messageText | String | | Message content |
-| targetChatIds | BigInt[] | | Target chat IDs |
-| isActive | Boolean | default: true | Whether template is active |
-| createdBy | BigInt | | Telegram ID of creator |
-| createdAt | DateTime | default: now() | Record creation time |
-| updatedAt | DateTime | @updatedAt | Last update time |
-
-**Indexes:** `name`, `isActive`
+Key fields: `name` (unique), `messageText`, `targetChatIds` (BigInt[]), `isActive`, `createdBy`.
 
 ---
 
-### BroadcastMessage
+### 12. BroadcastMessage
 
-A broadcast message to be sent to multiple chats via the TG client.
+A broadcast message to be sent to multiple chats.
 
-| Field | Type | Constraints | Description |
-|---|---|---|---|
-| id | String | PK, cuid | Unique identifier |
-| status | String | default: "pending" | Status: pending, sending, sent, failed |
-| text | String | | Message content |
-| targetChatIds | BigInt[] | | Target chat IDs |
-| results | Json? | | Delivery results per chat |
-| createdAt | DateTime | default: now() | Record creation time |
-| updatedAt | DateTime | @updatedAt | Last update time |
-
-**Indexes:** `status`, `createdAt`, `(status, createdAt)`
+Key fields: `status` ("pending"/"sending"/"sent"/"failed"), `text`, `targetChatIds` (BigInt[]), `results` (Json).
 
 ---
 
-### ClientLog
+### 13. ClientLog
 
 Structured log entries from the TG client.
 
-| Field | Type | Constraints | Description |
-|---|---|---|---|
-| id | String | PK, cuid | Unique identifier |
-| level | String | | Log level (info, warn, error, etc.) |
-| message | String | | Log message |
-| details | Json? | | Structured details |
-| createdAt | DateTime | default: now() | Timestamp |
-
-**Indexes:** `createdAt`, `level`
+Key fields: `level`, `message`, `details` (Json).
 
 ---
 
-### ClientSession
+### 14. ClientSession
 
 Stores Telegram client session strings for reconnection.
 
-| Field | Type | Constraints | Description |
-|---|---|---|---|
-| id | String | PK, cuid | Unique identifier |
-| sessionString | String | | Serialised session data |
-| isActive | Boolean | default: true | Whether session is active |
-| lastUsedAt | DateTime | default: now() | Last use time |
-| phoneNumber | String? | | Associated phone number |
-| displayName | String? | | Display name |
-| dcId | Int? | | Telegram DC ID |
-| sessionType | String | default: "user" | Type: user or bot |
-| errorCount | Int | default: 0 | Consecutive errors |
-| lastError | String? | | Last error message |
-| lastErrorAt | DateTime? | | Last error time |
-| createdAt | DateTime | default: now() | Record creation time |
-| updatedAt | DateTime | @updatedAt | Last update time |
-
-**Indexes:** `isActive`, `sessionType`, `(isActive, sessionType)`
+Key fields: `sessionString`, `isActive`, `lastUsedAt`, `phoneNumber`, `displayName`, `dcId`, `sessionType` ("user"/"bot"), `errorCount`, `lastError`, `lastErrorAt`.
 
 ---
 
-### FlowDefinition
+### 15. FlowDefinition
 
 A visual automation flow (graph of nodes and edges).
 
@@ -376,44 +187,39 @@ A visual automation flow (graph of nodes and edges).
 | id | String | PK, cuid | Unique identifier |
 | name | String | | Flow name |
 | description | String? | | Description |
-| nodesJson | Json | default: [] | Serialised flow nodes |
-| edgesJson | Json | default: [] | Serialised flow edges |
+| nodesJson | Json | default: [] | Serialized flow nodes |
+| edgesJson | Json | default: [] | Serialized flow edges |
+| transportConfig | Json? | | Platform/transport config for dispatch |
+| platform | String | default: "telegram" | Target platform: telegram, discord, cross_platform |
 | status | String | default: "draft" | Status: draft, active, inactive |
 | version | Int | default: 1 | Current version number |
-| createdAt | DateTime | default: now() | Record creation time |
-| updatedAt | DateTime | @updatedAt | Last update time |
+| folderId | String? | FK -> FlowFolder.id | Folder for organization |
 
-**Relations:**
-- `executions` -> FlowExecution[]
+Relations: `folder` -> FlowFolder?, `executions` -> FlowExecution[]
 
-**Indexes:** `status`
+Indexes: `status`, `folderId`
 
 ---
 
-### FlowExecution
+### 16. FlowFolder
+
+Hierarchical folder structure for organizing flows.
+
+Key fields: `name`, `parentId` (self-referential FK), `order`.
+
+Relations: `parent` -> FlowFolder?, `children` -> FlowFolder[], `flows` -> FlowDefinition[]
+
+---
+
+### 17. FlowExecution
 
 A single run of a flow definition.
 
-| Field | Type | Constraints | Description |
-|---|---|---|---|
-| id | String | PK, cuid | Unique identifier |
-| flowId | String | FK -> FlowDefinition.id | Parent flow |
-| status | String | default: "running" | Status: running, completed, failed |
-| triggerData | Json? | | Input data from trigger |
-| nodeResults | Json? | | Results from each node |
-| error | String? | | Error message if failed |
-| startedAt | DateTime | default: now() | Execution start time |
-| completedAt | DateTime? | | Execution end time |
-| createdAt | DateTime | default: now() | Record creation time |
-
-**Relations:**
-- `flow` -> FlowDefinition (cascade delete)
-
-**Indexes:** `flowId`, `status`, `(flowId, status)`, `(flowId, createdAt)`, `startedAt`
+Key fields: `flowId`, `status` ("running"/"completed"/"failed"), `triggerData` (Json), `nodeResults` (Json), `error`, `startedAt`, `completedAt`.
 
 ---
 
-### BotInstance
+### 18. BotInstance
 
 Registered bot instance with its token and configuration.
 
@@ -421,340 +227,207 @@ Registered bot instance with its token and configuration.
 |---|---|---|---|
 | id | String | PK, cuid | Unique identifier |
 | name | String | | Display name |
-| botToken | String | | Telegram bot token |
-| botUsername | String? | unique | Telegram bot username |
+| botToken | String | | Bot token |
+| botUsername | String? | unique | Bot username |
+| platform | String | default: "telegram" | Platform: telegram, discord |
 | type | String | default: "standard" | Type: standard, manager |
 | apiUrl | String? | | HTTP API URL for this instance |
+| metadata | Json? | | Platform-specific metadata |
 | isActive | Boolean | default: true | Whether bot is active |
 | configVersion | Int | default: 0 | Configuration version counter |
 | configHistory | Json | default: [] | History of config changes |
-| createdAt | DateTime | default: now() | Record creation time |
-| updatedAt | DateTime | @updatedAt | Last update time |
 
-**Relations:**
-- `commands` -> BotCommand[]
-- `responses` -> BotResponse[]
-- `menus` -> BotMenu[]
+Relations: `commands`, `responses`, `menus`
 
-**Indexes:** `isActive`
+Indexes: `isActive`, `platform`
 
 ---
 
-### BotCommand
+### 19. BotCommand
 
 A registered command for a bot instance.
 
-| Field | Type | Constraints | Description |
-|---|---|---|---|
-| id | String | PK, cuid | Unique identifier |
-| botId | String | FK -> BotInstance.id | Parent bot |
-| command | String | | Command string (e.g. "start") |
-| description | String? | | Command description |
-| isEnabled | Boolean | default: true | Whether enabled |
-| sortOrder | Int | default: 0 | Display order |
-| createdAt | DateTime | default: now() | Record creation time |
-| updatedAt | DateTime | @updatedAt | Last update time |
+Key fields: `botId`, `command`, `description`, `isEnabled`, `sortOrder`.
 
-**Unique constraint:** `(botId, command)`
-**Indexes:** `botId`
+Unique constraint: `(botId, command)`
 
 ---
 
-### BotResponse
+### 20. BotResponse
 
-Localised response templates for a bot.
+Localized response templates for a bot.
 
-| Field | Type | Constraints | Description |
-|---|---|---|---|
-| id | String | PK, cuid | Unique identifier |
-| botId | String | FK -> BotInstance.id | Parent bot |
-| key | String | | Response key |
-| locale | String | default: "en" | Locale code |
-| text | String | | Response text |
-| createdAt | DateTime | default: now() | Record creation time |
-| updatedAt | DateTime | @updatedAt | Last update time |
+Key fields: `botId`, `key`, `locale` ("en"), `text`.
 
-**Unique constraint:** `(botId, key, locale)`
-**Indexes:** `botId`
+Unique constraint: `(botId, key, locale)`
 
 ---
 
-### BotMenu
+### 21. BotMenu
 
 An inline keyboard menu definition for a bot.
 
-| Field | Type | Constraints | Description |
-|---|---|---|---|
-| id | String | PK, cuid | Unique identifier |
-| botId | String | FK -> BotInstance.id | Parent bot |
-| name | String | | Menu name |
-| createdAt | DateTime | default: now() | Record creation time |
-| updatedAt | DateTime | @updatedAt | Last update time |
+Key fields: `botId`, `name`.
 
-**Relations:**
-- `buttons` -> BotMenuButton[]
-
-**Unique constraint:** `(botId, name)`
-**Indexes:** `botId`
+Unique constraint: `(botId, name)`
 
 ---
 
-### BotMenuButton
+### 22. BotMenuButton
 
-A button within a bot menu, placed at a specific grid position.
+A button within a bot menu.
 
-| Field | Type | Constraints | Description |
-|---|---|---|---|
-| id | String | PK, cuid | Unique identifier |
-| menuId | String | FK -> BotMenu.id | Parent menu |
-| label | String | | Button label |
-| action | String | | Callback action string |
-| row | Int | default: 0 | Grid row |
-| col | Int | default: 0 | Grid column |
-| createdAt | DateTime | default: now() | Record creation time |
-| updatedAt | DateTime | @updatedAt | Last update time |
-
-**Indexes:** `menuId`
+Key fields: `menuId`, `label`, `action`, `row`, `col`.
 
 ---
 
-### FlowVersion
+### 23. FlowVersion
 
 Immutable snapshot of a flow at a specific version number.
 
-| Field | Type | Constraints | Description |
-|---|---|---|---|
-| id | String | PK, cuid | Unique identifier |
-| flowId | String | | Parent flow ID |
-| version | Int | | Version number |
-| nodesJson | Json | | Serialised nodes |
-| edgesJson | Json | | Serialised edges |
-| createdBy | String? | | Who created the version |
-| createdAt | DateTime | default: now() | Record creation time |
+Key fields: `flowId`, `version`, `nodesJson`, `edgesJson`, `createdBy`.
 
-**Unique constraint:** `(flowId, version)`
-**Indexes:** `flowId`
+Unique constraint: `(flowId, version)`
 
 ---
 
-### WebhookEndpoint
+### 24. UserFlowContext
 
-An inbound webhook endpoint that can trigger a flow.
+Per-user flow context storage for cross-platform state persistence.
 
 | Field | Type | Constraints | Description |
 |---|---|---|---|
 | id | String | PK, cuid | Unique identifier |
-| name | String | | Endpoint name |
-| token | String | unique, default: cuid | Auth token / URL slug |
-| flowId | String? | | Flow to trigger |
-| isActive | Boolean | default: true | Whether endpoint is active |
-| lastCalledAt | DateTime? | | Last invocation time |
-| callCount | Int | default: 0 | Total invocations |
+| platformUserId | String | | User ID on the platform |
+| platform | String | | Platform: "telegram" or "discord" |
+| key | String | | Context key |
+| value | Json | | Context value |
 | createdAt | DateTime | default: now() | Record creation time |
 | updatedAt | DateTime | @updatedAt | Last update time |
 
-**Indexes:** `token`, `flowId`
+Unique constraint: `(platformUserId, platform, key)`
 
 ---
 
-## Enums
+### 25. FlowEvent
 
-The Prisma schema does not define any Prisma-level `enum` types. Status and role values are stored as plain `String` fields with conventions documented in inline comments:
+Event store for flow-to-flow communication and custom event triggers.
+
+| Field | Type | Constraints | Description |
+|---|---|---|---|
+| id | String | PK, cuid | Unique identifier |
+| eventName | String | | Event name |
+| payload | Json | | Event payload |
+| sourceFlowId | String | | Flow that emitted the event |
+| sourceExecutionId | String | | Execution that emitted the event |
+| createdAt | DateTime | default: now() | Record creation time |
+| expiresAt | DateTime | default: NOW() + 30 days | Auto-expiration for cleanup |
+
+Indexes: `eventName`, `sourceFlowId`, `expiresAt`
+
+---
+
+### 26. WebhookEndpoint
+
+An inbound webhook endpoint that can trigger a flow.
+
+Key fields: `name`, `token` (unique, auto-generated cuid), `flowId`, `isActive`, `lastCalledAt`, `callCount`.
+
+---
+
+## Enums (Convention-based)
+
+The Prisma schema uses plain `String` fields with documented conventions:
 
 | Field | Accepted values |
 |---|---|
 | FlowDefinition.status | `draft`, `active`, `inactive` |
+| FlowDefinition.platform | `telegram`, `discord`, `cross_platform` |
 | FlowExecution.status | `running`, `completed`, `failed` |
 | BotInstance.type | `standard`, `manager` |
+| BotInstance.platform | `telegram`, `discord` |
 | ClientSession.sessionType | `user`, `bot` |
-| GroupConfig.captchaMode | `button` (default; extensible) |
+| GroupConfig.captchaMode | `button`, `math` |
+| BroadcastMessage.status | `pending`, `sending`, `sent`, `failed` |
+| UserFlowContext.platform | `telegram`, `discord` |
 
 ---
 
 ## Flow Types
 
-Defined in `packages/db/src/flow-types.ts`. These are TypeScript-only types (not Prisma enums) used by the flow builder UI and execution engine.
+Defined in `packages/db/src/flow-types.ts`. These are TypeScript-only types used by the flow builder UI and execution engine.
 
 ### FlowNodeType (enum)
 
-**Triggers** (start a flow):
+**Triggers:** `message_received`, `user_joins`, `user_leaves`, `callback_query`, `command_received`, `message_edited`, `chat_member_updated`, `schedule`, `webhook`
 
-| Value | Description |
-|---|---|
-| `message_received` | Any message in chat |
-| `user_joins` | User joins group |
-| `user_leaves` | User leaves group |
-| `callback_query` | Inline button pressed |
-| `command_received` | Bot command issued |
-| `message_edited` | Message edited |
-| `chat_member_updated` | Member status changed |
-| `schedule` | Cron/time trigger |
-| `webhook` | External HTTP call |
+**Conditions:** `keyword_match`, `user_role`, `time_based`, `message_type`, `chat_type`, `regex_match`, `has_media`
 
-**Conditions** (branching logic):
-
-| Value | Description |
-|---|---|
-| `keyword_match` | Message contains keyword |
-| `user_role` | User has specific role |
-| `time_based` | Current time matches |
-| `message_type` | Message type check (text, photo, etc.) |
-| `chat_type` | Chat type check (group, private, etc.) |
-| `regex_match` | Message matches regex |
-| `has_media` | Message contains media |
-
-**Actions** (side effects):
-
-| Value | Description |
-|---|---|
-| `send_message` | Send a text message |
-| `send_photo` | Send a photo |
-| `forward_message` | Forward a message |
-| `copy_message` | Copy a message |
-| `edit_message` | Edit a message |
-| `delete_message` | Delete a message |
-| `pin_message` | Pin a message |
-| `unpin_message` | Unpin a message |
-| `ban_user` | Ban a user |
-| `mute_user` | Mute a user |
-| `restrict_user` | Restrict a user |
-| `promote_user` | Promote a user |
-| `create_poll` | Create a poll |
-| `answer_callback_query` | Answer a callback query |
-| `api_call` | Call an external API |
-| `delay` | Wait before continuing |
+**Actions:** `send_message`, `send_photo`, `forward_message`, `copy_message`, `edit_message`, `delete_message`, `pin_message`, `unpin_message`, `ban_user`, `mute_user`, `restrict_user`, `promote_user`, `create_poll`, `answer_callback_query`, `api_call`, `delay`
 
 ### FlowNodeCategory
 
 Type alias: `'trigger' | 'condition' | 'action' | 'advanced'`
 
-### FlowNodeConfig
-
-Open-ended config object: `{ [key: string]: unknown }`
-
 ### FlowNode (interface)
 
-| Property | Type |
-|---|---|
-| id | string |
-| type | FlowNodeType |
-| category | FlowNodeCategory |
-| label | string |
-| position | { x: number; y: number } |
-| config | FlowNodeConfig |
+`{ id, type, category, label, position: { x, y }, config }`
 
 ### FlowEdge (interface)
 
-| Property | Type |
-|---|---|
-| id | string |
-| source | string |
-| target | string |
-| sourceHandle? | string |
-| targetHandle? | string |
-| label? | string |
-
-### FlowDefinitionData (interface)
-
-| Property | Type |
-|---|---|
-| nodes | FlowNode[] |
-| edges | FlowEdge[] |
-
-### NODE_CATEGORIES (constant)
-
-A `Record<FlowNodeType, FlowNodeCategory>` mapping every node type to its category. Used by the flow builder to organise nodes in the palette.
+`{ id, source, target, sourceHandle?, targetHandle?, label? }`
 
 ---
 
 ## Services
 
-### Identity Service
+### Identity Service (`packages/db/src/services/identity.ts`)
 
-File: `packages/db/src/services/identity.ts`
-
-Provides cross-application identity resolution -- linking a Telegram user ID to a `UserIdentity` record and optionally to a `User` record.
-
-#### `resolveIdentity(prisma, telegramId: bigint)`
-
-Finds or creates a `UserIdentity` for the given Telegram ID. If a `User` with the same `telegramId` already exists, the new identity is automatically linked to it.
-
-Returns: `UserIdentity`
-
-#### `linkToUser(prisma, telegramId: bigint, userId: string)`
-
-Explicitly links a Telegram ID to a `User` record. Uses upsert -- creates the identity if it does not exist, or updates the `userId` if it does.
-
-Returns: `UserIdentity`
-
-#### `getFullProfile(prisma, telegramId: bigint)`
-
-Fetches a comprehensive profile for a Telegram user, including:
-
-- `identity` -- the `UserIdentity` record with its linked `User`
-- `user` -- the linked `User` (or null)
-- `memberships` -- all `GroupMember` records across groups, including group info and active warnings
-- `moderationLogs` -- the 50 most recent `ModerationLog` entries where this user was the target
-
-Returns: `{ identity, user, memberships, moderationLogs }`
+- **`resolveIdentity(prisma, telegramId)`** -- Finds or creates a `UserIdentity` for the given Telegram ID. Auto-links to existing `User`.
+- **`linkToUser(prisma, telegramId, userId)`** -- Explicitly links a Telegram ID to a `User` record via upsert.
+- **`getFullProfile(prisma, telegramId)`** -- Fetches comprehensive profile: `identity`, `user`, `memberships` (with warnings), `moderationLogs` (last 50).
 
 ---
 
-## Exports & Public API
-
-File: `packages/db/src/index.ts`
+## Exports & Public API (`packages/db/src/index.ts`)
 
 | Export | Source | Description |
 |---|---|---|
-| `createPrismaClient(DATABASE_URL)` | index.ts | Factory that creates a PrismaClient using the PG adapter |
-| `PrismaClient` | generated/prisma/client | Named re-export of the Prisma client class |
-| `* (all types)` | generated/prisma/client | All generated Prisma types and enums |
-| `resolveIdentity` | services/identity.ts | Resolve/create a UserIdentity |
-| `linkToUser` | services/identity.ts | Link a Telegram ID to a User |
+| `createPrismaClient(DATABASE_URL)` | index.ts | Factory using PG adapter |
+| `PrismaClient` | generated/prisma/client | Named re-export |
+| `* (all types)` | generated/prisma/client | All generated Prisma types |
+| `resolveIdentity` | services/identity.ts | Resolve/create UserIdentity |
+| `linkToUser` | services/identity.ts | Link Telegram ID to User |
 | `getFullProfile` | services/identity.ts | Fetch full cross-app profile |
 | `FlowNodeType` | flow-types.ts | Enum of flow node types |
 | `FlowNodeCategory` | flow-types.ts | Category type alias |
-| `FlowNodeConfig` | flow-types.ts | Node config interface |
-| `FlowNode` | flow-types.ts | Node interface |
-| `FlowEdge` | flow-types.ts | Edge interface |
+| `FlowNode`, `FlowEdge` | flow-types.ts | Node and edge interfaces |
 | `FlowDefinitionData` | flow-types.ts | Full flow data interface |
 | `NODE_CATEGORIES` | flow-types.ts | Node-type-to-category mapping |
-
-Package entry point (from `package.json`):
-- ESM import: `./dist/index.js`
-- Types: `./dist/index.d.ts`
 
 ---
 
 ## Scripts & Commands
 
-Defined in `packages/db/package.json`:
-
 | Script | Command | Description |
 |---|---|---|
 | `build` | `tsc` | Compile TypeScript to `dist/` |
 | `generate` | `prisma generate` | Generate Prisma client from schema |
-| `dev` | `prisma generate --watch` | Watch mode -- regenerate on schema changes |
-| `typecheck` | `tsc --noEmit` | Type-check without emitting files |
+| `dev` | `prisma generate --watch` | Watch mode |
+| `typecheck` | `tsc --noEmit` | Type-check without emitting |
 | `lint` | `eslint src --ext .ts` | Lint source files |
 | `clean` | `rm -rf dist` | Remove build output |
 | `prisma:generate` | `prisma generate` | Alias for `generate` |
-| `prisma:push` | `prisma db push` | Push schema to database without migrations |
-| `prisma:migrate` | `prisma migrate dev` | Create and apply a new migration |
-| `prisma:migrate:reset` | `prisma migrate reset` | Reset database and re-apply all migrations |
+| `prisma:push` | `prisma db push` | Push schema without migrations |
+| `prisma:migrate` | `prisma migrate dev` | Create and apply migration |
+| `prisma:migrate:reset` | `prisma migrate reset` | Reset database |
 | `prisma:studio` | `prisma studio` | Open Prisma Studio GUI |
 
 ### Dependencies
 
 | Package | Version | Purpose |
 |---|---|---|
-| `@prisma/adapter-pg` | ^7.3.0 | PostgreSQL driver adapter for Prisma |
+| `@prisma/adapter-pg` | ^7.3.0 | PostgreSQL driver adapter |
 | `@prisma/client` | ^7.3.0 | Generated Prisma ORM client |
-
-### Dev Dependencies
-
-| Package | Version | Purpose |
-|---|---|---|
-| `prisma` | ^7.3.0 | Prisma CLI (migrations, generate, studio) |
-| `typescript` | ^5.3.3 | TypeScript compiler |
-| `@types/node` | ^20.11.0 | Node.js type definitions |
+| `prisma` | ^7.3.0 | Prisma CLI (dev) |
+| `typescript` | ^5.3.3 | TypeScript compiler (dev) |

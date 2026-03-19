@@ -211,7 +211,7 @@ Next.js 16 admin dashboard with React 19 and Radix UI.
 
 - **Runtime:** ESM
 - **Router:** App Router (`app/` directory)
-- **Dashboard pages:** 35+ pages under `app/dashboard/`
+- **Dashboard pages:** 38 pages under `app/dashboard/`
   - Flow builder with visual editor
   - Expression builder component for complex conditions
   - Moderation logs, analytics, user management
@@ -283,7 +283,7 @@ discord.js-based transport layer with reliability features, mirroring the telegr
 
 ## Database Design
 
-The database uses PostgreSQL with Prisma 7 ORM. The schema contains 28 models across 7 domains.
+The database uses PostgreSQL with Prisma 7 ORM. The schema contains 26 models across 8 domains.
 
 ### Domain Model Overview
 

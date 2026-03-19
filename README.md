@@ -93,7 +93,7 @@ graph TB
     subgraph Backend["Backend Layer"]
         API["NestJS 11 API
         REST &middot; WebSocket &middot; SSE
-        80+ endpoints &middot; 15 modules"]
+        110+ endpoints &middot; 15 modules"]
     end
 
     subgraph Bots["Bot Layer"]
@@ -108,7 +108,7 @@ graph TB
 
     subgraph Workers["Background Workers"]
         TRIGGER["Trigger.dev v3
-        8 background tasks
+        7 background tasks
         Flow Engine (136 node types)"]
     end
 
@@ -238,9 +238,9 @@ flowbot/
 │   ├── manager-bot/          # Group management bot (21 features)
 │   ├── discord-bot/          # Discord bot
 │   ├── api/                  # NestJS REST API + WebSocket + SSE
-│   ├── frontend/             # Next.js admin dashboard (35+ pages)
-│   ├── trigger/              # Trigger.dev worker (8 tasks)
-│   └── tg-client/            # DEPRECATED
+│   ├── frontend/             # Next.js admin dashboard (38 pages)
+│   ├── trigger/              # Trigger.dev worker (7 tasks)
+│   └── tg-client/            # MTProto auth script
 ├── packages/
 │   ├── db/                   # Prisma 7 schema + client (26 models)
 │   ├── telegram-transport/   # GramJS MTProto + CircuitBreaker
@@ -264,6 +264,7 @@ flowbot/
 | API | `apps/api` | NestJS 11, Swagger, class-validator |
 | Frontend | `apps/frontend` | Next.js 16, React 19, Radix UI, Tailwind CSS 4 |
 | Trigger Worker | `apps/trigger` | Trigger.dev v3 |
+| TG Client | `apps/tg-client` | GramJS (telegram), tsx |
 | DB | `packages/db` | Prisma 7, PostgreSQL |
 | Telegram Transport | `packages/telegram-transport` | GramJS, CircuitBreaker |
 | Discord Transport | `packages/discord-transport` | discord.js, CircuitBreaker |
@@ -344,7 +345,6 @@ Features:
 | Task | Queue | Schedule | Description |
 |------|-------|----------|-------------|
 | `broadcast` | `telegram` | On-demand | Broadcast messages via MTProto |
-| `order-notification` | `telegram` | On-demand | Social-proof order notifications |
 | `cross-post` | `telegram` | On-demand | Syndicate messages across groups |
 | `scheduled-message` | `telegram` | `* * * * *` | Deliver due messages every minute |
 | `flow-execution` | `flows` | On-demand | Execute flow definitions (BFS engine) |
@@ -358,11 +358,7 @@ Features:
 
 ```mermaid
 erDiagram
-    User ||--o| Cart : has
     User ||--o| UserIdentity : has
-    Cart ||--o{ CartItem : contains
-    CartItem }o--|| Product : references
-    Product }o--|| Category : belongs_to
 
     ManagedGroup ||--o| GroupConfig : has
     ManagedGroup ||--o{ GroupMember : has
@@ -384,11 +380,11 @@ erDiagram
 
 | Domain | Models |
 |--------|--------|
-| E-commerce | `User`, `Category`, `Product`, `Cart`, `CartItem` |
+| Identity | `User`, `UserIdentity` |
 | Group Management | `ManagedGroup`, `GroupConfig`, `GroupMember`, `Warning`, `ModerationLog`, `ScheduledMessage` |
 | Analytics | `GroupAnalyticsSnapshot`, `ReputationScore` |
-| Cross-App | `UserIdentity`, `CrossPostTemplate`, `BroadcastMessage`, `OrderEvent` |
-| Flow Engine | `FlowDefinition`, `FlowExecution`, `FlowVersion`, `FlowFolder`, `FlowEvent`, `UserFlowContext` |
+| Cross-App | `CrossPostTemplate`, `BroadcastMessage` |
+| Flow Engine | `FlowDefinition`, `FlowFolder`, `FlowExecution`, `FlowVersion`, `UserFlowContext`, `FlowEvent` |
 | Bot Config | `BotInstance`, `BotCommand`, `BotResponse`, `BotMenu`, `BotMenuButton` |
 | TG Client | `ClientSession`, `ClientLog` |
 | Webhooks | `WebhookEndpoint` |
@@ -401,9 +397,6 @@ erDiagram
 |--------|-----------|---------|
 | `auth` | `/api/auth/*` | Login, token verification |
 | `users` | `/api/users/*` | User CRUD, unified profiles |
-| `products` | `/api/products/*` | Product CRUD |
-| `categories` | `/api/categories/*` | Category tree |
-| `cart` | `/api/cart/*` | Shopping cart |
 | `broadcast` | `/api/broadcast/*` | Broadcast management |
 | `flows` | `/api/flows/*` | Flow CRUD, versioning, execution, analytics |
 | `webhooks` | `/api/webhooks/*` | Webhook endpoints |
@@ -423,7 +416,7 @@ erDiagram
 ### Prerequisites
 
 - Node.js 20+
-- pnpm 9+
+- pnpm 10+
 - Docker (for PostgreSQL)
 
 ### Setup
@@ -454,6 +447,7 @@ pnpm api test                           # Jest
 pnpm manager-bot test                   # Vitest
 pnpm telegram-transport test            # Vitest
 pnpm trigger test                       # Vitest
+pnpm tg-client test                     # Vitest
 ```
 
 ### Build

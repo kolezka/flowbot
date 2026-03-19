@@ -2,20 +2,23 @@
 
 ## Project Overview
 
-Telegram e-commerce bot ("Flowbot") with admin dashboard, group management bot, visual flow builder, and Trigger.dev background job worker. pnpm monorepo with 8 workspaces, 28 Prisma models, 80+ API endpoints, 35+ dashboard pages, 7 Trigger.dev tasks.
+Telegram bot platform ("Flowbot") with admin dashboard, group management bot, visual flow builder, and Trigger.dev background job worker. pnpm monorepo with 11 workspaces, 26 Prisma models, 110+ API endpoints, 38 dashboard pages, 7 Trigger.dev tasks.
 
 ### Workspaces
 
-| Workspace | Stack | Module |
-|-----------|-------|--------|
-| `apps/bot` | grammY, Hono, Pino, Valibot | ESM (tsx) |
-| `apps/manager-bot` | grammY, Hono, Pino, Valibot | ESM (tsx) |
-| `apps/trigger` | Trigger.dev v3 | ESM |
-| `apps/api` | NestJS 11, Swagger, class-validator | CommonJS |
-| `apps/frontend` | Next.js 16, Radix UI, Tailwind CSS 4 | ESM |
-| `apps/tg-client` | DEPRECATED — only MTProto auth script | ESM |
-| `packages/db` | Prisma 7, PostgreSQL | — |
-| `packages/telegram-transport` | GramJS, CircuitBreaker, ActionRunner | ESM |
+| Workspace | Stack | Module | Tests |
+|-----------|-------|--------|-------|
+| `apps/bot` | grammY 1.36, Hono 4.10, Pino 9.9, Valibot 0.42 | ESM (tsx) | None |
+| `apps/manager-bot` | grammY 1.36, Hono 4.10, Pino 9.9, Valibot 0.42, Anthropic SDK | ESM (tsx) | Vitest |
+| `apps/api` | NestJS 11, Swagger 11, class-validator, Socket.IO 4.8, Trigger SDK 3.3 | CJS | Jest |
+| `apps/frontend` | Next.js 16.1, React 19.2, @xyflow/react 12.6, Recharts 3.8, Radix UI, Tailwind 4 | ESM | Playwright |
+| `apps/trigger` | Trigger.dev SDK 3.x, GramJS (telegram), Pino 9.9 | ESM | Vitest |
+| `apps/tg-client` | GramJS (telegram), tsx | ESM | Vitest |
+| `apps/discord-bot` | Discord.js (TBD) | ESM | None |
+| `packages/db` | Prisma 7, @prisma/adapter-pg 7 | ESM | None |
+| `packages/telegram-transport` | GramJS (telegram), Pino 9.9, Valibot 0.42 | ESM | Vitest |
+| `packages/discord-transport` | (TBD) | ESM | None |
+| `packages/flow-shared` | Shared flow types/utils | ESM | None |
 
 ### Path Aliases (`tsconfig.base.json`)
 - `@flowbot/db` → `packages/db/src/index.ts`
@@ -50,6 +53,7 @@ pnpm api test -- --testPathPattern=X    # Specific test
 pnpm manager-bot test                   # Vitest (73 tests)
 pnpm telegram-transport test            # Vitest (24 tests)
 pnpm trigger test                       # Vitest
+pnpm tg-client test                     # Vitest
 
 # Trigger.dev
 pnpm trigger dev | pnpm trigger deploy
@@ -59,7 +63,7 @@ pnpm trigger dev | pnpm trigger deploy
 
 Schema at `packages/db/prisma/schema.prisma`. After changes: `pnpm db generate && pnpm db build`.
 
-**Domains:** E-commerce (User, Category, Product, Cart, CartItem), Group management (ManagedGroup, GroupConfig, GroupMember, Warning, ModerationLog, ScheduledMessage), Cross-app (CrossPostTemplate, OrderEvent, UserIdentity, ReputationScore, BroadcastMessage, GroupAnalyticsSnapshot, ClientLog, ClientSession), Bot Config (BotInstance, BotCommand, BotResponse, BotMenu, BotMenuButton), Flow Engine (FlowDefinition, FlowExecution, FlowVersion), Webhooks (WebhookEndpoint).
+**Domains:** Identity (User, UserIdentity), Group Management (ManagedGroup, GroupConfig, GroupMember, Warning, ModerationLog, ScheduledMessage), Analytics (GroupAnalyticsSnapshot, ReputationScore), Cross-App (CrossPostTemplate, BroadcastMessage), TG Client (ClientLog, ClientSession), Bot Config (BotInstance, BotCommand, BotResponse, BotMenu, BotMenuButton), Flow Engine (FlowDefinition, FlowFolder, FlowExecution, FlowVersion, UserFlowContext, FlowEvent), Webhooks (WebhookEndpoint).
 
 ## App Structure
 
@@ -67,9 +71,9 @@ Schema at `packages/db/prisma/schema.prisma`. After changes: `pnpm db generate &
 
 **Manager Bot (`apps/manager-bot/src/`):** Mirrors bot structure — `bot/features/` (moderation, anti-spam, CAPTCHA, schedule, crosspost, etc.), `bot/middlewares/`, `repositories/`, `services/`, `server/` (Hono with `/api/send-message`).
 
-**Trigger (`apps/trigger/src/`):** Tasks in `trigger/` (broadcast, order-notification, cross-post, scheduled-message, analytics-snapshot, health-check, flow-execution). Libs in `lib/` (prisma, telegram, manager-bot, flow-engine/).
+**Trigger (`apps/trigger/src/`):** Tasks in `trigger/` (analytics-snapshot, broadcast, cross-post, flow-event-cleanup, flow-execution, health-check, scheduled-message). Libs in `lib/` (prisma, telegram, manager-bot, flow-engine/).
 
-**API (`apps/api/src/`):** NestJS modules: users, products, categories, cart, broadcast, automation, analytics, moderation, reputation, system, bot-config, tg-client, flows, webhooks, events (EventBus, WsGateway, SSE). All endpoints `/api/`.
+**API (`apps/api/src/`):** NestJS modules: auth, users, broadcast, automation, analytics, moderation (groups, members, warnings, logs, crosspost, scheduled-messages), reputation, system, bot-config, tg-client, flows, webhooks, events (EventBus, WsGateway, SSE). All endpoints `/api/`.
 
 **Frontend (`apps/frontend/src/`):** Next.js App Router. Dashboard pages under `app/dashboard/`. API client in `lib/api.ts`. Radix UI components in `components/ui/`. WebSocket in `lib/websocket.tsx`.
 

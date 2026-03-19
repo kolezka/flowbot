@@ -191,7 +191,7 @@ In the editor page, replace the existing node palette JSX with:
 - [ ] **Step 3: Verify frontend builds**
 
 ```bash
-cd /root/Development/flowbot && pnpm frontend build
+cd /root/Development/tg-allegro && pnpm frontend build
 ```
 
 - [ ] **Step 4: Commit**
@@ -318,7 +318,7 @@ When a node is selected in the editor, look up the panel via `getPanel(node.type
 - [ ] **Step 8: Verify frontend builds**
 
 ```bash
-cd /root/Development/flowbot && pnpm frontend build
+cd /root/Development/tg-allegro && pnpm frontend build
 ```
 
 - [ ] **Step 9: Commit**
@@ -449,7 +449,7 @@ The `variables` prop should be computed from:
 - [ ] **Step 3: Verify frontend builds**
 
 ```bash
-cd /root/Development/flowbot && pnpm frontend build
+cd /root/Development/tg-allegro && pnpm frontend build
 ```
 
 - [ ] **Step 4: Commit**
@@ -599,7 +599,7 @@ const ctx = await executeFlow(nodes, edges, enrichedTriggerData, {
 - [ ] **Step 4: Run tests**
 
 ```bash
-cd /root/Development/flowbot && pnpm trigger test
+cd /root/Development/tg-allegro && pnpm trigger test
 ```
 
 - [ ] **Step 5: Commit**
@@ -729,7 +729,7 @@ Add a "Debug" button next to existing "Test Execute" that opens the debugger pan
 - [ ] **Step 3: Verify frontend builds**
 
 ```bash
-cd /root/Development/flowbot && pnpm frontend build
+cd /root/Development/tg-allegro && pnpm frontend build
 ```
 
 - [ ] **Step 4: Commit**
@@ -776,7 +776,7 @@ folder    FlowFolder? @relation(fields: [folderId], references: [id])
 - [ ] **Step 2: Run migration**
 
 ```bash
-cd /root/Development/flowbot && pnpm db prisma:push && pnpm db generate && pnpm db build
+cd /root/Development/tg-allegro && pnpm db prisma:push && pnpm db generate && pnpm db build
 ```
 
 - [ ] **Step 3: Add folder service methods**
@@ -861,7 +861,7 @@ Add `'folders'` to reserved route names.
 - [ ] **Step 5: Run API tests**
 
 ```bash
-cd /root/Development/flowbot && pnpm api test
+cd /root/Development/tg-allegro && pnpm api test
 ```
 
 - [ ] **Step 6: Commit**
@@ -893,7 +893,7 @@ Right-click context menu or inline buttons on folder names.
 - [ ] **Step 4: Verify frontend builds**
 
 ```bash
-cd /root/Development/flowbot && pnpm frontend build
+cd /root/Development/tg-allegro && pnpm frontend build
 ```
 
 - [ ] **Step 5: Commit**
@@ -1000,7 +1000,7 @@ const nodeTypes = useMemo(() => ({
 - [ ] **Step 5: Verify frontend builds**
 
 ```bash
-cd /root/Development/flowbot && pnpm frontend build
+cd /root/Development/tg-allegro && pnpm frontend build
 ```
 
 - [ ] **Step 6: Commit**
@@ -1017,7 +1017,7 @@ git commit -m "feat(frontend): add subflow visual mode and sticky notes to flow 
 - [ ] **Step 1: Run all typechecks**
 
 ```bash
-cd /root/Development/flowbot
+cd /root/Development/tg-allegro
 pnpm trigger typecheck
 pnpm frontend build
 ```

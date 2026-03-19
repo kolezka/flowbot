@@ -44,7 +44,7 @@ WebSocket is closed before the connection is established.
 
 ## Related Files
 - `apps/frontend/src/lib/websocket.tsx`
-- `apps/api/src/events/events.gateway.ts`
+- `apps/api/src/events/ws.gateway.ts`
 - `apps/api/src/events/events.module.ts`
 
 ## Console Output
