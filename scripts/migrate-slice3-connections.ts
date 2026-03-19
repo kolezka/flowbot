@@ -5,9 +5,9 @@
  * Requires: DATABASE_URL
  */
 
-import { PrismaClient } from '@flowbot/db';
+import { createPrismaClient } from '../packages/db/src/index.js';
 
-const prisma = new PrismaClient();
+const prisma = createPrismaClient(process.env.DATABASE_URL || 'postgresql://postgres:postgres@localhost:5432/flowbot_db');
 
 async function main() {
   console.log('Starting Slice 3 migration: ClientSession → PlatformConnection');

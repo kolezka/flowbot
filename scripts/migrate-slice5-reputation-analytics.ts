@@ -1,9 +1,9 @@
 /**
  * Slice 5 Migration: Re-link analytics snapshots to communities
  */
-import { PrismaClient } from '@flowbot/db';
+import { createPrismaClient } from '../packages/db/src/index.js';
 
-const prisma = new PrismaClient();
+const prisma = createPrismaClient(process.env.DATABASE_URL || 'postgresql://postgres:postgres@localhost:5432/flowbot_db');
 
 async function main() {
   console.log('Starting Slice 5 migration: Analytics → Community');
