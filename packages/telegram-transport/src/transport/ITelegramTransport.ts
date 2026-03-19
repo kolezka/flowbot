@@ -113,4 +113,7 @@ export interface ITelegramTransport {
   // Media & Forum (SP2)
   sendMediaGroup: (peer: string | bigint, media: Array<{ type: string, url: string, caption?: string }>) => Promise<MessageResult[]>
   createForumTopic: (peer: string | bigint, name: string, options?: { iconColor?: number, iconEmojiId?: string }) => Promise<number>
+
+  /** Access the underlying platform client for advanced operations. */
+  getClient(): unknown
 }

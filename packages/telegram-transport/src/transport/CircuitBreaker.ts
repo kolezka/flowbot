@@ -217,6 +217,10 @@ export class CircuitBreaker implements ITelegramTransport {
     return this.execute(() => this.transport.createForumTopic(peer, name, options))
   }
 
+  getClient(): unknown {
+    return this.transport.getClient()
+  }
+
   private async execute<T>(fn: () => Promise<T>): Promise<T> {
     const now = Date.now()
 

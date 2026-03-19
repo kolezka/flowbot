@@ -896,6 +896,10 @@ export class GramJsTransport implements ITelegramTransport {
     }
   }
 
+  getClient(): TelegramClient {
+    return this.client
+  }
+
   private extractMessageFromUpdates(updates: Api.TypeUpdates): Api.Message {
     if (updates instanceof Api.Updates || updates instanceof Api.UpdatesCombined) {
       for (const update of updates.updates) {

@@ -201,6 +201,10 @@ export class FakeTelegramTransport implements ITelegramTransport {
     return this.nextId++
   }
 
+  getClient(): unknown {
+    return null
+  }
+
   getSentMessages(): readonly SentMessage[] {
     return this.sentMessages
   }
