@@ -1,11 +1,17 @@
+import type { ReactNode } from "react";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
+import { MessageCircle } from "lucide-react";
 
-const PLATFORM_CONFIG: Record<string, { label: string; color: string }> = {
+const PLATFORM_CONFIG: Record<string, { label: string; color: string; icon?: ReactNode }> = {
   telegram: { label: "Telegram", color: "bg-[#0088cc]/10 text-[#0088cc] border-[#0088cc]/20" },
   discord: { label: "Discord", color: "bg-[#5865F2]/10 text-[#5865F2] border-[#5865F2]/20" },
   slack: { label: "Slack", color: "bg-[#4A154B]/10 text-[#4A154B] border-[#4A154B]/20" },
-  whatsapp: { label: "WhatsApp", color: "bg-[#25D366]/10 text-[#25D366] border-[#25D366]/20" },
+  whatsapp: {
+    label: "WhatsApp",
+    color: "bg-[#25D366]/10 text-[#25D366] border-[#25D366]/20",
+    icon: <MessageCircle className="h-3 w-3" />,
+  },
   custom: { label: "Custom", color: "bg-gray-100 text-gray-600 border-gray-200" },
 };
 
@@ -15,10 +21,11 @@ interface PlatformBadgeProps {
 }
 
 export function PlatformBadge({ platform, className }: PlatformBadgeProps) {
-  const config = PLATFORM_CONFIG[platform] ?? PLATFORM_CONFIG.custom;
+  const config = PLATFORM_CONFIG[platform] ?? PLATFORM_CONFIG["custom"];
 
   return (
-    <Badge variant="outline" className={cn(config?.color, className)}>
+    <Badge variant="outline" className={cn("inline-flex items-center gap-1", config?.color, className)}>
+      {config?.icon}
       {config?.label}
     </Badge>
   );

@@ -34,6 +34,8 @@ function getConnectionTypeLabel(connectionType: string): { label: string; descri
       return { label: 'Bot Token', description: 'Standard Telegram bot via Bot API' };
     case 'oauth':
       return { label: 'OAuth', description: 'OAuth2 authentication (Discord, Slack)' };
+    case 'baileys':
+      return { label: 'WhatsApp (Baileys)', description: 'WhatsApp Web multi-device via Baileys — linked via QR code' };
     case 'api_key':
       return { label: 'API Key', description: 'API key authentication' };
     default:
@@ -179,6 +181,7 @@ export default function ConnectionsPage() {
           <option value="">All platforms</option>
           <option value="telegram">Telegram</option>
           <option value="discord">Discord</option>
+          <option value="whatsapp">WhatsApp</option>
         </select>
       </div>
 
