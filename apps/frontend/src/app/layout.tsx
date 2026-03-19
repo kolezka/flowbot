@@ -16,7 +16,7 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: "Flowbot Dashboard",
-  description: "Telegram bot dashboard for user management",
+  description: "Multi-platform bot management dashboard",
 };
 
 export default function RootLayout({

@@ -10,7 +10,6 @@ import {
   ChevronDown,
   Menu,
   Shield,
-  Smartphone,
   Users,
   BarChart3,
   FileText,
@@ -67,11 +66,6 @@ const navigation: NavSection[] = [
     href: "/dashboard",
   },
   {
-    label: "Users",
-    icon: Users,
-    href: "/dashboard/users",
-  },
-  {
     label: "Identity",
     icon: Users,
     children: [
@@ -96,7 +90,7 @@ const navigation: NavSection[] = [
     icon: Shield,
     children: [
       { label: "Overview", href: "/dashboard/moderation", icon: Eye },
-      { label: "Groups", href: "/dashboard/moderation/groups", icon: Layers },
+      { label: "Groups", href: "/dashboard/communities", icon: Layers },
       { label: "Logs", href: "/dashboard/moderation/logs", icon: FileText },
       {
         label: "Analytics",
@@ -155,15 +149,6 @@ const navigation: NavSection[] = [
       { label: "Overview", href: "/dashboard/connections", icon: Globe },
       { label: "Add Connection", href: "/dashboard/connections/auth", icon: Radio },
       { label: "Health", href: "/dashboard/connections/health", icon: Activity },
-    ],
-  },
-  {
-    label: "TG Client",
-    icon: Smartphone,
-    children: [
-      { label: "Overview", href: "/dashboard/tg-client", icon: Activity },
-      { label: "Sessions", href: "/dashboard/tg-client/sessions", icon: Smartphone },
-      { label: "Health", href: "/dashboard/tg-client/health", icon: Heart },
     ],
   },
   {
