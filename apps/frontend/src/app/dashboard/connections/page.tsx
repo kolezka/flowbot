@@ -26,6 +26,21 @@ function statusBadge(status: string) {
   return <Badge variant={config.variant}>{config.label}</Badge>;
 }
 
+function getConnectionTypeLabel(connectionType: string): { label: string; description: string } {
+  switch (connectionType) {
+    case 'mtproto':
+      return { label: 'Telegram User Account', description: 'Acts as a real user — can access private groups, read history, send without bot badge' };
+    case 'bot_token':
+      return { label: 'Bot Token', description: 'Standard Telegram bot via Bot API' };
+    case 'oauth':
+      return { label: 'OAuth', description: 'OAuth2 authentication (Discord, Slack)' };
+    case 'api_key':
+      return { label: 'API Key', description: 'API key authentication' };
+    default:
+      return { label: connectionType, description: '' };
+  }
+}
+
 function timeAgo(dateStr?: string): string {
   if (!dateStr) return "Never";
   const seconds = Math.floor((Date.now() - new Date(dateStr).getTime()) / 1000);
@@ -184,7 +199,10 @@ export default function ConnectionsPage() {
                   <div className="min-w-0">
                     <p className="font-medium truncate">{conn.name}</p>
                     <p className="text-xs text-muted-foreground">
-                      {conn.connectionType} &middot; Last active: {timeAgo(conn.lastActiveAt)}
+                      <span title={getConnectionTypeLabel(conn.connectionType).description}>
+                        {getConnectionTypeLabel(conn.connectionType).label}
+                      </span>
+                      {" "}&middot; Last active: {timeAgo(conn.lastActiveAt)}
                     </p>
                   </div>
                 </div>

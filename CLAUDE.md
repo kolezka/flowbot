@@ -148,3 +148,10 @@ Strict mode. `noUncheckedIndexedAccess`, `noImplicitOverride`, `experimentalDeco
   TRIGGER_SECRET_KEY=tr_dev_pd7r4ISDoUW36jlJSVLH npx trigger.dev@3.3.17 dev --api-url https://trigger.raqz.link --skip-update-check
   ```
 - **Note:** `pnpm trigger dev` uses `npx trigger.dev@latest` which causes version mismatch errors — use the explicit command above instead
+
+### User Account Actions (user_* prefix)
+- Nodes prefixed with `user_` require MTProto transport via PlatformConnection
+- Dispatched through `dispatchUserAction()` in `lib/flow-engine/user-actions.ts`
+- Transport cached per connection ID in `lib/flow-engine/connection-transport.ts`
+- Never routed through Bot API — always direct GramJS via `getClient()`
+- Flow validation enforces `platformConnectionId` or per-node `connectionOverride`

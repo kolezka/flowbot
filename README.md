@@ -295,6 +295,17 @@ Features:
 | Analytics | In-memory counters, daily snapshots |
 | Audit Logging | `/modlog` with full action history |
 
+### Telegram User Account (MTProto Client)
+
+Flowbot supports connecting real Telegram user accounts via MTProto protocol. Unlike bots, user accounts can:
+- Access private groups and channels the user has joined
+- Read full chat history and search messages
+- Send messages without the "bot" badge
+- Join/leave groups, create groups and channels
+- Invite users by phone number or username
+
+User account actions are available as purple "User Account Actions" in the flow builder node palette, and require an authenticated connection from the Connections page.
+
 ### Background Tasks (Trigger.dev)
 
 | Task | Queue | Schedule | Description |
