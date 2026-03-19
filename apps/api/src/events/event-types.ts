@@ -18,4 +18,13 @@ export interface SystemEvent {
   timestamp: Date;
 }
 
-export type AppEvent = ModerationEvent | AutomationEvent | SystemEvent;
+export interface QrAuthEvent {
+  type: 'qr' | 'connected' | 'error' | 'timeout';
+  connectionId: string;
+  qr?: string;           // base64 QR code
+  pushName?: string;
+  phoneNumber?: string;
+  error?: string;
+}
+
+export type AppEvent = ModerationEvent | AutomationEvent | SystemEvent | QrAuthEvent;

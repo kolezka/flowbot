@@ -40,6 +40,10 @@ export class WsGateway implements OnGatewayConnection, OnGatewayDisconnect {
       this.server.to('system').emit('system', event);
     });
 
+    this.eventBus.onQrAuth((event) => {
+      this.server.to(`qr-auth:${event.connectionId}`).emit('qr-auth', event);
+    });
+
     this.logger.log('WebSocket gateway initialized');
   }
 
@@ -54,7 +58,7 @@ export class WsGateway implements OnGatewayConnection, OnGatewayDisconnect {
   @SubscribeMessage('join')
   handleJoin(client: Socket, room: string) {
     const validRooms = ['moderation', 'automation', 'system'];
-    if (validRooms.includes(room)) {
+    if (validRooms.includes(room) || room.startsWith('qr-auth:')) {
       client.join(room);
       this.logger.debug(`Client ${client.id} joined room: ${room}`);
       return { status: 'ok', room };
