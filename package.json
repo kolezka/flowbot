@@ -8,7 +8,9 @@
     "api": "pnpm --filter @flowbot/api",
     "tg-client": "pnpm --filter @flowbot/tg-client",
     "telegram-transport": "pnpm --filter @flowbot/telegram-transport",
-    "trigger": "pnpm --filter @flowbot/trigger"
+    "trigger": "pnpm --filter @flowbot/trigger",
+    "whatsapp-bot": "pnpm --filter @flowbot/whatsapp-bot",
+    "whatsapp-transport": "pnpm --filter @flowbot/whatsapp-transport"
   },
   "devDependencies": {
     "@types/node": "^25.3.0"
