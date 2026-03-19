@@ -4,6 +4,8 @@ export interface NodeTypeDefinition {
   category: 'trigger' | 'condition' | 'action' | 'advanced' | 'annotation'
   platform: 'telegram' | 'discord' | 'general'
   color: string
+  subcategory?: string              // 'user_account' for MTProto-only nodes
+  requiresConnection?: boolean      // true if node needs a PlatformConnection
 }
 
 export const NODE_TYPES: NodeTypeDefinition[] = [
@@ -109,6 +111,30 @@ export const NODE_TYPES: NodeTypeDefinition[] = [
   { type: 'unified_pin_message', label: 'Pin Message (Cross)', category: 'action', platform: 'general', color: '#06b6d4' },
   { type: 'unified_send_dm', label: 'Send DM (Cross)', category: 'action', platform: 'general', color: '#06b6d4' },
   { type: 'unified_set_role', label: 'Set Role (Cross)', category: 'action', platform: 'general', color: '#06b6d4' },
+
+  // === TELEGRAM USER ACCOUNT ACTIONS — Read ===
+  { type: 'user_get_chat_history', label: 'Get Chat History', category: 'action', platform: 'telegram', color: '#8B5CF6', subcategory: 'user_account', requiresConnection: true },
+  { type: 'user_search_messages', label: 'Search Messages', category: 'action', platform: 'telegram', color: '#8B5CF6', subcategory: 'user_account', requiresConnection: true },
+  { type: 'user_get_all_members', label: 'Get All Members', category: 'action', platform: 'telegram', color: '#8B5CF6', subcategory: 'user_account', requiresConnection: true },
+  { type: 'user_get_chat_info', label: 'Get Chat Info', category: 'action', platform: 'telegram', color: '#8B5CF6', subcategory: 'user_account', requiresConnection: true },
+  { type: 'user_get_contacts', label: 'Get Contacts', category: 'action', platform: 'telegram', color: '#8B5CF6', subcategory: 'user_account', requiresConnection: true },
+  { type: 'user_get_dialogs', label: 'Get Dialogs', category: 'action', platform: 'telegram', color: '#8B5CF6', subcategory: 'user_account', requiresConnection: true },
+
+  // === TELEGRAM USER ACCOUNT ACTIONS — Write ===
+  { type: 'user_join_chat', label: 'Join Chat', category: 'action', platform: 'telegram', color: '#8B5CF6', subcategory: 'user_account', requiresConnection: true },
+  { type: 'user_leave_chat', label: 'Leave Chat', category: 'action', platform: 'telegram', color: '#8B5CF6', subcategory: 'user_account', requiresConnection: true },
+  { type: 'user_create_group', label: 'Create Group', category: 'action', platform: 'telegram', color: '#8B5CF6', subcategory: 'user_account', requiresConnection: true },
+  { type: 'user_create_channel', label: 'Create Channel', category: 'action', platform: 'telegram', color: '#8B5CF6', subcategory: 'user_account', requiresConnection: true },
+  { type: 'user_invite_users', label: 'Invite Users', category: 'action', platform: 'telegram', color: '#8B5CF6', subcategory: 'user_account', requiresConnection: true },
+  { type: 'user_send_message', label: 'Send as User', category: 'action', platform: 'telegram', color: '#8B5CF6', subcategory: 'user_account', requiresConnection: true },
+  { type: 'user_send_media', label: 'Send Media as User', category: 'action', platform: 'telegram', color: '#8B5CF6', subcategory: 'user_account', requiresConnection: true },
+  { type: 'user_forward_message', label: 'Forward Message', category: 'action', platform: 'telegram', color: '#8B5CF6', subcategory: 'user_account', requiresConnection: true },
+  { type: 'user_delete_messages', label: 'Delete Messages', category: 'action', platform: 'telegram', color: '#8B5CF6', subcategory: 'user_account', requiresConnection: true },
+
+  // === TELEGRAM USER ACCOUNT ACTIONS — Account ===
+  { type: 'user_update_profile', label: 'Update Profile', category: 'action', platform: 'telegram', color: '#8B5CF6', subcategory: 'user_account', requiresConnection: true },
+  { type: 'user_set_status', label: 'Set Status', category: 'action', platform: 'telegram', color: '#8B5CF6', subcategory: 'user_account', requiresConnection: true },
+  { type: 'user_get_profile_photos', label: 'Get Profile Photos', category: 'action', platform: 'telegram', color: '#8B5CF6', subcategory: 'user_account', requiresConnection: true },
 
   // === DISCORD TRIGGERS ===
   { type: 'discord_message_received', label: 'Discord Message', category: 'trigger', platform: 'discord', color: '#5865F2' },
