@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo, useEffect } from "react";
+import { User } from "lucide-react";
 import { NODE_TYPES, type NodeTypeDefinition } from "@flowbot/flow-shared";
 
 type PlatformFilter = "all" | "telegram" | "discord" | "general";
@@ -10,7 +11,7 @@ const PLATFORM_KEY = "flow-editor-platform";
 const MAX_RECENT = 8;
 
 interface NodePaletteProps {
-  onDragStart: (type: string, label: string, category: string) => void;
+  onDragStart: (type: string, label: string, category: string, requiresConnection?: boolean) => void;
 }
 
 export function NodePalette({ onDragStart }: NodePaletteProps) {
@@ -80,6 +81,9 @@ export function NodePalette({ onDragStart }: NodePaletteProps) {
     e.dataTransfer.setData("application/reactflow-type", node.type);
     e.dataTransfer.setData("application/reactflow-label", node.label);
     e.dataTransfer.setData("application/reactflow-category", node.category);
+    if (node.requiresConnection) {
+      e.dataTransfer.setData("application/reactflow-requires-connection", "true");
+    }
 
     // Track recently used
     const updated = [node.type, ...recentTypes.filter((t) => t !== node.type)].slice(0, MAX_RECENT);
@@ -90,7 +94,7 @@ export function NodePalette({ onDragStart }: NodePaletteProps) {
       // Ignore
     }
 
-    onDragStart(node.type, node.label, node.category);
+    onDragStart(node.type, node.label, node.category, node.requiresConnection);
   };
 
   const toggleCategory = (category: string) => {
@@ -101,6 +105,21 @@ export function NodePalette({ onDragStart }: NodePaletteProps) {
       return next;
     });
   };
+
+  const renderNodeItem = (node: NodeTypeDefinition) => (
+    <div
+      key={node.type}
+      draggable
+      onDragStart={(e) => handleDragStart(e, node)}
+      className="cursor-grab rounded-md border border-border px-2 py-1.5 text-xs hover:bg-accent transition-colors"
+      style={{
+        borderLeftColor: node.color,
+        borderLeftWidth: 3,
+      }}
+    >
+      {node.label}
+    </div>
+  );
 
   return (
     <div className="w-56 border-r border-border bg-card p-3 overflow-y-auto">
@@ -165,6 +184,13 @@ export function NodePalette({ onDragStart }: NodePaletteProps) {
         const catNodes = filteredNodes.filter((n) => n.category === cat);
         if (catNodes.length === 0) return null;
         const isCollapsed = collapsedCategories.has(cat);
+
+        // Special handling for action category with telegram platform: split into sub-groups
+        const isTelegramActionCategory =
+          cat === "action" &&
+          (platformFilter === "telegram" || platformFilter === "all") &&
+          catNodes.some((n) => n.platform === "telegram" && n.subcategory === "user_account");
+
         return (
           <div key={cat} className="mb-4">
             <button
@@ -177,22 +203,50 @@ export function NodePalette({ onDragStart }: NodePaletteProps) {
               <span className="text-[10px]">{isCollapsed ? "+" : "-"}</span>
             </button>
             {!isCollapsed && (
-              <div className="space-y-1">
-                {catNodes.map((node) => (
-                  <div
-                    key={node.type}
-                    draggable
-                    onDragStart={(e) => handleDragStart(e, node)}
-                    className="cursor-grab rounded-md border border-border px-2 py-1.5 text-xs hover:bg-accent transition-colors"
-                    style={{
-                      borderLeftColor: node.color,
-                      borderLeftWidth: 3,
-                    }}
-                  >
-                    {node.label}
-                  </div>
-                ))}
-              </div>
+              isTelegramActionCategory ? (
+                <div className="space-y-3">
+                  {/* Bot Actions sub-group */}
+                  {(() => {
+                    const botActionNodes = catNodes.filter(
+                      (n) => n.subcategory !== "user_account",
+                    );
+                    if (botActionNodes.length === 0) return null;
+                    return (
+                      <div>
+                        <h5 className="mb-1 text-[10px] font-semibold text-muted-foreground uppercase tracking-wide">
+                          Bot Actions
+                        </h5>
+                        <div className="space-y-1">
+                          {botActionNodes.map(renderNodeItem)}
+                        </div>
+                      </div>
+                    );
+                  })()}
+
+                  {/* User Account Actions sub-group */}
+                  {(() => {
+                    const userAccountNodes = catNodes.filter(
+                      (n) => n.subcategory === "user_account",
+                    );
+                    if (userAccountNodes.length === 0) return null;
+                    return (
+                      <div>
+                        <h5 className="mb-1 text-[10px] font-semibold text-muted-foreground uppercase tracking-wide flex items-center gap-1">
+                          <User className="h-3 w-3" />
+                          User Account Actions
+                        </h5>
+                        <div className="space-y-1">
+                          {userAccountNodes.map(renderNodeItem)}
+                        </div>
+                      </div>
+                    );
+                  })()}
+                </div>
+              ) : (
+                <div className="space-y-1">
+                  {catNodes.map(renderNodeItem)}
+                </div>
+              )
             )}
           </div>
         );

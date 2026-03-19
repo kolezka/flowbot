@@ -15,10 +15,10 @@ import {
   type Edge,
 } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
-import { api, type BotInstance } from "@/lib/api";
+import { api, type BotInstance, type PlatformConnectionType, getConnections } from "@/lib/api";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Save, Play, Square, BarChart3, History, Bot } from "lucide-react";
+import { Save, Play, Square, BarChart3, History, Bot, AlertTriangle, User } from "lucide-react";
 import { ExpressionBuilder, type ExpressionValue } from "@/components/expression-builder";
 import Link from "next/link";
 import {
@@ -1096,6 +1096,75 @@ function DiscordConditionPropertyPanel({
   }
 }
 
+// ---------------------------------------------------------------------------
+// Connection override panel for user account nodes
+// ---------------------------------------------------------------------------
+
+function ConnectionOverridePanel({
+  node,
+  connections,
+  updateConfig,
+  globalConnectionId,
+}: {
+  node: Node;
+  connections: PlatformConnectionType[];
+  updateConfig: (key: string, value: unknown) => void;
+  globalConnectionId?: string;
+}) {
+  const [expanded, setExpanded] = useState(false);
+  const config = (node.data.config as Record<string, unknown>) ?? {};
+  const connectionOverride = String(config.connectionOverride ?? "");
+  const hasWarning = !globalConnectionId && !connectionOverride;
+
+  return (
+    <div className="mt-4 border-t border-border pt-3">
+      <button
+        onClick={() => setExpanded((v) => !v)}
+        className="flex w-full items-center justify-between text-xs font-medium text-muted-foreground hover:text-foreground"
+      >
+        <span className="flex items-center gap-1">
+          {hasWarning && <AlertTriangle className="h-3 w-3 text-yellow-500" />}
+          Advanced
+        </span>
+        <span className="text-[10px]">{expanded ? "-" : "+"}</span>
+      </button>
+      {expanded && (
+        <div className="mt-2 space-y-2">
+          <FieldLabel>Connection Override</FieldLabel>
+          {connections.length === 0 ? (
+            <p className="text-[10px] text-muted-foreground">
+              No user accounts connected.{" "}
+              <a href="/dashboard/connections/auth" className="underline text-primary">
+                Connect one
+              </a>
+            </p>
+          ) : (
+            <>
+              <select
+                className="mt-1 w-full rounded-md border border-border bg-background px-2 py-1.5 text-sm"
+                value={connectionOverride}
+                onChange={(e) => updateConfig("connectionOverride", e.target.value || undefined)}
+              >
+                <option value="">Use flow default</option>
+                {connections.map((c) => (
+                  <option key={c.id} value={c.id}>
+                    {c.name}{c.metadata?.phone ? ` (${String(c.metadata.phone)})` : ""}
+                  </option>
+                ))}
+              </select>
+              {hasWarning && (
+                <p className="text-[10px] text-yellow-600">
+                  This node requires a user account connection. Set one at the flow level or override here.
+                </p>
+              )}
+            </>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
 export default function FlowEditorPage() {
   const params = useParams();
   const router = useRouter();
@@ -1109,7 +1178,8 @@ export default function FlowEditorPage() {
   const [loaded, setLoaded] = useState(false);
   const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
   const [botInstances, setBotInstances] = useState<BotInstance[]>([]);
-  const [transportConfig, setTransportConfig] = useState<{ transport: string; botInstanceId?: string; discordBotInstanceId?: string }>({ transport: 'auto' });
+  const [mtprotoConnections, setMtprotoConnections] = useState<PlatformConnectionType[]>([]);
+  const [transportConfig, setTransportConfig] = useState<{ transport: string; botInstanceId?: string; discordBotInstanceId?: string; platformConnectionId?: string }>({ transport: 'auto' });
   const [flowPlatform, setFlowPlatform] = useState<"telegram" | "discord" | "cross-platform">("telegram");
 
   // Execution visualization state
@@ -1117,6 +1187,14 @@ export default function FlowEditorPage() {
 
   useEffect(() => {
     api.getBotInstances().then(setBotInstances).catch(() => {});
+    getConnections({ limit: 100 })
+      .then((res) => {
+        const active = res.data.filter(
+          (c) => c.connectionType === 'mtproto' && c.status === 'active',
+        );
+        setMtprotoConnections(active);
+      })
+      .catch(() => {});
   }, []);
 
   useEffect(() => {
@@ -1151,6 +1229,8 @@ export default function FlowEditorPage() {
       const type = e.dataTransfer.getData("application/reactflow-type");
       const label = e.dataTransfer.getData("application/reactflow-label");
       const category = e.dataTransfer.getData("application/reactflow-category");
+      const requiresConnectionRaw = e.dataTransfer.getData("application/reactflow-requires-connection");
+      const requiresConnection = requiresConnectionRaw === "true";
       if (!type) return;
 
       const bounds = (e.target as HTMLElement).closest('.react-flow')?.getBoundingClientRect();
@@ -1167,6 +1247,7 @@ export default function FlowEditorPage() {
           label,
           nodeType: type,
           category,
+          requiresConnection,
           config: {},
         },
         style: {
@@ -1265,13 +1346,40 @@ export default function FlowEditorPage() {
     usesExpressionBuilder || hasConditionPanel || hasDiscordConditionPanel || isBotActionNode || isConfigurableAction || isTriggerNode || isDiscordAction || isDiscordTrigger
   );
 
+  // Determine if a node needs a connection warning
+  const needsConnectionWarning = useCallback(
+    (node: Node): boolean => {
+      if (!node.data.requiresConnection) return false;
+      const hasGlobalConnection = Boolean(transportConfig.platformConnectionId);
+      const hasNodeOverride = Boolean((node.data.config as Record<string, unknown>)?.connectionOverride);
+      return !hasGlobalConnection && !hasNodeOverride;
+    },
+    [transportConfig.platformConnectionId],
+  );
+
   // Apply execution styles to nodes and edges for visualization
   const { styledNodes, styledEdges } = useMemo(() => {
-    if (!executionState.execution) {
-      return { styledNodes: nodes, styledEdges: edges };
-    }
-    return applyExecutionStyles(nodes, edges, executionState);
-  }, [nodes, edges, executionState]);
+    const baseResult = executionState.execution
+      ? applyExecutionStyles(nodes, edges, executionState)
+      : { styledNodes: nodes, styledEdges: edges };
+
+    // Overlay warning styles on nodes that require a connection
+    const nodesWithWarnings = baseResult.styledNodes.map((node) => {
+      if (needsConnectionWarning(node)) {
+        return {
+          ...node,
+          style: {
+            ...node.style,
+            outline: '2px solid #f59e0b',
+            outlineOffset: '1px',
+          },
+        };
+      }
+      return node;
+    });
+
+    return { styledNodes: nodesWithWarnings, styledEdges: baseResult.styledEdges };
+  }, [nodes, edges, executionState, needsConnectionWarning]);
 
   if (!loaded) return <div className="h-screen animate-pulse bg-muted" />;
 
@@ -1345,6 +1453,32 @@ export default function FlowEditorPage() {
                       </option>
                     ))}
                   </select>
+                )}
+                {(transportConfig.transport === 'mtproto' || transportConfig.transport === 'auto') && (
+                  <>
+                    <label className="text-xs text-muted-foreground whitespace-nowrap flex items-center gap-1">
+                      <User className="h-3 w-3" />User Account:
+                    </label>
+                    {mtprotoConnections.length === 0 ? (
+                      <span className="text-xs text-muted-foreground">
+                        No user accounts connected.{" "}
+                        <a href="/dashboard/connections/auth" className="underline text-primary">Connect one</a>
+                      </span>
+                    ) : (
+                      <select
+                        className="h-8 rounded-md border border-border bg-background px-2 text-xs"
+                        value={transportConfig.platformConnectionId ?? ''}
+                        onChange={(e) => setTransportConfig(prev => ({ ...prev, platformConnectionId: e.target.value || undefined }))}
+                      >
+                        <option value="">Select user account...</option>
+                        {mtprotoConnections.map(c => (
+                          <option key={c.id} value={c.id}>
+                            {c.name}{c.metadata?.phone ? ` (${String(c.metadata.phone)})` : ''}
+                          </option>
+                        ))}
+                      </select>
+                    )}
+                  </>
                 )}
               </>
             )}
@@ -1436,6 +1570,16 @@ export default function FlowEditorPage() {
             {/* Discord action panels */}
             {isDiscordAction && (
               <DiscordActionPropertyPanel node={selectedNode} updateConfig={updateNodeConfig} />
+            )}
+
+            {/* Connection Override for nodes that require a user account connection */}
+            {Boolean(selectedNode.data.requiresConnection) && (
+              <ConnectionOverridePanel
+                node={selectedNode}
+                connections={mtprotoConnections}
+                updateConfig={updateNodeConfig}
+                globalConnectionId={transportConfig.platformConnectionId}
+              />
             )}
 
             {/* Bot action panel */}
