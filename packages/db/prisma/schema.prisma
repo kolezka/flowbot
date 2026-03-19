@@ -95,6 +95,8 @@ model PlatformAccount {
   referredBy          PlatformAccount? @relation("AccountReferrals", fields: [referredByAccountId], references: [id])
   referrals           PlatformAccount[] @relation("AccountReferrals")
 
+  communityMemberships CommunityMember[]
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -105,6 +107,146 @@ model PlatformAccount {
   @@index([username])
   @@index([createdAt])
   @@index([identityId])
+}
+
+// ==========================================
+// Community Models
+// ==========================================
+
+model Community {
+  id                    String    @id @default(cuid())
+  platform              String    // "telegram" | "discord" | etc.
+  platformCommunityId   String    // Was chatId (BigInt), now string
+  name                  String?
+  type                  String?   // supergroup, guild, workspace, etc.
+  memberCount           Int       @default(0)
+  isActive              Boolean   @default(true)
+  metadata              Json?     // Platform-specific: invite link, icon, etc.
+  botInstanceId         String?
+  botInstance           BotInstance? @relation(fields: [botInstanceId], references: [id])
+  joinedAt              DateTime  @default(now())
+  leftAt                DateTime?
+
+  config                CommunityConfig?
+  telegramConfig        CommunityTelegramConfig?
+  discordConfig         CommunityDiscordConfig?
+  members               CommunityMember[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([platform, platformCommunityId])
+  @@index([platform])
+  @@index([isActive])
+  @@index([botInstanceId])
+}
+
+model CommunityConfig {
+  id                    String    @id @default(cuid())
+  communityId           String    @unique
+  community             Community @relation(fields: [communityId], references: [id], onDelete: Cascade)
+
+  welcomeEnabled        Boolean   @default(true)
+  welcomeMessage        String?
+  rulesText             String?
+
+  antiSpamEnabled       Boolean   @default(true)
+  antiSpamAction        String    @default("delete")
+  antiSpamMaxMessages   Int       @default(10)
+  antiSpamWindowSeconds Int       @default(10)
+
+  antiLinkEnabled       Boolean   @default(false)
+  antiLinkAction        String    @default("delete")
+  antiLinkWhitelist     String[]
+
+  warnThresholdMute     Int       @default(3)
+  warnThresholdBan      Int       @default(5)
+  warnDecayDays         Int       @default(30)
+  defaultMuteDurationS  Int       @default(3600)
+
+  logChannelId          String?
+  autoDeleteCommandsS   Int       @default(10)
+  silentMode            Boolean   @default(false)
+
+  keywordFiltersEnabled Boolean   @default(false)
+  keywordFilters        String[]
+
+  aiModerationEnabled   Boolean   @default(false)
+  aiModerationAction    String    @default("delete")
+  aiModThreshold        Float     @default(0.8)
+
+  notificationEvents    String[]
+
+  pipelineEnabled       Boolean   @default(false)
+  pipelineDmTemplate    String?
+  pipelineDeeplink      String?
+
+  metadata              Json?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model CommunityTelegramConfig {
+  id                  String    @id @default(cuid())
+  communityId         String    @unique
+  community           Community @relation(fields: [communityId], references: [id], onDelete: Cascade)
+
+  captchaEnabled      Boolean   @default(false)
+  captchaMode         String    @default("button")
+  captchaTimeoutS     Int       @default(60)
+
+  quarantineEnabled   Boolean   @default(false)
+  quarantineDurationS Int       @default(86400)
+
+  slowModeDelay       Int       @default(0)
+  forumTopicMgmt      Boolean   @default(false)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model CommunityDiscordConfig {
+  id                String    @id @default(cuid())
+  communityId       String    @unique
+  community         Community @relation(fields: [communityId], references: [id], onDelete: Cascade)
+
+  autoModRules      Json?
+  verificationLevel String?
+  defaultChannelId  String?
+  modLogChannelId   String?
+  welcomeChannelId  String?
+  roleOnJoin        String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model CommunityMember {
+  id                  String    @id @default(cuid())
+  communityId         String
+  community           Community @relation(fields: [communityId], references: [id], onDelete: Cascade)
+  platformAccountId   String
+  platformAccount     PlatformAccount @relation(fields: [platformAccountId], references: [id])
+  role                String    @default("member")
+  messageCount        Int       @default(0)
+  joinedAt            DateTime  @default(now())
+  warningCount        Int       @default(0)
+  isMuted             Boolean   @default(false)
+  muteExpiresAt       DateTime?
+  isQuarantined       Boolean   @default(false)
+  quarantineExpiresAt DateTime?
+  lastSeenAt          DateTime  @default(now())
+  metadata            Json?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([communityId, platformAccountId])
+  @@index([communityId])
+  @@index([platformAccountId])
+  @@index([communityId, role])
+  @@index([lastSeenAt])
 }
 
 // ==========================================
@@ -439,9 +581,10 @@ model BotInstance {
   configVersion Int    @default(0)
   configHistory Json   @default("[]")
 
-  commands  BotCommand[]
-  responses BotResponse[]
-  menus     BotMenu[]
+  commands     BotCommand[]
+  responses    BotResponse[]
+  menus        BotMenu[]
+  communities  Community[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
