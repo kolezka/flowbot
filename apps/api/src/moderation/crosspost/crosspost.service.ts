@@ -151,6 +151,65 @@ export class CrossPostService {
     return this.mapToDto(template, chatIdToTitle);
   }
 
+  async findAllWithCommunities(page = 1, limit = 20, isActive?: boolean) {
+    const skip = (page - 1) * limit;
+    const where: any = {};
+    if (isActive !== undefined) where.isActive = isActive;
+
+    const [templates, total] = await Promise.all([
+      this.prisma.crossPostTemplate.findMany({
+        where,
+        skip,
+        take: limit,
+        orderBy: { createdAt: 'desc' },
+      }),
+      this.prisma.crossPostTemplate.count({ where }),
+    ]);
+
+    // Resolve chatIds to community names
+    const allChatIds = [
+      ...new Set(templates.flatMap((t) => t.targetChatIds)),
+    ];
+    const communities = await this.prisma.community.findMany({
+      where: {
+        platform: 'telegram',
+        platformCommunityId: { in: allChatIds.map((id) => id.toString()) },
+      },
+      select: { platformCommunityId: true, name: true, platform: true },
+    });
+
+    const chatIdToInfo = new Map(
+      communities.map((c) => [
+        c.platformCommunityId,
+        { name: c.name, platform: c.platform },
+      ]),
+    );
+
+    return {
+      data: templates.map((t) => ({
+        id: t.id,
+        name: t.name,
+        content: { text: t.messageText },
+        targetCommunities: t.targetChatIds.map((id: bigint) => {
+          const info = chatIdToInfo.get(id.toString());
+          return {
+            chatId: id.toString(),
+            name: info?.name ?? id.toString(),
+            platform: info?.platform ?? 'telegram',
+          };
+        }),
+        isActive: t.isActive,
+        createdBy: t.createdBy.toString(),
+        createdAt: t.createdAt,
+        updatedAt: t.updatedAt,
+      })),
+      total,
+      page,
+      limit,
+      totalPages: Math.ceil(total / limit),
+    };
+  }
+
   async remove(id: string): Promise<void> {
     const template = await this.prisma.crossPostTemplate.findUnique({
       where: { id },

@@ -52,6 +52,25 @@ export class CrossPostController {
     return this.crossPostService.findAll(page, limit, parsedIsActive);
   }
 
+  @Get('with-communities')
+  @ApiOperation({ summary: 'List crosspost templates with community info' })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'Returns crosspost templates enriched with community name and platform info',
+  })
+  @ApiQuery({ name: 'page', required: false, type: Number })
+  @ApiQuery({ name: 'limit', required: false, type: Number })
+  @ApiQuery({ name: 'isActive', required: false, type: Boolean })
+  async findAllWithCommunities(
+    @Query('page', new DefaultValuePipe(1), ParseIntPipe) page: number,
+    @Query('limit', new DefaultValuePipe(20), ParseIntPipe) limit: number,
+    @Query('isActive') isActive?: string,
+  ) {
+    const parsedActive =
+      isActive === 'true' ? true : isActive === 'false' ? false : undefined;
+    return this.crossPostService.findAllWithCommunities(page, limit, parsedActive);
+  }
+
   @Get(':id')
   @ApiOperation({ summary: 'Get a crosspost template by ID' })
   @ApiResponse({

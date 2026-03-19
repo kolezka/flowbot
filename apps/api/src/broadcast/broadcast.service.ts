@@ -12,6 +12,8 @@ import {
   BroadcastListResponseDto,
   CreateBroadcastDto,
   UpdateBroadcastDto,
+  CreateMultiPlatformBroadcastDto,
+  MultiPlatformBroadcastDto,
 } from './dto';
 
 @Injectable()
@@ -171,6 +173,99 @@ export class BroadcastService {
       text: broadcast.text,
       targetChatIds: broadcast.targetChatIds.map((id: bigint) => id.toString()),
       results: broadcast.results,
+      createdAt: broadcast.createdAt,
+      updatedAt: broadcast.updatedAt,
+    };
+  }
+
+  async createMultiPlatform(
+    dto: CreateMultiPlatformBroadcastDto,
+  ): Promise<MultiPlatformBroadcastDto> {
+    // Validate that target communities exist
+    const communities = await this.prisma.community.findMany({
+      where: { id: { in: dto.targetCommunities } },
+      select: { id: true, platform: true, platformCommunityId: true },
+    });
+
+    if (communities.length !== dto.targetCommunities.length) {
+      throw new BadRequestException('Some target communities not found');
+    }
+
+    // Create broadcast using the old model but storing new data in JSON
+    const broadcast = await this.prisma.broadcastMessage.create({
+      data: {
+        text: dto.content.text,
+        targetChatIds: [], // empty — new broadcasts use targetCommunities
+        status: 'pending',
+        results: {
+          _multiPlatform: true,
+          content: dto.content,
+          platforms: dto.platforms,
+          targetCommunities: dto.targetCommunities,
+        },
+      },
+    });
+
+    this.eventBus.emitAutomation({
+      type: 'broadcast.created',
+      jobId: broadcast.id,
+      data: { content: dto.content, platforms: dto.platforms },
+      timestamp: new Date(),
+    });
+
+    try {
+      await tasks.trigger('broadcast', { broadcastId: broadcast.id });
+    } catch (error) {
+      this.logger.warn(`Failed to trigger broadcast task: ${error}`);
+    }
+
+    return this.mapToMultiPlatformDto(broadcast);
+  }
+
+  async findAllMultiPlatform(
+    page = 1,
+    limit = 20,
+    _platform?: string,
+  ): Promise<{
+    data: MultiPlatformBroadcastDto[];
+    total: number;
+    page: number;
+    limit: number;
+    totalPages: number;
+  }> {
+    const skip = (page - 1) * limit;
+    const [broadcasts, total] = await Promise.all([
+      this.prisma.broadcastMessage.findMany({
+        skip,
+        take: limit,
+        orderBy: { createdAt: 'desc' },
+      }),
+      this.prisma.broadcastMessage.count(),
+    ]);
+
+    return {
+      data: broadcasts.map((b) => this.mapToMultiPlatformDto(b)),
+      total,
+      page,
+      limit,
+      totalPages: Math.ceil(total / limit),
+    };
+  }
+
+  private mapToMultiPlatformDto(broadcast: any): MultiPlatformBroadcastDto {
+    const meta =
+      broadcast.results?._multiPlatform ? broadcast.results : null;
+    const { _multiPlatform, content, platforms, targetCommunities, ...rest } =
+      meta ?? {};
+    return {
+      id: broadcast.id,
+      status: broadcast.status,
+      content: content ?? { text: broadcast.text },
+      platforms: platforms ?? ['telegram'],
+      targetCommunities:
+        targetCommunities ??
+        broadcast.targetChatIds.map((id: bigint) => id.toString()),
+      results: meta ? (Object.keys(rest).length ? rest : undefined) : broadcast.results,
       createdAt: broadcast.createdAt,
       updatedAt: broadcast.updatedAt,
     };

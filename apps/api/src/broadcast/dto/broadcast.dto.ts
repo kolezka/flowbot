@@ -1,5 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsString, IsArray, IsNotEmpty, IsOptional } from 'class-validator';
+import { IsString, IsArray, IsNotEmpty, IsOptional, ValidateNested } from 'class-validator';
+import { Type } from 'class-transformer';
 
 export class CreateBroadcastDto {
   @ApiProperty({ description: 'Broadcast message text' })
@@ -52,4 +53,31 @@ export class BroadcastListResponseDto {
 
   @ApiProperty()
   totalPages!: number;
+}
+
+export class CreateMultiPlatformBroadcastDto {
+  @ApiProperty({ description: 'Structured content', type: Object })
+  @IsNotEmpty()
+  content!: { text: string; media?: any; embed?: any };
+
+  @ApiProperty({ description: 'Target platforms', type: [String] })
+  @IsArray()
+  @IsString({ each: true })
+  platforms!: string[];
+
+  @ApiProperty({ description: 'Target community IDs', type: [String] })
+  @IsArray()
+  @IsString({ each: true })
+  targetCommunities!: string[];
+}
+
+export class MultiPlatformBroadcastDto {
+  @ApiProperty() id!: string;
+  @ApiProperty() status!: string;
+  @ApiProperty() content!: { text: string; media?: any; embed?: any };
+  @ApiProperty({ type: [String] }) platforms!: string[];
+  @ApiProperty({ type: [String] }) targetCommunities!: string[];
+  @ApiProperty({ required: false }) results?: any;
+  @ApiProperty() createdAt!: Date;
+  @ApiProperty() updatedAt!: Date;
 }

@@ -24,6 +24,8 @@ import {
   BroadcastListResponseDto,
   CreateBroadcastDto,
   UpdateBroadcastDto,
+  CreateMultiPlatformBroadcastDto,
+  MultiPlatformBroadcastDto,
 } from './dto';
 
 @ApiTags('broadcast')
@@ -110,6 +112,36 @@ export class BroadcastController {
   @ApiParam({ name: 'id', description: 'Broadcast ID' })
   async remove(@Param('id') id: string) {
     return this.broadcastService.remove(id);
+  }
+
+  @Post('multi-platform')
+  @ApiOperation({ summary: 'Create a multi-platform broadcast' })
+  @ApiResponse({
+    status: HttpStatus.CREATED,
+    description: 'Multi-platform broadcast created successfully',
+    type: MultiPlatformBroadcastDto,
+  })
+  async createMultiPlatform(
+    @Body() dto: CreateMultiPlatformBroadcastDto,
+  ): Promise<MultiPlatformBroadcastDto> {
+    return this.broadcastService.createMultiPlatform(dto);
+  }
+
+  @Get('multi-platform')
+  @ApiOperation({ summary: 'List broadcasts (multi-platform view)' })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'Returns paginated list of broadcasts in multi-platform format',
+  })
+  @ApiQuery({ name: 'page', required: false, type: Number })
+  @ApiQuery({ name: 'limit', required: false, type: Number })
+  @ApiQuery({ name: 'platform', required: false, type: String })
+  async findAllMultiPlatform(
+    @Query('page', new DefaultValuePipe(1), ParseIntPipe) page: number,
+    @Query('limit', new DefaultValuePipe(20), ParseIntPipe) limit: number,
+    @Query('platform') platform?: string,
+  ): Promise<any> {
+    return this.broadcastService.findAllMultiPlatform(page, limit, platform);
   }
 
   @Post(':id/retry')

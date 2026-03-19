@@ -53,6 +53,25 @@ export interface Broadcast {
   updatedAt: string;
 }
 
+export interface MultiPlatformBroadcast {
+  id: string;
+  status: string;
+  content: { text: string; media?: unknown; embed?: unknown };
+  platforms: string[];
+  targetCommunities: string[];
+  results?: any;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface MultiPlatformBroadcastsResponse {
+  data: MultiPlatformBroadcast[];
+  total: number;
+  page: number;
+  limit: number;
+  totalPages: number;
+}
+
 export interface BroadcastsResponse {
   data: Broadcast[];
   total: number;
@@ -985,6 +1004,31 @@ class ApiClient {
     });
   }
 
+  async createMultiPlatformBroadcast(data: {
+    content: { text: string };
+    platforms: string[];
+    targetCommunities: string[];
+  }): Promise<MultiPlatformBroadcast> {
+    return this.request<MultiPlatformBroadcast>('/api/broadcast/multi-platform', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  }
+
+  async getMultiPlatformBroadcasts(params?: {
+    page?: number;
+    limit?: number;
+    platform?: string;
+  }): Promise<MultiPlatformBroadcastsResponse> {
+    const searchParams = new URLSearchParams();
+    if (params?.page) searchParams.set('page', String(params.page));
+    if (params?.limit) searchParams.set('limit', String(params.limit));
+    if (params?.platform) searchParams.set('platform', params.platform);
+    return this.request<MultiPlatformBroadcastsResponse>(
+      `/api/broadcast/multi-platform?${searchParams}`,
+    );
+  }
+
   // Moderation - Groups
   async getGroups(params?: { page?: number; limit?: number; search?: string; isActive?: boolean }): Promise<GroupsResponse> {
     const searchParams = new URLSearchParams();
@@ -1857,4 +1901,20 @@ export async function getConnectionLogs(id: string, params?: {
 
 export async function deactivateConnection(id: string): Promise<PlatformConnectionType> {
   return api.deactivateConnection(id);
+}
+
+export async function createMultiPlatformBroadcast(data: {
+  content: { text: string };
+  platforms: string[];
+  targetCommunities: string[];
+}): Promise<MultiPlatformBroadcast> {
+  return api.createMultiPlatformBroadcast(data);
+}
+
+export async function getMultiPlatformBroadcasts(params?: {
+  page?: number;
+  limit?: number;
+  platform?: string;
+}): Promise<MultiPlatformBroadcastsResponse> {
+  return api.getMultiPlatformBroadcasts(params);
 }

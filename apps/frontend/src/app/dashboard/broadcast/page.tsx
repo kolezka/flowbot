@@ -1,14 +1,17 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { api, Broadcast } from "@/lib/api";
+import { api, Broadcast, Community, MultiPlatformBroadcast } from "@/lib/api";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 
+const AVAILABLE_PLATFORMS = ["telegram", "discord"] as const;
+type Platform = typeof AVAILABLE_PLATFORMS[number];
+
 export default function BroadcastPage() {
-  const [broadcasts, setBroadcasts] = useState<Broadcast[]>([]);
+  const [broadcasts, setBroadcasts] = useState<MultiPlatformBroadcast[]>([]);
   const [total, setTotal] = useState(0);
   const [page, setPage] = useState(1);
   const [loading, setLoading] = useState(true);
@@ -17,14 +20,11 @@ export default function BroadcastPage() {
 
   // Create form state
   const [text, setText] = useState("");
-  const [targetChatIds, setTargetChatIds] = useState("");
+  const [selectedPlatforms, setSelectedPlatforms] = useState<Platform[]>(["telegram"]);
+  const [communities, setCommunities] = useState<Community[]>([]);
+  const [selectedCommunities, setSelectedCommunities] = useState<string[]>([]);
+  const [communitiesLoading, setCommunitiesLoading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
-
-  // Edit form state
-  const [editingId, setEditingId] = useState<string | null>(null);
-  const [editText, setEditText] = useState("");
-  const [editTargetChatIds, setEditTargetChatIds] = useState("");
-  const [editSubmitting, setEditSubmitting] = useState(false);
 
   const pageSize = 10;
 
@@ -39,11 +39,15 @@ export default function BroadcastPage() {
     }
   }, [actionFeedback]);
 
+  useEffect(() => {
+    loadCommunities();
+  }, [selectedPlatforms]);
+
   const loadBroadcasts = async () => {
     setLoading(true);
     setError(null);
     try {
-      const data = await api.getBroadcasts(page, pageSize);
+      const data = await api.getMultiPlatformBroadcasts({ page, limit: pageSize });
       setBroadcasts(data.data);
       setTotal(data.total);
     } catch (err: any) {
@@ -53,87 +57,59 @@ export default function BroadcastPage() {
     }
   };
 
+  const loadCommunities = async () => {
+    setCommunitiesLoading(true);
+    try {
+      const results: Community[] = [];
+      for (const platform of selectedPlatforms) {
+        const data = await api.getCommunities({ platform, limit: 100, isActive: true });
+        results.push(...data.data);
+      }
+      setCommunities(results);
+      // Remove deselected communities when platform changes
+      setSelectedCommunities((prev) =>
+        prev.filter((id) => results.some((c) => c.id === id)),
+      );
+    } catch {
+      // silently ignore — not critical
+    } finally {
+      setCommunitiesLoading(false);
+    }
+  };
+
+  const togglePlatform = (platform: Platform) => {
+    setSelectedPlatforms((prev) =>
+      prev.includes(platform)
+        ? prev.filter((p) => p !== platform)
+        : [...prev, platform],
+    );
+  };
+
+  const toggleCommunity = (id: string) => {
+    setSelectedCommunities((prev) =>
+      prev.includes(id) ? prev.filter((c) => c !== id) : [...prev, id],
+    );
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!text.trim() || !targetChatIds.trim()) return;
+    if (!text.trim() || selectedPlatforms.length === 0 || selectedCommunities.length === 0) return;
 
     setSubmitting(true);
     try {
-      const chatIds = targetChatIds
-        .split(",")
-        .map((id) => id.trim())
-        .filter(Boolean);
-
-      await api.createBroadcast({ text: text.trim(), targetChatIds: chatIds });
+      await api.createMultiPlatformBroadcast({
+        content: { text: text.trim() },
+        platforms: selectedPlatforms,
+        targetCommunities: selectedCommunities,
+      });
       setText("");
-      setTargetChatIds("");
+      setSelectedCommunities([]);
       setActionFeedback("Broadcast created successfully");
       loadBroadcasts();
     } catch (err: any) {
       alert(err.message || "Failed to create broadcast");
     } finally {
       setSubmitting(false);
-    }
-  };
-
-  const startEdit = (broadcast: Broadcast) => {
-    setEditingId(broadcast.id);
-    setEditText(broadcast.text);
-    setEditTargetChatIds(broadcast.targetChatIds.join(", "));
-  };
-
-  const cancelEdit = () => {
-    setEditingId(null);
-    setEditText("");
-    setEditTargetChatIds("");
-  };
-
-  const handleEditSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!editingId || !editText.trim() || !editTargetChatIds.trim()) return;
-
-    setEditSubmitting(true);
-    try {
-      const chatIds = editTargetChatIds
-        .split(",")
-        .map((id) => id.trim())
-        .filter(Boolean);
-
-      await api.updateBroadcast(editingId, {
-        text: editText.trim(),
-        targetChatIds: chatIds,
-      });
-      cancelEdit();
-      setActionFeedback("Broadcast updated successfully");
-      loadBroadcasts();
-    } catch (err: any) {
-      alert(err.message || "Failed to update broadcast");
-    } finally {
-      setEditSubmitting(false);
-    }
-  };
-
-  const handleDelete = async (id: string) => {
-    if (!window.confirm("Are you sure you want to delete this broadcast?")) return;
-
-    try {
-      await api.deleteBroadcast(id);
-      setActionFeedback("Broadcast deleted successfully");
-      loadBroadcasts();
-    } catch (err: any) {
-      alert(err.message || "Failed to delete broadcast");
-    }
-  };
-
-  const handleRetry = async (id: string) => {
-    if (!window.confirm("Retry this broadcast? A new pending broadcast will be created.")) return;
-
-    try {
-      await api.retryBroadcast(id);
-      setActionFeedback("Broadcast retried - new pending broadcast created");
-      loadBroadcasts();
-    } catch (err: any) {
-      alert(err.message || "Failed to retry broadcast");
     }
   };
 
@@ -145,6 +121,17 @@ export default function BroadcastPage() {
         return "secondary" as const;
       case "failed":
         return "destructive" as const;
+      default:
+        return "outline" as const;
+    }
+  };
+
+  const platformBadgeVariant = (platform: string) => {
+    switch (platform) {
+      case "telegram":
+        return "secondary" as const;
+      case "discord":
+        return "outline" as const;
       default:
         return "outline" as const;
     }
@@ -167,8 +154,32 @@ export default function BroadcastPage() {
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
+            {/* Platform selection */}
             <div>
-              <label className="block text-sm font-medium mb-1">Message Text</label>
+              <label className="block text-sm font-medium mb-2">Platforms</label>
+              <div className="flex gap-4">
+                {AVAILABLE_PLATFORMS.map((platform) => (
+                  <label key={platform} className="flex items-center gap-2 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={selectedPlatforms.includes(platform)}
+                      onChange={() => togglePlatform(platform)}
+                      className="rounded"
+                    />
+                    <span className="text-sm capitalize">{platform}</span>
+                  </label>
+                ))}
+              </div>
+            </div>
+
+            {/* Message text */}
+            <div>
+              <label className="block text-sm font-medium mb-1">
+                Message Text
+                <span className="ml-2 text-xs text-muted-foreground font-normal">
+                  (structured content with media/embed supported via API)
+                </span>
+              </label>
               <textarea
                 className="w-full min-h-[100px] rounded-md border border-input bg-background px-3 py-2 text-sm"
                 placeholder="Enter broadcast message..."
@@ -177,20 +188,57 @@ export default function BroadcastPage() {
                 required
               />
             </div>
+
+            {/* Community picker */}
             <div>
               <label className="block text-sm font-medium mb-1">
-                Target Chat IDs (comma-separated)
+                Target Communities
+                {communitiesLoading && (
+                  <span className="ml-2 text-xs text-muted-foreground">Loading...</span>
+                )}
               </label>
-              <input
-                type="text"
-                className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
-                placeholder="-1001234567890, -1009876543210"
-                value={targetChatIds}
-                onChange={(e) => setTargetChatIds(e.target.value)}
-                required
-              />
+              {communities.length === 0 && !communitiesLoading ? (
+                <p className="text-sm text-muted-foreground">
+                  No active communities found for the selected platform(s).
+                </p>
+              ) : (
+                <div className="max-h-48 overflow-y-auto rounded-md border border-input p-2 space-y-1">
+                  {communities.map((community) => (
+                    <label
+                      key={community.id}
+                      className="flex items-center gap-2 cursor-pointer rounded p-1 hover:bg-muted"
+                    >
+                      <input
+                        type="checkbox"
+                        checked={selectedCommunities.includes(community.id)}
+                        onChange={() => toggleCommunity(community.id)}
+                        className="rounded"
+                      />
+                      <span className="text-sm flex-1">
+                        {community.name || community.platformCommunityId}
+                      </span>
+                      <Badge variant={platformBadgeVariant(community.platform)} className="text-xs">
+                        {community.platform}
+                      </Badge>
+                    </label>
+                  ))}
+                </div>
+              )}
+              {selectedCommunities.length > 0 && (
+                <p className="text-xs text-muted-foreground mt-1">
+                  {selectedCommunities.length} community/communities selected
+                </p>
+              )}
             </div>
-            <Button type="submit" disabled={submitting}>
+
+            <Button
+              type="submit"
+              disabled={
+                submitting ||
+                selectedPlatforms.length === 0 ||
+                selectedCommunities.length === 0
+              }
+            >
               {submitting ? "Creating..." : "Create Broadcast"}
             </Button>
           </form>
@@ -215,10 +263,10 @@ export default function BroadcastPage() {
                 <TableRow>
                   <TableHead>ID</TableHead>
                   <TableHead>Text</TableHead>
+                  <TableHead>Platforms</TableHead>
                   <TableHead>Targets</TableHead>
                   <TableHead>Status</TableHead>
                   <TableHead>Created</TableHead>
-                  <TableHead>Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -241,44 +289,20 @@ export default function BroadcastPage() {
                         {broadcast.id.slice(0, 8)}
                       </TableCell>
                       <TableCell>
-                        {editingId === broadcast.id ? (
-                          <form onSubmit={handleEditSubmit} className="space-y-2">
-                            <textarea
-                              className="w-full min-h-[80px] rounded-md border border-input bg-background px-3 py-2 text-sm"
-                              value={editText}
-                              onChange={(e) => setEditText(e.target.value)}
-                              required
-                            />
-                            <input
-                              type="text"
-                              className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
-                              placeholder="Chat IDs (comma-separated)"
-                              value={editTargetChatIds}
-                              onChange={(e) => setEditTargetChatIds(e.target.value)}
-                              required
-                            />
-                            <div className="flex gap-2">
-                              <Button type="submit" size="sm" disabled={editSubmitting}>
-                                {editSubmitting ? "Saving..." : "Save"}
-                              </Button>
-                              <Button
-                                type="button"
-                                variant="outline"
-                                size="sm"
-                                onClick={cancelEdit}
-                                disabled={editSubmitting}
-                              >
-                                Cancel
-                              </Button>
-                            </div>
-                          </form>
-                        ) : (
-                          <div className="max-w-[300px] truncate">
-                            {broadcast.text}
-                          </div>
-                        )}
+                        <div className="max-w-[280px] truncate">
+                          {broadcast.content.text}
+                        </div>
                       </TableCell>
-                      <TableCell>{broadcast.targetChatIds.length} groups</TableCell>
+                      <TableCell>
+                        <div className="flex gap-1 flex-wrap">
+                          {broadcast.platforms.map((p) => (
+                            <Badge key={p} variant={platformBadgeVariant(p)} className="text-xs capitalize">
+                              {p}
+                            </Badge>
+                          ))}
+                        </div>
+                      </TableCell>
+                      <TableCell>{broadcast.targetCommunities.length} communities</TableCell>
                       <TableCell>
                         <Badge variant={statusVariant(broadcast.status)}>
                           {broadcast.status}
@@ -286,37 +310,6 @@ export default function BroadcastPage() {
                       </TableCell>
                       <TableCell className="text-muted-foreground text-sm">
                         {new Date(broadcast.createdAt).toLocaleString()}
-                      </TableCell>
-                      <TableCell>
-                        {editingId !== broadcast.id && (
-                          <div className="flex gap-1">
-                            {broadcast.status === "pending" && (
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={() => startEdit(broadcast)}
-                              >
-                                Edit
-                              </Button>
-                            )}
-                            {broadcast.status === "failed" && (
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={() => handleRetry(broadcast.id)}
-                              >
-                                Retry
-                              </Button>
-                            )}
-                            <Button
-                              variant="destructive"
-                              size="sm"
-                              onClick={() => handleDelete(broadcast.id)}
-                            >
-                              Delete
-                            </Button>
-                          </div>
-                        )}
                       </TableCell>
                     </TableRow>
                   ))
