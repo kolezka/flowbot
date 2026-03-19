@@ -23,6 +23,16 @@ The platform uses a **Platform Discriminator** pattern: each entity (account, co
 | `packages/discord-transport` | (TBD) | ESM | None |
 | `packages/flow-shared` | Shared flow types/utils | ESM | None |
 
+### Telegram Components (three distinct roles)
+
+| Component | Type | Protocol | Identity | Purpose |
+|-----------|------|----------|----------|---------|
+| `apps/telegram-bot` | App (long-running) | Bot API (grammY) | Bot account | Receives messages, forwards events to flow engine, executes bot-level actions via HTTP |
+| `packages/telegram-transport` | Package (library) | MTProto (GramJS) | User account | SDK imported by Trigger.dev to execute user-account flow actions (read history, join groups, etc.) |
+| `apps/tg-client` | App (one-shot) | MTProto (GramJS) | User account | Auth script — run once to generate a session string, stored in PlatformConnection |
+
+**Flow:** `tg-client` authenticates → session string stored → `telegram-transport` uses it to connect → Trigger.dev calls transport for user-account actions. Meanwhile `telegram-bot` handles all bot-level operations independently.
+
 ### Path Aliases (`tsconfig.base.json`)
 - `@flowbot/db` → `packages/db/src/index.ts`
 - `@flowbot/*` → `packages/*/src`

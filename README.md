@@ -191,39 +191,52 @@ sequenceDiagram
 ```
 flowbot/
 ├── apps/
-│   ├── telegram-bot/           # Telegram bot with flow integration
-│   ├── discord-bot/          # Discord bot
-│   ├── api/                  # NestJS REST API + WebSocket + SSE
-│   ├── frontend/             # Next.js admin dashboard (44 pages)
-│   ├── trigger/              # Trigger.dev worker (7 tasks)
-│   └── tg-client/            # MTProto auth script
+│   ├── telegram-bot/           # Telegram bot (Bot API) — receives events, executes bot actions
+│   ├── discord-bot/            # Discord bot (Gateway) — receives events, executes bot actions
+│   ├── api/                    # NestJS REST API + WebSocket + SSE
+│   ├── frontend/               # Next.js admin dashboard (44 pages)
+│   ├── trigger/                # Trigger.dev worker (7 tasks) + flow engine
+│   └── tg-client/              # One-shot MTProto auth script (generates session strings)
 ├── packages/
-│   ├── db/                   # Prisma 7 schema + client (35+ models)
-│   ├── telegram-transport/   # GramJS MTProto + CircuitBreaker
-│   ├── discord-transport/    # discord.js + CircuitBreaker
-│   └── flow-shared/          # Node type registry (136 types)
-├── scripts/                  # Migration scripts (6 data migration scripts)
+│   ├── db/                     # Prisma 7 schema + client (35+ models)
+│   ├── telegram-transport/     # GramJS MTProto SDK — user-account operations for flow engine
+│   ├── discord-transport/      # discord.js transport SDK
+│   └── flow-shared/            # Node type registry (150+ types)
+├── scripts/                    # Data migration scripts
 ├── docs/
-│   ├── architecture.md       # Detailed architecture docs
-│   └── superpowers/          # Design specs + implementation plans
-├── docker-compose.yml        # PostgreSQL
-└── tsconfig.base.json        # Shared TypeScript config
+│   ├── architecture.md         # Detailed architecture docs
+│   └── superpowers/            # Design specs + implementation plans
+├── docker-compose.yml          # PostgreSQL
+└── tsconfig.base.json          # Shared TypeScript config
 ```
 
 ### Workspaces
 
-| Workspace | Path | Stack |
-|-----------|------|-------|
-| Telegram Bot | `apps/telegram-bot` | grammY, Hono, Pino, Valibot |
-| Discord Bot | `apps/discord-bot` | discord.js, Hono, Pino |
-| API | `apps/api` | NestJS 11, Swagger, class-validator |
-| Frontend | `apps/frontend` | Next.js 16, React 19, Radix UI, Tailwind CSS 4 |
-| Trigger Worker | `apps/trigger` | Trigger.dev v3 |
-| TG Client | `apps/tg-client` | GramJS (telegram), tsx |
-| DB | `packages/db` | Prisma 7, PostgreSQL |
-| Telegram Transport | `packages/telegram-transport` | GramJS, CircuitBreaker |
-| Discord Transport | `packages/discord-transport` | discord.js, CircuitBreaker |
-| Flow Shared | `packages/flow-shared` | Node type registry (136 types) |
+| Workspace | Path | Stack | Role |
+|-----------|------|-------|------|
+| Telegram Bot | `apps/telegram-bot` | grammY, Hono | Long-running bot — listens via Bot API, forwards events to flow engine |
+| Discord Bot | `apps/discord-bot` | discord.js, Hono | Long-running bot — listens via Gateway, forwards events to flow engine |
+| API | `apps/api` | NestJS 11 | REST API, WebSocket, SSE — serves dashboard and coordinates all services |
+| Frontend | `apps/frontend` | Next.js 16, React 19 | Admin dashboard — communities, flows, connections, broadcast, analytics |
+| Trigger Worker | `apps/trigger` | Trigger.dev v3 | Background jobs + flow execution engine (BFS traversal, action dispatch) |
+| TG Client | `apps/tg-client` | GramJS | One-shot auth script — generates MTProto session string per user account |
+| DB | `packages/db` | Prisma 7 | Database schema + generated client (35+ models) |
+| Telegram Transport | `packages/telegram-transport` | GramJS | MTProto SDK — user-account actions (read history, join groups, send as user) |
+| Discord Transport | `packages/discord-transport` | discord.js | Transport SDK for Discord operations |
+| Flow Shared | `packages/flow-shared` | TypeScript | Node type registry (150+ types) shared between frontend and trigger |
+
+### Telegram: Three Components
+
+The platform has three distinct Telegram integrations serving different purposes:
+
+| | `telegram-bot` | `telegram-transport` | `tg-client` |
+|---|---|---|---|
+| **What** | Bot process (long-running) | Library (SDK) | Auth script (one-shot) |
+| **Protocol** | Bot API (grammY) | MTProto (GramJS) | MTProto (GramJS) |
+| **Identity** | Bot account (has "bot" badge) | User account (real person) | User account (real person) |
+| **Purpose** | Receive events + execute bot actions | Execute user-account flow actions | Generate session string for transport |
+
+**How they connect:** `tg-client` authenticates a user account → session string stored in PlatformConnection → `telegram-transport` uses that session → Trigger.dev flow engine calls transport for user-account actions (read history, join groups, send without bot badge). Meanwhile, `telegram-bot` independently handles all bot-level operations and event forwarding.
 
 ---
 
