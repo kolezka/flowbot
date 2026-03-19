@@ -29,8 +29,6 @@ Flowbot is an all-in-one platform for managing Telegram and Discord communities 
 
 ---
 
----
-
 ## Architecture
 
 ### System Overview
@@ -51,11 +49,11 @@ graph TB
     subgraph Backend["Backend Layer"]
         API["NestJS 11 API
         REST &middot; WebSocket &middot; SSE
-        110+ endpoints &middot; 15 modules"]
+        130+ endpoints &middot; 19 modules"]
     end
 
     subgraph Bots["Bot Layer"]
-        BOT["E-Commerce Bot
+        BOT["Telegram Bot
         gramm&Yacute; &middot; Hono"]
         MB["Manager Bot
         grammY &middot; Hono
@@ -72,7 +70,7 @@ graph TB
 
     subgraph Data["Data & Transport Layer"]
         DB[("PostgreSQL
-        Prisma 7 &middot; 26 models")]
+        Prisma 7 &middot; 35+ models")]
         TG_TR["telegram-transport
         GramJS &middot; CircuitBreaker"]
         DC_TR["discord-transport
@@ -85,7 +83,6 @@ graph TB
     FE -->|"WebSocket / SSE"| API
 
     API --> DB
-    BOT --> DB
     MB --> DB
     DB_BOT --> DB
     TRIGGER --> DB
@@ -192,21 +189,22 @@ sequenceDiagram
 ```
 flowbot/
 ├── apps/
-│   ├── bot/                  # E-commerce Telegram bot
+│   ├── bot/                  # Telegram bot (grammY)
 │   ├── manager-bot/          # Group management bot (21 features)
 │   ├── discord-bot/          # Discord bot
 │   ├── api/                  # NestJS REST API + WebSocket + SSE
-│   ├── frontend/             # Next.js admin dashboard (38 pages)
+│   ├── frontend/             # Next.js admin dashboard (44 pages)
 │   ├── trigger/              # Trigger.dev worker (7 tasks)
 │   └── tg-client/            # MTProto auth script
 ├── packages/
-│   ├── db/                   # Prisma 7 schema + client (26 models)
+│   ├── db/                   # Prisma 7 schema + client (35+ models)
 │   ├── telegram-transport/   # GramJS MTProto + CircuitBreaker
 │   ├── discord-transport/    # discord.js + CircuitBreaker
 │   └── flow-shared/          # Node type registry (136 types)
+├── scripts/                  # Migration scripts (6 data migration scripts)
 ├── docs/
 │   ├── architecture.md       # Detailed architecture docs
-│   └── plans/                # Design specs + plans
+│   └── superpowers/          # Design specs + implementation plans
 ├── docker-compose.yml        # PostgreSQL
 └── tsconfig.base.json        # Shared TypeScript config
 ```
@@ -215,7 +213,7 @@ flowbot/
 
 | Workspace | Path | Stack |
 |-----------|------|-------|
-| E-Commerce Bot | `apps/bot` | grammY, Hono, Pino, Valibot |
+| Telegram Bot | `apps/bot` | grammY, Hono, Pino, Valibot |
 | Manager Bot | `apps/manager-bot` | grammY, Hono, Pino, Valibot |
 | Discord Bot | `apps/discord-bot` | discord.js, Hono, Pino |
 | API | `apps/api` | NestJS 11, Swagger, class-validator |
@@ -315,14 +313,13 @@ Features:
 
 ```mermaid
 erDiagram
-    User ||--o| UserIdentity : has
-
-    ManagedGroup ||--o| GroupConfig : has
-    ManagedGroup ||--o{ GroupMember : has
-    ManagedGroup ||--o{ Warning : has
-    ManagedGroup ||--o{ ModerationLog : has
-    ManagedGroup ||--o{ ScheduledMessage : has
-    ManagedGroup ||--o{ GroupAnalyticsSnapshot : has
+    UserIdentity ||--o{ PlatformAccount : has
+    Community ||--o| CommunityConfig : has
+    Community ||--o| CommunityTelegramConfig : has
+    Community ||--o| CommunityDiscordConfig : has
+    Community ||--o{ CommunityMember : has
+    CommunityMember }o--|| PlatformAccount : is
+    Community }o--o| BotInstance : managed_by
 
     FlowDefinition ||--o{ FlowExecution : has
     FlowDefinition ||--o{ FlowVersion : versioned_by
@@ -331,19 +328,21 @@ erDiagram
     BotInstance ||--o{ BotCommand : has
     BotInstance ||--o{ BotResponse : has
     BotInstance ||--o{ BotMenu : has
+    BotInstance ||--o{ PlatformConnection : has
 ```
 
-**26 models** across 8 domains:
+**35+ models** across these domains:
 
 | Domain | Models |
 |--------|--------|
-| Identity | `User`, `UserIdentity` |
-| Group Management | `ManagedGroup`, `GroupConfig`, `GroupMember`, `Warning`, `ModerationLog`, `ScheduledMessage` |
-| Analytics | `GroupAnalyticsSnapshot`, `ReputationScore` |
-| Cross-App | `CrossPostTemplate`, `BroadcastMessage` |
+| Identity | `PlatformAccount`, `UserIdentity` |
+| Communities | `Community`, `CommunityConfig`, `CommunityTelegramConfig`, `CommunityDiscordConfig`, `CommunityMember` |
+| Connections | `PlatformConnection`, `PlatformConnectionLog` |
+| Analytics | `CommunityAnalyticsSnapshot`, `ReputationScore` |
+| Broadcast | `BroadcastMessage`, `CrossPostTemplate` |
+| Moderation | `Warning`, `ModerationLog`, `ScheduledMessage` |
 | Flow Engine | `FlowDefinition`, `FlowFolder`, `FlowExecution`, `FlowVersion`, `UserFlowContext`, `FlowEvent` |
 | Bot Config | `BotInstance`, `BotCommand`, `BotResponse`, `BotMenu`, `BotMenuButton` |
-| TG Client | `ClientSession`, `ClientLog` |
 | Webhooks | `WebhookEndpoint` |
 
 ---
@@ -353,18 +352,19 @@ erDiagram
 | Module | Endpoints | Purpose |
 |--------|-----------|---------|
 | `auth` | `/api/auth/*` | Login, token verification |
-| `users` | `/api/users/*` | User CRUD, unified profiles |
-| `broadcast` | `/api/broadcast/*` | Broadcast management |
+| `platform` | _(global)_ | Platform strategy registry |
+| `identity` | `/api/accounts/*`, `/api/identities/*` | Platform accounts, cross-platform identity linking |
+| `communities` | `/api/communities/*` | Community CRUD, config, members, warnings, logs, scheduled messages |
+| `connections` | `/api/connections/*` | Platform connections, auth flows, health |
+| `broadcast` | `/api/broadcast/*` | Broadcast management (multi-platform) |
 | `flows` | `/api/flows/*` | Flow CRUD, versioning, execution, analytics |
 | `webhooks` | `/api/webhooks/*` | Webhook endpoints |
-| `bot-config` | `/api/bot-config/*` | Bot instance configuration |
-| `moderation` | `/api/moderation/*` | Groups, members, warnings, logs |
-| `analytics` | `/api/analytics/*` | Group analytics snapshots |
-| `reputation` | `/api/reputation/*` | User reputation scores |
-| `automation` | `/api/automation/*` | Automation rules |
+| `bot-config` | `/api/bot-config/*` | Bot instance configuration, heartbeat |
+| `reputation` | `/api/reputation/*` | Account/identity/community reputation scores |
+| `analytics` | `/api/analytics/*` | Community analytics snapshots |
+| `automation` | `/api/automation/*` | Automation health and jobs |
 | `system` | `/api/system/*` | Health checks |
-| `tg-client` | `/api/tg-client/*` | Telegram client sessions |
-| `events` | `/api/events/*` | SSE stream |
+| `events` | `/api/events/*` | WebSocket + SSE streams |
 
 ---
 
@@ -390,7 +390,7 @@ pnpm db build
 
 ```bash
 pnpm api start:dev          # API on port 3000
-pnpm bot dev                # E-commerce bot
+pnpm bot dev                # Telegram bot
 pnpm manager-bot dev        # Manager bot
 pnpm discord-bot dev        # Discord bot
 pnpm frontend dev           # Dashboard on port 3001
@@ -400,10 +400,10 @@ pnpm trigger dev            # Trigger.dev worker
 ### Testing
 
 ```bash
-pnpm api test                           # Jest
+pnpm api test                           # Jest (238 tests)
 pnpm manager-bot test                   # Vitest
 pnpm telegram-transport test            # Vitest
-pnpm trigger test                       # Vitest
+pnpm trigger test                       # Vitest (264 tests)
 pnpm tg-client test                     # Vitest
 ```
 
