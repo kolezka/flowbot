@@ -29,48 +29,6 @@ Flowbot is an all-in-one platform for managing Telegram and Discord communities 
 
 ---
 
-## Screenshots
-
-<table>
-  <tr>
-    <td align="center"><strong>Dashboard Overview</strong></td>
-    <td align="center"><strong>Users Management</strong></td>
-  </tr>
-  <tr>
-    <td><img src="docs/screenshots/dashboard-overview.png" width="450" /></td>
-    <td><img src="docs/screenshots/users.png" width="450" /></td>
-  </tr>
-  <tr>
-    <td align="center"><strong>Broadcast Composer</strong></td>
-    <td align="center"><strong>Flow Builder</strong></td>
-  </tr>
-  <tr>
-    <td><img src="docs/screenshots/broadcast.png" width="450" /></td>
-    <td><img src="docs/screenshots/flows.png" width="450" /></td>
-  </tr>
-  <tr>
-    <td align="center"><strong>Moderation</strong></td>
-    <td align="center"><strong>Bot Configuration</strong></td>
-  </tr>
-  <tr>
-    <td><img src="docs/screenshots/moderation-groups.png" width="450" /></td>
-    <td><img src="docs/screenshots/bot-config.png" width="450" /></td>
-  </tr>
-  <tr>
-    <td align="center"><strong>Webhooks</strong></td>
-    <td align="center"><strong>Telegram Client</strong></td>
-  </tr>
-  <tr>
-    <td><img src="docs/screenshots/webhooks.png" width="450" /></td>
-    <td><img src="docs/screenshots/tg-client.png" width="450" /></td>
-  </tr>
-</table>
-
-<details>
-<summary>Login Screen</summary>
-<img src="docs/screenshots/login.png" width="600" />
-</details>
-
 ---
 
 ## Architecture
@@ -248,7 +206,6 @@ flowbot/
 │   └── flow-shared/          # Node type registry (136 types)
 ├── docs/
 │   ├── architecture.md       # Detailed architecture docs
-│   ├── screenshots/          # Dashboard screenshots
 │   └── plans/                # Design specs + plans
 ├── docker-compose.yml        # PostgreSQL
 └── tsconfig.base.json        # Shared TypeScript config
