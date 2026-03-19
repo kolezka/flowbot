@@ -222,7 +222,7 @@ export type BotInstanceGroupByArgs<ExtArgs extends runtime.Types.Extensions.Inte
 export type BotInstanceGroupByOutputType = {
   id: string
   name: string
-  botToken: string
+  botToken: string | null
   botUsername: string | null
   platform: string
   type: string
@@ -261,7 +261,7 @@ export type BotInstanceWhereInput = {
   NOT?: Prisma.BotInstanceWhereInput | Prisma.BotInstanceWhereInput[]
   id?: Prisma.StringFilter<"BotInstance"> | string
   name?: Prisma.StringFilter<"BotInstance"> | string
-  botToken?: Prisma.StringFilter<"BotInstance"> | string
+  botToken?: Prisma.StringNullableFilter<"BotInstance"> | string | null
   botUsername?: Prisma.StringNullableFilter<"BotInstance"> | string | null
   platform?: Prisma.StringFilter<"BotInstance"> | string
   type?: Prisma.StringFilter<"BotInstance"> | string
@@ -282,7 +282,7 @@ export type BotInstanceWhereInput = {
 export type BotInstanceOrderByWithRelationInput = {
   id?: Prisma.SortOrder
   name?: Prisma.SortOrder
-  botToken?: Prisma.SortOrder
+  botToken?: Prisma.SortOrderInput | Prisma.SortOrder
   botUsername?: Prisma.SortOrderInput | Prisma.SortOrder
   platform?: Prisma.SortOrder
   type?: Prisma.SortOrder
@@ -307,7 +307,7 @@ export type BotInstanceWhereUniqueInput = Prisma.AtLeast<{
   OR?: Prisma.BotInstanceWhereInput[]
   NOT?: Prisma.BotInstanceWhereInput | Prisma.BotInstanceWhereInput[]
   name?: Prisma.StringFilter<"BotInstance"> | string
-  botToken?: Prisma.StringFilter<"BotInstance"> | string
+  botToken?: Prisma.StringNullableFilter<"BotInstance"> | string | null
   platform?: Prisma.StringFilter<"BotInstance"> | string
   type?: Prisma.StringFilter<"BotInstance"> | string
   apiUrl?: Prisma.StringNullableFilter<"BotInstance"> | string | null
@@ -327,7 +327,7 @@ export type BotInstanceWhereUniqueInput = Prisma.AtLeast<{
 export type BotInstanceOrderByWithAggregationInput = {
   id?: Prisma.SortOrder
   name?: Prisma.SortOrder
-  botToken?: Prisma.SortOrder
+  botToken?: Prisma.SortOrderInput | Prisma.SortOrder
   botUsername?: Prisma.SortOrderInput | Prisma.SortOrder
   platform?: Prisma.SortOrder
   type?: Prisma.SortOrder
@@ -351,7 +351,7 @@ export type BotInstanceScalarWhereWithAggregatesInput = {
   NOT?: Prisma.BotInstanceScalarWhereWithAggregatesInput | Prisma.BotInstanceScalarWhereWithAggregatesInput[]
   id?: Prisma.StringWithAggregatesFilter<"BotInstance"> | string
   name?: Prisma.StringWithAggregatesFilter<"BotInstance"> | string
-  botToken?: Prisma.StringWithAggregatesFilter<"BotInstance"> | string
+  botToken?: Prisma.StringNullableWithAggregatesFilter<"BotInstance"> | string | null
   botUsername?: Prisma.StringNullableWithAggregatesFilter<"BotInstance"> | string | null
   platform?: Prisma.StringWithAggregatesFilter<"BotInstance"> | string
   type?: Prisma.StringWithAggregatesFilter<"BotInstance"> | string
@@ -367,7 +367,7 @@ export type BotInstanceScalarWhereWithAggregatesInput = {
 export type BotInstanceCreateInput = {
   id?: string
   name: string
-  botToken: string
+  botToken?: string | null
   botUsername?: string | null
   platform?: string
   type?: string
@@ -388,7 +388,7 @@ export type BotInstanceCreateInput = {
 export type BotInstanceUncheckedCreateInput = {
   id?: string
   name: string
-  botToken: string
+  botToken?: string | null
   botUsername?: string | null
   platform?: string
   type?: string
@@ -409,7 +409,7 @@ export type BotInstanceUncheckedCreateInput = {
 export type BotInstanceUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
-  botToken?: Prisma.StringFieldUpdateOperationsInput | string
+  botToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   botUsername?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   platform?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.StringFieldUpdateOperationsInput | string
@@ -430,7 +430,7 @@ export type BotInstanceUpdateInput = {
 export type BotInstanceUncheckedUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
-  botToken?: Prisma.StringFieldUpdateOperationsInput | string
+  botToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   botUsername?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   platform?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.StringFieldUpdateOperationsInput | string
@@ -451,7 +451,7 @@ export type BotInstanceUncheckedUpdateInput = {
 export type BotInstanceCreateManyInput = {
   id?: string
   name: string
-  botToken: string
+  botToken?: string | null
   botUsername?: string | null
   platform?: string
   type?: string
@@ -467,7 +467,7 @@ export type BotInstanceCreateManyInput = {
 export type BotInstanceUpdateManyMutationInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
-  botToken?: Prisma.StringFieldUpdateOperationsInput | string
+  botToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   botUsername?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   platform?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.StringFieldUpdateOperationsInput | string
@@ -483,7 +483,7 @@ export type BotInstanceUpdateManyMutationInput = {
 export type BotInstanceUncheckedUpdateManyInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
-  botToken?: Prisma.StringFieldUpdateOperationsInput | string
+  botToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   botUsername?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   platform?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.StringFieldUpdateOperationsInput | string
@@ -635,7 +635,7 @@ export type BotInstanceUpdateOneRequiredWithoutMenusNestedInput = {
 export type BotInstanceCreateWithoutCommunitiesInput = {
   id?: string
   name: string
-  botToken: string
+  botToken?: string | null
   botUsername?: string | null
   platform?: string
   type?: string
@@ -655,7 +655,7 @@ export type BotInstanceCreateWithoutCommunitiesInput = {
 export type BotInstanceUncheckedCreateWithoutCommunitiesInput = {
   id?: string
   name: string
-  botToken: string
+  botToken?: string | null
   botUsername?: string | null
   platform?: string
   type?: string
@@ -691,7 +691,7 @@ export type BotInstanceUpdateToOneWithWhereWithoutCommunitiesInput = {
 export type BotInstanceUpdateWithoutCommunitiesInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
-  botToken?: Prisma.StringFieldUpdateOperationsInput | string
+  botToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   botUsername?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   platform?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.StringFieldUpdateOperationsInput | string
@@ -711,7 +711,7 @@ export type BotInstanceUpdateWithoutCommunitiesInput = {
 export type BotInstanceUncheckedUpdateWithoutCommunitiesInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
-  botToken?: Prisma.StringFieldUpdateOperationsInput | string
+  botToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   botUsername?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   platform?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.StringFieldUpdateOperationsInput | string
@@ -731,7 +731,7 @@ export type BotInstanceUncheckedUpdateWithoutCommunitiesInput = {
 export type BotInstanceCreateWithoutConnectionsInput = {
   id?: string
   name: string
-  botToken: string
+  botToken?: string | null
   botUsername?: string | null
   platform?: string
   type?: string
@@ -751,7 +751,7 @@ export type BotInstanceCreateWithoutConnectionsInput = {
 export type BotInstanceUncheckedCreateWithoutConnectionsInput = {
   id?: string
   name: string
-  botToken: string
+  botToken?: string | null
   botUsername?: string | null
   platform?: string
   type?: string
@@ -787,7 +787,7 @@ export type BotInstanceUpdateToOneWithWhereWithoutConnectionsInput = {
 export type BotInstanceUpdateWithoutConnectionsInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
-  botToken?: Prisma.StringFieldUpdateOperationsInput | string
+  botToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   botUsername?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   platform?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.StringFieldUpdateOperationsInput | string
@@ -807,7 +807,7 @@ export type BotInstanceUpdateWithoutConnectionsInput = {
 export type BotInstanceUncheckedUpdateWithoutConnectionsInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
-  botToken?: Prisma.StringFieldUpdateOperationsInput | string
+  botToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   botUsername?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   platform?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.StringFieldUpdateOperationsInput | string
@@ -827,7 +827,7 @@ export type BotInstanceUncheckedUpdateWithoutConnectionsInput = {
 export type BotInstanceCreateWithoutCommandsInput = {
   id?: string
   name: string
-  botToken: string
+  botToken?: string | null
   botUsername?: string | null
   platform?: string
   type?: string
@@ -847,7 +847,7 @@ export type BotInstanceCreateWithoutCommandsInput = {
 export type BotInstanceUncheckedCreateWithoutCommandsInput = {
   id?: string
   name: string
-  botToken: string
+  botToken?: string | null
   botUsername?: string | null
   platform?: string
   type?: string
@@ -883,7 +883,7 @@ export type BotInstanceUpdateToOneWithWhereWithoutCommandsInput = {
 export type BotInstanceUpdateWithoutCommandsInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
-  botToken?: Prisma.StringFieldUpdateOperationsInput | string
+  botToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   botUsername?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   platform?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.StringFieldUpdateOperationsInput | string
@@ -903,7 +903,7 @@ export type BotInstanceUpdateWithoutCommandsInput = {
 export type BotInstanceUncheckedUpdateWithoutCommandsInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
-  botToken?: Prisma.StringFieldUpdateOperationsInput | string
+  botToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   botUsername?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   platform?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.StringFieldUpdateOperationsInput | string
@@ -923,7 +923,7 @@ export type BotInstanceUncheckedUpdateWithoutCommandsInput = {
 export type BotInstanceCreateWithoutResponsesInput = {
   id?: string
   name: string
-  botToken: string
+  botToken?: string | null
   botUsername?: string | null
   platform?: string
   type?: string
@@ -943,7 +943,7 @@ export type BotInstanceCreateWithoutResponsesInput = {
 export type BotInstanceUncheckedCreateWithoutResponsesInput = {
   id?: string
   name: string
-  botToken: string
+  botToken?: string | null
   botUsername?: string | null
   platform?: string
   type?: string
@@ -979,7 +979,7 @@ export type BotInstanceUpdateToOneWithWhereWithoutResponsesInput = {
 export type BotInstanceUpdateWithoutResponsesInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
-  botToken?: Prisma.StringFieldUpdateOperationsInput | string
+  botToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   botUsername?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   platform?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.StringFieldUpdateOperationsInput | string
@@ -999,7 +999,7 @@ export type BotInstanceUpdateWithoutResponsesInput = {
 export type BotInstanceUncheckedUpdateWithoutResponsesInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
-  botToken?: Prisma.StringFieldUpdateOperationsInput | string
+  botToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   botUsername?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   platform?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.StringFieldUpdateOperationsInput | string
@@ -1019,7 +1019,7 @@ export type BotInstanceUncheckedUpdateWithoutResponsesInput = {
 export type BotInstanceCreateWithoutMenusInput = {
   id?: string
   name: string
-  botToken: string
+  botToken?: string | null
   botUsername?: string | null
   platform?: string
   type?: string
@@ -1039,7 +1039,7 @@ export type BotInstanceCreateWithoutMenusInput = {
 export type BotInstanceUncheckedCreateWithoutMenusInput = {
   id?: string
   name: string
-  botToken: string
+  botToken?: string | null
   botUsername?: string | null
   platform?: string
   type?: string
@@ -1075,7 +1075,7 @@ export type BotInstanceUpdateToOneWithWhereWithoutMenusInput = {
 export type BotInstanceUpdateWithoutMenusInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
-  botToken?: Prisma.StringFieldUpdateOperationsInput | string
+  botToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   botUsername?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   platform?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.StringFieldUpdateOperationsInput | string
@@ -1095,7 +1095,7 @@ export type BotInstanceUpdateWithoutMenusInput = {
 export type BotInstanceUncheckedUpdateWithoutMenusInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
-  botToken?: Prisma.StringFieldUpdateOperationsInput | string
+  botToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   botUsername?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   platform?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.StringFieldUpdateOperationsInput | string
@@ -1273,7 +1273,7 @@ export type $BotInstancePayload<ExtArgs extends runtime.Types.Extensions.Interna
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
     name: string
-    botToken: string
+    botToken: string | null
     botUsername: string | null
     platform: string
     type: string

@@ -637,7 +637,7 @@ model FlowExecution {
 model BotInstance {
   id          String   @id @default(cuid())
   name        String
-  botToken    String
+  botToken    String?  // Optional: WhatsApp instances use session-based auth, not tokens
   botUsername String?
   platform    String   @default("telegram") // telegram | discord
   type        String   @default("standard") // standard | manager

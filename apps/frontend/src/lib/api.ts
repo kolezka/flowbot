@@ -506,7 +506,7 @@ export interface SystemStatus {
 export interface BotInstance {
   id: string;
   name: string;
-  botToken: string;
+  botToken?: string | null;
   botUsername?: string;
   type: string;
   isActive: boolean;
@@ -1311,7 +1311,7 @@ class ApiClient {
     return this.request<BotInstance>(`/api/bot-config/${botId}`);
   }
 
-  async createBotInstance(data: { name: string; botToken: string; botUsername?: string; type?: string }): Promise<BotInstance> {
+  async createBotInstance(data: { name: string; botToken?: string; botUsername?: string; type?: string }): Promise<BotInstance> {
     return this.request<BotInstance>('/api/bot-config', { method: 'POST', body: JSON.stringify(data) });
   }
 

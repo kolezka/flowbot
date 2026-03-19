@@ -4,7 +4,7 @@ import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 // Bot Instance DTOs
 export class CreateBotInstanceDto {
   @ApiProperty() @IsString() name: string;
-  @ApiProperty() @IsString() botToken: string;
+  @ApiProperty({ required: false }) @IsOptional() @IsString() botToken?: string;
   @ApiPropertyOptional() @IsOptional() @IsString() botUsername?: string;
   @ApiPropertyOptional() @IsOptional() @IsString() type?: string;
 }
