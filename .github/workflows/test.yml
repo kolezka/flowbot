@@ -24,8 +24,8 @@ jobs:
       - run: pnpm db build
       - run: pnpm api test
 
-  manager-bot-unit:
-    name: Manager Bot Unit Tests (Vitest)
+  telegram-bot-unit:
+    name: Telegram Bot Unit Tests (Vitest)
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -37,7 +37,7 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - run: pnpm db generate
       - run: pnpm db build
-      - run: pnpm manager-bot test
+      - run: pnpm telegram-bot test
 
   telegram-transport-unit:
     name: Telegram Transport Unit Tests (Vitest)
@@ -101,8 +101,8 @@ jobs:
 
   # ── Integration Tests ───────────────────────────────────────
 
-  manager-bot-integration:
-    name: Manager Bot Integration Tests
+  telegram-bot-integration:
+    name: Telegram Bot Integration Tests
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -114,7 +114,7 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - run: pnpm db generate
       - run: pnpm db build
-      - run: pnpm manager-bot test:integration
+      - run: pnpm telegram-bot test:integration
 
   telegram-transport-integration:
     name: Telegram Transport Integration Tests
