@@ -250,6 +250,48 @@ model CommunityMember {
 }
 
 // ==========================================
+// Platform Connection Models
+// ==========================================
+
+model PlatformConnection {
+  id                String    @id @default(cuid())
+  platform          String    // "telegram" | "discord" | etc.
+  name              String    // Display label
+  connectionType    String    // "mtproto" | "bot_token" | "oauth" | "api_key"
+  status            String    @default("inactive") // "active" | "inactive" | "error" | "authenticating"
+  credentials       Json?     // Encrypted: session string, OAuth tokens, API keys
+  metadata          Json?     // Platform-specific: phoneNumber, dcId, guildCount, scopes
+  errorCount        Int       @default(0)
+  lastErrorMessage  String?
+  lastActiveAt      DateTime?
+  botInstanceId     String?
+  botInstance       BotInstance? @relation(fields: [botInstanceId], references: [id])
+
+  logs              PlatformConnectionLog[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([platform])
+  @@index([status])
+  @@index([botInstanceId])
+}
+
+model PlatformConnectionLog {
+  id           String   @id @default(cuid())
+  connectionId String
+  connection   PlatformConnection @relation(fields: [connectionId], references: [id], onDelete: Cascade)
+  level        String   // "info" | "warn" | "error" | "debug"
+  message      String
+  details      Json?
+  createdAt    DateTime @default(now())
+
+  @@index([connectionId])
+  @@index([createdAt])
+  @@index([level])
+}
+
+// ==========================================
 // Manager Bot Models
 // ==========================================
 
@@ -585,6 +627,7 @@ model BotInstance {
   responses    BotResponse[]
   menus        BotMenu[]
   communities  Community[]
+  connections  PlatformConnection[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
