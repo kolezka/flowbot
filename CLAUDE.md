@@ -12,8 +12,7 @@ The platform uses a **Platform Discriminator** pattern: each entity (account, co
 
 | Workspace | Stack | Module | Tests |
 |-----------|-------|--------|-------|
-| `apps/bot` | grammY 1.36, Hono 4.10, Pino 9.9, Valibot 0.42 | ESM (tsx) | None |
-| `apps/manager-bot` | grammY 1.36, Hono 4.10, Pino 9.9, Valibot 0.42, Anthropic SDK | ESM (tsx) | Vitest |
+| `apps/telegram-bot` | grammY 1.36, Hono 4.10, Pino 9.9, Valibot 0.42 | ESM (tsx) | Vitest |
 | `apps/api` | NestJS 11, Swagger 11, class-validator, Socket.IO 4.8, Trigger SDK 3.3 | CJS | Jest |
 | `apps/frontend` | Next.js 16.1, React 19.2, @xyflow/react 12.6, Recharts 3.8, Radix UI, Tailwind 4 | ESM | Playwright |
 | `apps/trigger` | Trigger.dev SDK 3.x, GramJS (telegram), Pino 9.9 | ESM | Vitest |
@@ -39,22 +38,22 @@ pnpm db generate                        # Regenerate Prisma Client
 pnpm db build                           # Compile db package
 
 # Dev
-pnpm bot dev | pnpm manager-bot dev | pnpm api start:dev | pnpm frontend dev | pnpm trigger dev
+pnpm telegram-bot dev | pnpm api start:dev | pnpm frontend dev | pnpm trigger dev
 
 # Build
-pnpm bot build | pnpm manager-bot build | pnpm api build | pnpm frontend build
+pnpm telegram-bot build | pnpm api build | pnpm frontend build
 
 # Typecheck
-pnpm manager-bot typecheck | pnpm trigger typecheck | pnpm telegram-transport typecheck
+pnpm telegram-bot typecheck | pnpm trigger typecheck | pnpm telegram-transport typecheck
 
 # Lint
-pnpm bot lint | pnpm manager-bot lint | pnpm api lint | pnpm frontend lint
+pnpm telegram-bot lint | pnpm api lint | pnpm frontend lint
 pnpm api format                         # Prettier (API only)
 
 # Test
 pnpm api test                           # Jest (238 tests)
 pnpm api test -- --testPathPattern=X    # Specific test
-pnpm manager-bot test                   # Vitest (73 tests)
+pnpm telegram-bot test                  # Vitest
 pnpm telegram-transport test            # Vitest (24 tests)
 pnpm trigger test                       # Vitest
 pnpm tg-client test                     # Vitest
@@ -79,11 +78,9 @@ Schema at `packages/db/prisma/schema.prisma`. After changes: `pnpm db generate &
 
 ## App Structure
 
-**Bot (`apps/bot/src/`):** Feature-based under `bot/` — `features/`, `keyboards/`, `callback-data/`, `middlewares/`, `filters/`, `context.ts`. Polling (dev) / webhook (prod) via `BOT_MODE`. i18n in `locales/`.
+**Telegram Bot (`apps/telegram-bot/src/`):** grammY bot with flow-event forwarding. Basic features in `bot/features/` (welcome, menu, profile, language, admin). Flow integration middlewares (flow-events, flow-trigger). HTTP server with `/api/execute-action`, `/api/flow-event`, `/api/send-message`. i18n in `locales/`.
 
-**Manager Bot (`apps/manager-bot/src/`):** Mirrors bot structure — `bot/features/` (moderation, anti-spam, CAPTCHA, schedule, crosspost, etc.), `bot/middlewares/`, `repositories/`, `services/`, `server/` (Hono with `/api/send-message`).
-
-**Trigger (`apps/trigger/src/`):** Tasks in `trigger/` (analytics-snapshot, broadcast, cross-post, flow-event-cleanup, flow-execution, health-check, scheduled-message). Libs in `lib/` (prisma, telegram, manager-bot, flow-engine/).
+**Trigger (`apps/trigger/src/`):** Tasks in `trigger/` (analytics-snapshot, broadcast, cross-post, flow-event-cleanup, flow-execution, health-check, scheduled-message). Libs in `lib/` (prisma, telegram, telegram-bot, flow-engine/).
 
 **API (`apps/api/src/`):** NestJS modules:
 - **New multi-platform:** platform (global strategy registry), identity (accounts + identity linking), communities (CRUD + config + members + strategies + community-scoped warnings/logs/scheduled-messages), connections (CRUD + auth state machine + health + strategies)
@@ -99,9 +96,8 @@ Schema at `packages/db/prisma/schema.prisma`. After changes: `pnpm db generate &
 | App | Required |
 |-----|----------|
 | Shared | `DATABASE_URL` |
-| Bot | `BOT_TOKEN`, `BOT_MODE`, `BOT_ADMINS`, `LOG_LEVEL`, `SERVER_HOST`, `SERVER_PORT` |
-| Manager Bot | `BOT_TOKEN`, `BOT_MODE`, `BOT_ADMINS`, `LOG_LEVEL`, `SERVER_HOST`, `SERVER_PORT`, `API_SERVER_HOST`, `API_SERVER_PORT` |
-| Trigger | `DATABASE_URL`, `TG_CLIENT_API_ID`, `TG_CLIENT_API_HASH`, `TG_CLIENT_SESSION`, `MANAGER_BOT_API_URL` |
+| Telegram Bot | `BOT_TOKEN`, `BOT_MODE`, `BOT_ADMINS`, `LOG_LEVEL`, `SERVER_HOST`, `SERVER_PORT`, `API_SERVER_HOST`, `API_SERVER_PORT` |
+| Trigger | `DATABASE_URL`, `TG_CLIENT_API_ID`, `TG_CLIENT_API_HASH`, `TG_CLIENT_SESSION`, `TELEGRAM_BOT_API_URL` |
 | API | `DATABASE_URL`, `PORT`, `FRONTEND_URL` |
 | Frontend | `NEXT_PUBLIC_API_URL` |
 

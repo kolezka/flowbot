@@ -7,8 +7,7 @@ flowbot is a multi-platform e-commerce and group management platform built as a 
 ```
 flowbot/
 ├── apps/
-│   ├── bot/              # E-commerce Telegram bot (grammY, Hono)
-│   ├── manager-bot/      # Group management Telegram bot (grammY, Hono)
+│   ├── telegram-bot/     # Telegram bot with flow integration (grammY, Hono)
 │   ├── discord-bot/      # Discord bot (discord.js, Hono)
 │   ├── api/              # REST API + WebSocket server (NestJS 11)
 │   ├── frontend/         # Admin dashboard (Next.js 16, Radix UI)
@@ -29,19 +28,17 @@ graph TD
     Frontend[Frontend<br/>Next.js 16] -->|HTTP REST| API[API<br/>NestJS 11]
     Frontend -->|WebSocket/SSE| API
     API -->|Prisma| DB[(PostgreSQL)]
-    Bot[Bot<br/>grammY] -->|Prisma| DB
-    ManagerBot[Manager Bot<br/>grammY] -->|Prisma| DB
-    ManagerBot -->|HTTP| API
+    TelegramBot[Telegram Bot<br/>grammY] -->|Prisma| DB
+    TelegramBot -->|HTTP| API
     DiscordBot[Discord Bot<br/>discord.js] -->|HTTP| API
     Trigger[Trigger.dev<br/>Worker] -->|Prisma| DB
-    Trigger -->|HTTP| ManagerBot
+    Trigger -->|HTTP| TelegramBot
     Trigger -->|HTTP| DiscordBot
     Trigger -->|GramJS| TgTransport[telegram-transport]
     Trigger -->|discord.js| DcTransport[discord-transport]
     TgTransport -->|MTProto| Telegram[Telegram API]
     DcTransport -->|Gateway/REST| Discord[Discord API]
-    Bot -->|Bot API| Telegram
-    ManagerBot -->|Bot API| Telegram
+    TelegramBot -->|Bot API| Telegram
     DiscordBot -->|Gateway/REST| Discord
 ```
 
@@ -70,19 +67,17 @@ Cross-platform flow example:
 sequenceDiagram
     participant User as Telegram User
     participant TG as Telegram API
-    participant MB as Manager Bot
+    participant TB as Telegram Bot
     participant DB as PostgreSQL
     participant Trigger as Trigger.dev
     participant FE as Dashboard
 
     User->>TG: Send message
-    TG->>MB: Webhook / Polling update
-    MB->>MB: Middleware pipeline<br/>(anti-spam, anti-link, keyword filter)
-    MB->>DB: Log moderation action
-    MB->>TG: Response (warn/mute/delete)
+    TG->>TB: Webhook / Polling update
+    TB->>TB: Middleware pipeline<br/>(flow-events, flow-trigger)
 
     alt Flow trigger matched
-        MB->>Trigger: Trigger flow-execution task
+        TB->>Trigger: Trigger flow-execution task
         Trigger->>DB: Load FlowDefinition
         Trigger->>Trigger: Execute flow (BFS)
         Trigger->>TG: Send messages / ban / mute
@@ -148,33 +143,18 @@ sequenceDiagram
 
 ## Component Architecture
 
-### Bot (`apps/bot`)
+### Telegram Bot (`apps/telegram-bot`)
 
-The e-commerce bot built with grammY and Hono.
+The Telegram bot with flow-event forwarding, built with grammY and Hono.
 
 - **Runtime:** ESM via tsx
 - **Modes:** Polling (dev, `BOT_MODE=polling`) or Webhook (prod, `BOT_MODE=webhook`)
 - **Structure:**
-  - `bot/features/` -- command and conversation handlers
-  - `bot/keyboards/` -- inline and reply keyboard builders
-  - `bot/callback-data/` -- callback query parsers
-  - `bot/middlewares/` -- session, auth, rate limiting
-  - `bot/filters/` -- custom grammY filter queries
-  - `bot/context.ts` -- extended grammY context type
+  - `bot/features/` -- welcome, menu, profile, language, admin handlers
+  - `bot/middlewares/` -- flow-events, flow-trigger integration
   - `locales/` -- i18n translation files
-- **Server:** Hono HTTP server for webhook endpoint and health checks
-
-### Manager Bot (`apps/manager-bot`)
-
-The group management bot with moderation, anti-spam, CAPTCHA, and scheduling.
-
-- **Runtime:** ESM via tsx
-- **Structure mirrors bot:**
-  - `bot/features/` -- moderation, anti-spam, CAPTCHA, schedule, crosspost, keyword filters, quarantine, pipeline
-  - `bot/middlewares/` -- group context, permissions, rate limiting
-  - `repositories/` -- data access layer
-  - `services/` -- business logic
-  - `server/` -- Hono server with `/api/send-message` endpoint (called by Trigger.dev and flow engine)
+- **Server:** Hono HTTP server with `/api/execute-action`, `/api/flow-event`, `/api/send-message` endpoints
+- **Note:** Moderation features (anti-spam, CAPTCHA, keyword filters, etc.) are implemented as visual flows in the Flow Builder, not hardcoded in the bot.
 
 ### API (`apps/api`)
 
@@ -241,7 +221,7 @@ Background job worker running Trigger.dev v3, self-hosted at `trigger.raqz.link`
 - **Shared libraries:**
   - `lib/prisma.ts` -- lazy singleton Prisma client via `getPrisma()`
   - `lib/telegram.ts` -- telegram-transport integration
-  - `lib/manager-bot.ts` -- HTTP client for manager bot API
+  - `lib/telegram-bot.ts` -- HTTP client for Telegram bot API
   - `lib/flow-engine/` -- complete flow execution engine (executor, variables, conditions, actions, advanced nodes, templates)
   - `lib/event-correlator.ts` -- enriches trigger data with cross-bot context
 
@@ -366,10 +346,9 @@ Application services run directly via their respective dev/build commands.
 | App | Required Variables |
 |-----|-------------------|
 | Shared | `DATABASE_URL` |
-| Bot | `BOT_TOKEN`, `BOT_MODE`, `BOT_ADMINS`, `LOG_LEVEL`, `SERVER_HOST`, `SERVER_PORT` |
-| Manager Bot | `BOT_TOKEN`, `BOT_MODE`, `BOT_ADMINS`, `LOG_LEVEL`, `SERVER_HOST`, `SERVER_PORT`, `API_SERVER_HOST`, `API_SERVER_PORT` |
+| Telegram Bot | `BOT_TOKEN`, `BOT_MODE`, `BOT_ADMINS`, `LOG_LEVEL`, `SERVER_HOST`, `SERVER_PORT`, `API_SERVER_HOST`, `API_SERVER_PORT` |
 | Discord Bot | `DISCORD_BOT_TOKEN`, `DISCORD_CLIENT_ID`, `DATABASE_URL`, `API_URL`, `PORT` |
-| Trigger | `DATABASE_URL`, `TG_CLIENT_API_ID`, `TG_CLIENT_API_HASH`, `TG_CLIENT_SESSION`, `MANAGER_BOT_API_URL` |
+| Trigger | `DATABASE_URL`, `TG_CLIENT_API_ID`, `TG_CLIENT_API_HASH`, `TG_CLIENT_SESSION`, `TELEGRAM_BOT_API_URL` |
 | API | `DATABASE_URL`, `PORT`, `FRONTEND_URL` |
 | Frontend | `NEXT_PUBLIC_API_URL` |
 
@@ -386,7 +365,7 @@ Application services run directly via their respective dev/build commands.
 2. Run migrations (`pnpm db prisma:migrate`)
 3. Generate Prisma client (`pnpm db generate && pnpm db build`)
 4. Start API (`pnpm api start:dev`)
-5. Start Telegram bots (`pnpm bot dev`, `pnpm manager-bot dev`)
+5. Start Telegram bot (`pnpm telegram-bot dev`)
 6. Start Discord bot (`pnpm discord-bot dev`)
 7. Start frontend (`pnpm frontend dev`)
 8. Start Trigger.dev worker (`pnpm trigger dev`)

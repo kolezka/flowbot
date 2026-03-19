@@ -53,11 +53,9 @@ graph TB
     end
 
     subgraph Bots["Bot Layer"]
-        BOT["Telegram Bot
-        gramm&Yacute; &middot; Hono"]
-        MB["Manager Bot
+        TG_BOT["Telegram Bot
         grammY &middot; Hono
-        21 feature modules"]
+        Flow event forwarding"]
         DB_BOT["Discord Bot
         discord.js &middot; Hono"]
     end
@@ -83,12 +81,12 @@ graph TB
     FE -->|"WebSocket / SSE"| API
 
     API --> DB
-    MB --> DB
+    TG_BOT --> DB
     DB_BOT --> DB
     TRIGGER --> DB
 
-    MB -->|"HTTP"| API
-    TRIGGER -->|"HTTP"| MB
+    TG_BOT -->|"HTTP"| API
+    TRIGGER -->|"HTTP"| TG_BOT
     TRIGGER -->|"HTTP"| DB_BOT
     TRIGGER --> TG_TR
     TRIGGER --> DC_TR
@@ -96,9 +94,7 @@ graph TB
 
     TG_TR -->|"MTProto"| TG
     DC_TR -->|"Gateway"| DC
-    BOT -->|"Bot API"| TG
-    MB -->|"Bot API"| TG
-    MB -->|"AI moderation"| AI
+    TG_BOT -->|"Bot API"| TG
     DB_BOT -->|"Gateway"| DC
 
     style External fill:#f9f,stroke:#333,stroke-width:1px
@@ -135,23 +131,18 @@ graph LR
 sequenceDiagram
     participant U as User
     participant TG as Telegram API
-    participant MB as Manager Bot
+    participant TB as Telegram Bot
     participant DB as PostgreSQL
     participant TR as Trigger.dev
     participant FE as Dashboard
 
     U->>TG: Send message
-    TG->>MB: Webhook / Polling
-    MB->>MB: Middleware pipeline
-    Note over MB: anti-spam, anti-link,<br/>keyword filter, AI moderation
-
-    alt Violation detected
-        MB->>DB: Log moderation action
-        MB->>TG: Warn / mute / delete
-    end
+    TG->>TB: Webhook / Polling
+    TB->>TB: Middleware pipeline
+    Note over TB: flow-events, flow-trigger
 
     alt Flow trigger matched
-        MB->>TR: Trigger flow-execution task
+        TB->>TR: Trigger flow-execution task
         TR->>DB: Load FlowDefinition
         TR->>TR: BFS graph traversal
         TR->>TG: Execute actions
@@ -189,8 +180,7 @@ sequenceDiagram
 ```
 flowbot/
 ├── apps/
-│   ├── bot/                  # Telegram bot (grammY)
-│   ├── manager-bot/          # Group management bot (21 features)
+│   ├── telegram-bot/           # Telegram bot with flow integration
 │   ├── discord-bot/          # Discord bot
 │   ├── api/                  # NestJS REST API + WebSocket + SSE
 │   ├── frontend/             # Next.js admin dashboard (44 pages)
@@ -213,8 +203,7 @@ flowbot/
 
 | Workspace | Path | Stack |
 |-----------|------|-------|
-| Telegram Bot | `apps/bot` | grammY, Hono, Pino, Valibot |
-| Manager Bot | `apps/manager-bot` | grammY, Hono, Pino, Valibot |
+| Telegram Bot | `apps/telegram-bot` | grammY, Hono, Pino, Valibot |
 | Discord Bot | `apps/discord-bot` | discord.js, Hono, Pino |
 | API | `apps/api` | NestJS 11, Swagger, class-validator |
 | Frontend | `apps/frontend` | Next.js 16, React 19, Radix UI, Tailwind CSS 4 |
@@ -276,24 +265,9 @@ Features:
 - Cross-platform: Telegram trigger can feed Discord actions and vice versa
 - Visual debugger with step-through execution timeline
 
-### Manager Bot (21 Feature Modules)
+### Moderation & Automation
 
-| Feature | Description |
-|---------|-------------|
-| Moderation | `/warn`, `/mute`, `/ban`, `/kick` with escalation engine |
-| Anti-Spam | Flood detection, duplicate filtering |
-| Anti-Link | URL filtering with domain whitelist |
-| CAPTCHA | Button/math challenges on join, timeout kick |
-| Keyword Filters | Auto-delete + warn on keyword match |
-| Welcome Messages | Configurable templates with variables |
-| Scheduled Messages | `/schedule`, `/remind` with future delivery |
-| Cross-Posting | Message syndication across groups |
-| Rules System | `/rules`, `/setrules`, `/pinrules` |
-| Media Restrictions | Per-group media type controls |
-| Reputation | Score based on activity, tenure, warnings |
-| AI Moderation | Claude-powered content classification |
-| Analytics | In-memory counters, daily snapshots |
-| Audit Logging | `/modlog` with full action history |
+Moderation features (anti-spam, CAPTCHA, keyword filters, AI content moderation, etc.) are implemented as **visual flows** in the Flow Builder. Users create and customize moderation automations for any platform — Telegram, Discord, or both — without writing code.
 
 ### Telegram User Account (MTProto Client)
 
@@ -401,8 +375,7 @@ pnpm db build
 
 ```bash
 pnpm api start:dev          # API on port 3000
-pnpm bot dev                # Telegram bot
-pnpm manager-bot dev        # Manager bot
+pnpm telegram-bot dev       # Telegram bot
 pnpm discord-bot dev        # Discord bot
 pnpm frontend dev           # Dashboard on port 3001
 pnpm trigger dev            # Trigger.dev worker
@@ -412,7 +385,7 @@ pnpm trigger dev            # Trigger.dev worker
 
 ```bash
 pnpm api test                           # Jest (238 tests)
-pnpm manager-bot test                   # Vitest
+pnpm telegram-bot test                  # Vitest
 pnpm telegram-transport test            # Vitest
 pnpm trigger test                       # Vitest (264 tests)
 pnpm tg-client test                     # Vitest
@@ -421,8 +394,7 @@ pnpm tg-client test                     # Vitest
 ### Build
 
 ```bash
-pnpm bot build
-pnpm manager-bot build
+pnpm telegram-bot build
 pnpm api build
 pnpm frontend build
 ```
@@ -434,10 +406,9 @@ pnpm frontend build
 | App | Required |
 |-----|----------|
 | Shared | `DATABASE_URL` |
-| Bot | `BOT_TOKEN`, `BOT_MODE`, `BOT_ADMINS`, `LOG_LEVEL`, `SERVER_HOST`, `SERVER_PORT` |
-| Manager Bot | `BOT_TOKEN`, `BOT_MODE`, `BOT_ADMINS`, `LOG_LEVEL`, `SERVER_HOST`, `SERVER_PORT`, `API_SERVER_HOST`, `API_SERVER_PORT` |
+| Telegram Bot | `BOT_TOKEN`, `BOT_MODE`, `BOT_ADMINS`, `LOG_LEVEL`, `SERVER_HOST`, `SERVER_PORT`, `API_SERVER_HOST`, `API_SERVER_PORT` |
 | Discord Bot | `DISCORD_BOT_TOKEN`, `DISCORD_CLIENT_ID`, `DATABASE_URL`, `API_URL`, `PORT` |
-| Trigger | `DATABASE_URL`, `TG_CLIENT_API_ID`, `TG_CLIENT_API_HASH`, `TG_CLIENT_SESSION`, `MANAGER_BOT_API_URL` |
+| Trigger | `DATABASE_URL`, `TG_CLIENT_API_ID`, `TG_CLIENT_API_HASH`, `TG_CLIENT_SESSION`, `TELEGRAM_BOT_API_URL` |
 | API | `DATABASE_URL`, `PORT`, `FRONTEND_URL` |
 | Frontend | `NEXT_PUBLIC_API_URL` |
 
@@ -467,7 +438,7 @@ graph LR
 docker compose up -d                    # 1. PostgreSQL
 pnpm db prisma:migrate && pnpm db generate && pnpm db build  # 2. Migrations
 pnpm api start:dev                      # 3. API
-pnpm bot dev && pnpm manager-bot dev    # 4. Bots
+pnpm telegram-bot dev                   # 4. Bots
 pnpm frontend dev                       # 5. Frontend
 pnpm trigger dev                        # 6. Trigger.dev
 ```
