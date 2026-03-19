@@ -13,6 +13,7 @@ export type {
   WhatsAppPresenceType,
 } from './transport/IWhatsAppTransport.js'
 export { FakeWhatsAppTransport } from './transport/FakeWhatsAppTransport.js'
+export { BaileysTransport } from './transport/BaileysTransport.js'
 export type { SentWhatsAppMessage, DeletedWhatsAppMessage, KickedParticipant } from './transport/FakeWhatsAppTransport.js'
 export { CircuitBreaker, CircuitState, CircuitOpenError } from './transport/CircuitBreaker.js'
 export type { CircuitBreakerConfig } from './transport/CircuitBreaker.js'

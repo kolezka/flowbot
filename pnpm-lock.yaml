@@ -510,9 +510,6 @@ importers:
 
   packages/whatsapp-transport:
     dependencies:
-      '@flowbot/db':
-        specifier: workspace:*
-        version: link:../db
       '@whiskeysockets/baileys':
         specifier: 6.7.16
         version: 6.7.16(bufferutil@4.1.0)(eslint@9.39.2(jiti@2.6.1))(typescript@5.9.3)(utf-8-validate@5.0.10)

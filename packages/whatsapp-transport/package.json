@@ -15,7 +15,6 @@
   "dependencies": {
     "@whiskeysockets/baileys": "6.7.16",
     "pino": "9.9.0",
-    "@flowbot/db": "workspace:*",
     "valibot": "0.42.1"
   },
   "devDependencies": {

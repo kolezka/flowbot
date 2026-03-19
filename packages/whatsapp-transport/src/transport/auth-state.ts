@@ -1,5 +1,3 @@
-import type { PrismaClient } from '@flowbot/db'
-
 export interface AuthStateKeys {
   get(type: string, ids: string[]): Promise<Record<string, unknown>>
   set(data: Record<string, Record<string, unknown>>): Promise<void>
@@ -15,7 +13,13 @@ export interface DbAuthStateResult {
   saveCreds: () => Promise<void>
 }
 
-type PrismaLike = Pick<PrismaClient, 'platformConnection'>
+/** Duck-typed Prisma interface to avoid importing @flowbot/db (rootDir issues). */
+interface PrismaLike {
+  platformConnection: {
+    findUnique(args: { where: { id: string }; select: { credentials: true } }): Promise<{ credentials: unknown } | null>
+    update(args: { where: { id: string }; data: { credentials: unknown } }): Promise<unknown>
+  }
+}
 
 export async function createDbAuthState(
   connectionId: string,
