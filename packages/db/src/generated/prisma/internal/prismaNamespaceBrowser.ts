@@ -53,6 +53,14 @@ export const AnyNull = runtime.AnyNull
 export const ModelName = {
   User: 'User',
   UserIdentity: 'UserIdentity',
+  PlatformAccount: 'PlatformAccount',
+  Community: 'Community',
+  CommunityConfig: 'CommunityConfig',
+  CommunityTelegramConfig: 'CommunityTelegramConfig',
+  CommunityDiscordConfig: 'CommunityDiscordConfig',
+  CommunityMember: 'CommunityMember',
+  PlatformConnection: 'PlatformConnection',
+  PlatformConnectionLog: 'PlatformConnectionLog',
   ManagedGroup: 'ManagedGroup',
   GroupConfig: 'GroupConfig',
   GroupMember: 'GroupMember',
@@ -60,6 +68,7 @@ export const ModelName = {
   ModerationLog: 'ModerationLog',
   ScheduledMessage: 'ScheduledMessage',
   GroupAnalyticsSnapshot: 'GroupAnalyticsSnapshot',
+  CommunityAnalyticsSnapshot: 'CommunityAnalyticsSnapshot',
   ReputationScore: 'ReputationScore',
   CrossPostTemplate: 'CrossPostTemplate',
   BroadcastMessage: 'BroadcastMessage',
@@ -124,12 +133,183 @@ export const UserIdentityScalarFieldEnum = {
   id: 'id',
   telegramId: 'telegramId',
   userId: 'userId',
+  displayName: 'displayName',
+  email: 'email',
   reputationScore: 'reputationScore',
   firstSeenAt: 'firstSeenAt',
   updatedAt: 'updatedAt'
 } as const
 
 export type UserIdentityScalarFieldEnum = (typeof UserIdentityScalarFieldEnum)[keyof typeof UserIdentityScalarFieldEnum]
+
+
+export const PlatformAccountScalarFieldEnum = {
+  id: 'id',
+  identityId: 'identityId',
+  platform: 'platform',
+  platformUserId: 'platformUserId',
+  username: 'username',
+  firstName: 'firstName',
+  lastName: 'lastName',
+  metadata: 'metadata',
+  isBanned: 'isBanned',
+  bannedAt: 'bannedAt',
+  banReason: 'banReason',
+  messageCount: 'messageCount',
+  commandCount: 'commandCount',
+  isVerified: 'isVerified',
+  verifiedAt: 'verifiedAt',
+  lastSeenAt: 'lastSeenAt',
+  lastMessageAt: 'lastMessageAt',
+  lastCommunityId: 'lastCommunityId',
+  referralCode: 'referralCode',
+  referredByAccountId: 'referredByAccountId',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type PlatformAccountScalarFieldEnum = (typeof PlatformAccountScalarFieldEnum)[keyof typeof PlatformAccountScalarFieldEnum]
+
+
+export const CommunityScalarFieldEnum = {
+  id: 'id',
+  platform: 'platform',
+  platformCommunityId: 'platformCommunityId',
+  name: 'name',
+  type: 'type',
+  memberCount: 'memberCount',
+  isActive: 'isActive',
+  metadata: 'metadata',
+  botInstanceId: 'botInstanceId',
+  joinedAt: 'joinedAt',
+  leftAt: 'leftAt',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type CommunityScalarFieldEnum = (typeof CommunityScalarFieldEnum)[keyof typeof CommunityScalarFieldEnum]
+
+
+export const CommunityConfigScalarFieldEnum = {
+  id: 'id',
+  communityId: 'communityId',
+  welcomeEnabled: 'welcomeEnabled',
+  welcomeMessage: 'welcomeMessage',
+  rulesText: 'rulesText',
+  antiSpamEnabled: 'antiSpamEnabled',
+  antiSpamAction: 'antiSpamAction',
+  antiSpamMaxMessages: 'antiSpamMaxMessages',
+  antiSpamWindowSeconds: 'antiSpamWindowSeconds',
+  antiLinkEnabled: 'antiLinkEnabled',
+  antiLinkAction: 'antiLinkAction',
+  antiLinkWhitelist: 'antiLinkWhitelist',
+  warnThresholdMute: 'warnThresholdMute',
+  warnThresholdBan: 'warnThresholdBan',
+  warnDecayDays: 'warnDecayDays',
+  defaultMuteDurationS: 'defaultMuteDurationS',
+  logChannelId: 'logChannelId',
+  autoDeleteCommandsS: 'autoDeleteCommandsS',
+  silentMode: 'silentMode',
+  keywordFiltersEnabled: 'keywordFiltersEnabled',
+  keywordFilters: 'keywordFilters',
+  aiModerationEnabled: 'aiModerationEnabled',
+  aiModerationAction: 'aiModerationAction',
+  aiModThreshold: 'aiModThreshold',
+  notificationEvents: 'notificationEvents',
+  pipelineEnabled: 'pipelineEnabled',
+  pipelineDmTemplate: 'pipelineDmTemplate',
+  pipelineDeeplink: 'pipelineDeeplink',
+  metadata: 'metadata',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type CommunityConfigScalarFieldEnum = (typeof CommunityConfigScalarFieldEnum)[keyof typeof CommunityConfigScalarFieldEnum]
+
+
+export const CommunityTelegramConfigScalarFieldEnum = {
+  id: 'id',
+  communityId: 'communityId',
+  captchaEnabled: 'captchaEnabled',
+  captchaMode: 'captchaMode',
+  captchaTimeoutS: 'captchaTimeoutS',
+  quarantineEnabled: 'quarantineEnabled',
+  quarantineDurationS: 'quarantineDurationS',
+  slowModeDelay: 'slowModeDelay',
+  forumTopicMgmt: 'forumTopicMgmt',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type CommunityTelegramConfigScalarFieldEnum = (typeof CommunityTelegramConfigScalarFieldEnum)[keyof typeof CommunityTelegramConfigScalarFieldEnum]
+
+
+export const CommunityDiscordConfigScalarFieldEnum = {
+  id: 'id',
+  communityId: 'communityId',
+  autoModRules: 'autoModRules',
+  verificationLevel: 'verificationLevel',
+  defaultChannelId: 'defaultChannelId',
+  modLogChannelId: 'modLogChannelId',
+  welcomeChannelId: 'welcomeChannelId',
+  roleOnJoin: 'roleOnJoin',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type CommunityDiscordConfigScalarFieldEnum = (typeof CommunityDiscordConfigScalarFieldEnum)[keyof typeof CommunityDiscordConfigScalarFieldEnum]
+
+
+export const CommunityMemberScalarFieldEnum = {
+  id: 'id',
+  communityId: 'communityId',
+  platformAccountId: 'platformAccountId',
+  role: 'role',
+  messageCount: 'messageCount',
+  joinedAt: 'joinedAt',
+  warningCount: 'warningCount',
+  isMuted: 'isMuted',
+  muteExpiresAt: 'muteExpiresAt',
+  isQuarantined: 'isQuarantined',
+  quarantineExpiresAt: 'quarantineExpiresAt',
+  lastSeenAt: 'lastSeenAt',
+  metadata: 'metadata',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type CommunityMemberScalarFieldEnum = (typeof CommunityMemberScalarFieldEnum)[keyof typeof CommunityMemberScalarFieldEnum]
+
+
+export const PlatformConnectionScalarFieldEnum = {
+  id: 'id',
+  platform: 'platform',
+  name: 'name',
+  connectionType: 'connectionType',
+  status: 'status',
+  credentials: 'credentials',
+  metadata: 'metadata',
+  errorCount: 'errorCount',
+  lastErrorMessage: 'lastErrorMessage',
+  lastActiveAt: 'lastActiveAt',
+  botInstanceId: 'botInstanceId',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type PlatformConnectionScalarFieldEnum = (typeof PlatformConnectionScalarFieldEnum)[keyof typeof PlatformConnectionScalarFieldEnum]
+
+
+export const PlatformConnectionLogScalarFieldEnum = {
+  id: 'id',
+  connectionId: 'connectionId',
+  level: 'level',
+  message: 'message',
+  details: 'details',
+  createdAt: 'createdAt'
+} as const
+
+export type PlatformConnectionLogScalarFieldEnum = (typeof PlatformConnectionLogScalarFieldEnum)[keyof typeof PlatformConnectionLogScalarFieldEnum]
 
 
 export const ManagedGroupScalarFieldEnum = {
@@ -265,6 +445,26 @@ export const GroupAnalyticsSnapshotScalarFieldEnum = {
 } as const
 
 export type GroupAnalyticsSnapshotScalarFieldEnum = (typeof GroupAnalyticsSnapshotScalarFieldEnum)[keyof typeof GroupAnalyticsSnapshotScalarFieldEnum]
+
+
+export const CommunityAnalyticsSnapshotScalarFieldEnum = {
+  id: 'id',
+  communityId: 'communityId',
+  date: 'date',
+  granularity: 'granularity',
+  memberCount: 'memberCount',
+  newMembers: 'newMembers',
+  leftMembers: 'leftMembers',
+  messageCount: 'messageCount',
+  spamDetected: 'spamDetected',
+  warningsIssued: 'warningsIssued',
+  moderationActions: 'moderationActions',
+  metadata: 'metadata',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type CommunityAnalyticsSnapshotScalarFieldEnum = (typeof CommunityAnalyticsSnapshotScalarFieldEnum)[keyof typeof CommunityAnalyticsSnapshotScalarFieldEnum]
 
 
 export const ReputationScoreScalarFieldEnum = {

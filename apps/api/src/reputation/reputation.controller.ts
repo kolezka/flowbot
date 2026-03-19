@@ -1,7 +1,9 @@
 import {
   Controller,
+  DefaultValuePipe,
   Get,
   Param,
+  ParseIntPipe,
   Query,
   HttpStatus,
 } from '@nestjs/common';
@@ -38,6 +40,31 @@ export class ReputationController {
       Math.min(Math.max(parsedLimit, 1), 100),
       groupId || undefined,
     );
+  }
+
+  @Get('account/:accountId')
+  @ApiOperation({ summary: 'Get reputation by platform account ID' })
+  async getByAccountId(
+    @Param('accountId') accountId: string,
+  ) {
+    return this.reputationService.getByAccountId(accountId);
+  }
+
+  @Get('identity/:identityId')
+  @ApiOperation({ summary: 'Get cross-platform reputation by identity ID' })
+  async getByIdentityId(
+    @Param('identityId') identityId: string,
+  ) {
+    return this.reputationService.getByIdentityId(identityId);
+  }
+
+  @Get('community/:communityId')
+  @ApiOperation({ summary: 'Get leaderboard for a community' })
+  async getCommunityLeaderboard(
+    @Param('communityId') communityId: string,
+    @Query('limit', new DefaultValuePipe(20), ParseIntPipe) limit: number,
+  ) {
+    return this.reputationService.getCommunityLeaderboard(communityId, limit);
   }
 
   @Get(':telegramId')

@@ -39,6 +39,22 @@ export class AnalyticsController {
     return this.analyticsService.getOverview();
   }
 
+  @Get('communities/:communityId')
+  @ApiOperation({ summary: 'Get analytics time series for a community' })
+  async getCommunityTimeSeries(
+    @Param('communityId') communityId: string,
+    @Query('from') from?: string,
+    @Query('to') to?: string,
+    @Query('granularity') granularity?: string,
+  ) {
+    return this.analyticsService.getCommunityTimeSeries(
+      communityId,
+      from,
+      to,
+      granularity,
+    );
+  }
+
   @Get('groups/:id')
   @ApiOperation({ summary: 'Get time series analytics for a group' })
   @ApiResponse({

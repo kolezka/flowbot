@@ -151,6 +151,49 @@ export class AnalyticsService {
     };
   }
 
+  async getCommunityTimeSeries(
+    communityId: string,
+    from?: string,
+    to?: string,
+    granularity?: string,
+  ) {
+    const community = await this.prisma.community.findUnique({
+      where: { id: communityId },
+    });
+    if (!community) {
+      throw new NotFoundException(`Community ${communityId} not found`);
+    }
+
+    const where: any = { communityId };
+    if (from || to) {
+      where.date = {};
+      if (from) where.date.gte = new Date(from);
+      if (to) where.date.lte = new Date(to);
+    }
+    if (granularity) where.granularity = granularity;
+
+    const snapshots = await this.prisma.communityAnalyticsSnapshot.findMany({
+      where,
+      orderBy: { date: 'asc' },
+    });
+
+    return {
+      communityId,
+      data: snapshots.map((s) => ({
+        date: s.date instanceof Date ? s.date.toISOString() : s.date,
+        granularity: s.granularity,
+        memberCount: s.memberCount,
+        newMembers: s.newMembers,
+        leftMembers: s.leftMembers,
+        messageCount: s.messageCount,
+        spamDetected: s.spamDetected,
+        warningsIssued: s.warningsIssued,
+        moderationActions: s.moderationActions,
+        metadata: s.metadata,
+      })),
+    };
+  }
+
   private async aggregatePeriod(
     groupId: string,
     since?: Date,

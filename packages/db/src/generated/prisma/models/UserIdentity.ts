@@ -40,6 +40,8 @@ export type UserIdentityMinAggregateOutputType = {
   id: string | null
   telegramId: bigint | null
   userId: string | null
+  displayName: string | null
+  email: string | null
   reputationScore: number | null
   firstSeenAt: Date | null
   updatedAt: Date | null
@@ -49,6 +51,8 @@ export type UserIdentityMaxAggregateOutputType = {
   id: string | null
   telegramId: bigint | null
   userId: string | null
+  displayName: string | null
+  email: string | null
   reputationScore: number | null
   firstSeenAt: Date | null
   updatedAt: Date | null
@@ -58,6 +62,8 @@ export type UserIdentityCountAggregateOutputType = {
   id: number
   telegramId: number
   userId: number
+  displayName: number
+  email: number
   reputationScore: number
   firstSeenAt: number
   updatedAt: number
@@ -79,6 +85,8 @@ export type UserIdentityMinAggregateInputType = {
   id?: true
   telegramId?: true
   userId?: true
+  displayName?: true
+  email?: true
   reputationScore?: true
   firstSeenAt?: true
   updatedAt?: true
@@ -88,6 +96,8 @@ export type UserIdentityMaxAggregateInputType = {
   id?: true
   telegramId?: true
   userId?: true
+  displayName?: true
+  email?: true
   reputationScore?: true
   firstSeenAt?: true
   updatedAt?: true
@@ -97,6 +107,8 @@ export type UserIdentityCountAggregateInputType = {
   id?: true
   telegramId?: true
   userId?: true
+  displayName?: true
+  email?: true
   reputationScore?: true
   firstSeenAt?: true
   updatedAt?: true
@@ -193,6 +205,8 @@ export type UserIdentityGroupByOutputType = {
   id: string
   telegramId: bigint
   userId: string | null
+  displayName: string | null
+  email: string | null
   reputationScore: number
   firstSeenAt: Date
   updatedAt: Date
@@ -225,20 +239,26 @@ export type UserIdentityWhereInput = {
   id?: Prisma.StringFilter<"UserIdentity"> | string
   telegramId?: Prisma.BigIntFilter<"UserIdentity"> | bigint | number
   userId?: Prisma.StringNullableFilter<"UserIdentity"> | string | null
+  displayName?: Prisma.StringNullableFilter<"UserIdentity"> | string | null
+  email?: Prisma.StringNullableFilter<"UserIdentity"> | string | null
   reputationScore?: Prisma.IntFilter<"UserIdentity"> | number
   firstSeenAt?: Prisma.DateTimeFilter<"UserIdentity"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"UserIdentity"> | Date | string
   user?: Prisma.XOR<Prisma.UserNullableScalarRelationFilter, Prisma.UserWhereInput> | null
+  platformAccounts?: Prisma.PlatformAccountListRelationFilter
 }
 
 export type UserIdentityOrderByWithRelationInput = {
   id?: Prisma.SortOrder
   telegramId?: Prisma.SortOrder
   userId?: Prisma.SortOrderInput | Prisma.SortOrder
+  displayName?: Prisma.SortOrderInput | Prisma.SortOrder
+  email?: Prisma.SortOrderInput | Prisma.SortOrder
   reputationScore?: Prisma.SortOrder
   firstSeenAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   user?: Prisma.UserOrderByWithRelationInput
+  platformAccounts?: Prisma.PlatformAccountOrderByRelationAggregateInput
 }
 
 export type UserIdentityWhereUniqueInput = Prisma.AtLeast<{
@@ -248,16 +268,21 @@ export type UserIdentityWhereUniqueInput = Prisma.AtLeast<{
   AND?: Prisma.UserIdentityWhereInput | Prisma.UserIdentityWhereInput[]
   OR?: Prisma.UserIdentityWhereInput[]
   NOT?: Prisma.UserIdentityWhereInput | Prisma.UserIdentityWhereInput[]
+  displayName?: Prisma.StringNullableFilter<"UserIdentity"> | string | null
+  email?: Prisma.StringNullableFilter<"UserIdentity"> | string | null
   reputationScore?: Prisma.IntFilter<"UserIdentity"> | number
   firstSeenAt?: Prisma.DateTimeFilter<"UserIdentity"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"UserIdentity"> | Date | string
   user?: Prisma.XOR<Prisma.UserNullableScalarRelationFilter, Prisma.UserWhereInput> | null
+  platformAccounts?: Prisma.PlatformAccountListRelationFilter
 }, "id" | "telegramId" | "userId">
 
 export type UserIdentityOrderByWithAggregationInput = {
   id?: Prisma.SortOrder
   telegramId?: Prisma.SortOrder
   userId?: Prisma.SortOrderInput | Prisma.SortOrder
+  displayName?: Prisma.SortOrderInput | Prisma.SortOrder
+  email?: Prisma.SortOrderInput | Prisma.SortOrder
   reputationScore?: Prisma.SortOrder
   firstSeenAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
@@ -275,6 +300,8 @@ export type UserIdentityScalarWhereWithAggregatesInput = {
   id?: Prisma.StringWithAggregatesFilter<"UserIdentity"> | string
   telegramId?: Prisma.BigIntWithAggregatesFilter<"UserIdentity"> | bigint | number
   userId?: Prisma.StringNullableWithAggregatesFilter<"UserIdentity"> | string | null
+  displayName?: Prisma.StringNullableWithAggregatesFilter<"UserIdentity"> | string | null
+  email?: Prisma.StringNullableWithAggregatesFilter<"UserIdentity"> | string | null
   reputationScore?: Prisma.IntWithAggregatesFilter<"UserIdentity"> | number
   firstSeenAt?: Prisma.DateTimeWithAggregatesFilter<"UserIdentity"> | Date | string
   updatedAt?: Prisma.DateTimeWithAggregatesFilter<"UserIdentity"> | Date | string
@@ -283,43 +310,57 @@ export type UserIdentityScalarWhereWithAggregatesInput = {
 export type UserIdentityCreateInput = {
   id?: string
   telegramId: bigint | number
+  displayName?: string | null
+  email?: string | null
   reputationScore?: number
   firstSeenAt?: Date | string
   updatedAt?: Date | string
   user?: Prisma.UserCreateNestedOneWithoutIdentityInput
+  platformAccounts?: Prisma.PlatformAccountCreateNestedManyWithoutIdentityInput
 }
 
 export type UserIdentityUncheckedCreateInput = {
   id?: string
   telegramId: bigint | number
   userId?: string | null
+  displayName?: string | null
+  email?: string | null
   reputationScore?: number
   firstSeenAt?: Date | string
   updatedAt?: Date | string
+  platformAccounts?: Prisma.PlatformAccountUncheckedCreateNestedManyWithoutIdentityInput
 }
 
 export type UserIdentityUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   telegramId?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
+  displayName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   reputationScore?: Prisma.IntFieldUpdateOperationsInput | number
   firstSeenAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   user?: Prisma.UserUpdateOneWithoutIdentityNestedInput
+  platformAccounts?: Prisma.PlatformAccountUpdateManyWithoutIdentityNestedInput
 }
 
 export type UserIdentityUncheckedUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   telegramId?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
   userId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  displayName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   reputationScore?: Prisma.IntFieldUpdateOperationsInput | number
   firstSeenAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  platformAccounts?: Prisma.PlatformAccountUncheckedUpdateManyWithoutIdentityNestedInput
 }
 
 export type UserIdentityCreateManyInput = {
   id?: string
   telegramId: bigint | number
   userId?: string | null
+  displayName?: string | null
+  email?: string | null
   reputationScore?: number
   firstSeenAt?: Date | string
   updatedAt?: Date | string
@@ -328,6 +369,8 @@ export type UserIdentityCreateManyInput = {
 export type UserIdentityUpdateManyMutationInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   telegramId?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
+  displayName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   reputationScore?: Prisma.IntFieldUpdateOperationsInput | number
   firstSeenAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -337,6 +380,8 @@ export type UserIdentityUncheckedUpdateManyInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   telegramId?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
   userId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  displayName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   reputationScore?: Prisma.IntFieldUpdateOperationsInput | number
   firstSeenAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -351,6 +396,8 @@ export type UserIdentityCountOrderByAggregateInput = {
   id?: Prisma.SortOrder
   telegramId?: Prisma.SortOrder
   userId?: Prisma.SortOrder
+  displayName?: Prisma.SortOrder
+  email?: Prisma.SortOrder
   reputationScore?: Prisma.SortOrder
   firstSeenAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
@@ -365,6 +412,8 @@ export type UserIdentityMaxOrderByAggregateInput = {
   id?: Prisma.SortOrder
   telegramId?: Prisma.SortOrder
   userId?: Prisma.SortOrder
+  displayName?: Prisma.SortOrder
+  email?: Prisma.SortOrder
   reputationScore?: Prisma.SortOrder
   firstSeenAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
@@ -374,6 +423,8 @@ export type UserIdentityMinOrderByAggregateInput = {
   id?: Prisma.SortOrder
   telegramId?: Prisma.SortOrder
   userId?: Prisma.SortOrder
+  displayName?: Prisma.SortOrder
+  email?: Prisma.SortOrder
   reputationScore?: Prisma.SortOrder
   firstSeenAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
@@ -416,20 +467,42 @@ export type UserIdentityUncheckedUpdateOneWithoutUserNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.UserIdentityUpdateToOneWithWhereWithoutUserInput, Prisma.UserIdentityUpdateWithoutUserInput>, Prisma.UserIdentityUncheckedUpdateWithoutUserInput>
 }
 
+export type UserIdentityCreateNestedOneWithoutPlatformAccountsInput = {
+  create?: Prisma.XOR<Prisma.UserIdentityCreateWithoutPlatformAccountsInput, Prisma.UserIdentityUncheckedCreateWithoutPlatformAccountsInput>
+  connectOrCreate?: Prisma.UserIdentityCreateOrConnectWithoutPlatformAccountsInput
+  connect?: Prisma.UserIdentityWhereUniqueInput
+}
+
+export type UserIdentityUpdateOneWithoutPlatformAccountsNestedInput = {
+  create?: Prisma.XOR<Prisma.UserIdentityCreateWithoutPlatformAccountsInput, Prisma.UserIdentityUncheckedCreateWithoutPlatformAccountsInput>
+  connectOrCreate?: Prisma.UserIdentityCreateOrConnectWithoutPlatformAccountsInput
+  upsert?: Prisma.UserIdentityUpsertWithoutPlatformAccountsInput
+  disconnect?: Prisma.UserIdentityWhereInput | boolean
+  delete?: Prisma.UserIdentityWhereInput | boolean
+  connect?: Prisma.UserIdentityWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.UserIdentityUpdateToOneWithWhereWithoutPlatformAccountsInput, Prisma.UserIdentityUpdateWithoutPlatformAccountsInput>, Prisma.UserIdentityUncheckedUpdateWithoutPlatformAccountsInput>
+}
+
 export type UserIdentityCreateWithoutUserInput = {
   id?: string
   telegramId: bigint | number
+  displayName?: string | null
+  email?: string | null
   reputationScore?: number
   firstSeenAt?: Date | string
   updatedAt?: Date | string
+  platformAccounts?: Prisma.PlatformAccountCreateNestedManyWithoutIdentityInput
 }
 
 export type UserIdentityUncheckedCreateWithoutUserInput = {
   id?: string
   telegramId: bigint | number
+  displayName?: string | null
+  email?: string | null
   reputationScore?: number
   firstSeenAt?: Date | string
   updatedAt?: Date | string
+  platformAccounts?: Prisma.PlatformAccountUncheckedCreateNestedManyWithoutIdentityInput
 }
 
 export type UserIdentityCreateOrConnectWithoutUserInput = {
@@ -451,35 +524,136 @@ export type UserIdentityUpdateToOneWithWhereWithoutUserInput = {
 export type UserIdentityUpdateWithoutUserInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   telegramId?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
+  displayName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   reputationScore?: Prisma.IntFieldUpdateOperationsInput | number
   firstSeenAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  platformAccounts?: Prisma.PlatformAccountUpdateManyWithoutIdentityNestedInput
 }
 
 export type UserIdentityUncheckedUpdateWithoutUserInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   telegramId?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
+  displayName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  reputationScore?: Prisma.IntFieldUpdateOperationsInput | number
+  firstSeenAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  platformAccounts?: Prisma.PlatformAccountUncheckedUpdateManyWithoutIdentityNestedInput
+}
+
+export type UserIdentityCreateWithoutPlatformAccountsInput = {
+  id?: string
+  telegramId: bigint | number
+  displayName?: string | null
+  email?: string | null
+  reputationScore?: number
+  firstSeenAt?: Date | string
+  updatedAt?: Date | string
+  user?: Prisma.UserCreateNestedOneWithoutIdentityInput
+}
+
+export type UserIdentityUncheckedCreateWithoutPlatformAccountsInput = {
+  id?: string
+  telegramId: bigint | number
+  userId?: string | null
+  displayName?: string | null
+  email?: string | null
+  reputationScore?: number
+  firstSeenAt?: Date | string
+  updatedAt?: Date | string
+}
+
+export type UserIdentityCreateOrConnectWithoutPlatformAccountsInput = {
+  where: Prisma.UserIdentityWhereUniqueInput
+  create: Prisma.XOR<Prisma.UserIdentityCreateWithoutPlatformAccountsInput, Prisma.UserIdentityUncheckedCreateWithoutPlatformAccountsInput>
+}
+
+export type UserIdentityUpsertWithoutPlatformAccountsInput = {
+  update: Prisma.XOR<Prisma.UserIdentityUpdateWithoutPlatformAccountsInput, Prisma.UserIdentityUncheckedUpdateWithoutPlatformAccountsInput>
+  create: Prisma.XOR<Prisma.UserIdentityCreateWithoutPlatformAccountsInput, Prisma.UserIdentityUncheckedCreateWithoutPlatformAccountsInput>
+  where?: Prisma.UserIdentityWhereInput
+}
+
+export type UserIdentityUpdateToOneWithWhereWithoutPlatformAccountsInput = {
+  where?: Prisma.UserIdentityWhereInput
+  data: Prisma.XOR<Prisma.UserIdentityUpdateWithoutPlatformAccountsInput, Prisma.UserIdentityUncheckedUpdateWithoutPlatformAccountsInput>
+}
+
+export type UserIdentityUpdateWithoutPlatformAccountsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  telegramId?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
+  displayName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  reputationScore?: Prisma.IntFieldUpdateOperationsInput | number
+  firstSeenAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  user?: Prisma.UserUpdateOneWithoutIdentityNestedInput
+}
+
+export type UserIdentityUncheckedUpdateWithoutPlatformAccountsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  telegramId?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
+  userId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  displayName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   reputationScore?: Prisma.IntFieldUpdateOperationsInput | number
   firstSeenAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
+
+/**
+ * Count Type UserIdentityCountOutputType
+ */
+
+export type UserIdentityCountOutputType = {
+  platformAccounts: number
+}
+
+export type UserIdentityCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  platformAccounts?: boolean | UserIdentityCountOutputTypeCountPlatformAccountsArgs
+}
+
+/**
+ * UserIdentityCountOutputType without action
+ */
+export type UserIdentityCountOutputTypeDefaultArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the UserIdentityCountOutputType
+   */
+  select?: Prisma.UserIdentityCountOutputTypeSelect<ExtArgs> | null
+}
+
+/**
+ * UserIdentityCountOutputType without action
+ */
+export type UserIdentityCountOutputTypeCountPlatformAccountsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.PlatformAccountWhereInput
+}
 
 
 export type UserIdentitySelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
   telegramId?: boolean
   userId?: boolean
+  displayName?: boolean
+  email?: boolean
   reputationScore?: boolean
   firstSeenAt?: boolean
   updatedAt?: boolean
   user?: boolean | Prisma.UserIdentity$userArgs<ExtArgs>
+  platformAccounts?: boolean | Prisma.UserIdentity$platformAccountsArgs<ExtArgs>
+  _count?: boolean | Prisma.UserIdentityCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["userIdentity"]>
 
 export type UserIdentitySelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
   telegramId?: boolean
   userId?: boolean
+  displayName?: boolean
+  email?: boolean
   reputationScore?: boolean
   firstSeenAt?: boolean
   updatedAt?: boolean
@@ -490,6 +664,8 @@ export type UserIdentitySelectUpdateManyAndReturn<ExtArgs extends runtime.Types.
   id?: boolean
   telegramId?: boolean
   userId?: boolean
+  displayName?: boolean
+  email?: boolean
   reputationScore?: boolean
   firstSeenAt?: boolean
   updatedAt?: boolean
@@ -500,14 +676,18 @@ export type UserIdentitySelectScalar = {
   id?: boolean
   telegramId?: boolean
   userId?: boolean
+  displayName?: boolean
+  email?: boolean
   reputationScore?: boolean
   firstSeenAt?: boolean
   updatedAt?: boolean
 }
 
-export type UserIdentityOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "telegramId" | "userId" | "reputationScore" | "firstSeenAt" | "updatedAt", ExtArgs["result"]["userIdentity"]>
+export type UserIdentityOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "telegramId" | "userId" | "displayName" | "email" | "reputationScore" | "firstSeenAt" | "updatedAt", ExtArgs["result"]["userIdentity"]>
 export type UserIdentityInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   user?: boolean | Prisma.UserIdentity$userArgs<ExtArgs>
+  platformAccounts?: boolean | Prisma.UserIdentity$platformAccountsArgs<ExtArgs>
+  _count?: boolean | Prisma.UserIdentityCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type UserIdentityIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   user?: boolean | Prisma.UserIdentity$userArgs<ExtArgs>
@@ -520,11 +700,14 @@ export type $UserIdentityPayload<ExtArgs extends runtime.Types.Extensions.Intern
   name: "UserIdentity"
   objects: {
     user: Prisma.$UserPayload<ExtArgs> | null
+    platformAccounts: Prisma.$PlatformAccountPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
     telegramId: bigint
     userId: string | null
+    displayName: string | null
+    email: string | null
     reputationScore: number
     firstSeenAt: Date
     updatedAt: Date
@@ -923,6 +1106,7 @@ readonly fields: UserIdentityFieldRefs;
 export interface Prisma__UserIdentityClient<T, Null = never, ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
   readonly [Symbol.toStringTag]: "PrismaPromise"
   user<T extends Prisma.UserIdentity$userArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.UserIdentity$userArgs<ExtArgs>>): Prisma.Prisma__UserClient<runtime.Types.Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+  platformAccounts<T extends Prisma.UserIdentity$platformAccountsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.UserIdentity$platformAccountsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$PlatformAccountPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -955,6 +1139,8 @@ export interface UserIdentityFieldRefs {
   readonly id: Prisma.FieldRef<"UserIdentity", 'String'>
   readonly telegramId: Prisma.FieldRef<"UserIdentity", 'BigInt'>
   readonly userId: Prisma.FieldRef<"UserIdentity", 'String'>
+  readonly displayName: Prisma.FieldRef<"UserIdentity", 'String'>
+  readonly email: Prisma.FieldRef<"UserIdentity", 'String'>
   readonly reputationScore: Prisma.FieldRef<"UserIdentity", 'Int'>
   readonly firstSeenAt: Prisma.FieldRef<"UserIdentity", 'DateTime'>
   readonly updatedAt: Prisma.FieldRef<"UserIdentity", 'DateTime'>
@@ -1370,6 +1556,30 @@ export type UserIdentity$userArgs<ExtArgs extends runtime.Types.Extensions.Inter
    */
   include?: Prisma.UserInclude<ExtArgs> | null
   where?: Prisma.UserWhereInput
+}
+
+/**
+ * UserIdentity.platformAccounts
+ */
+export type UserIdentity$platformAccountsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the PlatformAccount
+   */
+  select?: Prisma.PlatformAccountSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the PlatformAccount
+   */
+  omit?: Prisma.PlatformAccountOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.PlatformAccountInclude<ExtArgs> | null
+  where?: Prisma.PlatformAccountWhereInput
+  orderBy?: Prisma.PlatformAccountOrderByWithRelationInput | Prisma.PlatformAccountOrderByWithRelationInput[]
+  cursor?: Prisma.PlatformAccountWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.PlatformAccountScalarFieldEnum | Prisma.PlatformAccountScalarFieldEnum[]
 }
 
 /**

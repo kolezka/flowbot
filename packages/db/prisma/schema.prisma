@@ -131,6 +131,7 @@ model Community {
   telegramConfig        CommunityTelegramConfig?
   discordConfig         CommunityDiscordConfig?
   members               CommunityMember[]
+  analyticsSnapshots    CommunityAnalyticsSnapshot[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -465,6 +466,29 @@ model GroupAnalyticsSnapshot {
 
   @@unique([groupId, date])
   @@index([groupId])
+  @@index([date])
+}
+
+model CommunityAnalyticsSnapshot {
+  id                String    @id @default(cuid())
+  communityId       String
+  community         Community @relation(fields: [communityId], references: [id], onDelete: Cascade)
+  date              DateTime  @db.Date
+  granularity       String    @default("DAY") // DAY | WEEK | MONTH
+  memberCount       Int       @default(0)
+  newMembers        Int       @default(0)
+  leftMembers       Int       @default(0)
+  messageCount      Int       @default(0)
+  spamDetected      Int       @default(0)
+  warningsIssued    Int       @default(0)
+  moderationActions Int       @default(0)
+  metadata          Json?     // linksBlocked, mutesIssued, bansIssued, deletedMessages
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([communityId, date, granularity])
+  @@index([communityId])
   @@index([date])
 }
 

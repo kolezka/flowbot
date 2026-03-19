@@ -28,6 +28,46 @@ export type User = Prisma.UserModel
  */
 export type UserIdentity = Prisma.UserIdentityModel
 /**
+ * Model PlatformAccount
+ * 
+ */
+export type PlatformAccount = Prisma.PlatformAccountModel
+/**
+ * Model Community
+ * 
+ */
+export type Community = Prisma.CommunityModel
+/**
+ * Model CommunityConfig
+ * 
+ */
+export type CommunityConfig = Prisma.CommunityConfigModel
+/**
+ * Model CommunityTelegramConfig
+ * 
+ */
+export type CommunityTelegramConfig = Prisma.CommunityTelegramConfigModel
+/**
+ * Model CommunityDiscordConfig
+ * 
+ */
+export type CommunityDiscordConfig = Prisma.CommunityDiscordConfigModel
+/**
+ * Model CommunityMember
+ * 
+ */
+export type CommunityMember = Prisma.CommunityMemberModel
+/**
+ * Model PlatformConnection
+ * 
+ */
+export type PlatformConnection = Prisma.PlatformConnectionModel
+/**
+ * Model PlatformConnectionLog
+ * 
+ */
+export type PlatformConnectionLog = Prisma.PlatformConnectionLogModel
+/**
  * Model ManagedGroup
  * 
  */
@@ -62,6 +102,11 @@ export type ScheduledMessage = Prisma.ScheduledMessageModel
  * 
  */
 export type GroupAnalyticsSnapshot = Prisma.GroupAnalyticsSnapshotModel
+/**
+ * Model CommunityAnalyticsSnapshot
+ * 
+ */
+export type CommunityAnalyticsSnapshot = Prisma.CommunityAnalyticsSnapshotModel
 /**
  * Model ReputationScore
  * 

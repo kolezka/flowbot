@@ -137,6 +137,172 @@ export class ReputationService {
     };
   }
 
+  async getByAccountId(accountId: string): Promise<ReputationResponseDto> {
+    const account = await this.prisma.platformAccount.findUnique({
+      where: { id: accountId },
+    });
+    if (!account) {
+      throw new NotFoundException(`Account ${accountId} not found`);
+    }
+
+    if (account.platform === 'telegram') {
+      return this.getByTelegramId(account.platformUserId);
+    }
+
+    const memberships = await this.prisma.communityMember.findMany({
+      where: { platformAccountId: accountId },
+    });
+
+    if (memberships.length === 0) {
+      throw new NotFoundException(
+        `No reputation data found for account ${accountId}`,
+      );
+    }
+
+    const totalMessages = memberships.reduce(
+      (sum, m) => sum + m.messageCount,
+      0,
+    );
+    const messageFactor = Math.min(totalMessages, 500);
+
+    const earliest = memberships.reduce(
+      (min, m) => (m.joinedAt < min ? m.joinedAt : min),
+      memberships[0]!.joinedAt,
+    );
+    const daysSinceJoin = Math.floor(
+      (Date.now() - earliest.getTime()) / 86_400_000,
+    );
+    const tenureFactor = Math.min(daysSinceJoin, 365);
+
+    const totalScore = Math.max(0, messageFactor + tenureFactor);
+
+    return {
+      telegramId: account.platformUserId,
+      totalScore,
+      messageFactor,
+      tenureFactor,
+      warningPenalty: 0,
+      moderationBonus: 0,
+      lastCalculated: new Date().toISOString(),
+    };
+  }
+
+  async getByIdentityId(identityId: string): Promise<{
+    identityId: string;
+    aggregateScore: number;
+    platformScores: Array<{
+      platform: string;
+      platformUserId: string;
+      totalScore: number;
+    }>;
+  }> {
+    const identity = await this.prisma.userIdentity.findUnique({
+      where: { id: identityId },
+      include: { platformAccounts: true },
+    });
+    if (!identity) {
+      throw new NotFoundException(`Identity ${identityId} not found`);
+    }
+
+    const platformScores: Array<{
+      platform: string;
+      platformUserId: string;
+      totalScore: number;
+    }> = [];
+
+    for (const account of identity.platformAccounts) {
+      try {
+        const score = await this.getByAccountId(account.id);
+        platformScores.push({
+          platform: account.platform,
+          platformUserId: account.platformUserId,
+          totalScore: score.totalScore,
+        });
+      } catch {
+        // No reputation data for this account — skip
+      }
+    }
+
+    const aggregateScore = platformScores.reduce(
+      (sum, s) => sum + s.totalScore,
+      0,
+    );
+
+    return { identityId, aggregateScore, platformScores };
+  }
+
+  async getCommunityLeaderboard(
+    communityId: string,
+    limit: number = 20,
+  ): Promise<LeaderboardResponseDto> {
+    const community = await this.prisma.community.findUnique({
+      where: { id: communityId },
+    });
+    if (!community) {
+      throw new NotFoundException(`Community ${communityId} not found`);
+    }
+
+    const members = await this.prisma.communityMember.findMany({
+      where: { communityId },
+      include: {
+        platformAccount: {
+          select: {
+            platform: true,
+            platformUserId: true,
+            username: true,
+            firstName: true,
+          },
+        },
+      },
+      orderBy: { messageCount: 'desc' },
+      take: limit,
+    });
+
+    const entries = members.map((m, i) => ({
+      rank: i + 1,
+      telegramId: m.platformAccount.platformUserId,
+      username: m.platformAccount.username ?? undefined,
+      firstName: m.platformAccount.firstName ?? undefined,
+      totalScore:
+        Math.min(m.messageCount, 500) +
+        Math.min(
+          Math.floor((Date.now() - m.joinedAt.getTime()) / 86_400_000),
+          365,
+        ),
+      messageFactor: Math.min(m.messageCount, 500),
+      tenureFactor: Math.min(
+        Math.floor((Date.now() - m.joinedAt.getTime()) / 86_400_000),
+        365,
+      ),
+      warningPenalty: 0,
+      moderationBonus:
+        m.role === 'admin' || m.role === 'moderator' ? 100 : 0,
+    }));
+
+    const scores = entries.map((e) => e.totalScore);
+    const avg =
+      scores.length > 0
+        ? scores.reduce((a, b) => a + b, 0) / scores.length
+        : 0;
+    const sorted = [...scores].sort((a, b) => a - b);
+    const mid = Math.floor(sorted.length / 2);
+    const median =
+      sorted.length === 0
+        ? 0
+        : sorted.length % 2 === 0
+          ? (sorted[mid - 1]! + sorted[mid]!) / 2
+          : sorted[mid]!;
+
+    return {
+      entries,
+      total: members.length,
+      stats: {
+        averageScore: Math.round(avg * 10) / 10,
+        medianScore: Math.round(median * 10) / 10,
+      },
+    };
+  }
+
   private async calculateAndStore(
     telegramId: bigint,
     members: { messageCount: number; joinedAt: Date; role: string }[],
