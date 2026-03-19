@@ -99,6 +99,7 @@ export async function dispatchActions(
     platform?: string;
     discordBotInstanceId?: string;
     platformConnectionId?: string;
+    whatsappBotInstanceId?: string;
   },
 ): Promise<DispatchResult[]> {
   const results: DispatchResult[] = [];
@@ -155,7 +156,11 @@ export async function dispatchActions(
       }
 
       // Determine platform from action name prefix
-      const platform = action.startsWith('discord_') ? 'discord' : 'telegram';
+      const platform = action.startsWith('discord_')
+        ? 'discord'
+        : action.startsWith('whatsapp_')
+          ? 'whatsapp'
+          : 'telegram';
 
       if (platform === 'discord') {
         // Discord actions are dispatched via Discord bot API
@@ -164,6 +169,14 @@ export async function dispatchActions(
           response = await dispatchViaDiscordBotApi(action, output, effectiveBotId);
         } else {
           throw new Error(`Discord action '${action}' requires a discordBotInstanceId in transportConfig`);
+        }
+      } else if (platform === 'whatsapp') {
+        const whatsappAction = action.replace(/^whatsapp_/, '');
+        const whatsappBotId = transportConfig?.whatsappBotInstanceId ?? transportConfig?.botInstanceId;
+        if (whatsappBotId) {
+          response = await dispatchViaBotApi(whatsappAction, output, whatsappBotId);
+        } else {
+          throw new Error(`WhatsApp action '${action}' requires a whatsappBotInstanceId or botInstanceId in transportConfig`);
         }
       } else if (useBot) {
         // Forced bot_api mode
@@ -501,7 +514,7 @@ async function dispatchViaDiscordBotApi(
 // ---------------------------------------------------------------------------
 
 export interface UnifiedDispatchError {
-  platform: 'telegram' | 'discord';
+  platform: 'telegram' | 'discord' | 'whatsapp';
   code: 'RATE_LIMITED' | 'FORBIDDEN' | 'NOT_FOUND' | 'INVALID_INPUT' | 'UNKNOWN';
   message: string;
   originalError?: unknown;
@@ -529,11 +542,24 @@ const UNIFIED_TO_DISCORD: Record<string, string> = {
   unified_set_role: 'discord_add_role',
 };
 
+const UNIFIED_TO_WHATSAPP: Record<string, string> = {
+  unified_send_message: 'send_message',
+  unified_send_media: 'send_photo',
+  unified_delete_message: 'delete_message',
+  unified_ban_user: 'kick_user',
+  unified_kick_user: 'kick_user',
+  unified_pin_message: 'send_message',
+  unified_send_dm: 'send_message',
+  unified_set_role: 'promote_user',
+  unified_promote_user: 'promote_user',
+  unified_demote_user: 'demote_user',
+};
+
 async function dispatchUnifiedAction(
   nodeId: string,
   action: string,
   output: Record<string, unknown>,
-  transportConfig?: { transport?: string; botInstanceId?: string; platform?: string; discordBotInstanceId?: string },
+  transportConfig?: { transport?: string; botInstanceId?: string; platform?: string; discordBotInstanceId?: string; whatsappBotInstanceId?: string },
 ): Promise<DispatchResult[]> {
   const results: DispatchResult[] = [];
   const platform = transportConfig?.platform ?? 'telegram';
@@ -594,6 +620,36 @@ async function dispatchUnifiedAction(
       } catch (error) {
         const msg = error instanceof Error ? error.message : String(error);
         results.push({ nodeId: `${nodeId}:discord`, dispatched: false, error: msg });
+      }
+    }
+  }
+
+  if (platform === 'whatsapp' || platform === 'cross_platform') {
+    const whatsappAction = UNIFIED_TO_WHATSAPP[action];
+    if (whatsappAction) {
+      try {
+        const waParams: Record<string, unknown> = {
+          ...output,
+          action: whatsappAction,
+          chatId: output.targetChatId,
+          userId: output.targetUserId,
+          ...(output.whatsappOverrides as Record<string, unknown> ?? {}),
+        };
+        delete waParams.telegramOverrides;
+        delete waParams.discordOverrides;
+        delete waParams.whatsappOverrides;
+        delete waParams.targetChatId;
+        delete waParams.targetUserId;
+
+        const waBotId = transportConfig?.whatsappBotInstanceId ?? transportConfig?.botInstanceId;
+        if (!waBotId) {
+          throw new Error('WhatsApp dispatch requires whatsappBotInstanceId or botInstanceId');
+        }
+        const response = await dispatchViaBotApi(whatsappAction, waParams, waBotId);
+        results.push({ nodeId: `${nodeId}:whatsapp`, dispatched: true, response });
+      } catch (error) {
+        const msg = error instanceof Error ? error.message : String(error);
+        results.push({ nodeId: `${nodeId}:whatsapp`, dispatched: false, error: msg });
       }
     }
   }
