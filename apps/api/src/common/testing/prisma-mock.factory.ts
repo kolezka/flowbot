@@ -66,6 +66,11 @@ export function createMockPrismaService(): MockPrismaService {
     flowExecution: createMockModel(),
     flowVersion: createMockModel(),
     webhookEndpoint: createMockModel(),
+    community: createMockModel(),
+    communityConfig: createMockModel(),
+    communityTelegramConfig: createMockModel(),
+    communityDiscordConfig: createMockModel(),
+    communityMember: createMockModel(),
     $connect: jest.fn(),
     $disconnect: jest.fn(),
   } as unknown as MockPrismaService;
