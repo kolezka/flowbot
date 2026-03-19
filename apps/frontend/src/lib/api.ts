@@ -683,6 +683,83 @@ export interface ApiError {
   status?: number;
 }
 
+// Community types
+export interface Community {
+  id: string;
+  platform: string;
+  platformCommunityId: string;
+  name?: string;
+  type?: string;
+  memberCount: number;
+  isActive: boolean;
+  metadata?: Record<string, unknown>;
+  botInstanceId?: string;
+  joinedAt: string;
+  leftAt?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CommunityConfig {
+  id: string;
+  communityId: string;
+  welcomeEnabled: boolean;
+  welcomeMessage?: string;
+  rulesText?: string;
+  antiSpamEnabled: boolean;
+  antiSpamAction: string;
+  antiSpamMaxMessages: number;
+  antiSpamWindowSeconds: number;
+  antiLinkEnabled: boolean;
+  antiLinkAction: string;
+  antiLinkWhitelist: string[];
+  warnThresholdMute: number;
+  warnThresholdBan: number;
+  warnDecayDays: number;
+  defaultMuteDurationS: number;
+  logChannelId?: string;
+  autoDeleteCommandsS: number;
+  silentMode: boolean;
+  keywordFiltersEnabled: boolean;
+  keywordFilters: string[];
+  aiModerationEnabled: boolean;
+  aiModerationAction: string;
+  aiModThreshold: number;
+  notificationEvents: string[];
+  pipelineEnabled: boolean;
+  pipelineDmTemplate?: string;
+  pipelineDeeplink?: string;
+}
+
+export interface CommunityTelegramConfig {
+  id: string;
+  communityId: string;
+  captchaEnabled: boolean;
+  captchaMode: string;
+  captchaTimeoutS: number;
+  quarantineEnabled: boolean;
+  quarantineDurationS: number;
+  slowModeDelay: number;
+}
+
+export interface CommunityMember {
+  id: string;
+  communityId: string;
+  platformAccountId: string;
+  platform: string;
+  username?: string;
+  role: string;
+  messageCount: number;
+  joinedAt: string;
+  warningCount: number;
+  isMuted: boolean;
+  muteExpiresAt?: string;
+  isQuarantined: boolean;
+  quarantineExpiresAt?: string;
+  lastSeenAt: string;
+  createdAt: string;
+}
+
 // Platform Account types
 export interface PlatformAccount {
   id: string;
@@ -1460,6 +1537,85 @@ class ApiClient {
       method: "DELETE",
     });
   }
+
+  // Communities
+  async getCommunities(params?: {
+    page?: number;
+    limit?: number;
+    platform?: string;
+    search?: string;
+    isActive?: boolean;
+  }): Promise<{ data: Community[]; total: number; page: number; limit: number; totalPages: number }> {
+    const searchParams = new URLSearchParams();
+    if (params?.page) searchParams.set("page", String(params.page));
+    if (params?.limit) searchParams.set("limit", String(params.limit));
+    if (params?.platform) searchParams.set("platform", params.platform);
+    if (params?.search) searchParams.set("search", params.search);
+    if (params?.isActive !== undefined) searchParams.set("isActive", String(params.isActive));
+    return this.request<{ data: Community[]; total: number; page: number; limit: number; totalPages: number }>(`/api/communities?${searchParams}`);
+  }
+
+  async getCommunity(id: string): Promise<Community> {
+    return this.request<Community>(`/api/communities/${id}`);
+  }
+
+  async getCommunityConfig(id: string): Promise<CommunityConfig> {
+    return this.request<CommunityConfig>(`/api/communities/${id}/config`);
+  }
+
+  async updateCommunityConfig(id: string, config: Partial<CommunityConfig>): Promise<CommunityConfig> {
+    return this.request<CommunityConfig>(`/api/communities/${id}/config`, {
+      method: "PATCH",
+      body: JSON.stringify(config),
+    });
+  }
+
+  async getCommunityTelegramConfig(id: string): Promise<CommunityTelegramConfig> {
+    return this.request<CommunityTelegramConfig>(`/api/communities/${id}/telegram-config`);
+  }
+
+  async updateCommunityTelegramConfig(id: string, config: Partial<CommunityTelegramConfig>): Promise<CommunityTelegramConfig> {
+    return this.request<CommunityTelegramConfig>(`/api/communities/${id}/telegram-config`, {
+      method: "PATCH",
+      body: JSON.stringify(config),
+    });
+  }
+
+  async getCommunityMembers(communityId: string, params?: {
+    page?: number;
+    limit?: number;
+    search?: string;
+    role?: string;
+  }): Promise<{ data: CommunityMember[]; total: number; page: number; limit: number; totalPages: number }> {
+    const searchParams = new URLSearchParams();
+    if (params?.page) searchParams.set("page", String(params.page));
+    if (params?.limit) searchParams.set("limit", String(params.limit));
+    if (params?.search) searchParams.set("search", params.search);
+    if (params?.role) searchParams.set("role", params.role);
+    return this.request<{ data: CommunityMember[]; total: number; page: number; limit: number; totalPages: number }>(`/api/communities/${communityId}/members?${searchParams}`);
+  }
+
+  async getCommunityWarnings(communityId: string, params?: {
+    page?: number;
+    limit?: number;
+    isActive?: boolean;
+  }): Promise<{ data: any[]; total: number; page: number; limit: number; totalPages: number }> {
+    const searchParams = new URLSearchParams();
+    if (params?.page) searchParams.set("page", String(params.page));
+    if (params?.limit) searchParams.set("limit", String(params.limit));
+    if (params?.isActive !== undefined) searchParams.set("isActive", String(params.isActive));
+    return this.request<{ data: any[]; total: number; page: number; limit: number; totalPages: number }>(`/api/communities/${communityId}/warnings?${searchParams}`);
+  }
+
+  async getCommunityLogs(communityId: string, params?: {
+    page?: number;
+    limit?: number;
+  }): Promise<{ data: any[]; total: number; page: number; limit: number; totalPages: number }> {
+    const searchParams = new URLSearchParams();
+    if (params?.page) searchParams.set("page", String(params.page));
+    if (params?.limit) searchParams.set("limit", String(params.limit));
+    return this.request<{ data: any[]; total: number; page: number; limit: number; totalPages: number }>(`/api/communities/${communityId}/logs?${searchParams}`);
+  }
 }
 
 export const api = new ApiClient();
@@ -1506,4 +1662,50 @@ export async function linkAccount(identityId: string, platformAccountId: string)
 
 export async function unlinkAccount(identityId: string, accountId: string): Promise<UserIdentity> {
   return api.unlinkAccount(identityId, accountId);
+}
+
+export async function getCommunities(params?: {
+  page?: number;
+  limit?: number;
+  platform?: string;
+  search?: string;
+  isActive?: boolean;
+}): Promise<{ data: Community[]; total: number; page: number; limit: number; totalPages: number }> {
+  return api.getCommunities(params);
+}
+
+export async function getCommunity(id: string): Promise<Community> {
+  return api.getCommunity(id);
+}
+
+export async function getCommunityConfig(id: string): Promise<CommunityConfig> {
+  return api.getCommunityConfig(id);
+}
+
+export async function updateCommunityConfig(id: string, config: Partial<CommunityConfig>): Promise<CommunityConfig> {
+  return api.updateCommunityConfig(id, config);
+}
+
+export async function getCommunityMembers(communityId: string, params?: {
+  page?: number;
+  limit?: number;
+  search?: string;
+  role?: string;
+}): Promise<{ data: CommunityMember[]; total: number; page: number; limit: number; totalPages: number }> {
+  return api.getCommunityMembers(communityId, params);
+}
+
+export async function getCommunityWarnings(communityId: string, params?: {
+  page?: number;
+  limit?: number;
+  isActive?: boolean;
+}): Promise<{ data: any[]; total: number; page: number; limit: number; totalPages: number }> {
+  return api.getCommunityWarnings(communityId, params);
+}
+
+export async function getCommunityLogs(communityId: string, params?: {
+  page?: number;
+  limit?: number;
+}): Promise<{ data: any[]; total: number; page: number; limit: number; totalPages: number }> {
+  return api.getCommunityLogs(communityId, params);
 }

@@ -30,6 +30,7 @@ import {
   Settings,
   Globe,
   FileText as FileTextIcon,
+  Building2,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 
@@ -76,6 +77,18 @@ const navigation: NavSection[] = [
     children: [
       { label: "Accounts", href: "/dashboard/identity/accounts", icon: Users },
       { label: "Linked Identities", href: "/dashboard/identity/linked", icon: Layers },
+    ],
+  },
+  {
+    label: "Communities",
+    icon: Building2,
+    children: [
+      { label: "Overview", href: "/dashboard/communities", icon: Building2 },
+      {
+        label: "Scheduled Messages",
+        href: "/dashboard/moderation/scheduled-messages",
+        icon: Calendar,
+      },
     ],
   },
   {
