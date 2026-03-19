@@ -39,10 +39,6 @@ export type MockPrismaService = {
 export function createMockPrismaService(): MockPrismaService {
   return {
     user: createMockModel(),
-    category: createMockModel(),
-    product: createMockModel(),
-    cart: createMockModel(),
-    cartItem: createMockModel(),
     userIdentity: createMockModel(),
     platformAccount: createMockModel(),
     managedGroup: createMockModel(),

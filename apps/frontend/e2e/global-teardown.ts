@@ -55,23 +55,6 @@ async function globalTeardown(_config: FullConfig) {
       }
     }
 
-    // Clean up test products
-    const productsRes = await apiGet<any>(token, '/api/products?limit=100');
-    const products = Array.isArray(productsRes) ? productsRes : (productsRes?.data ?? []);
-    for (const p of products) {
-      if (p.name?.includes('Test Product') || p.name?.includes('CRUD Product') || p.name?.includes('Smoke Product')) {
-        await apiDelete(token, `/api/products/${p.id}`);
-      }
-    }
-
-    // Clean up test categories
-    const categoriesRes = await apiGet<any>(token, '/api/categories');
-    const categories = Array.isArray(categoriesRes) ? categoriesRes : (categoriesRes?.data ?? []);
-    for (const c of categories) {
-      if (c.name?.includes('Test Cat') || c.name?.includes('Test Category') || c.name?.includes('CRUD Cat') || c.name?.includes('ProdTest Cat') || c.name?.includes('Smoke Cat')) {
-        await apiDelete(token, `/api/categories/${c.id}`);
-      }
-    }
 
     console.log('[teardown] Cleaned up test data');
   } catch (e) {

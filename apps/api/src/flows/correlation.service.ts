@@ -8,7 +8,7 @@ export interface CorrelatedUserContext {
     reputationScore: number;
     firstSeenAt: Date;
   } | null;
-  shopUser: {
+  botUser: {
     id: string;
     username: string | null;
     firstName: string | null;
@@ -77,7 +77,7 @@ export class CorrelationService {
             firstSeenAt: identity.firstSeenAt,
           }
         : null,
-      shopUser: user
+      botUser: user
         ? {
             id: user.id,
             username: user.username,

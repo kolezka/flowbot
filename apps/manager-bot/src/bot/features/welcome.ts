@@ -92,7 +92,7 @@ export function createWelcomeFeature(prisma: PrismaClient) {
     if (config.pipelineEnabled) {
       const group = await prisma.managedGroup.findUnique({ where: { chatId: BigInt(ctx.chat.id) } })
       if (group) {
-        const dmTemplate = config.pipelineDmTemplate || 'Welcome! Check out our shop.'
+        const dmTemplate = config.pipelineDmTemplate || 'Welcome! Start chatting with the bot.'
         const deeplink = config.pipelineDeeplink || ''
 
         await modLogRepo.create({
