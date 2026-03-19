@@ -14,3 +14,7 @@ export type {
 } from './transport/IWhatsAppTransport.js'
 export { FakeWhatsAppTransport } from './transport/FakeWhatsAppTransport.js'
 export type { SentWhatsAppMessage, DeletedWhatsAppMessage, KickedParticipant } from './transport/FakeWhatsAppTransport.js'
+export { CircuitBreaker, CircuitState, CircuitOpenError } from './transport/CircuitBreaker.js'
+export type { CircuitBreakerConfig } from './transport/CircuitBreaker.js'
+export { createDbAuthState } from './transport/auth-state.js'
+export type { AuthState, AuthStateKeys, DbAuthStateResult } from './transport/auth-state.js'
