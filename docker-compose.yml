@@ -18,5 +18,13 @@ services:
       timeout: 5s
       retries: 5
 
+  whatsapp-bot:
+    build: ./apps/whatsapp-bot
+    env_file: ./apps/whatsapp-bot/.env
+    depends_on:
+      - postgres
+    ports:
+      - "3004:3004"
+
 volumes:
   postgres_data:
