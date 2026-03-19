@@ -8,3 +8,4 @@ export { executeAction } from './actions.js';
 export { executeParallelBranch, executeDbQuery, executeLoop, evaluateSwitch, executeTransform, executeNotification } from './advanced-nodes.js';
 export { getContext, setContext, deleteContext, listContextKeys } from './context-store.js';
 export { getTransportForConnection, clearTransportCache } from './connection-transport.js';
+export { dispatchUserAction } from './user-actions.js';
