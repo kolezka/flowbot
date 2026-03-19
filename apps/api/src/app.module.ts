@@ -17,6 +17,7 @@ import { WebhooksModule } from './webhooks/webhooks.module';
 import { AutomationModule } from './automation/automation.module';
 import { AuthModule } from './auth/auth.module';
 import { PlatformModule } from './platform/platform.module';
+import { IdentityModule } from './identity/identity.module';
 
 @Global()
 @Module({
@@ -39,6 +40,7 @@ AnalyticsModule,
     FlowsModule,
     WebhooksModule,
     AutomationModule,
+    IdentityModule,
   ],
   controllers: [AppController],
   providers: [AppService],

@@ -44,6 +44,7 @@ export function createMockPrismaService(): MockPrismaService {
     cart: createMockModel(),
     cartItem: createMockModel(),
     userIdentity: createMockModel(),
+    platformAccount: createMockModel(),
     managedGroup: createMockModel(),
     groupConfig: createMockModel(),
     groupMember: createMockModel(),
