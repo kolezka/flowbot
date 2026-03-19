@@ -20,12 +20,13 @@
 
 ## What is Flowbot?
 
-Flowbot is an all-in-one platform for managing Telegram and Discord communities with a visual automation engine. It combines:
+Flowbot is an all-in-one platform for managing communities across **Telegram, Discord, and more** with a visual automation engine. It combines:
 
-- **Visual Flow Builder** — drag-and-drop automation with 136 node types across Telegram, Discord, and cross-platform actions
-- **Group Management Bot** — moderation, anti-spam, CAPTCHA, scheduling, reputation, AI content moderation
-- **Admin Dashboard** — real-time monitoring, analytics, broadcast management, bot configuration
+- **Visual Flow Builder** — drag-and-drop automation with 150+ node types across Telegram, Discord, and cross-platform actions
+- **Multi-Platform Bots** — Telegram (grammY) and Discord (discord.js) bots that forward events to the flow engine for processing
+- **Admin Dashboard** — real-time monitoring, analytics, multi-platform broadcast, community management, bot configuration
 - **Background Job Engine** — reliable task execution with Trigger.dev for broadcasts, scheduled messages, flow execution
+- **Telegram User Account** — MTProto client that acts as a real user for advanced operations bots can't do
 
 ---
 
@@ -63,7 +64,7 @@ graph TB
     subgraph Workers["Background Workers"]
         TRIGGER["Trigger.dev v3
         7 background tasks
-        Flow Engine (136 node types)"]
+        Flow Engine (150+ node types)"]
     end
 
     subgraph Data["Data & Transport Layer"]
@@ -74,7 +75,7 @@ graph TB
         DC_TR["discord-transport
         discord.js &middot; CircuitBreaker"]
         FS["flow-shared
-        136 node type registry"]
+        150+ node type registry"]
     end
 
     FE -->|"HTTP REST"| API
@@ -125,32 +126,42 @@ graph LR
     style EB fill:#fff3e0,stroke:#333
 ```
 
-### Data Flow: Message Processing
+### Data Flow: Message Processing (Multi-Platform)
 
 ```mermaid
 sequenceDiagram
     participant U as User
-    participant TG as Telegram API
-    participant TB as Telegram Bot
-    participant DB as PostgreSQL
+    participant P as Platform API<br/>(Telegram / Discord)
+    participant BOT as Platform Bot
+    participant API as NestJS API
     participant TR as Trigger.dev
-    participant FE as Dashboard
+    participant DB as PostgreSQL
 
-    U->>TG: Send message
-    TG->>TB: Webhook / Polling
-    TB->>TB: Middleware pipeline
-    Note over TB: flow-events, flow-trigger
+    U->>P: Send message
+    P->>BOT: Webhook / Polling / Gateway
+    BOT->>BOT: Middleware pipeline
+    Note over BOT: flow-events forwards<br/>standardized FlowTriggerEvent
 
-    alt Flow trigger matched
-        TB->>TR: Trigger flow-execution task
-        TR->>DB: Load FlowDefinition
-        TR->>TR: BFS graph traversal
-        TR->>TG: Execute actions
-        TR->>DB: Save execution results
+    BOT->>API: POST /api/flows/webhook
+    API->>TR: Trigger flow-execution task
+    TR->>DB: Load FlowDefinition
+    TR->>TR: BFS graph traversal
+    Note over TR: Resolves target platform<br/>from Community → BotInstance
+
+    alt Telegram action
+        TR->>P: Via telegram-transport (MTProto) or Bot API
     end
+    alt Discord action
+        TR->>P: Via discord-bot HTTP API
+    end
+    alt Cross-platform action
+        TR->>P: Fan out to all target platforms
+    end
+
+    TR->>DB: Save execution results
 ```
 
-### Data Flow: Broadcast Delivery
+### Data Flow: Multi-Platform Broadcast
 
 ```mermaid
 sequenceDiagram
@@ -159,18 +170,18 @@ sequenceDiagram
     participant API as NestJS API
     participant DB as PostgreSQL
     participant TR as Trigger.dev
-    participant TP as telegram-transport
     participant TG as Telegram API
+    participant DC as Discord API
 
-    A->>FE: Create broadcast
-    FE->>API: POST /api/broadcast
+    A->>FE: Create broadcast (select platforms + communities)
+    FE->>API: POST /api/broadcast/multi-platform
     API->>DB: Create BroadcastMessage
     API->>TR: Trigger broadcast task
-    TR->>DB: Load BroadcastMessage
-    TR->>TP: Send to each chat
-    TP->>TP: CircuitBreaker check
-    TP->>TG: MTProto sendMessage
-    TR->>DB: Update status
+    TR->>DB: Load BroadcastMessage + target communities
+    Note over TR: Groups communities by platform,<br/>resolves BotInstance per community
+    TR->>TG: Send to Telegram communities (MTProto)
+    TR->>DC: Send to Discord communities (Bot API)
+    TR->>DB: Update per-community delivery results
 ```
 
 ---
@@ -220,7 +231,7 @@ flowbot/
 
 ### Visual Flow Builder
 
-The flow engine supports **136 node types** for building cross-platform automations:
+The flow engine supports **150+ node types** for building cross-platform automations:
 
 ```mermaid
 graph LR
@@ -237,9 +248,9 @@ graph LR
         C3["Context (1)"]
     end
 
-    subgraph Actions["Actions (80+)"]
-        A1["Telegram Messaging (22)"]
-        A2["Telegram Management (9)"]
+    subgraph Actions["Actions (100+)"]
+        A1["Telegram Bot Actions (22)"]
+        A2["Telegram User Account (18)"]
         A3["Discord (30)"]
         A4["Unified Cross-Platform (8)"]
         A5["Context & Utility (6)"]
@@ -284,12 +295,12 @@ User account actions are available as purple "User Account Actions" in the flow 
 
 | Task | Queue | Schedule | Description |
 |------|-------|----------|-------------|
-| `broadcast` | `telegram` | On-demand | Broadcast messages via MTProto |
-| `cross-post` | `telegram` | On-demand | Syndicate messages across groups |
-| `scheduled-message` | `telegram` | `* * * * *` | Deliver due messages every minute |
+| `broadcast` | default | On-demand | Multi-platform broadcast to target communities |
+| `cross-post` | default | On-demand | Syndicate messages across communities and platforms |
+| `scheduled-message` | default | `* * * * *` | Deliver due messages every minute |
 | `flow-execution` | `flows` | On-demand | Execute flow definitions (BFS engine) |
 | `flow-event-cleanup` | default | `0 3 * * *` | Prune expired events daily |
-| `analytics-snapshot` | default | `0 2 * * *` | Capture group analytics daily |
+| `analytics-snapshot` | default | `0 2 * * *` | Capture community analytics daily |
 | `health-check` | default | `*/5 * * * *` | System health monitoring |
 
 ---
