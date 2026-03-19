@@ -47,6 +47,10 @@ vi.mock('../lib/telegram.js', () => ({
   getTelegramTransport: vi.fn().mockResolvedValue(mockTransport),
 }))
 
+vi.mock('../lib/flow-engine/user-actions.js', () => ({
+  dispatchUserAction: vi.fn().mockResolvedValue({ nodeId: '', dispatched: true, response: {} }),
+}))
+
 import { dispatchActions } from '../lib/flow-engine/dispatcher.js'
 
 function makeCtx(

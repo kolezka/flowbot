@@ -64,6 +64,10 @@ vi.mock('../lib/prisma.js', () => ({
   getPrisma: vi.fn(() => mockPrisma),
 }))
 
+vi.mock('../lib/flow-engine/user-actions.js', () => ({
+  dispatchUserAction: vi.fn().mockResolvedValue({ nodeId: '', dispatched: true, response: {} }),
+}))
+
 import { dispatchActions } from '../lib/flow-engine/dispatcher.js'
 
 // ---------------------------------------------------------------------------

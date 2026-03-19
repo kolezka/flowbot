@@ -2,6 +2,7 @@ import { logger } from '@trigger.dev/sdk/v3';
 import { getTelegramTransport } from '../telegram.js';
 import type { FlowContext } from './types.js';
 import type { GramJsTransport } from '@flowbot/telegram-transport';
+import { dispatchUserAction } from './user-actions.js';
 
 /**
  * Data-driven dispatch: resolve the bot instance from a community ID,
@@ -92,7 +93,13 @@ const BOT_API_ACTIONS = new Set(['bot_action']);
  */
 export async function dispatchActions(
   ctx: FlowContext,
-  transportConfig?: { transport?: string; botInstanceId?: string; platform?: string; discordBotInstanceId?: string },
+  transportConfig?: {
+    transport?: string;
+    botInstanceId?: string;
+    platform?: string;
+    discordBotInstanceId?: string;
+    platformConnectionId?: string;
+  },
 ): Promise<DispatchResult[]> {
   const results: DispatchResult[] = [];
   let transport: GramJsTransport | null = null;
@@ -119,6 +126,21 @@ export async function dispatchActions(
 
     // Bot action -> already executed via HTTP in actions.ts
     if (BOT_API_ACTIONS.has(action)) continue;
+
+    // Handle user account actions (MTProto only, requires PlatformConnection)
+    if (action.startsWith('user_')) {
+      const nodeConfig = output.connectionOverride as string | undefined;
+      const connectionId = nodeConfig ?? transportConfig?.platformConnectionId;
+
+      if (!connectionId) {
+        results.push({ nodeId, dispatched: false, error: 'User account connection required for user_* actions' });
+        continue;
+      }
+
+      const result = await dispatchUserAction(action, output, connectionId);
+      results.push({ ...result, nodeId });
+      continue;
+    }
 
     try {
       let response: unknown;
