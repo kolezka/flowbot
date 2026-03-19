@@ -1,6 +1,6 @@
 import { schedules } from "@trigger.dev/sdk/v3";
 import { getPrisma } from "../lib/prisma.js";
-import { checkManagerBotHealth } from "../lib/manager-bot.js";
+import { checkTelegramBotHealth } from "../lib/telegram-bot.js";
 
 export const healthCheckTask = schedules.task({
   id: "health-check",
@@ -22,9 +22,9 @@ export const healthCheckTask = schedules.task({
       };
     }
 
-    // Check manager-bot
+    // Check telegram-bot
     const mbStart = Date.now();
-    const mbHealthy = await checkManagerBotHealth();
+    const mbHealthy = await checkTelegramBotHealth();
     results.managerBot = {
       status: mbHealthy ? "up" : "unreachable",
       latencyMs: Date.now() - mbStart,

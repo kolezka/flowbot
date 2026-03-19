@@ -4,8 +4,8 @@ vi.mock('../lib/prisma.js', () => ({
   getPrisma: vi.fn(),
 }))
 
-vi.mock('../lib/manager-bot.js', () => ({
-  checkManagerBotHealth: vi.fn(),
+vi.mock('../lib/telegram-bot.js', () => ({
+  checkTelegramBotHealth: vi.fn(),
 }))
 
 vi.mock('@trigger.dev/sdk/v3', () => ({
@@ -15,7 +15,7 @@ vi.mock('@trigger.dev/sdk/v3', () => ({
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const { healthCheckTask } = await import('../trigger/health-check.js') as any
 import { getPrisma } from '../lib/prisma.js'
-import { checkManagerBotHealth } from '../lib/manager-bot.js'
+import { checkTelegramBotHealth } from '../lib/telegram-bot.js'
 
 function createMockPrisma() {
   return {
@@ -33,7 +33,7 @@ describe('health-check task logic', () => {
 
   it('should report all healthy when everything is up', async () => {
     mockPrisma.$queryRaw.mockResolvedValue([{ '?column?': 1 }])
-    vi.mocked(checkManagerBotHealth).mockResolvedValue(true)
+    vi.mocked(checkTelegramBotHealth).mockResolvedValue(true)
 
     const result = await healthCheckTask.run()
 
@@ -47,7 +47,7 @@ describe('health-check task logic', () => {
 
   it('should report down when database is down', async () => {
     mockPrisma.$queryRaw.mockRejectedValue(new Error('Connection refused'))
-    vi.mocked(checkManagerBotHealth).mockResolvedValue(true)
+    vi.mocked(checkTelegramBotHealth).mockResolvedValue(true)
 
     const result = await healthCheckTask.run()
 
@@ -57,9 +57,9 @@ describe('health-check task logic', () => {
     expect(result.components.managerBot.status).toBe('up')
   })
 
-  it('should report degraded when manager-bot is unreachable', async () => {
+  it('should report degraded when telegram-bot is unreachable', async () => {
     mockPrisma.$queryRaw.mockResolvedValue([{ '?column?': 1 }])
-    vi.mocked(checkManagerBotHealth).mockResolvedValue(false)
+    vi.mocked(checkTelegramBotHealth).mockResolvedValue(false)
 
     const result = await healthCheckTask.run()
 
@@ -68,9 +68,9 @@ describe('health-check task logic', () => {
     expect(result.components.managerBot.status).toBe('unreachable')
   })
 
-  it('should report down when database is down and manager-bot is unreachable', async () => {
+  it('should report down when database is down and telegram-bot is unreachable', async () => {
     mockPrisma.$queryRaw.mockRejectedValue(new Error('DB gone'))
-    vi.mocked(checkManagerBotHealth).mockResolvedValue(false)
+    vi.mocked(checkTelegramBotHealth).mockResolvedValue(false)
 
     const result = await healthCheckTask.run()
 
@@ -81,7 +81,7 @@ describe('health-check task logic', () => {
 
   it('should handle non-Error thrown from database', async () => {
     mockPrisma.$queryRaw.mockRejectedValue('string error')
-    vi.mocked(checkManagerBotHealth).mockResolvedValue(true)
+    vi.mocked(checkTelegramBotHealth).mockResolvedValue(true)
 
     const result = await healthCheckTask.run()
 
@@ -92,7 +92,7 @@ describe('health-check task logic', () => {
 
   it('should include latency measurements for all components', async () => {
     mockPrisma.$queryRaw.mockResolvedValue([{ '?column?': 1 }])
-    vi.mocked(checkManagerBotHealth).mockResolvedValue(true)
+    vi.mocked(checkTelegramBotHealth).mockResolvedValue(true)
 
     const result = await healthCheckTask.run()
 
@@ -102,7 +102,7 @@ describe('health-check task logic', () => {
 
   it('should include ISO timestamp in checkedAt', async () => {
     mockPrisma.$queryRaw.mockResolvedValue([{ '?column?': 1 }])
-    vi.mocked(checkManagerBotHealth).mockResolvedValue(true)
+    vi.mocked(checkTelegramBotHealth).mockResolvedValue(true)
 
     const result = await healthCheckTask.run()
 

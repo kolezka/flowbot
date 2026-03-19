@@ -135,7 +135,7 @@ function evaluateHasMedia(node: FlowNode, ctx: FlowContext): boolean {
  */
 function evaluateUserIsAdmin(node: FlowNode, ctx: FlowContext): boolean {
   // In the flow engine context, we check triggerData for admin status
-  // This is populated by the manager-bot middleware when it forwards events
+  // This is populated by the telegram-bot middleware when it forwards events
   const status = String(ctx.triggerData.userStatus ?? ctx.triggerData.newStatus ?? '');
   return status === 'administrator' || status === 'creator';
 }

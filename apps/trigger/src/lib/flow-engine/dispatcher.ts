@@ -78,7 +78,7 @@ const INTERNAL_ACTIONS = new Set([
   'parallel_branch', 'notification',
 ]);
 
-/** Actions routed to the manager bot HTTP API. */
+/** Actions routed to the telegram bot HTTP API. */
 const BOT_API_ACTIONS = new Set(['bot_action']);
 
 /**

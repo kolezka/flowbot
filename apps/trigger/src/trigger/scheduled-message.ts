@@ -1,6 +1,6 @@
 import { schedules } from "@trigger.dev/sdk/v3";
 import { getPrisma } from "../lib/prisma.js";
-import { sendMessageViaManagerBot } from "../lib/manager-bot.js";
+import { sendMessageViaTelegramBot } from "../lib/telegram-bot.js";
 
 export const scheduledMessageTask = schedules.task({
   id: "scheduled-message",
@@ -29,7 +29,7 @@ export const scheduledMessageTask = schedules.task({
     }> = [];
 
     for (const msg of dueMessages) {
-      const result = await sendMessageViaManagerBot(
+      const result = await sendMessageViaTelegramBot(
         msg.chatId.toString(),
         msg.text
       );

@@ -1,4 +1,4 @@
-const MANAGER_BOT_API_URL = process.env.MANAGER_BOT_API_URL || 'http://localhost:3001'
+const TELEGRAM_BOT_API_URL = process.env.TELEGRAM_BOT_API_URL || 'http://localhost:3001'
 
 export interface SendMessageResult {
   success: boolean
@@ -6,7 +6,7 @@ export interface SendMessageResult {
   error?: string
 }
 
-export async function sendMessageViaManagerBot(
+export async function sendMessageViaTelegramBot(
   chatId: string,
   text: string,
 ): Promise<SendMessageResult> {
@@ -14,7 +14,7 @@ export async function sendMessageViaManagerBot(
   const timeout = setTimeout(() => controller.abort(), 10_000)
 
   try {
-    const response = await fetch(`${MANAGER_BOT_API_URL}/api/send-message`, {
+    const response = await fetch(`${TELEGRAM_BOT_API_URL}/api/send-message`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ chatId, text }),
@@ -35,11 +35,11 @@ export async function sendMessageViaManagerBot(
   }
 }
 
-export async function checkManagerBotHealth(): Promise<boolean> {
+export async function checkTelegramBotHealth(): Promise<boolean> {
   try {
     const controller = new AbortController()
     const timeout = setTimeout(() => controller.abort(), 5_000)
-    const response = await fetch(`${MANAGER_BOT_API_URL}/health`, {
+    const response = await fetch(`${TELEGRAM_BOT_API_URL}/health`, {
       signal: controller.signal,
     })
     clearTimeout(timeout)

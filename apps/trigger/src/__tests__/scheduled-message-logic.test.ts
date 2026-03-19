@@ -4,8 +4,8 @@ vi.mock('../lib/prisma.js', () => ({
   getPrisma: vi.fn(),
 }))
 
-vi.mock('../lib/manager-bot.js', () => ({
-  sendMessageViaManagerBot: vi.fn(),
+vi.mock('../lib/telegram-bot.js', () => ({
+  sendMessageViaTelegramBot: vi.fn(),
 }))
 
 vi.mock('@trigger.dev/sdk/v3', () => ({
@@ -15,7 +15,7 @@ vi.mock('@trigger.dev/sdk/v3', () => ({
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const { scheduledMessageTask } = await import('../trigger/scheduled-message.js') as any
 import { getPrisma } from '../lib/prisma.js'
-import { sendMessageViaManagerBot } from '../lib/manager-bot.js'
+import { sendMessageViaTelegramBot } from '../lib/telegram-bot.js'
 
 function createMockPrisma() {
   return {
@@ -40,7 +40,7 @@ describe('scheduled-message task logic', () => {
     const result = await scheduledMessageTask.run()
 
     expect(result).toEqual({ processed: 0 })
-    expect(sendMessageViaManagerBot).not.toHaveBeenCalled()
+    expect(sendMessageViaTelegramBot).not.toHaveBeenCalled()
   })
 
   it('should send due messages and mark them as sent', async () => {
@@ -48,7 +48,7 @@ describe('scheduled-message task logic', () => {
       { id: 'msg-1', chatId: BigInt(111), text: 'Hello!' },
       { id: 'msg-2', chatId: BigInt(222), text: 'World!' },
     ])
-    vi.mocked(sendMessageViaManagerBot)
+    vi.mocked(sendMessageViaTelegramBot)
       .mockResolvedValueOnce({ success: true })
       .mockResolvedValueOnce({ success: true })
     mockPrisma.scheduledMessage.update.mockResolvedValue({})
@@ -58,8 +58,8 @@ describe('scheduled-message task logic', () => {
     expect(result.processed).toBe(2)
     expect(result.succeeded).toBe(2)
     expect(result.failed).toBe(0)
-    expect(sendMessageViaManagerBot).toHaveBeenCalledWith('111', 'Hello!')
-    expect(sendMessageViaManagerBot).toHaveBeenCalledWith('222', 'World!')
+    expect(sendMessageViaTelegramBot).toHaveBeenCalledWith('111', 'Hello!')
+    expect(sendMessageViaTelegramBot).toHaveBeenCalledWith('222', 'World!')
     expect(mockPrisma.scheduledMessage.update).toHaveBeenCalledTimes(2)
     expect(mockPrisma.scheduledMessage.update).toHaveBeenCalledWith({
       where: { id: 'msg-1' },
@@ -71,7 +71,7 @@ describe('scheduled-message task logic', () => {
     mockPrisma.scheduledMessage.findMany.mockResolvedValue([
       { id: 'msg-1', chatId: BigInt(111), text: 'Hello!' },
     ])
-    vi.mocked(sendMessageViaManagerBot).mockResolvedValue({
+    vi.mocked(sendMessageViaTelegramBot).mockResolvedValue({
       success: false,
       error: 'Bot unreachable',
     })
@@ -90,7 +90,7 @@ describe('scheduled-message task logic', () => {
       { id: 'msg-2', chatId: BigInt(222), text: 'Fail' },
       { id: 'msg-3', chatId: BigInt(333), text: 'OK too' },
     ])
-    vi.mocked(sendMessageViaManagerBot)
+    vi.mocked(sendMessageViaTelegramBot)
       .mockResolvedValueOnce({ success: true })
       .mockResolvedValueOnce({ success: false, error: 'Timeout' })
       .mockResolvedValueOnce({ success: true })
