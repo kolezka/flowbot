@@ -16,6 +16,7 @@ import { FlowsModule } from './flows/flows.module';
 import { WebhooksModule } from './webhooks/webhooks.module';
 import { AutomationModule } from './automation/automation.module';
 import { AuthModule } from './auth/auth.module';
+import { PlatformModule } from './platform/platform.module';
 
 @Global()
 @Module({
@@ -23,6 +24,7 @@ import { AuthModule } from './auth/auth.module';
     ConfigModule.forRoot({
       isGlobal: true,
     }),
+    PlatformModule,
     AuthModule,
     PrismaModule,
     UsersModule,
