@@ -36,6 +36,7 @@ import type { LucideIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/theme-toggle";
+import { PlatformFilter } from "@/components/platform-filter";
 
 // ---------------------------------------------------------------------------
 // Types
@@ -68,6 +69,14 @@ const navigation: NavSection[] = [
     label: "Users",
     icon: Users,
     href: "/dashboard/users",
+  },
+  {
+    label: "Identity",
+    icon: Users,
+    children: [
+      { label: "Accounts", href: "/dashboard/identity/accounts", icon: Users },
+      { label: "Linked Identities", href: "/dashboard/identity/linked", icon: Layers },
+    ],
   },
   {
     label: "Moderation",
@@ -309,6 +318,9 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
 
   return (
     <nav role="navigation" aria-label="Dashboard navigation" className="flex flex-col gap-1 px-3 py-4">
+      <div className="mb-2 px-1">
+        <PlatformFilter />
+      </div>
       {navigation.map((section) => {
         // Standalone link (no children)
         if (section.href) {
