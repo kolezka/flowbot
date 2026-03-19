@@ -139,9 +139,9 @@ test.describe('Integration Smoke Test', () => {
     await page.waitForLoadState('networkidle');
     await expect(page.getByText('Bot Configuration').first()).toBeVisible({ timeout: 10_000 });
 
-    // 3. Check tg-client page
-    const tgClientRes = await page.goto('/dashboard/tg-client');
-    expect(tgClientRes?.status()).toBeLessThan(400);
+    // 3. Check connections page
+    const connectionsRes = await page.goto('/dashboard/connections');
+    expect(connectionsRes?.status()).toBeLessThan(400);
     await page.waitForLoadState('networkidle');
   });
 
@@ -174,7 +174,7 @@ test.describe('Integration Smoke Test', () => {
     // Verify key dashboard pages load without errors
     const dashboardPages = [
       { url: '/dashboard', text: 'Dashboard' },
-      { url: '/dashboard/users', text: 'Users' },
+      { url: '/dashboard/identity/accounts', text: 'Accounts' },
       { url: '/dashboard/flows', text: 'Flows' },
       { url: '/dashboard/broadcast', text: 'Broadcast' },
       { url: '/dashboard/webhooks', text: 'Webhooks' },
