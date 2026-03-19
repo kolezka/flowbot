@@ -180,6 +180,42 @@ export class BotConfigService {
     return { version: bot.configVersion };
   }
 
+  async heartbeat(instanceId: string, capabilities?: string[]): Promise<{
+    id: string;
+    name: string;
+    platform: string;
+    isActive: boolean;
+    lastHeartbeatAt: Date;
+  }> {
+    const instance = await this.prisma.botInstance.findUnique({
+      where: { id: instanceId },
+    });
+
+    if (!instance) {
+      throw new NotFoundException(`Bot instance ${instanceId} not found`);
+    }
+
+    const updated = await this.prisma.botInstance.update({
+      where: { id: instanceId },
+      data: {
+        isActive: true,
+        metadata: {
+          ...(instance.metadata as Record<string, unknown> ?? {}),
+          lastHeartbeatAt: new Date().toISOString(),
+          capabilities: capabilities ?? [],
+        },
+      },
+    });
+
+    return {
+      id: updated.id,
+      name: updated.name,
+      platform: updated.platform,
+      isActive: updated.isActive,
+      lastHeartbeatAt: new Date(),
+    };
+  }
+
   async getConfigVersionHistory(botId: string) {
     const bot = await this.findBot(botId);
     const history = (bot as any).configHistory;

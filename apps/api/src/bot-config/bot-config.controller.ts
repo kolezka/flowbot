@@ -183,6 +183,16 @@ export class BotConfigController {
   @ApiResponse({ status: 200, description: 'I18n string deleted' })
   deleteI18nString(@Param('botId') botId: string, @Param('stringId') stringId: string) { return this.service.deleteI18nString(botId, stringId); }
 
+  // Heartbeat
+  @Post('instances/:id/heartbeat')
+  @ApiOperation({ summary: 'Bot heartbeat — reports the bot is alive and updates capabilities' })
+  @ApiParam({ name: 'id', type: String, description: 'Bot instance ID' })
+  @ApiResponse({ status: 200, description: 'Heartbeat acknowledged' })
+  @ApiResponse({ status: 404, description: 'Bot instance not found' })
+  heartbeat(@Param('id') id: string, @Body() body: { capabilities?: string[] }) {
+    return this.service.heartbeat(id, body?.capabilities);
+  }
+
   // Config versioning
   @Post(':botId/publish')
   @ApiOperation({ summary: 'Publish bot configuration (increment version)' })

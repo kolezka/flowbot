@@ -3,6 +3,67 @@ import { getTelegramTransport } from '../telegram.js';
 import type { FlowContext } from './types.js';
 import type { GramJsTransport } from '@flowbot/telegram-transport';
 
+/**
+ * Data-driven dispatch: resolve the bot instance from a community ID,
+ * then dispatch the action via that bot's HTTP API.
+ *
+ * This is the new multi-platform routing path. The action name does NOT
+ * need a platform prefix — the platform is determined by the community's
+ * bot instance.
+ *
+ * Falls back to the legacy prefix-based routing if no communityId is provided.
+ */
+export async function dispatchActionToCommunity(
+  action: string,
+  params: Record<string, unknown>,
+  communityId: string,
+): Promise<{ success: boolean; data?: unknown; error?: string }> {
+  const { getPrisma } = await import('../prisma.js');
+  const prisma = getPrisma();
+
+  const community = await prisma.community.findUnique({
+    where: { id: communityId },
+    include: { botInstance: { select: { id: true, apiUrl: true, isActive: true, platform: true } } },
+  });
+
+  if (!community) {
+    return { success: false, error: `Community ${communityId} not found` };
+  }
+
+  if (!community.botInstance) {
+    return { success: false, error: `Community ${communityId} has no bot instance assigned` };
+  }
+
+  if (!community.botInstance.apiUrl || !community.botInstance.isActive) {
+    return { success: false, error: `Bot instance ${community.botInstance.id} is not available` };
+  }
+
+  try {
+    const response = await fetch(`${community.botInstance.apiUrl}/api/execute-action`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        action,
+        params,
+        communityId: community.platformCommunityId,
+        platform: community.platform,
+      }),
+      signal: AbortSignal.timeout(15_000),
+    });
+
+    if (!response.ok) {
+      const text = await response.text().catch(() => '');
+      return { success: false, error: `Bot API returned ${response.status}: ${text}` };
+    }
+
+    const data = await response.json();
+    return { success: true, data };
+  } catch (error) {
+    const msg = error instanceof Error ? error.message : String(error);
+    return { success: false, error: msg };
+  }
+}
+
 export interface DispatchResult {
   nodeId: string;
   dispatched: boolean;

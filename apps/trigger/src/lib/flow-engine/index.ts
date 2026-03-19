@@ -1,4 +1,5 @@
 export { executeFlow } from './executor.js';
+export { dispatchActionToCommunity } from './dispatcher.js';
 export type { FlowContext, FlowNode, FlowEdge, NodeResult, ErrorHandling } from './types.js';
 export type { ExecutorConfig } from './executor.js';
 export { interpolate, setVariable, getVariable } from './variables.js';
