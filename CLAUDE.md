@@ -2,7 +2,7 @@
 
 ## Project Overview
 
-Multi-platform bot management platform ("Flowbot") with admin dashboard, group management bots (Telegram, Discord, and more), visual flow builder, and Trigger.dev background job worker. pnpm monorepo with 11 workspaces, 35+ Prisma models, 130+ API endpoints, 44 dashboard pages, 7 Trigger.dev tasks.
+Multi-platform bot management platform ("Flowbot") with admin dashboard, group management bots (Telegram, Discord, WhatsApp, and more), visual flow builder, and Trigger.dev background job worker. pnpm monorepo with 13 workspaces, 35+ Prisma models, 130+ API endpoints, 44 dashboard pages, 7 Trigger.dev tasks.
 
 ### Multi-Platform Architecture
 
@@ -17,9 +17,11 @@ The platform uses a **Platform Discriminator** pattern: each entity (account, co
 | `apps/frontend` | Next.js 16.1, React 19.2, @xyflow/react 12.6, Recharts 3.8, Radix UI, Tailwind 4 | ESM | Playwright |
 | `apps/trigger` | Trigger.dev SDK 3.x, GramJS (telegram), Pino 9.9 | ESM | Vitest |
 | `apps/tg-client` | GramJS (telegram), tsx | ESM | Vitest |
+| `apps/whatsapp-bot` | Baileys 6.7, Hono 4.10, Pino 9.9, Valibot 0.42 | ESM (tsx) | Vitest |
 | `apps/discord-bot` | Discord.js (TBD) | ESM | None |
 | `packages/db` | Prisma 7, @prisma/adapter-pg 7 | ESM | None |
 | `packages/telegram-transport` | GramJS (telegram), Pino 9.9, Valibot 0.42 | ESM | Vitest |
+| `packages/whatsapp-transport` | Baileys 6.7, Pino 9.9, Valibot 0.42 | ESM | Vitest |
 | `packages/discord-transport` | (TBD) | ESM | None |
 | `packages/flow-shared` | Shared flow types/utils | ESM | None |
 
@@ -32,6 +34,15 @@ The platform uses a **Platform Discriminator** pattern: each entity (account, co
 | `apps/tg-client` | App (one-shot) | MTProto (GramJS) | User account | Auth script — run once to generate a session string, stored in PlatformConnection |
 
 **Flow:** `tg-client` authenticates → session string stored → `telegram-transport` uses it to connect → Trigger.dev calls transport for user-account actions. Meanwhile `telegram-bot` handles all bot-level operations independently.
+
+### WhatsApp Components (unified bot + transport)
+
+| Component | Type | Protocol | Identity | Purpose |
+|-----------|------|----------|----------|---------|
+| `apps/whatsapp-bot` | App (long-running) | Baileys (multi-device) | User account | Listens for events, forwards to flow engine, executes actions, serves QR auth |
+| `packages/whatsapp-transport` | Package (library) | Baileys (multi-device) | User account | Transport interface, circuit breaker, action executors, DB-backed auth state |
+
+**Auth flow:** Dashboard QR scan → Baileys auth keys stored in `PlatformConnection.credentials` → bot auto-reconnects from stored session. No separate auth script needed.
 
 ### Path Aliases (`tsconfig.base.json`)
 - `@flowbot/db` → `packages/db/src/index.ts`
@@ -48,13 +59,13 @@ pnpm db generate                        # Regenerate Prisma Client
 pnpm db build                           # Compile db package
 
 # Dev
-pnpm telegram-bot dev | pnpm api start:dev | pnpm frontend dev | pnpm trigger dev
+pnpm telegram-bot dev | pnpm whatsapp-bot dev | pnpm api start:dev | pnpm frontend dev | pnpm trigger dev
 
 # Build
 pnpm telegram-bot build | pnpm api build | pnpm frontend build
 
 # Typecheck
-pnpm telegram-bot typecheck | pnpm trigger typecheck | pnpm telegram-transport typecheck
+pnpm telegram-bot typecheck | pnpm trigger typecheck | pnpm telegram-transport typecheck | pnpm whatsapp-transport typecheck
 
 # Lint
 pnpm telegram-bot lint | pnpm api lint | pnpm frontend lint
@@ -65,6 +76,8 @@ pnpm api test                           # Jest (238 tests)
 pnpm api test -- --testPathPattern=X    # Specific test
 pnpm telegram-bot test                  # Vitest
 pnpm telegram-transport test            # Vitest (24 tests)
+pnpm whatsapp-bot test                  # Vitest (44 tests)
+pnpm whatsapp-transport test            # Vitest (52 tests)
 pnpm trigger test                       # Vitest
 pnpm tg-client test                     # Vitest
 
@@ -107,6 +120,7 @@ Schema at `packages/db/prisma/schema.prisma`. After changes: `pnpm db generate &
 |-----|----------|
 | Shared | `DATABASE_URL` |
 | Telegram Bot | `BOT_TOKEN`, `BOT_MODE`, `BOT_ADMINS`, `LOG_LEVEL`, `SERVER_HOST`, `SERVER_PORT`, `API_SERVER_HOST`, `API_SERVER_PORT` |
+| WhatsApp Bot | `WA_CONNECTION_ID`, `WA_BOT_INSTANCE_ID`, `DATABASE_URL`, `API_URL`, `SERVER_PORT` (default 3004), `LOG_LEVEL` |
 | Trigger | `DATABASE_URL`, `TG_CLIENT_API_ID`, `TG_CLIENT_API_HASH`, `TG_CLIENT_SESSION`, `TELEGRAM_BOT_API_URL` |
 | API | `DATABASE_URL`, `PORT`, `FRONTEND_URL` |
 | Frontend | `NEXT_PUBLIC_API_URL` |
