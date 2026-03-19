@@ -9,11 +9,11 @@ export class SystemService {
   constructor(private prisma: PrismaService) {}
 
   async getStatus() {
-    const [dbStatus, managerBotStatus, tgClientStatus] = await Promise.all([
+    const [dbStatus, telegramBotStatus, tgClientStatus] = await Promise.all([
       this.checkDatabase(),
       this.checkService(
-        process.env.MANAGER_BOT_HEALTH_URL || 'http://localhost:3001/health',
-        'Manager Bot',
+        process.env.TELEGRAM_BOT_HEALTH_URL || 'http://localhost:3001/health',
+        'Telegram Bot',
       ),
       this.checkService(
         process.env.TG_CLIENT_HEALTH_URL || 'http://localhost:3002/health',
@@ -28,7 +28,7 @@ export class SystemService {
       lastChecked: new Date(),
     };
 
-    const components: Array<{ name: string; status: string; lastChecked: Date; uptime?: number; error?: string; details?: Record<string, unknown> }> = [apiStatus, dbStatus, managerBotStatus, tgClientStatus];
+    const components: Array<{ name: string; status: string; lastChecked: Date; uptime?: number; error?: string; details?: Record<string, unknown> }> = [apiStatus, dbStatus, telegramBotStatus, tgClientStatus];
     const worstStatus = components.some((c) => c.status === 'down')
       ? 'down'
       : components.some(

@@ -1,6 +1,6 @@
 /**
  * Standardized event format that all platform bots POST to /api/flows/webhook.
- * Both the Telegram manager-bot and Discord bot emit this format.
+ * Both the Telegram bot and Discord bot emit this format.
  */
 export interface FlowTriggerEvent {
   platform: string;
