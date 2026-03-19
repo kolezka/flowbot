@@ -18,3 +18,7 @@ export { CircuitBreaker, CircuitState, CircuitOpenError } from './transport/Circ
 export type { CircuitBreakerConfig } from './transport/CircuitBreaker.js'
 export { createDbAuthState } from './transport/auth-state.js'
 export type { AuthState, AuthStateKeys, DbAuthStateResult } from './transport/auth-state.js'
+export { ActionType } from './actions/types.js'
+export type { Action } from './actions/types.js'
+export { ActionRunner } from './actions/runner.js'
+export type { ActionResult } from './actions/runner.js'
