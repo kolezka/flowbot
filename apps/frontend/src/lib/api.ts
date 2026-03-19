@@ -683,6 +683,39 @@ export interface ApiError {
   status?: number;
 }
 
+// Platform Account types
+export interface PlatformAccount {
+  id: string;
+  platform: string;
+  platformUserId: string;
+  identityId?: string;
+  username?: string;
+  firstName?: string;
+  lastName?: string;
+  metadata?: Record<string, unknown>;
+  isBanned: boolean;
+  bannedAt?: string;
+  banReason?: string;
+  messageCount: number;
+  commandCount: number;
+  isVerified: boolean;
+  verifiedAt?: string;
+  lastSeenAt?: string;
+  lastMessageAt?: string;
+  referralCode?: string;
+  referredByAccountId?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface UserIdentity {
+  id: string;
+  displayName?: string;
+  email?: string;
+  platformAccounts: PlatformAccount[];
+  createdAt: string;
+}
+
 class ApiClient {
   private baseUrl: string;
 
@@ -1355,6 +1388,122 @@ class ApiClient {
   async deleteWebhook(id: string): Promise<void> {
     await this.request<void>(`/api/webhooks/${id}`, { method: 'DELETE' });
   }
+
+  // Platform Accounts
+  async getAccounts(params?: {
+    page?: number;
+    limit?: number;
+    search?: string;
+    platform?: string;
+    isBanned?: boolean;
+  }): Promise<{ data: PlatformAccount[]; total: number; page: number; limit: number; totalPages: number }> {
+    const searchParams = new URLSearchParams();
+    if (params?.page) searchParams.set("page", String(params.page));
+    if (params?.limit) searchParams.set("limit", String(params.limit));
+    if (params?.search) searchParams.set("search", params.search);
+    if (params?.platform) searchParams.set("platform", params.platform);
+    if (params?.isBanned !== undefined) searchParams.set("isBanned", String(params.isBanned));
+    return this.request<{ data: PlatformAccount[]; total: number; page: number; limit: number; totalPages: number }>(`/api/accounts?${searchParams}`);
+  }
+
+  async getAccountStats(): Promise<{
+    totalAccounts: number;
+    activeAccounts: number;
+    bannedAccounts: number;
+    newAccountsToday: number;
+    verifiedAccounts: number;
+    totalMessages: number;
+    totalCommands: number;
+    platformBreakdown: Record<string, number>;
+  }> {
+    return this.request<{
+      totalAccounts: number;
+      activeAccounts: number;
+      bannedAccounts: number;
+      newAccountsToday: number;
+      verifiedAccounts: number;
+      totalMessages: number;
+      totalCommands: number;
+      platformBreakdown: Record<string, number>;
+    }>("/api/accounts/stats");
+  }
+
+  async banAccount(id: string, isBanned: boolean, banReason?: string): Promise<PlatformAccount> {
+    return this.request<PlatformAccount>(`/api/accounts/${id}/ban`, {
+      method: "PUT",
+      body: JSON.stringify({ isBanned, banReason }),
+    });
+  }
+
+  // Identities
+  async getIdentities(params?: {
+    page?: number;
+    limit?: number;
+    search?: string;
+  }): Promise<{ data: UserIdentity[]; total: number; page: number; limit: number; totalPages: number }> {
+    const searchParams = new URLSearchParams();
+    if (params?.page) searchParams.set("page", String(params.page));
+    if (params?.limit) searchParams.set("limit", String(params.limit));
+    if (params?.search) searchParams.set("search", params.search);
+    return this.request<{ data: UserIdentity[]; total: number; page: number; limit: number; totalPages: number }>(`/api/identities?${searchParams}`);
+  }
+
+  async linkAccount(identityId: string, platformAccountId: string): Promise<UserIdentity> {
+    return this.request<UserIdentity>(`/api/identities/${identityId}/link`, {
+      method: "POST",
+      body: JSON.stringify({ platformAccountId }),
+    });
+  }
+
+  async unlinkAccount(identityId: string, accountId: string): Promise<UserIdentity> {
+    return this.request<UserIdentity>(`/api/identities/${identityId}/link/${accountId}`, {
+      method: "DELETE",
+    });
+  }
 }
 
 export const api = new ApiClient();
+
+// Standalone API functions (aliases for api client methods)
+export async function getAccounts(params?: {
+  page?: number;
+  limit?: number;
+  search?: string;
+  platform?: string;
+  isBanned?: boolean;
+}): Promise<{ data: PlatformAccount[]; total: number; page: number; limit: number; totalPages: number }> {
+  return api.getAccounts(params);
+}
+
+export async function getAccountStats(): Promise<{
+  totalAccounts: number;
+  activeAccounts: number;
+  bannedAccounts: number;
+  newAccountsToday: number;
+  verifiedAccounts: number;
+  totalMessages: number;
+  totalCommands: number;
+  platformBreakdown: Record<string, number>;
+}> {
+  return api.getAccountStats();
+}
+
+export async function banAccount(id: string, isBanned: boolean, banReason?: string): Promise<PlatformAccount> {
+  return api.banAccount(id, isBanned, banReason);
+}
+
+export async function getIdentities(params?: {
+  page?: number;
+  limit?: number;
+  search?: string;
+}): Promise<{ data: UserIdentity[]; total: number; page: number; limit: number; totalPages: number }> {
+  return api.getIdentities(params);
+}
+
+export async function linkAccount(identityId: string, platformAccountId: string): Promise<UserIdentity> {
+  return api.linkAccount(identityId, platformAccountId);
+}
+
+export async function unlinkAccount(identityId: string, accountId: string): Promise<UserIdentity> {
+  return api.unlinkAccount(identityId, accountId);
+}
