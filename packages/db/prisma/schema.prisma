@@ -58,12 +58,53 @@ model UserIdentity {
   telegramId      BigInt   @unique
   userId          String?  @unique
   user            User?    @relation(fields: [userId], references: [id])
+  displayName     String?
+  email           String?
   reputationScore Int      @default(0)
   firstSeenAt     DateTime @default(now())
   updatedAt       DateTime @updatedAt
 
+  platformAccounts PlatformAccount[]
+
   @@index([telegramId])
   @@index([userId])
+}
+
+model PlatformAccount {
+  id                  String    @id @default(cuid())
+  identityId          String?
+  identity            UserIdentity? @relation(fields: [identityId], references: [id])
+  platform            String    // "telegram" | "discord" | "slack" | "whatsapp" | "custom"
+  platformUserId      String    // Was telegramId (BigInt), now string for all platforms
+  username            String?
+  firstName           String?
+  lastName            String?
+  metadata            Json?     // Platform-specific: language_code, is_premium, avatar, etc.
+  isBanned            Boolean   @default(false)
+  bannedAt            DateTime?
+  banReason           String?
+  messageCount        Int       @default(0)
+  commandCount        Int       @default(0)
+  isVerified          Boolean   @default(false)
+  verifiedAt          DateTime?
+  lastSeenAt          DateTime?
+  lastMessageAt       DateTime?
+  lastCommunityId     String?
+  referralCode        String?   @unique
+  referredByAccountId String?
+  referredBy          PlatformAccount? @relation("AccountReferrals", fields: [referredByAccountId], references: [id])
+  referrals           PlatformAccount[] @relation("AccountReferrals")
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([platform, platformUserId])
+  @@index([platform])
+  @@index([isBanned])
+  @@index([lastSeenAt])
+  @@index([username])
+  @@index([createdAt])
+  @@index([identityId])
 }
 
 // ==========================================
