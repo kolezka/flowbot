@@ -71,6 +71,8 @@ export function createMockPrismaService(): MockPrismaService {
     communityTelegramConfig: createMockModel(),
     communityDiscordConfig: createMockModel(),
     communityMember: createMockModel(),
+    platformConnection: createMockModel(),
+    platformConnectionLog: createMockModel(),
     $connect: jest.fn(),
     $disconnect: jest.fn(),
   } as unknown as MockPrismaService;

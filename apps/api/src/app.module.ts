@@ -19,6 +19,7 @@ import { AuthModule } from './auth/auth.module';
 import { PlatformModule } from './platform/platform.module';
 import { IdentityModule } from './identity/identity.module';
 import { CommunitiesModule } from './communities/communities.module';
+import { ConnectionsModule } from './connections/connections.module';
 
 @Global()
 @Module({
@@ -30,7 +31,7 @@ import { CommunitiesModule } from './communities/communities.module';
     AuthModule,
     PrismaModule,
     UsersModule,
-AnalyticsModule,
+    AnalyticsModule,
     BroadcastModule,
     ModerationModule,
     ReputationModule,
@@ -43,6 +44,7 @@ AnalyticsModule,
     AutomationModule,
     IdentityModule,
     CommunitiesModule,
+    ConnectionsModule,
   ],
   controllers: [AppController],
   providers: [AppService],
