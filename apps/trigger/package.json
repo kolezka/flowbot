@@ -16,7 +16,7 @@
   "dependencies": {
     "@trigger.dev/sdk": "^3.0.0",
     "@trigger.dev/build": "^3.0.0",
-    "@flowbot/telegram-transport": "workspace:*",
+    "@flowbot/telegram-user-connector": "workspace:*",
     "@flowbot/db": "workspace:*",
     "telegram": "^2.26.22",
     "pino": "9.9.0",

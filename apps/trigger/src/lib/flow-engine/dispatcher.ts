@@ -1,7 +1,5 @@
 import { logger } from '@trigger.dev/sdk/v3';
-import { getTelegramTransport } from '../telegram.js';
 import type { FlowContext } from './types.js';
-import type { GramJsTransport } from '@flowbot/telegram-transport';
 import { dispatchUserAction } from './user-actions.js';
 
 /**
@@ -40,7 +38,7 @@ export async function dispatchActionToCommunity(
   }
 
   try {
-    const response = await fetch(`${community.botInstance.apiUrl}/api/execute-action`, {
+    const response = await fetch(`${community.botInstance.apiUrl}/execute`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -103,12 +101,11 @@ export async function dispatchActions(
   },
 ): Promise<DispatchResult[]> {
   const results: DispatchResult[] = [];
-  let transport: GramJsTransport | null = null;
 
-  const mode = transportConfig?.transport ?? 'mtproto';
+  const mode = transportConfig?.transport ?? 'connector';
   const botInstanceId = transportConfig?.botInstanceId;
   const discordBotInstanceId = transportConfig?.discordBotInstanceId;
-  const useBot = mode === 'bot_api' && !!botInstanceId;
+  const useBot = (mode === 'bot_api' || mode === 'connector') && !!botInstanceId;
   const useAuto = mode === 'auto' && !!botInstanceId;
 
   for (const [nodeId, result] of ctx.nodeResults) {
@@ -179,25 +176,13 @@ export async function dispatchActions(
           throw new Error(`WhatsApp action '${action}' requires a whatsappBotInstanceId or botInstanceId in transportConfig`);
         }
       } else if (useBot) {
-        // Forced bot_api mode
+        // Connector / bot_api mode — route to platform-kit /execute endpoint
         response = await dispatchViaBotApi(action, output, botInstanceId!);
       } else if (useAuto) {
-        // Auto mode: try bot API first, fall back to MTProto
-        try {
-          response = await dispatchViaBotApi(action, output, botInstanceId!);
-        } catch (botErr) {
-          logger.warn(`Bot API dispatch failed for ${action}, falling back to MTProto: ${botErr instanceof Error ? botErr.message : String(botErr)}`);
-          if (!transport) {
-            transport = await getTelegramTransport();
-          }
-          response = await dispatchToTelegram(transport, action, output);
-        }
+        // Auto mode: try connector first, fall back is no longer supported (MTProto removed)
+        response = await dispatchViaBotApi(action, output, botInstanceId!);
       } else {
-        // MTProto mode (default)
-        if (!transport) {
-          transport = await getTelegramTransport();
-        }
-        response = await dispatchToTelegram(transport, action, output);
+        throw new Error(`Telegram action '${action}' requires a botInstanceId in transportConfig (MTProto transport removed)`);
       }
 
       results.push({ nodeId, dispatched: true, response });
@@ -228,7 +213,7 @@ async function dispatchViaBotApi(
     throw new Error(`Bot instance ${botInstanceId} not available`);
   }
 
-  const response = await fetch(`${botInstance.apiUrl}/api/execute-action`, {
+  const response = await fetch(`${botInstance.apiUrl}/execute`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ action, params }),
@@ -237,236 +222,10 @@ async function dispatchViaBotApi(
 
   if (!response.ok) {
     const text = await response.text().catch(() => '');
-    throw new Error(`Bot API returned ${response.status}: ${text}`);
+    throw new Error(`Telegram connector returned ${response.status}: ${text}`);
   }
 
   return response.json();
-}
-
-async function dispatchToTelegram(
-  transport: GramJsTransport,
-  action: string,
-  params: Record<string, unknown>,
-): Promise<unknown> {
-  const chatId = String(params.chatId ?? '');
-  const userId = String(params.userId ?? '');
-  const messageId = params.messageId ? Number(params.messageId) : undefined;
-
-  switch (action) {
-    // --- Messaging ---
-    case 'send_message':
-      return transport.sendMessage(chatId, String(params.text ?? ''), {
-        parseMode: mapParseMode(params.parseMode),
-        silent: Boolean(params.disableNotification),
-        replyToMsgId: params.replyToMessageId ? Number(params.replyToMessageId) : undefined,
-      });
-
-    case 'send_photo':
-      return transport.sendPhoto(chatId, String(params.photoUrl ?? ''), {
-        caption: params.caption ? String(params.caption) : undefined,
-        parseMode: mapParseMode(params.parseMode),
-      });
-
-    case 'send_video':
-      return transport.sendVideo(chatId, String(params.videoUrl ?? ''), {
-        caption: params.caption ? String(params.caption) : undefined,
-        parseMode: mapParseMode(params.parseMode),
-      });
-
-    case 'send_document':
-      return transport.sendDocument(chatId, String(params.documentUrl ?? ''), {
-        caption: params.caption ? String(params.caption) : undefined,
-        parseMode: mapParseMode(params.parseMode),
-        fileName: params.fileName ? String(params.fileName) : undefined,
-      });
-
-    case 'send_sticker':
-      return transport.sendSticker(chatId, String(params.sticker ?? ''));
-
-    case 'send_voice':
-      return transport.sendVoice(chatId, String(params.voiceUrl ?? ''), {
-        caption: params.caption ? String(params.caption) : undefined,
-        parseMode: mapParseMode(params.parseMode),
-      });
-
-    case 'send_audio':
-      return transport.sendAudio(chatId, String(params.audioUrl ?? ''), {
-        caption: params.caption ? String(params.caption) : undefined,
-        parseMode: mapParseMode(params.parseMode),
-      });
-
-    case 'send_animation':
-      return transport.sendAnimation(chatId, String(params.animationUrl ?? ''), {
-        caption: params.caption ? String(params.caption) : undefined,
-        parseMode: mapParseMode(params.parseMode),
-      });
-
-    case 'send_location':
-      return transport.sendLocation(chatId, Number(params.latitude), Number(params.longitude), {
-        livePeriod: params.livePeriod ? Number(params.livePeriod) : undefined,
-      });
-
-    case 'send_contact':
-      return transport.sendContact(
-        chatId,
-        String(params.phoneNumber ?? ''),
-        String(params.firstName ?? ''),
-        params.lastName ? String(params.lastName) : undefined,
-      );
-
-    case 'send_venue':
-      return transport.sendVenue(
-        chatId,
-        Number(params.latitude),
-        Number(params.longitude),
-        String(params.title ?? ''),
-        String(params.address ?? ''),
-      );
-
-    case 'send_dice':
-      return transport.sendDice(chatId, params.emoji ? String(params.emoji) : undefined);
-
-    // --- Message management ---
-    case 'forward_message':
-      return transport.forwardMessage(
-        String(params.fromChatId ?? ''),
-        String(params.toChatId ?? ''),
-        messageId ? [messageId] : [],
-      );
-
-    case 'copy_message':
-      return transport.copyMessage(
-        String(params.fromChatId ?? ''),
-        String(params.toChatId ?? ''),
-        messageId ?? 0,
-      );
-
-    case 'edit_message':
-      return transport.editMessage(chatId, messageId ?? 0, String(params.text ?? ''), {
-        parseMode: mapParseMode(params.parseMode),
-      });
-
-    case 'delete_message':
-      return transport.deleteMessages(chatId, messageId ? [messageId] : []);
-
-    case 'pin_message':
-      return transport.pinMessage(chatId, messageId ?? 0, Boolean(params.disableNotification));
-
-    case 'unpin_message':
-      return transport.unpinMessage(chatId, messageId ?? undefined);
-
-    // --- User management ---
-    case 'ban_user':
-      return transport.banUser(chatId, userId);
-
-    case 'mute_user':
-      return transport.restrictUser(chatId, userId, { canSendMessages: false }, params.duration ? Number(params.duration) : undefined);
-
-    case 'restrict_user':
-      return transport.restrictUser(
-        chatId,
-        userId,
-        (params.permissions as Record<string, boolean>) ?? {},
-        params.untilDate ? Number(params.untilDate) : undefined,
-      );
-
-    case 'promote_user':
-      return transport.promoteUser(chatId, userId, (params.privileges as Record<string, boolean>) ?? {});
-
-    // --- Chat management ---
-    case 'set_chat_title':
-      return transport.setChatTitle(chatId, String(params.title ?? ''));
-
-    case 'set_chat_description':
-      return transport.setChatDescription(chatId, String(params.description ?? ''));
-
-    case 'export_invite_link':
-      return transport.exportInviteLink(chatId);
-
-    case 'get_chat_member':
-      return transport.getChatMember(chatId, userId);
-
-    case 'leave_chat':
-      return transport.leaveChat(chatId);
-
-    // --- Interactive ---
-    case 'create_poll':
-      return transport.createPoll(
-        chatId,
-        String(params.question ?? ''),
-        (params.options as string[]) ?? [],
-        {
-          isAnonymous: params.isAnonymous as boolean | undefined,
-          multipleChoice: params.allowsMultipleAnswers as boolean | undefined,
-        },
-      );
-
-    case 'answer_callback_query':
-      return transport.answerCallbackQuery(
-        String(params.callbackQueryId ?? ''),
-        {
-          text: params.text ? String(params.text) : undefined,
-          showAlert: params.showAlert as boolean | undefined,
-          url: params.url ? String(params.url) : undefined,
-        },
-      );
-
-    // --- SP2: Inline & Payments ---
-    case 'answer_inline_query':
-      return transport.answerInlineQuery(
-        String(params.queryId ?? ''),
-        (params.results as unknown[]) ?? [],
-        { cacheTime: params.cacheTime ? Number(params.cacheTime) : undefined },
-      );
-
-    case 'send_invoice':
-      return transport.sendInvoice(chatId, {
-        title: String(params.title ?? ''),
-        description: String(params.description ?? ''),
-        payload: String(params.payload ?? ''),
-        currency: String(params.currency ?? 'USD'),
-        prices: (params.prices as Array<{ label: string, amount: number }>) ?? [],
-      });
-
-    case 'answer_pre_checkout':
-      return transport.answerPreCheckoutQuery(
-        String(params.queryId ?? ''),
-        Boolean(params.ok),
-        params.errorMessage ? String(params.errorMessage) : undefined,
-      );
-
-    // --- SP2: Bot configuration ---
-    case 'set_chat_menu_button':
-      return transport.setChatMenuButton(chatId, params.menuButton as { type: string, text?: string, url?: string });
-
-    case 'set_my_commands':
-      return transport.setMyCommands(
-        (params.commands as Array<{ command: string, description: string }>) ?? [],
-        params.scope,
-      );
-
-    // --- SP2: Media & Forum ---
-    case 'send_media_group':
-      return transport.sendMediaGroup(chatId, (params.media as Array<{ type: string, url: string, caption?: string }>) ?? []);
-
-    case 'create_forum_topic':
-      return transport.createForumTopic(chatId, String(params.name ?? ''), {
-        iconColor: params.iconColor ? Number(params.iconColor) : undefined,
-        iconEmojiId: params.iconEmojiId ? String(params.iconEmojiId) : undefined,
-      });
-
-    // Catch-all for not-yet-implemented actions
-    default:
-      logger.warn(`Telegram action '${action}' dispatch not yet implemented`);
-      return { action, dispatched: false, reason: 'not_implemented' };
-  }
-}
-
-function mapParseMode(mode: unknown): 'html' | 'markdown' | undefined {
-  const str = String(mode ?? '').toLowerCase();
-  if (str === 'html') return 'html';
-  if (str === 'markdownv2' || str === 'markdown') return 'markdown';
-  return undefined;
 }
 
 // ---------------------------------------------------------------------------
@@ -620,13 +379,10 @@ async function dispatchUnifiedAction(
         delete telegramParams.targetChatId;
         delete telegramParams.targetUserId;
 
-        let response: unknown;
-        if (transportConfig?.botInstanceId) {
-          response = await dispatchViaBotApi(telegramAction, telegramParams, transportConfig.botInstanceId);
-        } else {
-          const transport = await getTelegramTransport();
-          response = await dispatchToTelegram(transport, telegramAction, telegramParams);
+        if (!transportConfig?.botInstanceId) {
+          throw new Error(`Telegram unified action '${action}' requires a botInstanceId in transportConfig`);
         }
+        const response = await dispatchViaBotApi(telegramAction, telegramParams, transportConfig.botInstanceId);
         results.push({ nodeId: `${nodeId}:telegram`, dispatched: true, response });
       } catch (error) {
         const msg = error instanceof Error ? error.message : String(error);

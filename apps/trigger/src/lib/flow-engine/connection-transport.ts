@@ -1,11 +1,10 @@
 import { pino } from 'pino';
-import { StringSession } from 'telegram/sessions/index.js';
-import { GramJsTransport } from '@flowbot/telegram-transport';
+import { GramJsClient } from '@flowbot/telegram-user-connector';
 import { getPrisma } from '../prisma.js';
 
 const logger = pino({ level: process.env.LOG_LEVEL || 'info' });
 
-const transportCache = new Map<string, { transport: GramJsTransport; lastUsed: number }>();
+const transportCache = new Map<string, { transport: GramJsClient; lastUsed: number }>();
 
 const MAX_CACHE_SIZE = 10;
 const CACHE_TTL_MS = 30 * 60 * 1000; // 30 minutes
@@ -14,7 +13,7 @@ const CACHE_TTL_MS = 30 * 60 * 1000; // 30 minutes
  * Get or create a GramJS transport for a specific PlatformConnection.
  * Transports are cached by connection ID and evicted after TTL or when cache is full.
  */
-export async function getTransportForConnection(connectionId: string): Promise<GramJsTransport> {
+export async function getTransportForConnection(connectionId: string): Promise<GramJsClient> {
   const cached = transportCache.get(connectionId);
   if (cached && cached.transport.isConnected()) {
     cached.lastUsed = Date.now();
@@ -54,13 +53,12 @@ export async function getTransportForConnection(connectionId: string): Promise<G
     throw new Error('TG_CLIENT_API_ID and TG_CLIENT_API_HASH are required');
   }
 
-  const stringSession = new StringSession(sessionString);
-  const transport = new GramJsTransport(
+  const transport = new GramJsClient({
     apiId,
     apiHash,
-    stringSession,
-    logger.child({ component: 'gramjs', connectionId }),
-  );
+    sessionString,
+    logger: logger.child({ component: 'gramjs', connectionId }),
+  });
 
   await transport.connect();
 
