@@ -15,10 +15,9 @@
     "typecheck": "tsc"
   },
   "dependencies": {
-    "@hono/node-server": "1.14.2",
-    "@flowbot/db": "workspace:*",
-    "discord.js": "^14.16.0",
-    "hono": "4.10.3"
+    "@flowbot/discord-bot-connector": "workspace:*",
+    "@flowbot/platform-kit": "workspace:*",
+    "pino": "9.9.0"
   },
   "devDependencies": {
     "@types/node": "^22.15.21",

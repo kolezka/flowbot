@@ -1,67 +1,47 @@
 #!/usr/bin/env tsx
 
 import process from 'node:process'
-import { serve } from '@hono/node-server'
-import { createDiscordBot } from './bot/index.js'
+import { createConnectorServer, createServerManager } from '@flowbot/platform-kit'
+import { DiscordBotConnector } from '@flowbot/discord-bot-connector'
+import { pino } from 'pino'
 import { createConfigFromEnvironment } from './config.js'
-import { createServer } from './server/index.js'
-import { DiscordFlowEventForwarder } from './services/flow-events.js'
 
 const config = createConfigFromEnvironment()
+const logger = pino({ level: config.logLevel })
 
-const client = createDiscordBot()
-const flowForwarder = new DiscordFlowEventForwarder(config.apiUrl)
+const connector = new DiscordBotConnector({
+  botToken: config.discordBotToken,
+  botInstanceId: config.botInstanceId,
+  logger,
+  apiUrl: config.apiUrl,
+})
 
-// Register event handlers
-import { registerMessageEvents } from './bot/events/message.js'
-import { registerMemberJoinEvents } from './bot/events/member-join.js'
-import { registerMemberLeaveEvents } from './bot/events/member-leave.js'
-import { registerReactionEvents } from './bot/events/reaction.js'
-import { registerInteractionEvents } from './bot/events/interaction.js'
-import { registerVoiceStateEvents } from './bot/events/voice-state.js'
+const server = createConnectorServer({
+  registry: connector.registry,
+  logger,
+  healthCheck: () => connector.isConnected(),
+})
 
-registerMessageEvents(client, flowForwarder)
-registerMemberJoinEvents(client, flowForwarder)
-registerMemberLeaveEvents(client, flowForwarder)
-registerReactionEvents(client, flowForwarder)
-registerInteractionEvents(client, flowForwarder)
-registerVoiceStateEvents(client, flowForwarder)
+const serverManager = createServerManager(server, {
+  host: config.serverHost,
+  port: config.serverPort,
+})
 
-const app = createServer(client, config)
+async function start() {
+  await connector.connect()
+  const info = await serverManager.start()
+  logger.info({ url: info.url }, 'Discord bot connector started')
+}
 
-let isShuttingDown = false
-
+let shuttingDown = false
 async function shutdown() {
-  if (isShuttingDown) return
-  isShuttingDown = true
-
-  console.log('[discord-bot] Shutting down...')
-  client.destroy()
-  process.exit(0)
+  if (shuttingDown) return
+  shuttingDown = true
+  await connector.disconnect()
+  await serverManager.stop()
 }
 
-process.on('SIGINT', shutdown)
-process.on('SIGTERM', shutdown)
+process.on('SIGINT', () => void shutdown())
+process.on('SIGTERM', () => void shutdown())
 
-try {
-  await client.login(config.discordBotToken)
-  console.log(`[discord-bot] Logged in as ${client.user?.tag}`)
-
-  serve(
-    {
-      fetch: app.fetch,
-      hostname: '0.0.0.0',
-      port: config.port,
-    },
-    (info) => {
-      const url = info.family === 'IPv6'
-        ? `http://[${info.address}]:${info.port}`
-        : `http://${info.address}:${info.port}`
-      console.log(`[discord-bot] HTTP server listening on ${url}`)
-    },
-  )
-}
-catch (error) {
-  console.error('[discord-bot] Failed to start:', error)
-  process.exit(1)
-}
+start().catch((err) => { logger.error(err); process.exit(1) })

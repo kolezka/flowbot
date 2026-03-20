@@ -2,10 +2,11 @@ import process from 'node:process'
 
 export interface Config {
   discordBotToken: string
-  discordClientId: string
-  databaseUrl: string
+  botInstanceId: string
   apiUrl: string
-  port: number
+  serverHost: string
+  serverPort: number
+  logLevel: string
 }
 
 export function createConfigFromEnvironment(): Config {
@@ -21,21 +22,17 @@ export function createConfigFromEnvironment(): Config {
     throw new Error('DISCORD_BOT_TOKEN is required')
   }
 
-  const discordClientId = process.env.DISCORD_CLIENT_ID
-  if (!discordClientId) {
-    throw new Error('DISCORD_CLIENT_ID is required')
-  }
-
-  const databaseUrl = process.env.DATABASE_URL
-  if (!databaseUrl) {
-    throw new Error('DATABASE_URL is required')
+  const botInstanceId = process.env.DISCORD_BOT_INSTANCE_ID
+  if (!botInstanceId) {
+    throw new Error('DISCORD_BOT_INSTANCE_ID is required')
   }
 
   return {
     discordBotToken,
-    discordClientId,
-    databaseUrl,
+    botInstanceId,
     apiUrl: process.env.API_URL ?? 'http://localhost:3000',
-    port: process.env.PORT ? Number(process.env.PORT) : 3003,
+    serverHost: process.env.SERVER_HOST ?? '0.0.0.0',
+    serverPort: process.env.SERVER_PORT ? Number(process.env.SERVER_PORT) : 3003,
+    logLevel: process.env.LOG_LEVEL ?? 'info',
   }
 }
