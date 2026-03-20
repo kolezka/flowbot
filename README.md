@@ -17,13 +17,11 @@
   <img src="https://img.shields.io/badge/Tests-639-brightgreen" alt="Tests" />
 </p>
 
----
 
 ## What is Flowbot?
 
 Flowbot is an all-in-one platform for managing communities across **Telegram, Discord, and WhatsApp** with a visual automation engine.
 
----
 
 ## Architecture
 
@@ -222,7 +220,6 @@ sequenceDiagram
     WS-->>FE: Show success
 ```
 
----
 
 ## Monorepo Structure
 
@@ -279,7 +276,6 @@ graph TB
 | `packages/db` | Prisma 7 | — | Schema + client (35+ models) |
 | `packages/flow-shared` | TypeScript | — | 150+ node type registry |
 
----
 
 ## Visual Flow Builder
 
@@ -324,7 +320,6 @@ graph LR
 - Cross-platform: any trigger can feed any platform's actions
 - Visual debugger with step-through execution timeline
 
----
 
 ## Database
 
@@ -360,7 +355,6 @@ erDiagram
 | Bot Config | `BotInstance`, `BotCommand`, `BotResponse`, `BotMenu`, `BotMenuButton` |
 | Webhooks | `WebhookEndpoint` |
 
----
 
 ## API
 
@@ -378,7 +372,6 @@ erDiagram
 | `analytics` | `/api/analytics/*` | Community analytics |
 | `events` | `/api/events/*` | WebSocket + SSE streams |
 
----
 
 ## Background Tasks
 
@@ -392,7 +385,6 @@ erDiagram
 | `analytics-snapshot` | Daily 2 AM | Capture community analytics |
 | `health-check` | Every 5 min | System health monitoring |
 
----
 
 ## Getting Started
 
@@ -453,7 +445,6 @@ graph LR
     style TR fill:#7C3AED,color:#fff
 ```
 
----
 
 ## Environment Variables
 
@@ -468,7 +459,6 @@ graph LR
 | API | `DATABASE_URL`, `PORT`, `FRONTEND_URL` |
 | Frontend | `NEXT_PUBLIC_API_URL` |
 
----
 
 ## Security
 
@@ -479,7 +469,6 @@ graph LR
 - **Flow Safety** — `db_query` allowlist, `run_flow` max depth 5, circular reference detection
 - **Webhook Security** — unique auto-generated cuid tokens per endpoint
 
----
 
 ## Tech Stack
 
@@ -500,7 +489,6 @@ graph LR
 | Testing | Jest + Vitest + Playwright |
 | Logging | Pino |
 
----
 
 <p align="center">
   <sub>Built with TypeScript, powered by Trigger.dev</sub>
