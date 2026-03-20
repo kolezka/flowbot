@@ -17,15 +17,16 @@
   <img src="https://img.shields.io/badge/Tests-639-brightgreen" alt="Tests" />
 </p>
 
-
 ## What is Flowbot?
 
 Flowbot is an all-in-one platform for managing communities across **Telegram, Discord, and WhatsApp** with a visual automation engine.
 
-
 ## Architecture
 
 ### System Overview
+
+<details>
+<summary>System architecture diagram</summary>
 
 ```mermaid
 graph TB
@@ -87,9 +88,14 @@ graph TB
     style Jobs fill:#f3e5f5,stroke:#333
 ```
 
+</details>
+
 ### Connector Pattern
 
 Every platform connector follows the same three-layer architecture:
+
+<details>
+<summary>Connector architecture diagram</summary>
 
 ```mermaid
 graph TB
@@ -119,6 +125,8 @@ graph TB
     style Layer3 fill:#e1f5fe,stroke:#333
 ```
 
+</details>
+
 Every connector exposes the same HTTP contract:
 
 | Endpoint | Purpose |
@@ -141,6 +149,9 @@ Each platform is split by **identity** (bot vs user account):
 
 ### Message Processing
 
+<details>
+<summary>Message processing flow</summary>
+
 ```mermaid
 sequenceDiagram
     participant U as User
@@ -161,7 +172,12 @@ sequenceDiagram
     T->>DB: Save results
 ```
 
+</details>
+
 ### Real-Time Events
+
+<details>
+<summary>Event system diagram</summary>
 
 ```mermaid
 graph LR
@@ -191,7 +207,12 @@ graph LR
     style EB fill:#fff3e0,stroke:#333
 ```
 
+</details>
+
 ### WhatsApp QR Authentication
+
+<details>
+<summary>QR auth flow</summary>
 
 ```mermaid
 sequenceDiagram
@@ -220,8 +241,12 @@ sequenceDiagram
     WS-->>FE: Show success
 ```
 
+</details>
 
 ## Monorepo Structure
+
+<details>
+<summary>Dependency graph</summary>
 
 ```mermaid
 graph TB
@@ -257,6 +282,8 @@ graph TB
     style Packages fill:#e8f5e9,stroke:#333
 ```
 
+</details>
+
 ### Workspaces
 
 | Workspace | Stack | Tests | Role |
@@ -276,10 +303,12 @@ graph TB
 | `packages/db` | Prisma 7 | — | Schema + client (35+ models) |
 | `packages/flow-shared` | TypeScript | — | 150+ node type registry |
 
-
 ## Visual Flow Builder
 
 170+ node types for cross-platform automations:
+
+<details>
+<summary>Flow node categories</summary>
 
 ```mermaid
 graph LR
@@ -314,14 +343,18 @@ graph LR
     style X fill:#f3e5f5,stroke:#333
 ```
 
+</details>
+
 - BFS graph traversal with LRU result caching
 - Variable interpolation: `{{trigger.*}}`, `{{node.*}}`, `{{context.*}}`
 - Flow chaining with `run_flow` + `triggerAndWait` (max depth: 5)
 - Cross-platform: any trigger can feed any platform's actions
 - Visual debugger with step-through execution timeline
 
-
 ## Database
+
+<details>
+<summary>Entity relationship diagram</summary>
 
 ```mermaid
 erDiagram
@@ -343,6 +376,8 @@ erDiagram
     BotInstance ||--o{ BotMenu : has
 ```
 
+</details>
+
 | Domain | Models |
 |--------|--------|
 | Identity | `PlatformAccount`, `UserIdentity` |
@@ -354,7 +389,6 @@ erDiagram
 | Flow Engine | `FlowDefinition`, `FlowFolder`, `FlowExecution`, `FlowVersion`, `UserFlowContext`, `FlowEvent` |
 | Bot Config | `BotInstance`, `BotCommand`, `BotResponse`, `BotMenu`, `BotMenuButton` |
 | Webhooks | `WebhookEndpoint` |
-
 
 ## API
 
@@ -372,7 +406,6 @@ erDiagram
 | `analytics` | `/api/analytics/*` | Community analytics |
 | `events` | `/api/events/*` | WebSocket + SSE streams |
 
-
 ## Background Tasks
 
 | Task | Schedule | Description |
@@ -384,7 +417,6 @@ erDiagram
 | `flow-event-cleanup` | Daily 3 AM | Prune expired events |
 | `analytics-snapshot` | Daily 2 AM | Capture community analytics |
 | `health-check` | Every 5 min | System health monitoring |
-
 
 ## Getting Started
 
@@ -429,6 +461,9 @@ pnpm trigger test                    # Vitest
 
 ### Startup Order
 
+<details>
+<summary>Startup sequence</summary>
+
 ```mermaid
 graph LR
     PG["PostgreSQL"] --> MIG["Migrations"]
@@ -445,6 +480,7 @@ graph LR
     style TR fill:#7C3AED,color:#fff
 ```
 
+</details>
 
 ## Environment Variables
 
@@ -459,7 +495,6 @@ graph LR
 | API | `DATABASE_URL`, `PORT`, `FRONTEND_URL` |
 | Frontend | `NEXT_PUBLIC_API_URL` |
 
-
 ## Security
 
 - **Auth** — JWT bearer tokens, `@Public()` decorator for open routes
@@ -468,7 +503,6 @@ graph LR
 - **CircuitBreaker** — generic breaker in platform-kit prevents cascading failures
 - **Flow Safety** — `db_query` allowlist, `run_flow` max depth 5, circular reference detection
 - **Webhook Security** — unique auto-generated cuid tokens per endpoint
-
 
 ## Tech Stack
 
@@ -488,7 +522,6 @@ graph LR
 | Real-Time | Socket.IO + SSE |
 | Testing | Jest + Vitest + Playwright |
 | Logging | Pino |
-
 
 <p align="center">
   <sub>Built with TypeScript, powered by Trigger.dev</sub>
