@@ -15,6 +15,7 @@ describe('WsGateway', () => {
     onModeration: jest.fn(),
     onAutomation: jest.fn(),
     onSystem: jest.fn(),
+    onQrAuth: jest.fn(),
   };
 
   beforeEach(async () => {
@@ -99,6 +100,26 @@ describe('WsGateway', () => {
       expect(mockServer.to).toHaveBeenCalledWith('system');
       expect(mockServer.emit).toHaveBeenCalledWith('system', event);
     });
+
+    it('should register qr-auth event handler', () => {
+      gateway.afterInit();
+      expect(mockEventBus.onQrAuth).toHaveBeenCalledWith(expect.any(Function));
+    });
+
+    it('should emit qr-auth events to the connection-scoped room', () => {
+      gateway.afterInit();
+      const handler = mockEventBus.onQrAuth.mock.calls[0][0];
+      const event = {
+        connectionId: 'conn-42',
+        qr: 'data:image/png;base64,abc',
+        timestamp: new Date(),
+      };
+
+      handler(event);
+
+      expect(mockServer.to).toHaveBeenCalledWith('qr-auth:conn-42');
+      expect(mockServer.emit).toHaveBeenCalledWith('qr-auth', event);
+    });
   });
 
   describe('handleConnection', () => {
@@ -142,6 +163,15 @@ describe('WsGateway', () => {
 
       expect(client.join).toHaveBeenCalledWith('system');
       expect(result).toEqual({ status: 'ok', room: 'system' });
+    });
+
+    it('should allow joining qr-auth scoped rooms', () => {
+      const client = { id: 'c1', join: jest.fn() };
+
+      const result = gateway.handleJoin(client as any, 'qr-auth:conn-99');
+
+      expect(client.join).toHaveBeenCalledWith('qr-auth:conn-99');
+      expect(result).toEqual({ status: 'ok', room: 'qr-auth:conn-99' });
     });
 
     it('should reject invalid room names', () => {
