@@ -33,5 +33,7 @@ pnpm api test:cov     # Coverage report
 | `FRONTEND_URL` | No | `http://localhost:3001` | Frontend URL for CORS |
 | `TRIGGER_SECRET_KEY` | No | -- | Trigger.dev secret key |
 | `TRIGGER_API_URL` | No | -- | Trigger.dev API URL |
-| `MANAGER_BOT_HEALTH_URL` | No | `http://localhost:3001/health` | Manager bot health endpoint |
-| `TG_CLIENT_HEALTH_URL` | No | `http://localhost:3002/health` | TG client health endpoint |
+
+## API Documentation
+
+Swagger API docs available at `http://localhost:3000/api/docs` when running in dev mode.
