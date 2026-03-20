@@ -147,7 +147,7 @@ const server = createConnectorServer({
 
 ### EventForwarder
 
-Forwards `FlowTriggerEvent` to the API. Handles retries, logging, timeout:
+Forwards `FlowTriggerEvent` to the API. Handles retries, logging, timeout. Replaces the ad-hoc `fetch()` calls currently duplicated in each bot's event handler files (`apps/whatsapp-bot/src/bot/events.ts`, `apps/telegram-bot/src/bot/middlewares/flow-events.ts`, etc.):
 
 ```typescript
 const forwarder = new EventForwarder({ apiUrl: config.apiUrl, logger })
@@ -182,6 +182,19 @@ export class WhatsAppUserConnector {
 ```
 
 No inheritance hierarchy. Each connector is a standalone class that wires together ActionRegistry + SDK client + EventForwarder.
+
+### Relationship to NestJS `PlatformStrategyRegistry`
+
+The NestJS API already has a `PlatformStrategyRegistry` (at `apps/api/src/platform/strategy-registry.service.ts`) that handles API-layer concerns: connection auth strategies, community operations, etc. This is a separate concern from action dispatch:
+
+- **`PlatformStrategyRegistry` (API layer)** — handles dashboard-facing operations: create connections, start auth flows, community CRUD, platform-specific config. These strategies talk to connectors via their HTTP endpoints when needed (e.g., `POST /api/auth/start`). Stays as-is.
+- **`ActionRegistry` (connector layer)** — handles flow-engine action execution inside each connector process. The dispatcher routes actions to connectors over HTTP.
+
+The two registries don't overlap. `PlatformStrategyRegistry` is for the API's own platform-aware logic. `ActionRegistry` is for connectors' internal action dispatch. No changes needed to the API's strategy registry during this refactoring.
+
+### Flow Builder Integration
+
+The flow builder's node palette (in `packages/flow-shared`) currently defines node types statically. With `ActionRegistry.getActions()`, connectors can dynamically report their capabilities. A future enhancement could have the API aggregate action lists from all active connectors and expose them via `GET /api/platform/actions` for the flow builder. This is out of scope for this refactoring but the ActionRegistry enables it.
 
 ### What's NOT inside platform-kit
 
@@ -239,7 +252,7 @@ await connector.connect()
 await serverManager.start()
 ```
 
-The same pattern applies to every platform. `telegram-bot-connector` would have `sdk/grammy-client.ts` instead of `sdk/baileys-client.ts`, different actions, different event mappers — but the same structure, same `BaseConnector`, same `ActionRegistry`, same HTTP contract.
+The same pattern applies to every platform. `telegram-bot-connector` would have `sdk/grammy-client.ts` instead of `sdk/baileys-client.ts`, different actions, different event mappers — but the same structure, same `ActionRegistry`, same composition pattern, same HTTP contract.
 
 ---
 
@@ -319,46 +332,79 @@ The current flow-execution task uses in-process GramJS transport via `getTelegra
 
 Four phases, each independently shippable and testable.
 
+### Connector Lifecycle
+
+All connectors are **long-running processes** (always connected). They start, authenticate, maintain the SDK connection, and stay up to handle action requests and emit events. This applies to both bot-account and user-account connectors:
+
+- `telegram-bot` — long-running grammY polling/webhook (unchanged)
+- `telegram-user` — long-running GramJS MTProto connection (currently ephemeral in Trigger.dev, becomes persistent)
+- `whatsapp-user` — long-running Baileys connection (unchanged)
+- `discord-bot` — long-running discord.js gateway (unchanged)
+
+This means user-connector processes are always connected and ready, eliminating MTProto connection setup latency from the action dispatch path.
+
+### Auth Concurrency
+
+Each connector process manages **one connection** (one phone number, one bot token, one OAuth session). For multiple user accounts on the same platform, run multiple connector instances — each with its own `PlatformConnection` ID and `BotInstance` record. This matches the current model where each WhatsApp bot connects to one phone number.
+
+Auth flows (`/api/auth/start`, `/api/auth/status`, `/api/auth/submit-step`) are therefore single-session per connector process. No concurrent auth handling needed.
+
+### Rollback Strategy
+
+Each phase retains old packages until the new connector has run in production for at least one week. The dispatcher supports routing via either old or new path, controlled by the `BotInstance.apiUrl` field — point it at the old bot app URL to roll back, point at the new connector URL to migrate forward. No feature flags needed.
+
+- **Phase 2:** `apps/whatsapp-bot` and `packages/whatsapp-transport` kept for 1 week after `apps/whatsapp-user` is verified. Old packages deleted only after rollback window.
+- **Phase 3:** Same pattern for Telegram packages.
+- **Phase 4:** Same pattern for Discord. Old dispatcher code deleted last.
+
 ### Phase 1: `packages/platform-kit`
 
 Build shared infrastructure with zero platform code:
-- `ActionRegistry` + Valibot validation
+- `ActionRegistry` + Valibot validation + observability hooks
 - `CircuitBreaker` (generic, replaces 3 copies)
 - `ConnectorError`
-- `BaseConnector` abstract class
-- `createConnectorServer()` Hono factory
-- `EventForwarder`
+- `createConnectorServer()` Hono factory (standardized HTTP contract)
+- `EventForwarder` (replaces ad-hoc `fetch()` calls in each bot's event handlers)
 
 **Ship criteria:** Package published, fully unit tested, no platform dependencies.
 
 ### Phase 2: WhatsApp user connector (first migration)
 
-WhatsApp is the cleanest candidate — newest code, fewest consumers, cleanest code.
+WhatsApp is the cleanest candidate — newest code, simplest auth (QR only), single dispatch path in the dispatcher.
 
+**Consumers inventory** (files that reference WhatsApp dispatch):
+- `apps/trigger/src/lib/flow-engine/dispatcher.ts` — `whatsapp_*` prefix branch (line ~175), `UNIFIED_TO_WHATSAPP` table (line ~543), `whatsappBotInstanceId` in transportConfig
+- `apps/whatsapp-bot/src/server/actions.ts` — current action handler (migrates into connector)
+- `apps/whatsapp-bot/src/bot/events.ts` — current event forwarding (replaced by EventForwarder)
+- `apps/whatsapp-bot/src/server/qr-auth.ts` — current QR auth (migrates into connector auth.ts)
+- `apps/api/src/connections/strategies/whatsapp-baileys.strategy.ts` — API strategy (unchanged, calls connector's auth endpoints)
+- Flow definitions in DB with `transportConfig` containing `whatsappBotInstanceId` — update to use new BotInstance ID
+
+Steps:
 - Create `packages/whatsapp-user-connector` using platform-kit
 - Move Baileys SDK, action handlers, event mapper, auth-state from current packages
 - Create thin `apps/whatsapp-user` shell (replaces `apps/whatsapp-bot`)
-- Update dispatcher to route WhatsApp via new connector
-- Delete `packages/whatsapp-transport` and `apps/whatsapp-bot`
+- Update dispatcher to route WhatsApp via `dispatchActionToCommunity()` path
+- Keep `packages/whatsapp-transport` and `apps/whatsapp-bot` for rollback window, then delete
 
 **Ship criteria:** All WhatsApp tests pass against new structure, dispatcher works, QR auth works.
 
 ### Phase 3: Telegram connectors (two connectors)
 
 - `packages/telegram-bot-connector` — grammY Bot API listener + executor. Replaces `apps/telegram-bot`'s inline switch.
-- `packages/telegram-user-connector` — GramJS MTProto executor. Replaces `packages/telegram-transport`. Auth session logic (from `apps/tg-client`) becomes a method on the connector.
+- `packages/telegram-user-connector` — GramJS MTProto executor (long-running). Replaces `packages/telegram-transport` + in-process `getTelegramTransport()`. Auth session logic (from `apps/tg-client`) becomes a method on the connector.
 - Thin shells: `apps/telegram-bot` (rewritten) and `apps/telegram-user` (replaces `apps/tg-client`)
-- Delete `packages/telegram-transport`, old `apps/tg-client`
-- Dispatcher loses all Telegram-specific code
+- Keep old packages for rollback window, then delete `packages/telegram-transport`, old `apps/tg-client`
+- Dispatcher loses all Telegram-specific code (`dispatchToTelegram()`, `getTelegramTransport()`)
 
-**Ship criteria:** Existing Telegram tests pass, flow engine dispatches correctly, MTProto user actions work.
+**Ship criteria:** Existing Telegram tests pass, flow engine dispatches correctly, MTProto user actions work via HTTP to `telegram-user` connector.
 
 ### Phase 4: Discord bot connector + dispatcher cleanup
 
 - `packages/discord-bot-connector` — discord.js listener + executor. Replaces `apps/discord-bot` inline switch + `packages/discord-transport`.
 - Thin shell: `apps/discord-bot` (rewritten)
-- Delete `packages/discord-transport`
-- Dispatcher is now the 30-line version — all platform-specific code removed
+- Keep old packages for rollback window, then delete `packages/discord-transport`
+- Dispatcher is now the simplified version — all platform-specific code removed
 - Delete old dispatcher functions, translation tables, prefix routing
 
 **Ship criteria:** Discord works, dispatcher is clean, no old transport packages remain.
