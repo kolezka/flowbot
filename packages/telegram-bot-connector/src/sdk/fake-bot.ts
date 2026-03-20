@@ -73,8 +73,11 @@ export class FakeTelegramBot implements ITelegramBotTransport {
   }
 
   getBot(): Bot {
-    // Test double returns a stub — callers that need the real Bot should use GrammyBot
-    return null as unknown as Bot
+    // Return a stub with no-op middleware methods so features/events can register without crashing
+    const stub = new Proxy({} as Bot, {
+      get: () => () => stub,
+    })
+    return stub
   }
 
   // --- Messaging ---

@@ -34,3 +34,7 @@ export { registerEventListeners } from './events/listeners.js'
 
 // Features
 export { registerFeatures, welcomeFeature, menuFeature } from './features/index.js'
+
+// Connector
+export { TelegramBotConnector } from './connector.js'
+export type { TelegramBotConnectorConfig } from './connector.js'
