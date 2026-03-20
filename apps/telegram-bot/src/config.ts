@@ -1,68 +1,20 @@
 import process from 'node:process'
-import { API_CONSTANTS } from 'grammy'
 import * as v from 'valibot'
 
-const DEFAULT_ALLOWED_UPDATES = JSON.stringify([
-  'message',
-  'callback_query',
-  'chat_member',
-  'my_chat_member',
-  'edited_message',
-  'chat_join_request',
-])
-
-const baseConfigSchema = v.object({
-  debug: v.optional(v.pipe(v.string(), v.transform(JSON.parse), v.boolean()), 'false'),
-  logLevel: v.optional(v.pipe(v.string(), v.picklist(['trace', 'debug', 'info', 'warn', 'error', 'fatal', 'silent'])), 'info'),
+const configSchema = v.object({
+  logLevel: v.optional(v.picklist(['trace', 'debug', 'info', 'warn', 'error', 'fatal', 'silent']), 'info'),
   botToken: v.pipe(v.string(), v.regex(/^\d+:[\w-]+$/, 'Invalid BOT_TOKEN format')),
-  botAllowedUpdates: v.optional(v.pipe(v.string(), v.transform(JSON.parse), v.array(v.picklist(API_CONSTANTS.ALL_UPDATE_TYPES))), DEFAULT_ALLOWED_UPDATES),
+  botMode: v.optional(v.picklist(['polling', 'webhook']), 'polling'),
   botAdmins: v.optional(v.pipe(v.string(), v.transform(JSON.parse), v.array(v.number())), '[]'),
-  databaseUrl: v.string(),
-  triggerSecretKey: v.optional(v.string()),
-  triggerApiUrl: v.optional(v.string()),
-  apiUrl: v.optional(v.string(), 'http://localhost:3000'),
-  apiServerHost: v.optional(v.string(), '0.0.0.0'),
-  apiServerPort: v.optional(v.pipe(v.string(), v.transform(Number), v.number()), '3001'),
+  botInstanceId: v.optional(v.string()),
+  apiUrl: v.optional(v.string()),
+  apiServerHost: v.optional(v.string(), 'localhost'),
+  apiServerPort: v.optional(v.pipe(v.string(), v.transform(Number), v.number()), '3000'),
+  serverHost: v.optional(v.string(), '0.0.0.0'),
+  serverPort: v.optional(v.pipe(v.string(), v.transform(Number), v.number()), '3001'),
 })
 
-const configSchema = v.variant('botMode', [
-  v.pipe(
-    v.object({
-      botMode: v.literal('polling'),
-      ...baseConfigSchema.entries,
-    }),
-    v.transform(input => ({
-      ...input,
-      isDebug: input.debug,
-      isWebhookMode: false as const,
-      isPollingMode: true as const,
-    })),
-  ),
-  v.pipe(
-    v.object({
-      botMode: v.literal('webhook'),
-      ...baseConfigSchema.entries,
-      botWebhook: v.pipe(v.string(), v.url()),
-      botWebhookSecret: v.pipe(v.string(), v.minLength(12)),
-      serverHost: v.optional(v.string(), '0.0.0.0'),
-      serverPort: v.optional(v.pipe(v.string(), v.transform(Number), v.number()), '80'),
-    }),
-    v.transform(input => ({
-      ...input,
-      isDebug: input.debug,
-      isWebhookMode: true as const,
-      isPollingMode: false as const,
-    })),
-  ),
-])
-
 export type Config = v.InferOutput<typeof configSchema>
-export type PollingConfig = v.InferOutput<typeof configSchema['options'][0]>
-export type WebhookConfig = v.InferOutput<typeof configSchema['options'][1]>
-
-export function createConfig(input: v.InferInput<typeof configSchema>) {
-  return v.parse(configSchema, input)
-}
 
 type CamelCase<S extends string> = S extends `${infer P1}_${infer P2}${infer P3}`
   ? `${Lowercase<P1>}${Uppercase<P2>}${CamelCase<P3>}`
@@ -87,7 +39,7 @@ function convertKeysToCamelCase<T>(obj: T): KeysToCamelCase<T> {
   return result
 }
 
-export function createConfigFromEnvironment() {
+export function createConfigFromEnvironment(): Config {
   try {
     process.loadEnvFile()
   }
@@ -97,16 +49,9 @@ export function createConfigFromEnvironment() {
 
   try {
     const env = convertKeysToCamelCase(process.env) as Record<string, string>
-    if (!env.botMode) {
-      env.botMode = 'polling'
-    }
-    const config = createConfig(env as any)
-
-    return config
+    return v.parse(configSchema, env)
   }
   catch (error) {
-    throw new Error('Invalid config', {
-      cause: error,
-    })
+    throw new Error('Invalid config', { cause: error })
   }
 }
