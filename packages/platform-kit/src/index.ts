@@ -1,3 +1,7 @@
 export { ConnectorError } from './connector-error.js'
 export { ActionRegistry } from './action-registry.js'
 export type { ActionResult, ActionDef, ObservabilityHooks } from './types.js'
+export { EventForwarder } from './event-forwarder.js'
+export type { FlowTriggerEvent, EventForwarderConfig } from './event-forwarder.js'
+export { CircuitBreaker, CircuitState, CircuitOpenError } from './circuit-breaker.js'
+export type { CircuitBreakerConfig } from './circuit-breaker.js'
