@@ -23,12 +23,6 @@
 
 Flowbot is an all-in-one platform for managing communities across **Telegram, Discord, and WhatsApp** with a visual automation engine.
 
-- **Visual Flow Builder** — 170+ node types, drag-and-drop automation across all platforms
-- **Unified Connector Architecture** — every platform uses the same pattern, same HTTP contract, same testing approach
-- **Admin Dashboard** — real-time monitoring, analytics, broadcast, community management
-- **Background Jobs** — Trigger.dev for broadcasts, scheduled messages, flow execution
-- **User Account Support** — Telegram MTProto and WhatsApp Baileys for operations bots can't do
-
 ---
 
 ## Architecture
