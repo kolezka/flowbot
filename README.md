@@ -127,6 +127,8 @@ graph LR
     EventEmitter2"]
     S2["Moderation Actions"] -->|emit| EB
     S3["Job Completions"] -->|emit| EB
+    S4["WhatsApp Bot
+    QR Auth Updates"] -->|"POST /qr-update"| EB
 
     EB -->|forward| WS["WebSocket Gateway
     Socket.IO"]
@@ -134,6 +136,7 @@ graph LR
     RxJS Observable"]
 
     WS -->|push| C1["Dashboard Client"]
+    WS -->|"qr-auth room"| C3["QR Auth Wizard"]
     SSE -->|push| C2["Dashboard Client"]
 
     style EB fill:#fff3e0,stroke:#333
@@ -151,9 +154,9 @@ sequenceDiagram
     participant DB as PostgreSQL
 
     U->>P: Send message
-    P->>BOT: Webhook / Polling / Gateway
-    BOT->>BOT: Middleware pipeline
-    Note over BOT: flow-events forwards<br/>standardized FlowTriggerEvent
+    P->>BOT: Webhook / Polling / Gateway / Baileys
+    BOT->>BOT: Event pipeline
+    Note over BOT: Event mapper transforms raw<br/>platform events into FlowTriggerEvent
 
     BOT->>API: POST /api/flows/webhook
     API->>TR: Trigger flow-execution task
@@ -200,6 +203,40 @@ sequenceDiagram
     TR->>DC: Send to Discord communities (Bot API)
     TR->>WA: Send to WhatsApp communities (Baileys)
     TR->>DB: Update per-community delivery results
+```
+
+### Data Flow: WhatsApp QR Authentication
+
+```mermaid
+sequenceDiagram
+    participant U as Admin
+    participant FE as Dashboard
+    participant API as NestJS API
+    participant WS as Socket.IO
+    participant BOT as WhatsApp Bot
+    participant WA as WhatsApp
+
+    U->>FE: Add WhatsApp connection
+    FE->>API: POST /api/connections {platform: "whatsapp"}
+    API->>API: Create PlatformConnection (status: authenticating)
+    FE->>API: POST /api/connections/:id/auth/start
+    API->>BOT: POST /api/qr-auth/start {connectionId}
+    FE->>WS: Subscribe to qr-auth:{connectionId} room
+
+    BOT->>WA: Initialize Baileys session
+    WA-->>BOT: QR code generated
+    BOT->>API: POST /api/connections/:id/qr-update {type: qr, qr: base64}
+    API->>WS: Emit to qr-auth:{connectionId}
+    WS-->>FE: QR code (base64)
+    FE->>FE: Render QR code
+
+    U->>WA: Scan QR with phone
+    WA-->>BOT: Auth success
+    BOT->>BOT: Save auth keys to PlatformConnection
+    BOT->>API: POST /api/connections/:id/qr-update {type: connected}
+    API->>WS: Emit to qr-auth:{connectionId}
+    WS-->>FE: Connected (pushName, phoneNumber)
+    FE->>FE: Show success state
 ```
 
 ---
@@ -281,14 +318,17 @@ Unlike Telegram (which separates bot/user account roles), WhatsApp uses a single
 
 ### Visual Flow Builder
 
-The flow engine supports **150+ node types** for building cross-platform automations:
+The flow engine supports **170+ node types** for building cross-platform automations:
 
 ```mermaid
 graph LR
-    subgraph Triggers["Triggers (23)"]
+    subgraph Triggers["Triggers (30+)"]
         T1["Telegram Events (14)"]
         T2["Discord Events (6)"]
-        T3["General (3)
+        T3["WhatsApp Events (7)
+        message, join, leave,
+        promote, demote, group, presence"]
+        T4["General (3)
         schedule, webhook, custom_event"]
     end
 
@@ -324,12 +364,12 @@ Features:
 - Variable interpolation: `{{trigger.*}}`, `{{node.*}}`, `{{context.*}}`
 - Persistent per-user context (`get_context` / `set_context`)
 - Flow chaining with `run_flow` + `triggerAndWait` (max depth: 5)
-- Cross-platform: Telegram trigger can feed Discord actions and vice versa
+- Cross-platform: Telegram trigger can feed Discord/WhatsApp actions and vice versa
 - Visual debugger with step-through execution timeline
 
 ### Moderation & Automation
 
-Moderation features (anti-spam, CAPTCHA, keyword filters, AI content moderation, etc.) are implemented as **visual flows** in the Flow Builder. Users create and customize moderation automations for any platform — Telegram, Discord, or both — without writing code.
+Moderation features (anti-spam, CAPTCHA, keyword filters, AI content moderation, etc.) are implemented as **visual flows** in the Flow Builder. Users create and customize moderation automations for any platform — Telegram, Discord, WhatsApp, or all three — without writing code.
 
 ### Telegram User Account (MTProto Client)
 
@@ -517,6 +557,7 @@ docker compose up -d                    # 1. PostgreSQL
 pnpm db prisma:migrate && pnpm db generate && pnpm db build  # 2. Migrations
 pnpm api start:dev                      # 3. API
 pnpm telegram-bot dev                   # 4. Bots
+pnpm whatsapp-bot dev                   # 4. Bots (WhatsApp)
 pnpm frontend dev                       # 5. Frontend
 pnpm trigger dev                        # 6. Trigger.dev
 ```
