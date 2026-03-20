@@ -23,7 +23,7 @@
 Flowbot is an all-in-one platform for managing communities across **Telegram, Discord, WhatsApp, and more** with a visual automation engine. It combines:
 
 - **Visual Flow Builder** — drag-and-drop automation with 150+ node types across Telegram, Discord, WhatsApp, and cross-platform actions
-- **Multi-Platform Bots** — Telegram (grammY), Discord (discord.js), and WhatsApp (Baileys) bots that forward events to the flow engine for processing
+- **Unified Connector Architecture** — every platform connector follows the same pattern: ActionRegistry + Valibot schemas + EventForwarder + standard HTTP contract
 - **Admin Dashboard** — real-time monitoring, analytics, multi-platform broadcast, community management, bot configuration
 - **Background Job Engine** — reliable task execution with Trigger.dev for broadcasts, scheduled messages, flow execution
 - **Telegram User Account** — MTProto client that acts as a real user for advanced operations bots can't do
@@ -32,6 +32,41 @@ Flowbot is an all-in-one platform for managing communities across **Telegram, Di
 ---
 
 ## Architecture
+
+### Connector Pattern
+
+Every platform connector follows the same architecture. A **connector package** contains the SDK wrapper, action handlers, and event mapper. A **thin shell app** (~50 lines) boots the connector and starts the HTTP server.
+
+```
+┌─────────────────────────────────────────────────────────┐
+│  platform-kit (shared infrastructure)                    │
+│  ActionRegistry · CircuitBreaker · EventForwarder        │
+│  ConnectorError · createConnectorServer()                │
+└─────────────┬───────────────────────────────┬───────────┘
+              │                               │
+   ┌──────────▼──────────┐       ┌───────────▼───────────┐
+   │  *-connector pkg    │       │  *-connector pkg      │
+   │  SDK wrapper         │       │  SDK wrapper           │
+   │  Action handlers     │       │  Action handlers       │
+   │  Event mapper        │       │  Event mapper          │
+   │  Valibot schemas     │       │  Valibot schemas       │
+   └──────────┬──────────┘       └───────────┬───────────┘
+              │                               │
+   ┌──────────▼──────────┐       ┌───────────▼───────────┐
+   │  apps/* thin shell  │       │  apps/* thin shell    │
+   │  ~50 lines          │       │  ~50 lines            │
+   │  POST /execute      │       │  POST /execute        │
+   │  GET /health        │       │  GET /health          │
+   │  GET /actions       │       │  GET /actions         │
+   └─────────────────────┘       └───────────────────────┘
+```
+
+Every connector exposes the same HTTP contract:
+- `POST /execute` — `{ action, params }` → `{ success, data?, error? }`
+- `GET /health` — `{ status, uptime, connected }`
+- `GET /actions` — list of registered action names + schemas
+
+The dispatcher is platform-agnostic (~150 lines) — it resolves a community's bot instance URL and sends `{ action, params }`. No platform-specific routing.
 
 ### System Overview
 
@@ -47,24 +82,30 @@ graph TB
 
     subgraph Frontend["Frontend Layer"]
         FE["Next.js 16 Dashboard
-        React 19 &middot; Radix UI &middot; Tailwind CSS 4"]
+        React 19 · Radix UI · Tailwind CSS 4"]
     end
 
     subgraph Backend["Backend Layer"]
         API["NestJS 11 API
-        REST &middot; WebSocket &middot; SSE
-        130+ endpoints &middot; 19 modules"]
+        REST · WebSocket · SSE
+        130+ endpoints · 19 modules"]
     end
 
-    subgraph Bots["Bot Layer"]
-        TG_BOT["Telegram Bot
-        grammY &middot; Hono
-        Flow event forwarding"]
-        DB_BOT["Discord Bot
-        discord.js &middot; Hono"]
-        WA_BOT["WhatsApp Bot
-        Baileys &middot; Hono
-        QR auth &middot; Flow events"]
+    subgraph Connectors["Connector Layer"]
+        TG_BOT["telegram-bot
+        grammY · Bot API"]
+        TG_USER["telegram-user
+        GramJS · MTProto"]
+        DC_BOT["discord-bot
+        discord.js · Gateway"]
+        WA_USER["whatsapp-user
+        Baileys · Multi-Device"]
+    end
+
+    subgraph SharedInfra["Shared Infrastructure"]
+        PK["platform-kit
+        ActionRegistry · CircuitBreaker
+        EventForwarder · Server Factory"]
     end
 
     subgraph Workers["Background Workers"]
@@ -73,15 +114,9 @@ graph TB
         Flow Engine (150+ node types)"]
     end
 
-    subgraph Data["Data & Transport Layer"]
+    subgraph Data["Data Layer"]
         DB[("PostgreSQL
-        Prisma 7 &middot; 35+ models")]
-        TG_TR["telegram-transport
-        GramJS &middot; CircuitBreaker"]
-        DC_TR["discord-transport
-        discord.js &middot; CircuitBreaker"]
-        WA_TR["whatsapp-transport
-        Baileys &middot; CircuitBreaker"]
+        Prisma 7 · 35+ models")]
         FS["flow-shared
         150+ node type registry"]
     end
@@ -90,31 +125,33 @@ graph TB
     FE -->|"WebSocket / SSE"| API
 
     API --> DB
-    TG_BOT --> DB
-    DB_BOT --> DB
     TRIGGER --> DB
 
-    TG_BOT -->|"HTTP"| API
-    WA_BOT -->|"HTTP"| API
-    TRIGGER -->|"HTTP"| TG_BOT
-    TRIGGER -->|"HTTP"| DB_BOT
-    TRIGGER -->|"HTTP"| WA_BOT
-    TRIGGER --> TG_TR
-    TRIGGER --> DC_TR
-    TRIGGER --> WA_TR
+    TG_BOT -->|"POST /execute"| API
+    TG_USER -->|"POST /execute"| API
+    DC_BOT -->|"POST /execute"| API
+    WA_USER -->|"POST /execute"| API
+
+    TRIGGER -->|"POST /execute"| TG_BOT
+    TRIGGER -->|"POST /execute"| TG_USER
+    TRIGGER -->|"POST /execute"| DC_BOT
+    TRIGGER -->|"POST /execute"| WA_USER
     TRIGGER --> FS
 
-    TG_TR -->|"MTProto"| TG
-    DC_TR -->|"Gateway"| DC
-    WA_TR -->|"Multi-Device"| WA
+    TG_BOT & TG_USER --> PK
+    DC_BOT --> PK
+    WA_USER --> PK
+
     TG_BOT -->|"Bot API"| TG
-    DB_BOT -->|"Gateway"| DC
-    WA_BOT -->|"Baileys"| WA
+    TG_USER -->|"MTProto"| TG
+    DC_BOT -->|"Gateway"| DC
+    WA_USER -->|"Baileys"| WA
 
     style External fill:#f9f,stroke:#333,stroke-width:1px
     style Frontend fill:#e1f5fe,stroke:#333,stroke-width:1px
     style Backend fill:#fff3e0,stroke:#333,stroke-width:1px
-    style Bots fill:#e8f5e9,stroke:#333,stroke-width:1px
+    style Connectors fill:#e8f5e9,stroke:#333,stroke-width:1px
+    style SharedInfra fill:#fff9c4,stroke:#333,stroke-width:1px
     style Workers fill:#f3e5f5,stroke:#333,stroke-width:1px
     style Data fill:#fce4ec,stroke:#333,stroke-width:1px
 ```
@@ -127,7 +164,7 @@ graph LR
     EventEmitter2"]
     S2["Moderation Actions"] -->|emit| EB
     S3["Job Completions"] -->|emit| EB
-    S4["WhatsApp Bot
+    S4["WhatsApp Connector
     QR Auth Updates"] -->|"POST /qr-update"| EB
 
     EB -->|forward| WS["WebSocket Gateway
@@ -142,67 +179,32 @@ graph LR
     style EB fill:#fff3e0,stroke:#333
 ```
 
-### Data Flow: Message Processing (Multi-Platform)
+### Data Flow: Message Processing
 
 ```mermaid
 sequenceDiagram
     participant U as User
     participant P as Platform API<br/>(Telegram / Discord / WhatsApp)
-    participant BOT as Platform Bot
+    participant CON as Platform Connector
     participant API as NestJS API
     participant TR as Trigger.dev
     participant DB as PostgreSQL
 
     U->>P: Send message
-    P->>BOT: Webhook / Polling / Gateway / Baileys
-    BOT->>BOT: Event pipeline
-    Note over BOT: Event mapper transforms raw<br/>platform events into FlowTriggerEvent
+    P->>CON: Webhook / Polling / Gateway / Baileys
+    CON->>CON: Event mapper → FlowTriggerEvent
+    Note over CON: EventForwarder sends to API
 
-    BOT->>API: POST /api/flows/webhook
+    CON->>API: POST /api/flows/webhook
     API->>TR: Trigger flow-execution task
     TR->>DB: Load FlowDefinition
     TR->>TR: BFS graph traversal
-    Note over TR: Resolves target platform<br/>from Community → BotInstance
+    Note over TR: Resolves target connector<br/>from Community → BotInstance → apiUrl
 
-    alt Telegram action
-        TR->>P: Via telegram-transport (MTProto) or Bot API
-    end
-    alt Discord action
-        TR->>P: Via discord-bot HTTP API
-    end
-    alt WhatsApp action
-        TR->>P: Via whatsapp-bot HTTP API (Baileys)
-    end
-    alt Cross-platform action
-        TR->>P: Fan out to all target platforms
-    end
+    TR->>CON: POST /execute {action, params}
+    Note over TR: Same contract for ALL platforms<br/>No platform-specific routing
 
     TR->>DB: Save execution results
-```
-
-### Data Flow: Multi-Platform Broadcast
-
-```mermaid
-sequenceDiagram
-    participant A as Admin
-    participant FE as Dashboard
-    participant API as NestJS API
-    participant DB as PostgreSQL
-    participant TR as Trigger.dev
-    participant TG as Telegram API
-    participant DC as Discord API
-    participant WA as WhatsApp
-
-    A->>FE: Create broadcast (select platforms + communities)
-    FE->>API: POST /api/broadcast/multi-platform
-    API->>DB: Create BroadcastMessage
-    API->>TR: Trigger broadcast task
-    TR->>DB: Load BroadcastMessage + target communities
-    Note over TR: Groups communities by platform,<br/>resolves BotInstance per community
-    TR->>TG: Send to Telegram communities (MTProto)
-    TR->>DC: Send to Discord communities (Bot API)
-    TR->>WA: Send to WhatsApp communities (Baileys)
-    TR->>DB: Update per-community delivery results
 ```
 
 ### Data Flow: WhatsApp QR Authentication
@@ -213,27 +215,27 @@ sequenceDiagram
     participant FE as Dashboard
     participant API as NestJS API
     participant WS as Socket.IO
-    participant BOT as WhatsApp Bot
+    participant CON as WhatsApp Connector
     participant WA as WhatsApp
 
     U->>FE: Add WhatsApp connection
     FE->>API: POST /api/connections {platform: "whatsapp"}
     API->>API: Create PlatformConnection (status: authenticating)
     FE->>API: POST /api/connections/:id/auth/start
-    API->>BOT: POST /api/qr-auth/start {connectionId}
+    API->>CON: POST /auth/start {connectionId}
     FE->>WS: Subscribe to qr-auth:{connectionId} room
 
-    BOT->>WA: Initialize Baileys session
-    WA-->>BOT: QR code generated
-    BOT->>API: POST /api/connections/:id/qr-update {type: qr, qr: base64}
+    CON->>WA: Initialize Baileys session
+    WA-->>CON: QR code generated
+    CON->>API: POST /api/connections/:id/qr-update {type: qr, qr: base64}
     API->>WS: Emit to qr-auth:{connectionId}
     WS-->>FE: QR code (base64)
     FE->>FE: Render QR code
 
     U->>WA: Scan QR with phone
-    WA-->>BOT: Auth success
-    BOT->>BOT: Save auth keys to PlatformConnection
-    BOT->>API: POST /api/connections/:id/qr-update {type: connected}
+    WA-->>CON: Auth success
+    CON->>CON: Save auth keys to PlatformConnection
+    CON->>API: POST /api/connections/:id/qr-update {type: connected}
     API->>WS: Emit to qr-auth:{connectionId}
     WS-->>FE: Connected (pushName, phoneNumber)
     FE->>FE: Show success state
@@ -246,71 +248,64 @@ sequenceDiagram
 ```
 flowbot/
 ├── apps/
-│   ├── telegram-bot/           # Telegram bot (Bot API) — receives events, executes bot actions
-│   ├── discord-bot/            # Discord bot (Gateway) — receives events, executes bot actions
-│   ├── whatsapp-bot/           # WhatsApp bot (Baileys) — QR auth, events, actions via user account
-│   ├── api/                    # NestJS REST API + WebSocket + SSE
-│   ├── frontend/               # Next.js admin dashboard (44 pages)
-│   ├── trigger/                # Trigger.dev worker (7 tasks) + flow engine
-│   └── tg-client/              # One-shot MTProto auth script (generates session strings)
+│   ├── telegram-bot/              # Thin shell — boots telegram-bot-connector
+│   ├── telegram-user/             # Thin shell — boots telegram-user-connector
+│   ├── discord-bot/               # Thin shell — boots discord-bot-connector
+│   ├── whatsapp-user/             # Thin shell — boots whatsapp-user-connector
+│   ├── api/                       # NestJS REST API + WebSocket + SSE
+│   ├── frontend/                  # Next.js admin dashboard (44 pages)
+│   └── trigger/                   # Trigger.dev worker (7 tasks) + flow engine
 ├── packages/
-│   ├── db/                     # Prisma 7 schema + client (35+ models)
-│   ├── telegram-transport/     # GramJS MTProto SDK — user-account operations for flow engine
-│   ├── discord-transport/      # discord.js transport SDK
-│   ├── whatsapp-transport/     # Baileys WhatsApp SDK — messaging, groups, presence
-│   └── flow-shared/            # Node type registry (150+ types)
-├── scripts/                    # Data migration scripts
+│   ├── platform-kit/              # Shared: ActionRegistry, CircuitBreaker, EventForwarder, server factory
+│   ├── telegram-bot-connector/    # grammY Bot API — actions, events, features
+│   ├── telegram-user-connector/   # GramJS MTProto — user-account actions
+│   ├── discord-bot-connector/     # discord.js — actions, events, features
+│   ├── whatsapp-user-connector/   # Baileys — actions, events, QR auth
+│   ├── db/                        # Prisma 7 schema + client (35+ models)
+│   └── flow-shared/               # Node type registry (150+ types)
+├── scripts/                       # Data migration scripts
 ├── docs/
-│   ├── architecture.md         # Detailed architecture docs
-│   └── superpowers/            # Design specs + implementation plans
-├── docker-compose.yml          # PostgreSQL
-└── tsconfig.base.json          # Shared TypeScript config
+│   ├── architecture.md            # Detailed architecture docs
+│   └── superpowers/               # Design specs + implementation plans
+├── docker-compose.yml             # PostgreSQL + connector services
+└── tsconfig.base.json             # Shared TypeScript config
 ```
 
 ### Workspaces
 
 | Workspace | Path | Stack | Role |
 |-----------|------|-------|------|
-| Telegram Bot | `apps/telegram-bot` | grammY, Hono | Long-running bot — listens via Bot API, forwards events to flow engine |
-| Discord Bot | `apps/discord-bot` | discord.js, Hono | Long-running bot — listens via Gateway, forwards events to flow engine |
-| WhatsApp Bot | `apps/whatsapp-bot` | Baileys, Hono | Long-running bot — QR auth, listens via Baileys, forwards events to flow engine |
+| Telegram Bot | `apps/telegram-bot` | Thin shell (~50 lines) | Boots telegram-bot-connector, exposes `/execute` |
+| Telegram User | `apps/telegram-user` | Thin shell (~50 lines) | Boots telegram-user-connector, exposes `/execute` |
+| Discord Bot | `apps/discord-bot` | Thin shell (~50 lines) | Boots discord-bot-connector, exposes `/execute` |
+| WhatsApp User | `apps/whatsapp-user` | Thin shell (~50 lines) | Boots whatsapp-user-connector, exposes `/execute` |
 | API | `apps/api` | NestJS 11 | REST API, WebSocket, SSE — serves dashboard and coordinates all services |
 | Frontend | `apps/frontend` | Next.js 16, React 19 | Admin dashboard — communities, flows, connections, broadcast, analytics |
 | Trigger Worker | `apps/trigger` | Trigger.dev v3 | Background jobs + flow execution engine (BFS traversal, action dispatch) |
-| TG Client | `apps/tg-client` | GramJS | One-shot auth script — generates MTProto session string per user account |
+| Platform Kit | `packages/platform-kit` | TypeScript, Hono, Valibot | ActionRegistry, CircuitBreaker, EventForwarder, server factory (29 tests) |
+| Telegram Bot Connector | `packages/telegram-bot-connector` | grammY, Valibot | Bot API actions, event mapper, features (75 tests) |
+| Telegram User Connector | `packages/telegram-user-connector` | GramJS, Valibot | MTProto user-account actions (95 tests) |
+| Discord Bot Connector | `packages/discord-bot-connector` | discord.js, Valibot | Gateway actions, event mapper (116 tests) |
+| WhatsApp User Connector | `packages/whatsapp-user-connector` | Baileys, Valibot | Multi-device actions, event mapper, QR auth (86 tests) |
 | DB | `packages/db` | Prisma 7 | Database schema + generated client (35+ models) |
-| Telegram Transport | `packages/telegram-transport` | GramJS | MTProto SDK — user-account actions (read history, join groups, send as user) |
-| Discord Transport | `packages/discord-transport` | discord.js | Transport SDK for Discord operations |
-| WhatsApp Transport | `packages/whatsapp-transport` | Baileys | WhatsApp SDK — messaging, media, group admin, presence, session persistence |
 | Flow Shared | `packages/flow-shared` | TypeScript | Node type registry (150+ types) shared between frontend and trigger |
 
-### Telegram: Three Components
+### Platform Connectors
 
-The platform has three distinct Telegram integrations serving different purposes:
+Each platform is split by **identity** (bot account vs user account). Each cell is one connector:
 
-| | `telegram-bot` | `telegram-transport` | `tg-client` |
-|---|---|---|---|
-| **What** | Bot process (long-running) | Library (SDK) | Auth script (one-shot) |
-| **Protocol** | Bot API (grammY) | MTProto (GramJS) | MTProto (GramJS) |
-| **Identity** | Bot account (has "bot" badge) | User account (real person) | User account (real person) |
-| **Purpose** | Receive events + execute bot actions | Execute user-account flow actions | Generate session string for transport |
-
-**How they connect:** `tg-client` authenticates a user account → session string stored in PlatformConnection → `telegram-transport` uses that session → Trigger.dev flow engine calls transport for user-account actions (read history, join groups, send without bot badge). Meanwhile, `telegram-bot` independently handles all bot-level operations and event forwarding.
-
-### WhatsApp: Unified Bot + Transport
-
-Unlike Telegram (which separates bot/user account roles), WhatsApp uses a single Baileys session that acts as both listener and executor:
-
-| | `whatsapp-bot` | `whatsapp-transport` |
+|  | Bot Account | User Account |
 |---|---|---|
-| **What** | Bot process (long-running) | Library (SDK) |
-| **Protocol** | Baileys (WhatsApp multi-device) | Baileys (WhatsApp multi-device) |
-| **Identity** | User account (phone number) | User account (phone number) |
-| **Purpose** | Listen for events, forward to flow engine, execute actions via HTTP API | Transport interface, circuit breaker, action executors, DB-backed auth state |
+| **Telegram** | `telegram-bot-connector` (grammY, Bot API) | `telegram-user-connector` (GramJS, MTProto) |
+| **Discord** | `discord-bot-connector` (discord.js, Gateway) | _(future)_ |
+| **WhatsApp** | _(n/a — no bot concept)_ | `whatsapp-user-connector` (Baileys, Multi-Device) |
 
-**Auth flow:** User scans QR code on dashboard → Baileys auth keys stored in PlatformConnection → bot reconnects automatically on restart. No separate auth script needed (unlike Telegram's `tg-client`).
-
-**Key capabilities:** Send/receive messages (text, media, documents), group management (kick, promote, demote), read message history, presence/status updates, broadcast to WhatsApp communities.
+Every connector:
+- Registers typed action handlers via `ActionRegistry` with Valibot schema validation
+- Maps platform events to `FlowTriggerEvent` via `EventForwarder`
+- Wraps the platform SDK (grammY, GramJS, discord.js, Baileys) in a testable interface
+- Includes a `FakeClient` test double for isolated unit testing
+- Is hosted by a thin shell app exposing `POST /execute`, `GET /health`, `GET /actions`
 
 ---
 
@@ -367,32 +362,22 @@ Features:
 - Cross-platform: Telegram trigger can feed Discord/WhatsApp actions and vice versa
 - Visual debugger with step-through execution timeline
 
-### Moderation & Automation
+### Telegram User Account (MTProto)
 
-Moderation features (anti-spam, CAPTCHA, keyword filters, AI content moderation, etc.) are implemented as **visual flows** in the Flow Builder. Users create and customize moderation automations for any platform — Telegram, Discord, WhatsApp, or all three — without writing code.
-
-### Telegram User Account (MTProto Client)
-
-Flowbot supports connecting real Telegram user accounts via MTProto protocol. Unlike bots, user accounts can:
-- Access private groups and channels the user has joined
+User accounts can do things bots can't:
+- Access private groups and channels
 - Read full chat history and search messages
 - Send messages without the "bot" badge
 - Join/leave groups, create groups and channels
 - Invite users by phone number or username
 
-User account actions are available as purple "User Account Actions" in the flow builder node palette, and require an authenticated connection from the Connections page.
-
 ### WhatsApp Integration (Baileys)
 
-Flowbot connects to WhatsApp via the unofficial Baileys multi-device protocol, enabling:
 - Send/receive text, media, documents, locations, contacts, and stickers
-- Group management — kick, promote, demote participants; get group metadata and invite links
+- Group management — kick, promote, demote; get group metadata and invite links
 - Read message history and manage messages (edit, delete, forward)
 - Presence and status updates
-- Broadcast to WhatsApp communities via the multi-platform broadcast system
-- Dashboard QR code auth — scan with your phone, session auto-persists in the database
-
-WhatsApp actions are available in the flow builder and can be triggered by WhatsApp events (messages, member joins/leaves) or cross-platform unified actions.
+- Dashboard QR code auth — scan with your phone, session auto-persists
 
 ### Background Tasks (Trigger.dev)
 
@@ -489,9 +474,10 @@ pnpm db build
 
 ```bash
 pnpm api start:dev          # API on port 3000
-pnpm telegram-bot dev       # Telegram bot
-pnpm discord-bot dev        # Discord bot
-pnpm whatsapp-bot dev       # WhatsApp bot on port 3004
+pnpm telegram-bot dev       # Telegram bot connector
+pnpm telegram-user dev      # Telegram user connector
+pnpm discord-bot dev        # Discord bot connector
+pnpm whatsapp-user dev      # WhatsApp user connector on port 3004
 pnpm frontend dev           # Dashboard on port 3001
 pnpm trigger dev            # Trigger.dev worker
 ```
@@ -500,18 +486,17 @@ pnpm trigger dev            # Trigger.dev worker
 
 ```bash
 pnpm api test                           # Jest (238 tests)
-pnpm telegram-bot test                  # Vitest
-pnpm telegram-transport test            # Vitest
-pnpm whatsapp-transport test            # Vitest (52 tests)
-pnpm whatsapp-bot test                  # Vitest (44 tests)
-pnpm trigger test                       # Vitest (264 tests)
-pnpm tg-client test                     # Vitest
+pnpm platform-kit test                  # Vitest (29 tests)
+pnpm telegram-bot-connector test        # Vitest (75 tests)
+pnpm telegram-user-connector test       # Vitest (95 tests)
+pnpm discord-bot-connector test         # Vitest (116 tests)
+pnpm whatsapp-user-connector test       # Vitest (86 tests)
+pnpm trigger test                       # Vitest
 ```
 
 ### Build
 
 ```bash
-pnpm telegram-bot build
 pnpm api build
 pnpm frontend build
 ```
@@ -524,8 +509,9 @@ pnpm frontend build
 |-----|----------|
 | Shared | `DATABASE_URL` |
 | Telegram Bot | `BOT_TOKEN`, `BOT_MODE`, `BOT_ADMINS`, `LOG_LEVEL`, `SERVER_HOST`, `SERVER_PORT`, `API_SERVER_HOST`, `API_SERVER_PORT` |
-| Discord Bot | `DISCORD_BOT_TOKEN`, `DISCORD_CLIENT_ID`, `DATABASE_URL`, `API_URL`, `PORT` |
-| WhatsApp Bot | `WA_CONNECTION_ID`, `WA_BOT_INSTANCE_ID`, `DATABASE_URL`, `API_URL`, `SERVER_PORT` (default 3004) |
+| Telegram User | `TG_SESSION_STRING`, `TG_API_ID`, `TG_API_HASH`, `SERVER_PORT` (default 3005) |
+| Discord Bot | `DISCORD_BOT_TOKEN`, `DISCORD_BOT_INSTANCE_ID`, `API_URL`, `SERVER_PORT` |
+| WhatsApp User | `WA_CONNECTION_ID`, `WA_BOT_INSTANCE_ID`, `DATABASE_URL`, `API_URL`, `SERVER_PORT` (default 3004) |
 | Trigger | `DATABASE_URL`, `TG_CLIENT_API_ID`, `TG_CLIENT_API_HASH`, `TG_CLIENT_SESSION`, `TELEGRAM_BOT_API_URL` |
 | API | `DATABASE_URL`, `PORT`, `FRONTEND_URL` |
 | Frontend | `NEXT_PUBLIC_API_URL` |
@@ -540,14 +526,14 @@ Docker Compose: PostgreSQL on port 5432 (`postgres`/`postgres`/`flowbot_db`).
 graph LR
     PG["1. PostgreSQL"] --> MIG["2. Migrations"]
     MIG --> API["3. API"]
-    API --> BOTS["4. Bots"]
-    BOTS --> FE["5. Frontend"]
+    API --> CON["4. Connectors"]
+    CON --> FE["5. Frontend"]
     FE --> TRIG["6. Trigger.dev"]
 
     style PG fill:#4169E1,color:#fff
     style MIG fill:#2D3748,color:#fff
     style API fill:#e0234e,color:#fff
-    style BOTS fill:#26A5E4,color:#fff
+    style CON fill:#26A5E4,color:#fff
     style FE fill:#000,color:#fff
     style TRIG fill:#7C3AED,color:#fff
 ```
@@ -556,8 +542,10 @@ graph LR
 docker compose up -d                    # 1. PostgreSQL
 pnpm db prisma:migrate && pnpm db generate && pnpm db build  # 2. Migrations
 pnpm api start:dev                      # 3. API
-pnpm telegram-bot dev                   # 4. Bots
-pnpm whatsapp-bot dev                   # 4. Bots (WhatsApp)
+pnpm telegram-bot dev                   # 4. Connectors
+pnpm telegram-user dev                  # 4. Connectors
+pnpm discord-bot dev                    # 4. Connectors
+pnpm whatsapp-user dev                  # 4. Connectors
 pnpm frontend dev                       # 5. Frontend
 pnpm trigger dev                        # 6. Trigger.dev
 ```
@@ -570,7 +558,8 @@ pnpm trigger dev                        # 6. Trigger.dev
 - **CORS** — restricted to `FRONTEND_URL`
 - **Webhook Security** — unique auto-generated cuid tokens per endpoint
 - **Flow Engine Safety** — `db_query` allowlisted queries only (max 100 records), `run_flow` max depth of 5, circular reference detection
-- **Transport Resilience** — CircuitBreaker prevents cascading failures to Telegram/Discord/WhatsApp APIs
+- **Transport Resilience** — generic CircuitBreaker in platform-kit prevents cascading failures to all platform APIs
+- **Input Validation** — Valibot schemas on every action handler, validated before execution
 - **AI Moderation** — Claude-powered content classification (spam, scam, toxic, off-topic)
 
 ---
@@ -587,14 +576,15 @@ pnpm trigger dev                        # 6. Trigger.dev
 | UI | Radix UI + Tailwind CSS 4 |
 | Charts | Recharts |
 | Flow Editor | React Flow (@xyflow/react) |
-| Telegram Bots | grammY |
+| Connector Infrastructure | platform-kit (ActionRegistry, CircuitBreaker, EventForwarder, Hono) |
+| Telegram Bot | grammY |
 | Telegram MTProto | GramJS |
 | Discord | discord.js |
 | WhatsApp | Baileys (@whiskeysockets/baileys) |
 | Background Jobs | Trigger.dev v3 |
-| HTTP Servers | Hono (bots), Express (API) |
+| HTTP Servers | Hono (connectors), Express (API) |
 | Real-Time | Socket.IO + SSE |
-| Validation | class-validator (API), Valibot (bots) |
+| Validation | class-validator (API), Valibot (connectors) |
 | Logging | Pino |
 | Testing | Jest, Vitest, Playwright |
 | AI | Anthropic Claude API |
