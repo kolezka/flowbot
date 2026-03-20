@@ -142,6 +142,19 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - run: pnpm platform-kit test
 
+  whatsapp-user-connector-unit:
+    name: WhatsApp User Connector Unit Tests (Vitest)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: lts/*
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm --filter @flowbot/whatsapp-user-connector test
+
   # ── Integration Tests ───────────────────────────────────────
 
   telegram-bot-integration:

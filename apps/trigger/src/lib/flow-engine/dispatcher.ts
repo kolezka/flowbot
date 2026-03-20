@@ -174,7 +174,7 @@ export async function dispatchActions(
         const whatsappAction = action.replace(/^whatsapp_/, '');
         const whatsappBotId = transportConfig?.whatsappBotInstanceId ?? transportConfig?.botInstanceId;
         if (whatsappBotId) {
-          response = await dispatchViaBotApi(whatsappAction, output, whatsappBotId);
+          response = await dispatchViaWhatsAppConnector(whatsappAction, output, whatsappBotId);
         } else {
           throw new Error(`WhatsApp action '${action}' requires a whatsappBotInstanceId or botInstanceId in transportConfig`);
         }
@@ -510,6 +510,46 @@ async function dispatchViaDiscordBotApi(
 }
 
 // ---------------------------------------------------------------------------
+// WhatsApp connector dispatch (platform-kit server)
+// ---------------------------------------------------------------------------
+
+/**
+ * Dispatch a WhatsApp action via the platform-kit connector server.
+ * The whatsapp-user connector exposes /execute (not /api/execute-action).
+ */
+async function dispatchViaWhatsAppConnector(
+  action: string,
+  params: Record<string, unknown>,
+  botInstanceId: string,
+): Promise<unknown> {
+  const { getPrisma } = await import('../prisma.js');
+  const prisma = getPrisma();
+
+  const botInstance = await prisma.botInstance.findUnique({
+    where: { id: botInstanceId },
+    select: { apiUrl: true, isActive: true },
+  });
+
+  if (!botInstance?.apiUrl || !botInstance.isActive) {
+    throw new Error(`WhatsApp bot instance ${botInstanceId} not available`);
+  }
+
+  const response = await fetch(`${botInstance.apiUrl}/execute`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ action, params }),
+    signal: AbortSignal.timeout(15_000),
+  });
+
+  if (!response.ok) {
+    const text = await response.text().catch(() => '');
+    throw new Error(`WhatsApp connector returned ${response.status}: ${text}`);
+  }
+
+  return response.json();
+}
+
+// ---------------------------------------------------------------------------
 // Unified cross-platform dispatch
 // ---------------------------------------------------------------------------
 
@@ -645,7 +685,7 @@ async function dispatchUnifiedAction(
         if (!waBotId) {
           throw new Error('WhatsApp dispatch requires whatsappBotInstanceId or botInstanceId');
         }
-        const response = await dispatchViaBotApi(whatsappAction, waParams, waBotId);
+        const response = await dispatchViaWhatsAppConnector(whatsappAction, waParams, waBotId);
         results.push({ nodeId: `${nodeId}:whatsapp`, dispatched: true, response });
       } catch (error) {
         const msg = error instanceof Error ? error.message : String(error);
