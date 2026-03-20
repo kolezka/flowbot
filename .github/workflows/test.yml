@@ -39,8 +39,8 @@ jobs:
       - run: pnpm db build
       - run: pnpm telegram-bot test
 
-  telegram-transport-unit:
-    name: Telegram Transport Unit Tests (Vitest)
+  telegram-user-connector-unit:
+    name: Telegram User Connector Unit Tests (Vitest)
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -52,7 +52,22 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - run: pnpm db generate
       - run: pnpm db build
-      - run: pnpm telegram-transport test
+      - run: pnpm --filter @flowbot/telegram-user-connector test
+
+  telegram-bot-connector-unit:
+    name: Telegram Bot Connector Unit Tests (Vitest)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: lts/*
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm db generate
+      - run: pnpm db build
+      - run: pnpm --filter @flowbot/telegram-bot-connector test
 
   discord-transport-unit:
     name: Discord Transport Unit Tests (Vitest)
@@ -171,21 +186,6 @@ jobs:
       - run: pnpm db generate
       - run: pnpm db build
       - run: pnpm telegram-bot test:integration
-
-  telegram-transport-integration:
-    name: Telegram Transport Integration Tests
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: pnpm/action-setup@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: lts/*
-          cache: pnpm
-      - run: pnpm install --frozen-lockfile
-      - run: pnpm db generate
-      - run: pnpm db build
-      - run: pnpm telegram-transport test:integration
 
   # ── E2E Tests ───────────────────────────────────────────────
 

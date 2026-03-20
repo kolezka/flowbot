@@ -12,29 +12,36 @@ The platform uses a **Platform Discriminator** pattern: each entity (account, co
 
 | Workspace | Stack | Module | Tests |
 |-----------|-------|--------|-------|
-| `apps/telegram-bot` | grammY 1.36, Hono 4.10, Pino 9.9, Valibot 0.42 | ESM (tsx) | Vitest |
+| `apps/telegram-bot` | Thin shell, platform-kit server | ESM (tsx) | Vitest |
 | `apps/api` | NestJS 11, Swagger 11, class-validator, Socket.IO 4.8, Trigger SDK 3.3 | CJS | Jest |
 | `apps/frontend` | Next.js 16.1, React 19.2, @xyflow/react 12.6, Recharts 3.8, Radix UI, Tailwind 4 | ESM | Playwright |
 | `apps/trigger` | Trigger.dev SDK 3.x, GramJS (telegram), Pino 9.9 | ESM | Vitest |
-| `apps/tg-client` | GramJS (telegram), tsx | ESM | Vitest |
+| `apps/telegram-user` | Thin shell, platform-kit server | ESM (tsx) | Vitest |
 | `apps/whatsapp-user` | Thin shell, platform-kit server | ESM (tsx) | Vitest |
 | `apps/discord-bot` | Discord.js (TBD) | ESM | None |
 | `packages/db` | Prisma 7, @prisma/adapter-pg 7 | ESM | None |
-| `packages/telegram-transport` | GramJS (telegram), Pino 9.9, Valibot 0.42 | ESM | Vitest |
+| `packages/telegram-user-connector` | GramJS (MTProto), platform-kit, Valibot 0.42 | ESM | Vitest |
+| `packages/telegram-bot-connector` | grammY, platform-kit, Valibot 0.42 | ESM | Vitest |
 | `packages/whatsapp-user-connector` | Baileys 6.7, platform-kit, Valibot 0.42 | ESM | Vitest |
 | `packages/platform-kit` | ActionRegistry, CircuitBreaker, EventForwarder, Hono server factory | ESM | Vitest |
 | `packages/discord-transport` | (TBD) | ESM | None |
 | `packages/flow-shared` | Shared flow types/utils | ESM | None |
 
-### Telegram Components (three distinct roles)
+### Telegram Components (connector pattern)
 
 | Component | Type | Protocol | Identity | Purpose |
 |-----------|------|----------|----------|---------|
-| `apps/telegram-bot` | App (long-running) | Bot API (grammY) | Bot account | Receives messages, forwards events to flow engine, executes bot-level actions via HTTP |
-| `packages/telegram-transport` | Package (library) | MTProto (GramJS) | User account | SDK imported by Trigger.dev to execute user-account flow actions (read history, join groups, etc.) |
-| `apps/tg-client` | App (one-shot) | MTProto (GramJS) | User account | Auth script — run once to generate a session string, stored in PlatformConnection |
+| `packages/telegram-bot-connector` | Package (library) | Bot API (grammY) | Bot account | Connector with ActionRegistry, event mapper, webhook auth, DB-backed state |
+| `apps/telegram-bot` | App (thin shell) | — | — | Boots bot connector, starts platform-kit HTTP server |
+| `packages/telegram-user-connector` | Package (library) | MTProto (GramJS) | User account | Connector with ActionRegistry, event mapper, QR/phone auth, DB-backed session |
+| `apps/telegram-user` | App (thin shell) | — | — | Boots user connector, starts platform-kit HTTP server |
+| `packages/platform-kit` | Package (shared) | — | — | ActionRegistry, CircuitBreaker, EventForwarder, server factory |
 
-**Flow:** `tg-client` authenticates → session string stored → `telegram-transport` uses it to connect → Trigger.dev calls transport for user-account actions. Meanwhile `telegram-bot` handles all bot-level operations independently.
+**Auth flow (bot):** Dashboard webhook config → grammY bot token stored in `PlatformConnection.credentials` → connector auto-reconnects.
+
+**Auth flow (user):** Dashboard phone/QR auth → MTProto session string stored in `PlatformConnection.credentials` → connector auto-reconnects from stored session.
+
+**Connector pattern:** `platform-kit` provides the shared infrastructure. Each connector registers typed action handlers via `ActionRegistry` with Valibot schemas. Events are forwarded via `EventForwarder`. The thin shell app uses `createConnectorServer()` to expose a standard HTTP contract: `POST /execute`, `GET /health`, `GET /actions`.
 
 ### WhatsApp Components (connector pattern)
 
@@ -63,13 +70,13 @@ pnpm db generate                        # Regenerate Prisma Client
 pnpm db build                           # Compile db package
 
 # Dev
-pnpm telegram-bot dev | pnpm whatsapp-user dev | pnpm api start:dev | pnpm frontend dev | pnpm trigger dev
+pnpm telegram-bot dev | pnpm telegram-user dev | pnpm whatsapp-user dev | pnpm api start:dev | pnpm frontend dev | pnpm trigger dev
 
 # Build
 pnpm telegram-bot build | pnpm api build | pnpm frontend build
 
 # Typecheck
-pnpm telegram-bot typecheck | pnpm trigger typecheck | pnpm telegram-transport typecheck | pnpm whatsapp-user-connector typecheck
+pnpm telegram-bot typecheck | pnpm telegram-user-connector typecheck | pnpm telegram-bot-connector typecheck | pnpm trigger typecheck | pnpm whatsapp-user-connector typecheck
 
 # Lint
 pnpm telegram-bot lint | pnpm api lint | pnpm frontend lint
@@ -79,11 +86,12 @@ pnpm api format                         # Prettier (API only)
 pnpm api test                           # Jest (238 tests)
 pnpm api test -- --testPathPattern=X    # Specific test
 pnpm telegram-bot test                  # Vitest
-pnpm telegram-transport test            # Vitest (24 tests)
+pnpm telegram-user-connector test       # Vitest
+pnpm telegram-bot-connector test        # Vitest
 pnpm whatsapp-user-connector test       # Vitest (86 tests)
 pnpm platform-kit test                  # Vitest (29 tests)
 pnpm trigger test                       # Vitest
-pnpm tg-client test                     # Vitest
+pnpm telegram-user dev                  # Start telegram-user connector app
 
 # Trigger.dev
 pnpm trigger dev | pnpm trigger deploy
