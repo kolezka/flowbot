@@ -10,7 +10,8 @@
     "telegram-transport": "pnpm --filter @flowbot/telegram-transport",
     "trigger": "pnpm --filter @flowbot/trigger",
     "whatsapp-bot": "pnpm --filter @flowbot/whatsapp-bot",
-    "whatsapp-transport": "pnpm --filter @flowbot/whatsapp-transport"
+    "whatsapp-transport": "pnpm --filter @flowbot/whatsapp-transport",
+    "platform-kit": "pnpm --filter @flowbot/platform-kit"
   },
   "devDependencies": {
     "@types/node": "^25.3.0"
