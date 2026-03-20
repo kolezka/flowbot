@@ -12,7 +12,9 @@
     "trigger": "pnpm --filter @flowbot/trigger",
     "platform-kit": "pnpm --filter @flowbot/platform-kit",
     "whatsapp-user": "pnpm --filter @flowbot/whatsapp-user",
-    "whatsapp-user-connector": "pnpm --filter @flowbot/whatsapp-user-connector"
+    "whatsapp-user-connector": "pnpm --filter @flowbot/whatsapp-user-connector",
+    "discord-bot": "pnpm --filter @flowbot/discord-bot",
+    "discord-bot-connector": "pnpm --filter @flowbot/discord-bot-connector"
   },
   "devDependencies": {
     "@types/node": "^25.3.0"

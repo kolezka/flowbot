@@ -69,8 +69,8 @@ jobs:
       - run: pnpm db build
       - run: pnpm --filter @flowbot/telegram-bot-connector test
 
-  discord-transport-unit:
-    name: Discord Transport Unit Tests (Vitest)
+  discord-bot-connector-unit:
+    name: Discord Bot Connector Unit Tests (Vitest)
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -82,7 +82,7 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - run: pnpm db generate
       - run: pnpm db build
-      - run: pnpm --filter @flowbot/discord-transport test
+      - run: pnpm --filter @flowbot/discord-bot-connector test
 
   trigger-unit:
     name: Trigger Unit Tests (Vitest)
@@ -113,36 +113,6 @@ jobs:
       - run: pnpm db generate
       - run: pnpm db build
       - run: pnpm --filter @flowbot/discord-bot test
-
-  whatsapp-transport-unit:
-    name: WhatsApp Transport Unit Tests (Vitest)
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: pnpm/action-setup@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: lts/*
-          cache: pnpm
-      - run: pnpm install --frozen-lockfile
-      - run: pnpm db generate
-      - run: pnpm db build
-      - run: pnpm whatsapp-transport test
-
-  whatsapp-bot-unit:
-    name: WhatsApp Bot Unit Tests (Vitest)
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: pnpm/action-setup@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: lts/*
-          cache: pnpm
-      - run: pnpm install --frozen-lockfile
-      - run: pnpm db generate
-      - run: pnpm db build
-      - run: pnpm whatsapp-bot test
 
   platform-kit-unit:
     name: Platform Kit Unit Tests (Vitest)

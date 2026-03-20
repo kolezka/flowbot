@@ -18,13 +18,13 @@ The platform uses a **Platform Discriminator** pattern: each entity (account, co
 | `apps/trigger` | Trigger.dev SDK 3.x, GramJS (telegram), Pino 9.9 | ESM | Vitest |
 | `apps/telegram-user` | Thin shell, platform-kit server | ESM (tsx) | Vitest |
 | `apps/whatsapp-user` | Thin shell, platform-kit server | ESM (tsx) | Vitest |
-| `apps/discord-bot` | Discord.js (TBD) | ESM | None |
+| `apps/discord-bot` | Thin shell, platform-kit server | ESM (tsx) | Vitest |
 | `packages/db` | Prisma 7, @prisma/adapter-pg 7 | ESM | None |
 | `packages/telegram-user-connector` | GramJS (MTProto), platform-kit, Valibot 0.42 | ESM | Vitest |
 | `packages/telegram-bot-connector` | grammY, platform-kit, Valibot 0.42 | ESM | Vitest |
 | `packages/whatsapp-user-connector` | Baileys 6.7, platform-kit, Valibot 0.42 | ESM | Vitest |
+| `packages/discord-bot-connector` | Discord.js 14, platform-kit, Valibot 0.42 | ESM | Vitest |
 | `packages/platform-kit` | ActionRegistry, CircuitBreaker, EventForwarder, Hono server factory | ESM | Vitest |
-| `packages/discord-transport` | (TBD) | ESM | None |
 | `packages/flow-shared` | Shared flow types/utils | ESM | None |
 
 ### Telegram Components (connector pattern)
@@ -55,6 +55,18 @@ The platform uses a **Platform Discriminator** pattern: each entity (account, co
 
 **Connector pattern:** `platform-kit` provides the shared infrastructure. The connector registers typed action handlers via `ActionRegistry` with Valibot schemas. Events are forwarded via `EventForwarder`. The thin shell app uses `createConnectorServer()` to expose a standard HTTP contract: `POST /execute`, `GET /health`, `GET /actions`.
 
+### Discord Components (connector pattern)
+
+| Component | Type | Protocol | Identity | Purpose |
+|-----------|------|----------|----------|---------|
+| `packages/discord-bot-connector` | Package (library) | Discord.js (gateway) | Bot account | Connector with ActionRegistry, event mapper, DB-backed state |
+| `apps/discord-bot` | App (thin shell) | — | — | Boots bot connector, starts platform-kit HTTP server |
+| `packages/platform-kit` | Package (shared) | — | — | ActionRegistry, CircuitBreaker, EventForwarder, server factory |
+
+**Auth flow:** Dashboard bot token config → token stored in env/config → connector connects via Discord gateway.
+
+**Connector pattern:** `platform-kit` provides the shared infrastructure. The connector registers typed action handlers via `ActionRegistry` with Valibot schemas. Events are forwarded via `EventForwarder`. The thin shell app uses `createConnectorServer()` to expose a standard HTTP contract: `POST /execute`, `GET /health`, `GET /actions`.
+
 ### Path Aliases (`tsconfig.base.json`)
 - `@flowbot/db` → `packages/db/src/index.ts`
 - `@flowbot/*` → `packages/*/src`
@@ -70,13 +82,13 @@ pnpm db generate                        # Regenerate Prisma Client
 pnpm db build                           # Compile db package
 
 # Dev
-pnpm telegram-bot dev | pnpm telegram-user dev | pnpm whatsapp-user dev | pnpm api start:dev | pnpm frontend dev | pnpm trigger dev
+pnpm telegram-bot dev | pnpm telegram-user dev | pnpm whatsapp-user dev | pnpm discord-bot dev | pnpm api start:dev | pnpm frontend dev | pnpm trigger dev
 
 # Build
 pnpm telegram-bot build | pnpm api build | pnpm frontend build
 
 # Typecheck
-pnpm telegram-bot typecheck | pnpm telegram-user-connector typecheck | pnpm telegram-bot-connector typecheck | pnpm trigger typecheck | pnpm whatsapp-user-connector typecheck
+pnpm telegram-bot typecheck | pnpm telegram-user-connector typecheck | pnpm telegram-bot-connector typecheck | pnpm trigger typecheck | pnpm whatsapp-user-connector typecheck | pnpm discord-bot-connector typecheck
 
 # Lint
 pnpm telegram-bot lint | pnpm api lint | pnpm frontend lint
@@ -89,6 +101,7 @@ pnpm telegram-bot test                  # Vitest
 pnpm telegram-user-connector test       # Vitest
 pnpm telegram-bot-connector test        # Vitest
 pnpm whatsapp-user-connector test       # Vitest (86 tests)
+pnpm discord-bot-connector test         # Vitest
 pnpm platform-kit test                  # Vitest (29 tests)
 pnpm trigger test                       # Vitest
 pnpm telegram-user dev                  # Start telegram-user connector app

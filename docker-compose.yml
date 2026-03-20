@@ -26,5 +26,11 @@ services:
     ports:
       - "3004:3004"
 
+  discord-bot:
+    build: ./apps/discord-bot
+    env_file: ./apps/discord-bot/.env
+    ports:
+      - "3003:3003"
+
 volumes:
   postgres_data:
