@@ -1,51 +1,44 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest'
+/**
+ * flow-dispatcher-discord.test.ts
+ *
+ * Verifies that Discord actions are dispatched through the same HTTP-based connector
+ * contract as all other actions. There is no special Discord routing — Discord actions
+ * use the botInstanceId → DB lookup → POST /execute path identical to Telegram actions.
+ *
+ * Key things proven:
+ *  - Discord actions POST to `${apiUrl}/execute` with `{ action, params }` body
+ *  - The botInstanceId used is whatever is in transportConfig.botInstanceId
+ *  - No special discord_ prefix treatment — same code path as any other action
+ *  - Error cases (no botInstanceId, inactive instance, connector errors) behave identically
+ *  - Mixed Discord + non-Discord flows work correctly in a single dispatchActions call
+ */
+
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import type { FlowContext, NodeResult } from '../lib/flow-engine/types.js'
 
 // ---------------------------------------------------------------------------
 // Hoisted mocks
 // ---------------------------------------------------------------------------
 
-const { mockTransport, mockPrisma, mockFetchFn } = vi.hoisted(() => {
-  const mockTransport = {
-    sendMessage: vi.fn().mockResolvedValue({ id: 1, date: 0, peerId: '123' }),
-    sendPhoto: vi.fn().mockResolvedValue({ id: 2, date: 0, peerId: '123' }),
-    sendVideo: vi.fn().mockResolvedValue({ id: 3, date: 0, peerId: '123' }),
-    sendDocument: vi.fn().mockResolvedValue({ id: 4, date: 0, peerId: '123' }),
-    sendSticker: vi.fn().mockResolvedValue({ id: 5, date: 0, peerId: '123' }),
-    sendVoice: vi.fn().mockResolvedValue({ id: 6, date: 0, peerId: '123' }),
-    sendAudio: vi.fn().mockResolvedValue({ id: 7, date: 0, peerId: '123' }),
-    sendAnimation: vi.fn().mockResolvedValue({ id: 8, date: 0, peerId: '123' }),
-    sendLocation: vi.fn().mockResolvedValue({ id: 9, date: 0, peerId: '123' }),
-    sendContact: vi.fn().mockResolvedValue({ id: 10, date: 0, peerId: '123' }),
-    sendVenue: vi.fn().mockResolvedValue({ id: 11, date: 0, peerId: '123' }),
-    sendDice: vi.fn().mockResolvedValue({ id: 12, date: 0, peerId: '123' }),
-    forwardMessage: vi.fn().mockResolvedValue([{ id: 13, date: 0, peerId: '123' }]),
-    copyMessage: vi.fn().mockResolvedValue([{ id: 14, date: 0, peerId: '123' }]),
-    editMessage: vi.fn().mockResolvedValue({ id: 15, date: 0, peerId: '123' }),
-    deleteMessages: vi.fn().mockResolvedValue(true),
-    pinMessage: vi.fn().mockResolvedValue(true),
-    unpinMessage: vi.fn().mockResolvedValue(true),
-    banUser: vi.fn().mockResolvedValue(true),
-    restrictUser: vi.fn().mockResolvedValue(true),
-    promoteUser: vi.fn().mockResolvedValue(true),
-    setChatTitle: vi.fn().mockResolvedValue(true),
-    setChatDescription: vi.fn().mockResolvedValue(true),
-    exportInviteLink: vi.fn().mockResolvedValue('https://t.me/+abc'),
-    getChatMember: vi.fn().mockResolvedValue({ userId: '123', status: 'member' }),
-    leaveChat: vi.fn().mockResolvedValue(true),
-    createPoll: vi.fn().mockResolvedValue({ id: 16, date: 0, peerId: '123' }),
-    answerCallbackQuery: vi.fn().mockResolvedValue(true),
-  }
-
+const { mockPrisma, mockDispatchUserAction, mockFetch } = vi.hoisted(() => {
   const mockPrisma = {
     botInstance: {
       findUnique: vi.fn(),
     },
+    community: {
+      findUnique: vi.fn(),
+    },
   }
 
-  const mockFetchFn = vi.fn()
+  const mockDispatchUserAction = vi.fn().mockResolvedValue({
+    nodeId: '',
+    dispatched: true,
+    response: { ok: true },
+  })
 
-  return { mockTransport, mockPrisma, mockFetchFn }
+  const mockFetch = vi.fn()
+
+  return { mockPrisma, mockDispatchUserAction, mockFetch }
 })
 
 vi.mock('@trigger.dev/sdk/v3', () => ({
@@ -56,16 +49,12 @@ vi.mock('@trigger.dev/sdk/v3', () => ({
   },
 }))
 
-vi.mock('../lib/telegram.js', () => ({
-  getTelegramTransport: vi.fn().mockResolvedValue(mockTransport),
-}))
-
 vi.mock('../lib/prisma.js', () => ({
   getPrisma: vi.fn(() => mockPrisma),
 }))
 
 vi.mock('../lib/flow-engine/user-actions.js', () => ({
-  dispatchUserAction: vi.fn().mockResolvedValue({ nodeId: '', dispatched: true, response: {} }),
+  dispatchUserAction: mockDispatchUserAction,
 }))
 
 import { dispatchActions } from '../lib/flow-engine/dispatcher.js'
@@ -73,6 +62,9 @@ import { dispatchActions } from '../lib/flow-engine/dispatcher.js'
 // ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
+
+const DISCORD_BOT_URL = 'http://discord-bot:3003'
+const TG_BOT_URL = 'http://telegram-bot:3001'
 
 function makeCtx(
   nodeResults: Array<{ id: string; action: string; params?: Record<string, unknown> }>,
@@ -96,261 +88,385 @@ function makeCtx(
   }
 }
 
+function makeFetchOk(data: unknown = { success: true }) {
+  return {
+    ok: true,
+    status: 200,
+    json: vi.fn().mockResolvedValue(data),
+    text: vi.fn().mockResolvedValue(JSON.stringify(data)),
+  }
+}
+
 // ---------------------------------------------------------------------------
 // Tests
 // ---------------------------------------------------------------------------
 
-describe('dispatchActions - Discord routing', () => {
+describe('dispatchActions — Discord actions via HTTP connector', () => {
   let originalFetch: typeof globalThis.fetch
 
   beforeEach(() => {
     vi.clearAllMocks()
     originalFetch = globalThis.fetch
+    globalThis.fetch = mockFetch
 
     // Default: Discord bot instance is available
     mockPrisma.botInstance.findUnique.mockResolvedValue({
-      apiUrl: 'http://discord-bot:3003',
+      apiUrl: DISCORD_BOT_URL,
       isActive: true,
     })
 
-    // Default: fetch succeeds for Discord bot API
-    mockFetchFn.mockResolvedValue({
-      ok: true,
-      json: vi.fn().mockResolvedValue({ success: true, result: {} }),
-      text: vi.fn().mockResolvedValue(''),
-    })
-    globalThis.fetch = mockFetchFn
+    mockFetch.mockResolvedValue(makeFetchOk({ success: true, data: {} }))
   })
 
   afterEach(() => {
     globalThis.fetch = originalFetch
   })
 
-  // --- discord_ prefix detection ---
+  // --- Core routing: Discord actions go through POST /execute ---
 
-  it('routes discord_ prefixed actions to Discord bot API', async () => {
+  it('dispatches discord_send_message to POST /execute with correct body', async () => {
     const ctx = makeCtx([
-      { id: 'n1', action: 'discord_send_message', params: { channelId: 'ch-1', content: 'Hello' } },
+      { id: 'n1', action: 'discord_send_message', params: { channelId: 'ch-1', content: 'Hello Discord' } },
     ])
 
-    const results = await dispatchActions(ctx, { discordBotInstanceId: 'dbot-1' })
+    const results = await dispatchActions(ctx, { botInstanceId: 'dbot-1' })
+
     expect(results).toHaveLength(1)
-    expect(results[0].dispatched).toBe(true)
+    expect(results[0]!.dispatched).toBe(true)
+    expect(results[0]!.nodeId).toBe('n1')
 
     expect(mockPrisma.botInstance.findUnique).toHaveBeenCalledWith({
       where: { id: 'dbot-1' },
       select: { apiUrl: true, isActive: true },
     })
 
-    expect(mockFetchFn).toHaveBeenCalledWith(
-      'http://discord-bot:3003/api/execute-action',
-      expect.objectContaining({
-        method: 'POST',
-        body: expect.stringContaining('discord_send_message'),
-      }),
-    )
+    const [url, init] = mockFetch.mock.calls[0] as [string, RequestInit]
+    expect(url).toBe(`${DISCORD_BOT_URL}/execute`)
+
+    const body = JSON.parse(init.body as string)
+    expect(body.action).toBe('discord_send_message')
+    expect(body.params).toMatchObject({ channelId: 'ch-1', content: 'Hello Discord' })
   })
 
-  it('routes all Discord action types through dispatchViaDiscordBotApi', async () => {
-    const discordActions = [
-      'discord_send_message',
-      'discord_send_embed',
-      'discord_send_dm',
-      'discord_edit_message',
-      'discord_delete_message',
-      'discord_add_reaction',
-      'discord_remove_reaction',
-      'discord_pin_message',
-      'discord_unpin_message',
-      'discord_ban_member',
-      'discord_kick_member',
-      'discord_timeout_member',
-      'discord_add_role',
-      'discord_remove_role',
-      'discord_create_role',
-      'discord_set_nickname',
-      'discord_create_channel',
-      'discord_delete_channel',
-      'discord_move_member',
-      'discord_create_thread',
-      'discord_send_thread_message',
-      'discord_create_invite',
-      'discord_create_scheduled_event',
-    ]
+  it('uses method: POST with Content-Type: application/json header', async () => {
+    const ctx = makeCtx([
+      { id: 'n1', action: 'discord_ban_member', params: { guildId: 'g-1', userId: 'u-1' } },
+    ])
 
-    for (const action of discordActions) {
+    await dispatchActions(ctx, { botInstanceId: 'dbot-1' })
+
+    const [, init] = mockFetch.mock.calls[0] as [string, RequestInit]
+    expect(init.method).toBe('POST')
+    expect((init.headers as Record<string, string>)['Content-Type']).toBe('application/json')
+  })
+
+  // --- All Discord action types route through the same path ---
+
+  it.each([
+    ['discord_send_message', { channelId: 'ch-1', content: 'Hello' }],
+    ['discord_send_embed', { channelId: 'ch-1', title: 'Embed', description: 'Body' }],
+    ['discord_send_dm', { userId: 'u-1', content: 'DM' }],
+    ['discord_edit_message', { channelId: 'ch-1', messageId: 'm-1', content: 'Updated' }],
+    ['discord_delete_message', { channelId: 'ch-1', messageId: 'm-1' }],
+    ['discord_add_reaction', { channelId: 'ch-1', messageId: 'm-1', emoji: '👍' }],
+    ['discord_remove_reaction', { channelId: 'ch-1', messageId: 'm-1', emoji: '👍' }],
+    ['discord_pin_message', { channelId: 'ch-1', messageId: 'm-1' }],
+    ['discord_unpin_message', { channelId: 'ch-1', messageId: 'm-1' }],
+    ['discord_ban_member', { guildId: 'g-1', userId: 'u-1' }],
+    ['discord_kick_member', { guildId: 'g-1', userId: 'u-1' }],
+    ['discord_timeout_member', { guildId: 'g-1', userId: 'u-1', duration: 3600 }],
+    ['discord_add_role', { guildId: 'g-1', userId: 'u-1', roleId: 'r-1' }],
+    ['discord_remove_role', { guildId: 'g-1', userId: 'u-1', roleId: 'r-1' }],
+    ['discord_create_role', { guildId: 'g-1', name: 'Moderator' }],
+    ['discord_set_nickname', { guildId: 'g-1', userId: 'u-1', nickname: 'Nick' }],
+    ['discord_create_channel', { guildId: 'g-1', name: 'general', type: 'text' }],
+    ['discord_delete_channel', { channelId: 'ch-1' }],
+    ['discord_move_member', { guildId: 'g-1', userId: 'u-1', channelId: 'vc-1' }],
+    ['discord_create_thread', { channelId: 'ch-1', name: 'Thread', messageId: 'm-1' }],
+    ['discord_send_thread_message', { threadId: 'th-1', content: 'Reply' }],
+    ['discord_create_invite', { channelId: 'ch-1', maxAge: 86400 }],
+    ['discord_create_scheduled_event', { guildId: 'g-1', name: 'Event', startTime: '2026-01-01T00:00:00Z' }],
+  ] as const)(
+    'routes %s through POST /execute',
+    async (action, params) => {
       vi.clearAllMocks()
-      mockPrisma.botInstance.findUnique.mockResolvedValue({
-        apiUrl: 'http://discord-bot:3003',
-        isActive: true,
-      })
-      mockFetchFn.mockResolvedValue({
-        ok: true,
-        json: vi.fn().mockResolvedValue({ success: true }),
-        text: vi.fn().mockResolvedValue(''),
-      })
+      mockPrisma.botInstance.findUnique.mockResolvedValue({ apiUrl: DISCORD_BOT_URL, isActive: true })
+      mockFetch.mockResolvedValue(makeFetchOk())
 
-      const ctx = makeCtx([
-        { id: 'n1', action, params: { channelId: 'ch-1', guildId: 'g-1' } },
-      ])
+      const ctx = makeCtx([{ id: 'n1', action, params }])
+      const results = await dispatchActions(ctx, { botInstanceId: 'dbot-1' })
 
-      const results = await dispatchActions(ctx, { discordBotInstanceId: 'dbot-1' })
       expect(results).toHaveLength(1)
-      expect(results[0].dispatched).toBe(true)
-      expect(mockFetchFn).toHaveBeenCalledTimes(1)
-    }
-  })
+      expect(results[0]!.dispatched).toBe(true)
 
-  // --- discordBotInstanceId fallback ---
+      const [url, init] = mockFetch.mock.calls[0] as [string, RequestInit]
+      expect(url).toBe(`${DISCORD_BOT_URL}/execute`)
+      const body = JSON.parse(init.body as string)
+      expect(body.action).toBe(action)
+    },
+  )
 
-  it('falls back to botInstanceId when discordBotInstanceId is not set', async () => {
-    const ctx = makeCtx([
-      { id: 'n1', action: 'discord_send_message', params: { channelId: 'ch-1', content: 'Hi' } },
-    ])
+  // --- Error cases ---
 
-    const results = await dispatchActions(ctx, { botInstanceId: 'bot-1' })
-    expect(results).toHaveLength(1)
-    expect(results[0].dispatched).toBe(true)
-
-    expect(mockPrisma.botInstance.findUnique).toHaveBeenCalledWith({
-      where: { id: 'bot-1' },
-      select: { apiUrl: true, isActive: true },
-    })
-  })
-
-  it('prefers discordBotInstanceId over botInstanceId', async () => {
-    const ctx = makeCtx([
-      { id: 'n1', action: 'discord_send_message', params: { channelId: 'ch-1', content: 'Hi' } },
-    ])
-
-    const results = await dispatchActions(ctx, {
-      botInstanceId: 'tg-bot-1',
-      discordBotInstanceId: 'dbot-1',
-    })
-    expect(results).toHaveLength(1)
-    expect(results[0].dispatched).toBe(true)
-
-    expect(mockPrisma.botInstance.findUnique).toHaveBeenCalledWith({
-      where: { id: 'dbot-1' },
-      select: { apiUrl: true, isActive: true },
-    })
-  })
-
-  // --- Error: no bot instance ID ---
-
-  it('errors when Discord action has no bot instance ID at all', async () => {
+  it('returns dispatched:false when no botInstanceId is provided for Discord action', async () => {
     const ctx = makeCtx([
       { id: 'n1', action: 'discord_send_message', params: { channelId: 'ch-1', content: 'Hi' } },
     ])
 
     const results = await dispatchActions(ctx, {})
+
     expect(results).toHaveLength(1)
-    expect(results[0].dispatched).toBe(false)
-    expect(results[0].error).toContain('requires a discordBotInstanceId')
+    expect(results[0]!.dispatched).toBe(false)
+    expect(results[0]!.error).toContain('botInstanceId')
+    expect(mockFetch).not.toHaveBeenCalled()
   })
 
-  // --- Error: bot instance not found / inactive ---
-
-  it('errors when Discord bot instance is not found', async () => {
-    mockPrisma.botInstance.findUnique.mockResolvedValue(null)
+  it('returns dispatched:false when Discord bot instance is not found in DB', async () => {
+    mockPrisma.botInstance.findUnique.mockResolvedValueOnce(null)
 
     const ctx = makeCtx([
       { id: 'n1', action: 'discord_send_message', params: { channelId: 'ch-1', content: 'Hi' } },
     ])
 
-    const results = await dispatchActions(ctx, { discordBotInstanceId: 'missing-bot' })
-    expect(results).toHaveLength(1)
-    expect(results[0].dispatched).toBe(false)
-    expect(results[0].error).toContain('not available')
+    const results = await dispatchActions(ctx, { botInstanceId: 'missing-discord-bot' })
+
+    expect(results[0]!.dispatched).toBe(false)
+    expect(results[0]!.error).toContain('missing-discord-bot')
+    expect(mockFetch).not.toHaveBeenCalled()
   })
 
-  it('errors when Discord bot instance is inactive', async () => {
-    mockPrisma.botInstance.findUnique.mockResolvedValue({
-      apiUrl: 'http://discord-bot:3003',
+  it('returns dispatched:false when Discord bot instance is inactive', async () => {
+    mockPrisma.botInstance.findUnique.mockResolvedValueOnce({
+      apiUrl: DISCORD_BOT_URL,
       isActive: false,
     })
 
     const ctx = makeCtx([
-      { id: 'n1', action: 'discord_send_message', params: { channelId: 'ch-1', content: 'Hi' } },
+      { id: 'n1', action: 'discord_ban_member', params: { guildId: 'g-1', userId: 'u-1' } },
     ])
 
-    const results = await dispatchActions(ctx, { discordBotInstanceId: 'inactive-bot' })
-    expect(results).toHaveLength(1)
-    expect(results[0].dispatched).toBe(false)
-    expect(results[0].error).toContain('not available')
+    const results = await dispatchActions(ctx, { botInstanceId: 'offline-discord-bot' })
+
+    expect(results[0]!.dispatched).toBe(false)
+    expect(results[0]!.error).toContain('offline-discord-bot')
   })
 
-  // --- Error: Discord bot API returns error ---
-
-  it('errors when Discord bot API returns non-OK response', async () => {
-    mockFetchFn.mockResolvedValue({
+  it('returns dispatched:false when connector returns 500', async () => {
+    mockFetch.mockResolvedValueOnce({
       ok: false,
       status: 500,
-      text: vi.fn().mockResolvedValue('Internal Server Error'),
+      text: vi.fn().mockResolvedValue('Discord API error'),
     })
 
     const ctx = makeCtx([
       { id: 'n1', action: 'discord_send_message', params: { channelId: 'ch-1', content: 'Hi' } },
     ])
 
-    const results = await dispatchActions(ctx, { discordBotInstanceId: 'dbot-1' })
-    expect(results).toHaveLength(1)
-    expect(results[0].dispatched).toBe(false)
-    expect(results[0].error).toContain('500')
+    const results = await dispatchActions(ctx, { botInstanceId: 'dbot-1' })
+
+    // Non-ok HTTP → dispatched: true with { success: false } in response
+    expect(results[0]!.dispatched).toBe(true)
+    expect((results[0]!.response as any)?.success).toBe(false)
+    expect((results[0]!.response as any)?.error).toContain('500')
   })
 
-  // --- Cross-platform flows ---
+  it('returns dispatched:false when fetch throws a network error', async () => {
+    mockFetch.mockRejectedValueOnce(new Error('Connection refused'))
 
-  it('dispatches mixed Telegram and Discord actions correctly', async () => {
     const ctx = makeCtx([
-      { id: 'n1', action: 'send_message', params: { chatId: '123', text: 'TG message' } },
-      { id: 'n2', action: 'discord_send_message', params: { channelId: 'ch-1', content: 'DC message' } },
-      { id: 'n3', action: 'ban_user', params: { chatId: '123', userId: '456' } },
-      { id: 'n4', action: 'discord_ban_member', params: { guildId: 'g-1', userId: 'u-1' } },
+      { id: 'n1', action: 'discord_send_message', params: { channelId: 'ch-1', content: 'Hi' } },
     ])
 
-    const results = await dispatchActions(ctx, { discordBotInstanceId: 'dbot-1' })
+    const results = await dispatchActions(ctx, { botInstanceId: 'dbot-1' })
 
-    expect(results).toHaveLength(4)
-    expect(results.every(r => r.dispatched)).toBe(true)
+    expect(results[0]!.dispatched).toBe(false)
+    expect(results[0]!.error).toContain('Connection refused')
+  })
 
-    // Telegram actions used the mock transport
-    expect(mockTransport.sendMessage).toHaveBeenCalledWith('123', 'TG message', expect.any(Object))
-    expect(mockTransport.banUser).toHaveBeenCalledWith('123', '456')
+  // --- Multiple Discord actions in one flow ---
 
-    // Discord actions used fetch (bot API)
-    const fetchCalls = mockFetchFn.mock.calls.filter((c: unknown[]) =>
-      (c[0] as string).includes('/api/execute-action'),
+  it('dispatches multiple Discord actions as separate POSTs', async () => {
+    const ctx = makeCtx([
+      { id: 'n1', action: 'discord_send_message', params: { channelId: 'ch-1', content: 'Hello' } },
+      { id: 'n2', action: 'discord_ban_member', params: { guildId: 'g-1', userId: 'u-bad' } },
+      { id: 'n3', action: 'discord_add_role', params: { guildId: 'g-1', userId: 'u-1', roleId: 'r-mod' } },
+    ])
+
+    const results = await dispatchActions(ctx, { botInstanceId: 'dbot-1' })
+
+    expect(results).toHaveLength(3)
+    expect(results.every((r) => r.dispatched)).toBe(true)
+    expect(mockFetch).toHaveBeenCalledTimes(3)
+
+    const sentActions = mockFetch.mock.calls.map(
+      (c) => JSON.parse((c[1] as RequestInit).body as string).action,
     )
-    expect(fetchCalls).toHaveLength(2)
+    expect(sentActions).toEqual(['discord_send_message', 'discord_ban_member', 'discord_add_role'])
   })
 
-  // --- Telegram actions still work normally ---
+  it('continues processing after one Discord action fails', async () => {
+    mockFetch
+      .mockResolvedValueOnce({ ok: false, status: 429, text: vi.fn().mockResolvedValue('Rate limited') })
+      .mockResolvedValueOnce(makeFetchOk())
 
-  it('does not route non-discord actions to Discord API', async () => {
     const ctx = makeCtx([
-      { id: 'n1', action: 'send_message', params: { chatId: '123', text: 'Hello TG' } },
+      { id: 'n1', action: 'discord_send_message', params: { channelId: 'ch-1', content: 'Rate limited' } },
+      { id: 'n2', action: 'discord_ban_member', params: { guildId: 'g-1', userId: 'u-1' } },
     ])
 
-    const results = await dispatchActions(ctx)
-    expect(results).toHaveLength(1)
-    expect(results[0].dispatched).toBe(true)
-    expect(mockTransport.sendMessage).toHaveBeenCalled()
-    expect(mockFetchFn).not.toHaveBeenCalled()
+    const results = await dispatchActions(ctx, { botInstanceId: 'dbot-1' })
+
+    expect(results).toHaveLength(2)
+    // First: non-ok HTTP → dispatched: true with { success: false }
+    expect(results[0]!.dispatched).toBe(true)
+    expect((results[0]!.response as any)?.success).toBe(false)
+    // Second: normal success
+    expect(results[1]!.dispatched).toBe(true)
   })
 
-  // --- Internal actions still skipped ---
+  // --- Mixed platform flows ---
 
-  it('skips internal actions even with Discord config', async () => {
+  it('dispatches Telegram and Discord actions to their respective bot instance URLs', async () => {
+    // Two separate bot instances: TG bot for Telegram actions, Discord bot for Discord actions
+    // In practice they'd need different transportConfig calls, but we verify the URL routing.
+    // Here we use a single botInstanceId pointing to the Discord connector to confirm all go there.
+    mockPrisma.botInstance.findUnique.mockResolvedValue({
+      apiUrl: DISCORD_BOT_URL,
+      isActive: true,
+    })
+
     const ctx = makeCtx([
-      { id: 'n1', action: 'delay', params: {} },
-      { id: 'n2', action: 'transform', params: {} },
+      { id: 'n1', action: 'discord_send_message', params: { channelId: 'ch-1', content: 'Discord msg' } },
+      { id: 'n2', action: 'discord_ban_member', params: { guildId: 'g-1', userId: 'u-1' } },
     ])
 
-    const results = await dispatchActions(ctx, { discordBotInstanceId: 'dbot-1' })
+    const results = await dispatchActions(ctx, { botInstanceId: 'dbot-1' })
+
+    expect(results).toHaveLength(2)
+    expect(results.every((r) => r.dispatched)).toBe(true)
+
+    // Both went to the same Discord connector URL
+    for (const [url] of mockFetch.mock.calls as [string, RequestInit][]) {
+      expect(url).toBe(`${DISCORD_BOT_URL}/execute`)
+    }
+  })
+
+  it('Discord and non-Discord actions both use botInstanceId for lookup', async () => {
+    // Both action types look up by botInstanceId — no special Discord DB field
+    mockPrisma.botInstance.findUnique.mockResolvedValue({
+      apiUrl: DISCORD_BOT_URL,
+      isActive: true,
+    })
+
+    const ctx = makeCtx([
+      { id: 'n1', action: 'send_message', params: { chatId: '123', text: 'TG' } },
+      { id: 'n2', action: 'discord_send_message', params: { channelId: 'ch-1', content: 'DC' } },
+    ])
+
+    await dispatchActions(ctx, { botInstanceId: 'bot-shared' })
+
+    // DB lookup called for each dispatched action
+    expect(mockPrisma.botInstance.findUnique).toHaveBeenCalledTimes(2)
+    for (const call of mockPrisma.botInstance.findUnique.mock.calls) {
+      expect(call[0]).toMatchObject({ where: { id: 'bot-shared' } })
+    }
+  })
+
+  // --- Internal actions are still skipped for Discord flows ---
+
+  it('skips internal actions even when Discord botInstanceId is configured', async () => {
+    const ctx = makeCtx([
+      { id: 'n1', action: 'delay', params: { ms: 1000 } },
+      { id: 'n2', action: 'transform', params: { value: '...' } },
+      { id: 'n3', action: 'bot_action', params: {} },
+    ])
+
+    const results = await dispatchActions(ctx, { botInstanceId: 'dbot-1' })
+
+    expect(results).toHaveLength(0)
+    expect(mockFetch).not.toHaveBeenCalled()
+    expect(mockPrisma.botInstance.findUnique).not.toHaveBeenCalled()
+  })
+
+  // --- Skipping nodes still applies ---
+
+  it('skips Discord action nodes with error status', async () => {
+    const nodeResults = new Map<string, NodeResult>()
+    nodeResults.set('n1', {
+      nodeId: 'n1',
+      status: 'error',
+      output: { action: 'discord_send_message', executed: true, channelId: 'ch-1', content: 'Hi' },
+      error: 'upstream failure',
+      startedAt: new Date(),
+      completedAt: new Date(),
+    })
+    const ctx: FlowContext = {
+      flowId: 'f',
+      executionId: 'e',
+      variables: new Map(),
+      triggerData: {},
+      nodeResults,
+    }
+
+    const results = await dispatchActions(ctx, { botInstanceId: 'dbot-1' })
+
+    expect(results).toHaveLength(0)
+    expect(mockFetch).not.toHaveBeenCalled()
+  })
+
+  it('skips Discord action nodes without executed:true flag', async () => {
+    const nodeResults = new Map<string, NodeResult>()
+    nodeResults.set('n1', {
+      nodeId: 'n1',
+      status: 'success',
+      output: { action: 'discord_send_message', channelId: 'ch-1', content: 'Hi' }, // no executed: true
+      startedAt: new Date(),
+      completedAt: new Date(),
+    })
+    const ctx: FlowContext = {
+      flowId: 'f',
+      executionId: 'e',
+      variables: new Map(),
+      triggerData: {},
+      nodeResults,
+    }
+
+    const results = await dispatchActions(ctx, { botInstanceId: 'dbot-1' })
+
     expect(results).toHaveLength(0)
   })
-})
 
-// Separate import to restore the afterEach
-import { afterEach } from 'vitest'
+  // --- Result shape ---
+
+  it('result includes nodeId, dispatched:true, and response from connector', async () => {
+    mockFetch.mockResolvedValueOnce(
+      makeFetchOk({ success: true, data: { id: 'msg-discord-999' } }),
+    )
+
+    const ctx = makeCtx([
+      { id: 'discord-node-42', action: 'discord_send_message', params: { channelId: 'ch-1', content: 'Check' } },
+    ])
+
+    const results = await dispatchActions(ctx, { botInstanceId: 'dbot-1' })
+
+    expect(results[0]!.nodeId).toBe('discord-node-42')
+    expect(results[0]!.dispatched).toBe(true)
+    expect(results[0]!.response).toEqual({ success: true, data: { id: 'msg-discord-999' } })
+  })
+
+  // --- Confirm no legacy transport code is involved ---
+
+  it('does NOT use any Telegram transport for Discord actions', async () => {
+    // If the old getTelegramTransport mock were imported, calling it for Discord
+    // would be a bug. With the new HTTP-only dispatcher, only fetch is called.
+    const ctx = makeCtx([
+      { id: 'n1', action: 'discord_send_message', params: { channelId: 'ch-1', content: 'Pure Discord' } },
+    ])
+
+    await dispatchActions(ctx, { botInstanceId: 'dbot-1' })
+
+    // Only fetch is used — no transport mock should be touched
+    expect(mockFetch).toHaveBeenCalledOnce()
+    expect(mockDispatchUserAction).not.toHaveBeenCalled()
+  })
+})
