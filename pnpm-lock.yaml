@@ -301,6 +301,37 @@ importers:
         specifier: ^3.2.1
         version: 3.2.4(@types/debug@4.1.12)(@types/node@22.19.11)(jiti@2.6.1)(lightningcss@1.31.1)(terser@5.46.0)(tsx@4.20.4)(yaml@2.8.2)
 
+  apps/telegram-bot-pool:
+    dependencies:
+      '@flowbot/db':
+        specifier: workspace:*
+        version: link:../../packages/db
+      '@flowbot/platform-kit':
+        specifier: workspace:*
+        version: link:../../packages/platform-kit
+      '@flowbot/telegram-bot-connector':
+        specifier: workspace:*
+        version: link:../../packages/telegram-bot-connector
+      pino:
+        specifier: 9.9.0
+        version: 9.9.0
+      pino-pretty:
+        specifier: 13.0.0
+        version: 13.0.0
+      tsx:
+        specifier: 4.20.4
+        version: 4.20.4
+      valibot:
+        specifier: 0.42.1
+        version: 0.42.1(typescript@5.9.3)
+    devDependencies:
+      '@types/node':
+        specifier: ^22.15.21
+        version: 22.19.11
+      typescript:
+        specifier: ^5.9.2
+        version: 5.9.3
+
   apps/telegram-user:
     dependencies:
       '@flowbot/db':
