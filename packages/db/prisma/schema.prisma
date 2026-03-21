@@ -657,6 +657,7 @@ model BotInstance {
   updatedAt DateTime @updatedAt
 
   @@unique([botUsername])
+  @@index([botToken])
   @@index([isActive])
   @@index([platform])
 }
