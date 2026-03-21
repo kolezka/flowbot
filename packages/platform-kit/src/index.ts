@@ -1,6 +1,7 @@
 export { ConnectorError } from './connector-error.js'
 export { ActionRegistry } from './action-registry.js'
 export type { ActionResult, ActionDef, ObservabilityHooks } from './types.js'
+export type { BotScope } from './types/bot-scope.js'
 export { EventForwarder } from './event-forwarder.js'
 export type { FlowTriggerEvent, EventForwarderConfig } from './event-forwarder.js'
 export { CircuitBreaker, CircuitState, CircuitOpenError } from './circuit-breaker.js'
