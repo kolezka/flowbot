@@ -146,6 +146,7 @@ describe('dispatchActions — Discord actions via HTTP connector', () => {
     const body = JSON.parse(init.body as string)
     expect(body.action).toBe('discord_send_message')
     expect(body.params).toMatchObject({ channelId: 'ch-1', content: 'Hello Discord' })
+    expect(body.instanceId).toBe('dbot-1')
   })
 
   it('uses method: POST with Content-Type: application/json header', async () => {

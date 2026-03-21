@@ -117,6 +117,34 @@ describe('dispatchAction', () => {
     expect(result).toEqual({ success: true, data: { messageId: '123' } })
   })
 
+  it('includes instanceId in request body when provided', async () => {
+    mockFetch.mockResolvedValueOnce(
+      makeFetchResponse({ success: true, data: {} }),
+    )
+
+    await dispatchAction('send_message', { chatId: '123', text: 'Hello' }, BOT_API_URL, 'bot-instance-42')
+
+    const [, init] = mockFetch.mock.calls[0] as [string, RequestInit]
+    const body = JSON.parse(init.body as string)
+    expect(body).toEqual({
+      action: 'send_message',
+      params: { chatId: '123', text: 'Hello' },
+      instanceId: 'bot-instance-42',
+    })
+  })
+
+  it('omits instanceId from request body when not provided', async () => {
+    mockFetch.mockResolvedValueOnce(
+      makeFetchResponse({ success: true, data: {} }),
+    )
+
+    await dispatchAction('send_message', { chatId: '123', text: 'Hello' }, BOT_API_URL)
+
+    const [, init] = mockFetch.mock.calls[0] as [string, RequestInit]
+    const body = JSON.parse(init.body as string)
+    expect(body).not.toHaveProperty('instanceId')
+  })
+
   it('returns success: false with error message when connector returns non-ok status', async () => {
     mockFetch.mockResolvedValueOnce({
       ok: false,
@@ -216,6 +244,7 @@ describe('dispatchActions', () => {
     const body = JSON.parse(init.body as string)
     expect(body.action).toBe('send_message')
     expect(body.params).toMatchObject({ chatId: '123', text: 'Hello', action: 'send_message' })
+    expect(body.instanceId).toBe('bot-1')
   })
 
   it('dispatches ban_user via POST /execute with correct body', async () => {
@@ -233,6 +262,7 @@ describe('dispatchActions', () => {
     const body = JSON.parse(init.body as string)
     expect(body.action).toBe('ban_user')
     expect(body.params).toMatchObject({ chatId: '-100123', userId: '456' })
+    expect(body.instanceId).toBe('bot-1')
   })
 
   it('dispatches multiple actions sequentially, each as a separate POST', async () => {
@@ -607,6 +637,7 @@ describe('dispatchActionToCommunity', () => {
     const body = JSON.parse(init.body as string)
     expect(body.action).toBe('send_message')
     expect(body.params).toMatchObject({ chatId: '123', text: 'Hello from community' })
+    expect(body.instanceId).toBe('bot-1')
   })
 
   it('returns error when community is not found', async () => {

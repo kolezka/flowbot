@@ -13,11 +13,12 @@ export async function dispatchAction(
   action: string,
   params: Record<string, unknown>,
   apiUrl: string,
+  instanceId?: string,
 ): Promise<{ success: boolean; data?: unknown; error?: string }> {
   const response = await fetch(`${apiUrl}/execute`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ action, params }),
+    body: JSON.stringify({ action, params, ...(instanceId && { instanceId }) }),
     signal: AbortSignal.timeout(30_000),
   })
 
@@ -59,7 +60,7 @@ export async function dispatchActionToCommunity(
   }
 
   try {
-    return await dispatchAction(action, params, community.botInstance.apiUrl);
+    return await dispatchAction(action, params, community.botInstance.apiUrl, community.botInstance.id);
   } catch (error) {
     const msg = error instanceof Error ? error.message : String(error);
     return { success: false, error: msg };
@@ -138,7 +139,7 @@ export async function dispatchActions(
         throw new Error(`Bot instance ${botInstanceId} not available`);
       }
 
-      const response = await dispatchAction(action, output, botInstance.apiUrl);
+      const response = await dispatchAction(action, output, botInstance.apiUrl, botInstanceId);
       results.push({ nodeId, dispatched: true, response });
     } catch (error) {
       const msg = error instanceof Error ? error.message : String(error);
