@@ -18,6 +18,7 @@ export interface WorkerWrapperConfig {
 
 export interface WorkerWrapper {
   spawn(): Promise<void>
+  execute(action: string, params: Record<string, unknown>): Promise<import('./types.js').WorkerResultMessage>
   shutdown(): Promise<void>
   terminate(): void
   getStatus(): 'starting' | 'ready' | 'draining' | 'dead'

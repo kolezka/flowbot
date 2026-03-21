@@ -34,6 +34,7 @@ function makeMockWorker(instanceId: string): WorkerWrapper & { _spawnCount: numb
       this._spawnCount++
       return Promise.resolve()
     }),
+    execute: vi.fn().mockResolvedValue({ type: 'result', requestId: 'r1', success: true }),
     shutdown: vi.fn().mockResolvedValue(undefined),
     terminate: vi.fn(),
     getStatus: vi.fn().mockReturnValue('ready' as const),
