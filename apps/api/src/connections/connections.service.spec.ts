@@ -2,6 +2,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { NotFoundException } from '@nestjs/common';
 import { ConnectionsService } from './connections.service';
 import { PrismaService } from '../prisma/prisma.service';
+import { PlatformStrategyRegistry } from '../platform/strategy-registry.service';
 
 function createMockModel() {
   return {
@@ -43,12 +44,17 @@ describe('ConnectionsService', () => {
     prisma = {
       platformConnection: createMockModel(),
       platformConnectionLog: createMockModel(),
+      botInstance: createMockModel(),
     };
 
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         ConnectionsService,
         { provide: PrismaService, useValue: prisma },
+        {
+          provide: PlatformStrategyRegistry,
+          useValue: { get: jest.fn(), register: jest.fn() },
+        },
       ],
     }).compile();
 
@@ -114,19 +120,25 @@ describe('ConnectionsService', () => {
         ...mockConnection,
         credentials: { sessionString: 'secret-data' },
       };
-      prisma.platformConnection.findUnique.mockResolvedValue(connectionWithCreds);
+      prisma.platformConnection.findUnique.mockResolvedValue(
+        connectionWithCreds,
+      );
 
       const result = await service.findOne('conn-1');
 
       expect(result.id).toBe('conn-1');
       expect(result.platform).toBe('telegram');
-      expect((result as unknown as Record<string, unknown>)['credentials']).toBeUndefined();
+      expect(
+        (result as unknown as Record<string, unknown>)['credentials'],
+      ).toBeUndefined();
     });
 
     it('should throw NotFoundException if not found', async () => {
       prisma.platformConnection.findUnique.mockResolvedValue(null);
 
-      await expect(service.findOne('missing')).rejects.toThrow(NotFoundException);
+      await expect(service.findOne('missing')).rejects.toThrow(
+        NotFoundException,
+      );
     });
   });
 
@@ -188,7 +200,9 @@ describe('ConnectionsService', () => {
       };
       prisma.platformConnection.update.mockResolvedValue(updated);
 
-      const result = await service.startAuth('conn-1', { phoneNumber: '+1234567890' });
+      const result = await service.startAuth('conn-1', {
+        phoneNumber: '+1234567890',
+      });
 
       expect(result.status).toBe('authenticating');
       expect(prisma.platformConnection.update).toHaveBeenCalledWith({
@@ -200,7 +214,9 @@ describe('ConnectionsService', () => {
     it('should throw NotFoundException if not found', async () => {
       prisma.platformConnection.findUnique.mockResolvedValue(null);
 
-      await expect(service.startAuth('missing', {})).rejects.toThrow(NotFoundException);
+      await expect(service.startAuth('missing', {})).rejects.toThrow(
+        NotFoundException,
+      );
     });
   });
 
@@ -211,7 +227,9 @@ describe('ConnectionsService', () => {
         status: 'authenticating',
         metadata: { authState: { params: {}, startedAt: '2026-03-01' } },
       };
-      prisma.platformConnection.findUnique.mockResolvedValue(authenticatingConn);
+      prisma.platformConnection.findUnique.mockResolvedValue(
+        authenticatingConn,
+      );
       const updated = {
         ...authenticatingConn,
         status: 'authenticating',
@@ -237,7 +255,9 @@ describe('ConnectionsService', () => {
         status: 'authenticating',
         metadata: { authState: {} },
       };
-      prisma.platformConnection.findUnique.mockResolvedValue(authenticatingConn);
+      prisma.platformConnection.findUnique.mockResolvedValue(
+        authenticatingConn,
+      );
       const updated = {
         ...authenticatingConn,
         status: 'active',
@@ -279,7 +299,9 @@ describe('ConnectionsService', () => {
     it('should throw NotFoundException if connection not found', async () => {
       prisma.platformConnection.findUnique.mockResolvedValue(null);
 
-      await expect(service.getLogs('missing', 1, 20)).rejects.toThrow(NotFoundException);
+      await expect(service.getLogs('missing', 1, 20)).rejects.toThrow(
+        NotFoundException,
+      );
     });
   });
 
@@ -297,8 +319,16 @@ describe('ConnectionsService', () => {
       expect(result.totalConnections).toBe(4);
       expect(result.activeConnections).toBe(2);
       expect(result.errorConnections).toBe(1);
-      expect(result.platforms['telegram']).toEqual({ total: 3, active: 1, error: 1 });
-      expect(result.platforms['discord']).toEqual({ total: 1, active: 1, error: 0 });
+      expect(result.platforms['telegram']).toEqual({
+        total: 3,
+        active: 1,
+        error: 1,
+      });
+      expect(result.platforms['discord']).toEqual({
+        total: 1,
+        active: 1,
+        error: 0,
+      });
     });
 
     it('should return empty platforms when no connections', async () => {
@@ -328,10 +358,85 @@ describe('ConnectionsService', () => {
       });
     });
 
+    it('should deactivate linked BotInstance when botInstanceId is set', async () => {
+      const connWithBot = { ...mockConnection, botInstanceId: 'bot-1' };
+      prisma.platformConnection.findUnique.mockResolvedValue(connWithBot);
+      prisma.platformConnection.update.mockResolvedValue({
+        ...connWithBot,
+        status: 'inactive',
+      });
+      prisma.botInstance.update.mockResolvedValue({});
+
+      await service.deactivate('conn-1');
+
+      expect(prisma.botInstance.update).toHaveBeenCalledWith({
+        where: { id: 'bot-1' },
+        data: { isActive: false },
+      });
+    });
+
+    it('should not call botInstance.update when no botInstanceId', async () => {
+      prisma.platformConnection.findUnique.mockResolvedValue(mockConnection);
+      prisma.platformConnection.update.mockResolvedValue({
+        ...mockConnection,
+        status: 'inactive',
+      });
+
+      await service.deactivate('conn-1');
+
+      expect(prisma.botInstance.update).not.toHaveBeenCalled();
+    });
+
     it('should throw NotFoundException if not found', async () => {
       prisma.platformConnection.findUnique.mockResolvedValue(null);
 
-      await expect(service.deactivate('missing')).rejects.toThrow(NotFoundException);
+      await expect(service.deactivate('missing')).rejects.toThrow(
+        NotFoundException,
+      );
+    });
+  });
+
+  describe('updateStatus — bot instance sync', () => {
+    it('should reactivate linked BotInstance when status becomes active', async () => {
+      const connWithBot = { ...mockConnection, botInstanceId: 'bot-1' };
+      prisma.platformConnection.findUnique.mockResolvedValue(connWithBot);
+      prisma.platformConnection.update.mockResolvedValue({
+        ...connWithBot,
+        status: 'active',
+      });
+      prisma.botInstance.update.mockResolvedValue({});
+
+      await service.updateStatus('conn-1', 'active');
+
+      expect(prisma.botInstance.update).toHaveBeenCalledWith({
+        where: { id: 'bot-1' },
+        data: { isActive: true },
+      });
+    });
+
+    it('should not update BotInstance when transitioning to non-active status', async () => {
+      const connWithBot = { ...mockConnection, botInstanceId: 'bot-1' };
+      prisma.platformConnection.findUnique.mockResolvedValue(connWithBot);
+      prisma.platformConnection.update.mockResolvedValue({
+        ...connWithBot,
+        status: 'error',
+      });
+
+      await service.updateStatus('conn-1', 'error');
+
+      expect(prisma.botInstance.update).not.toHaveBeenCalled();
+    });
+
+    it('should not update BotInstance when no botInstanceId', async () => {
+      prisma.platformConnection.findUnique.mockResolvedValue(mockConnection);
+      prisma.platformConnection.update.mockResolvedValue({
+        ...mockConnection,
+        status: 'active',
+      });
+
+      await service.updateStatus('conn-1', 'active');
+
+      expect(prisma.botInstance.update).not.toHaveBeenCalled();
     });
   });
 });

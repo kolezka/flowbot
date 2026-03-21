@@ -1,5 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
+import { PlatformStrategyRegistry } from '../platform/strategy-registry.service';
+import { TelegramConnectionStrategy } from './strategies/telegram-connection.strategy';
 import {
   ConnectionDto,
   ConnectionListResponseDto,
@@ -10,7 +12,10 @@ import {
 
 @Injectable()
 export class ConnectionsService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly registry: PlatformStrategyRegistry,
+  ) {}
 
   async findAll(
     page = 1,
@@ -72,7 +77,15 @@ export class ConnectionsService {
     status: string,
     errorMessage?: string,
   ): Promise<ConnectionDto> {
-    await this.findOne(id);
+    const connection = await this.findOne(id);
+
+    // Reactivate linked bot instance if transitioning to active
+    if (status === 'active' && connection.botInstanceId) {
+      await this.prisma.botInstance.update({
+        where: { id: connection.botInstanceId },
+        data: { isActive: true },
+      });
+    }
 
     const data: Record<string, unknown> = { status };
     if (errorMessage !== undefined) {
@@ -93,7 +106,20 @@ export class ConnectionsService {
     id: string,
     params: Record<string, unknown>,
   ): Promise<ConnectionDto> {
-    await this.findOne(id);
+    const connection = await this.findOne(id);
+
+    // Bot token flow — delegate to strategy
+    if (
+      connection.connectionType === 'bot_token' &&
+      connection.platform === 'telegram'
+    ) {
+      const strategy = this.registry.get<TelegramConnectionStrategy>(
+        'connections',
+        'telegram',
+      );
+      await strategy.handleBotTokenAuth(id, params['botToken'] as string);
+      return this.findOne(id);
+    }
 
     const existing = await this.prisma.platformConnection.findUnique({
       where: { id },
@@ -207,10 +233,17 @@ export class ConnectionsService {
     });
 
     const totalConnections = connections.length;
-    const activeConnections = connections.filter((c) => c.status === 'active').length;
-    const errorConnections = connections.filter((c) => c.status === 'error').length;
+    const activeConnections = connections.filter(
+      (c) => c.status === 'active',
+    ).length;
+    const errorConnections = connections.filter(
+      (c) => c.status === 'error',
+    ).length;
 
-    const platforms: Record<string, { total: number; active: number; error: number }> = {};
+    const platforms: Record<
+      string,
+      { total: number; active: number; error: number }
+    > = {};
     for (const conn of connections) {
       if (!platforms[conn.platform]) {
         platforms[conn.platform] = { total: 0, active: 0, error: 0 };
@@ -224,7 +257,15 @@ export class ConnectionsService {
   }
 
   async deactivate(id: string): Promise<ConnectionDto> {
-    await this.findOne(id);
+    const connection = await this.findOne(id);
+
+    if (connection.botInstanceId) {
+      await this.prisma.botInstance.update({
+        where: { id: connection.botInstanceId },
+        data: { isActive: false },
+      });
+    }
+
     const updated = await this.prisma.platformConnection.update({
       where: { id },
       data: { status: 'inactive' },
