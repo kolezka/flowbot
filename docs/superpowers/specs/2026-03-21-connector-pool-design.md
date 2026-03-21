@@ -157,7 +157,8 @@ new TelegramBotConnector({ botToken, botInstanceId: instanceId, logger, apiUrl }
 // Telegram user:
 new TelegramUserConnector({ sessionString, apiId, apiHash, logger })
 
-// WhatsApp user:
+// WhatsApp user (worker creates its own Prisma with connection_limit=1):
+const prisma = new PrismaClient({ datasourceUrl: process.env.DATABASE_URL, connection_limit: 1 })
 new WhatsAppUserConnector({ connectionId: instanceId, prisma, logger, apiUrl })
 ```
 
@@ -258,9 +259,64 @@ Changes required:
 - `connection-transport.ts` — deleted (no more in-process GramJS)
 - `user-actions.ts` — rewritten to HTTP dispatch to telegram-user-pool
 - Trigger.dev removes `@flowbot/telegram-user-connector` dependency
-- Must verify all 18 `user_*` actions in `user-actions.ts` have matching registered actions in `telegram-user-connector`'s ActionRegistry
+
+**Dispatcher signature update:**
+```typescript
+// BEFORE:
+export async function dispatchAction(action, params, apiUrl)
+  body: { action, params }
+
+// AFTER:
+export async function dispatchAction(action, params, apiUrl, instanceId?)
+  body: { instanceId, action, params }
+```
+In `dispatchActions()`, the call becomes: `dispatchAction(action, output, botInstance.apiUrl, botInstance.id)`.
+
+**Action name prefix convention:** The dispatcher strips the `user_` prefix before sending to the pool. The pool routes to the worker, and the connector's ActionRegistry uses unprefixed names. Example: dispatcher receives `user_send_message` → sends `{ action: 'send_message' }` to telegram-user-pool.
+
+**Action parity table (user_* dispatcher → telegram-user-connector registry):**
+
+Actions that EXIST in the connector today (5/18):
+| Dispatcher action | Connector action | Status |
+|-------------------|-----------------|--------|
+| `user_send_message` | `send_message` | Exists |
+| `user_send_media` | `send_media` | Exists |
+| `user_forward_message` | `forward_message` | Exists |
+| `user_delete_message` | `delete_message` | Exists |
+| `user_edit_message` | `edit_message` | Exists |
+
+Actions that must be ADDED to the connector (13/18 — Phase 3 prerequisite):
+| Dispatcher action | Connector action to add | GramJS method |
+|-------------------|------------------------|---------------|
+| `user_get_chat_history` | `get_chat_history` | `client.getMessages()` |
+| `user_search_messages` | `search_messages` | `client.invoke(SearchRequest)` |
+| `user_get_all_members` | `get_all_members` | `client.getParticipants()` |
+| `user_get_chat_info` | `get_chat_info` | `client.invoke(GetFullChat)` |
+| `user_get_contacts` | `get_contacts` | `client.invoke(GetContacts)` |
+| `user_get_dialogs` | `get_dialogs` | `client.getDialogs()` |
+| `user_join_chat` | `join_chat` | `client.invoke(JoinChannel)` |
+| `user_leave_chat` | `leave_chat` | `client.invoke(LeaveChannel)` |
+| `user_create_group` | `create_group` | `client.invoke(CreateChat)` |
+| `user_create_channel` | `create_channel` | `client.invoke(CreateChannel)` |
+| `user_invite_users` | `invite_users` | `client.invoke(InviteToChannel)` |
+| `user_update_profile` | `update_profile` | `client.invoke(UpdateProfile)` |
+| `user_set_status` | `set_status` | `client.invoke(UpdateStatus)` |
+
+These 13 actions must be implemented in `telegram-user-connector` before Phase 3 begins. They are raw GramJS `client.invoke()` calls currently hardcoded in `user-actions.ts`.
 
 The `telegram-user-pool` reconciliation reads `PlatformConnection WHERE platform = 'telegram' AND status = 'active'`.
+
+### TelegramUserConnector: Action-Only (No Inbound Events)
+
+`TelegramUserConnector` does not have an `EventForwarder` or event listeners. This is intentional — user accounts are used for executing actions (send messages, read history, join groups), not for listening to events. Inbound event listening is handled by bot connectors (telegram-bot, discord-bot) or user connectors that act as listeners (whatsapp-user). If user-account event listening is needed in the future, an `EventForwarder` can be added to `TelegramUserConnector` following the same pattern as `WhatsAppUserConnector`.
+
+### createConnectorServer vs createPoolServer
+
+These are two separate factories in `platform-kit`:
+- `createConnectorServer(registry, ...)` — single-instance server for thin shell apps. Existing, unchanged. Gets a `/execute` alias in Phase 1 for path standardization.
+- `createPoolServer(config)` — multi-instance server for pool apps. New. Routes by `instanceId` to workers. Does NOT wrap or extend `createConnectorServer`.
+
+Both coexist during migration. Phase 4 removes thin shell apps but `createConnectorServer` stays in platform-kit for testing and single-instance use cases.
 
 ### Observability
 
