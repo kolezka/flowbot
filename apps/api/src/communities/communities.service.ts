@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  BadRequestException,
+} from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import {
   CommunityDto,
@@ -58,7 +62,13 @@ export class CommunitiesService {
     };
   }
 
-  async findOne(id: string): Promise<CommunityDto & { config?: CommunityConfigDto; telegramConfig?: CommunityTelegramConfigDto; discordConfig?: CommunityDiscordConfigDto }> {
+  async findOne(id: string): Promise<
+    CommunityDto & {
+      config?: CommunityConfigDto;
+      telegramConfig?: CommunityTelegramConfigDto;
+      discordConfig?: CommunityDiscordConfigDto;
+    }
+  > {
     const community = await this.prisma.community.findUnique({
       where: { id },
       include: {
@@ -74,13 +84,33 @@ export class CommunitiesService {
 
     return {
       ...this.mapToDto(community),
-      config: community.config ? this.mapConfigToDto(community.config) : undefined,
-      telegramConfig: community.telegramConfig ? this.mapTelegramConfigToDto(community.telegramConfig) : undefined,
-      discordConfig: community.discordConfig ? this.mapDiscordConfigToDto(community.discordConfig) : undefined,
+      config: community.config
+        ? this.mapConfigToDto(community.config)
+        : undefined,
+      telegramConfig: community.telegramConfig
+        ? this.mapTelegramConfigToDto(community.telegramConfig)
+        : undefined,
+      discordConfig: community.discordConfig
+        ? this.mapDiscordConfigToDto(community.discordConfig)
+        : undefined,
     };
   }
 
   async create(dto: CreateCommunityDto): Promise<CommunityDto> {
+    if (dto.botInstanceId) {
+      const botInstance = await this.prisma.botInstance.findUnique({
+        where: { id: dto.botInstanceId },
+      });
+      if (!botInstance) {
+        throw new NotFoundException('Bot instance not found');
+      }
+      if (botInstance.platform !== dto.platform) {
+        throw new BadRequestException(
+          'Bot instance platform does not match community platform',
+        );
+      }
+    }
+
     const community = await this.prisma.community.create({
       data: {
         platform: dto.platform,
@@ -99,6 +129,20 @@ export class CommunitiesService {
 
     if (!existing) {
       throw new NotFoundException(`Community with ID ${id} not found`);
+    }
+
+    if (dto.botInstanceId) {
+      const botInstance = await this.prisma.botInstance.findUnique({
+        where: { id: dto.botInstanceId },
+      });
+      if (!botInstance) {
+        throw new NotFoundException('Bot instance not found');
+      }
+      if (botInstance.platform !== existing.platform) {
+        throw new BadRequestException(
+          'Bot instance platform does not match community platform',
+        );
+      }
     }
 
     const updated = await this.prisma.community.update({
@@ -123,7 +167,9 @@ export class CommunitiesService {
     });
 
     if (!config) {
-      throw new NotFoundException(`Config for community ${communityId} not found`);
+      throw new NotFoundException(
+        `Config for community ${communityId} not found`,
+      );
     }
 
     return this.mapConfigToDto(config);
@@ -150,7 +196,9 @@ export class CommunitiesService {
     return this.mapConfigToDto(config);
   }
 
-  async getTelegramConfig(communityId: string): Promise<CommunityTelegramConfigDto> {
+  async getTelegramConfig(
+    communityId: string,
+  ): Promise<CommunityTelegramConfigDto> {
     const community = await this.prisma.community.findUnique({
       where: { id: communityId },
     });
@@ -164,7 +212,9 @@ export class CommunitiesService {
     });
 
     if (!config) {
-      throw new NotFoundException(`Telegram config for community ${communityId} not found`);
+      throw new NotFoundException(
+        `Telegram config for community ${communityId} not found`,
+      );
     }
 
     return this.mapTelegramConfigToDto(config);
@@ -191,7 +241,9 @@ export class CommunitiesService {
     return this.mapTelegramConfigToDto(config);
   }
 
-  async getDiscordConfig(communityId: string): Promise<CommunityDiscordConfigDto> {
+  async getDiscordConfig(
+    communityId: string,
+  ): Promise<CommunityDiscordConfigDto> {
     const community = await this.prisma.community.findUnique({
       where: { id: communityId },
     });
@@ -205,7 +257,9 @@ export class CommunitiesService {
     });
 
     if (!config) {
-      throw new NotFoundException(`Discord config for community ${communityId} not found`);
+      throw new NotFoundException(
+        `Discord config for community ${communityId} not found`,
+      );
     }
 
     return this.mapDiscordConfigToDto(config);

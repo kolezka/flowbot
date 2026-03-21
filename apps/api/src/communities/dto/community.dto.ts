@@ -1,10 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import {
-  IsBoolean,
-  IsOptional,
-  IsString,
-  IsNotEmpty,
-} from 'class-validator';
+import { IsBoolean, IsOptional, IsString, IsNotEmpty } from 'class-validator';
 
 export class CommunityDto {
   @ApiProperty()
@@ -101,4 +96,9 @@ export class UpdateCommunityDto {
   @IsOptional()
   @IsBoolean()
   isActive?: boolean;
+
+  @ApiProperty({ required: false, description: 'Bot instance ID to link' })
+  @IsOptional()
+  @IsString()
+  botInstanceId?: string;
 }

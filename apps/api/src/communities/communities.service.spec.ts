@@ -1,5 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { NotFoundException } from '@nestjs/common';
+import { NotFoundException, BadRequestException } from '@nestjs/common';
 import { CommunitiesService } from './communities.service';
 import { PrismaService } from '../prisma/prisma.service';
 
@@ -93,6 +93,7 @@ describe('CommunitiesService', () => {
       communityTelegramConfig: createMockModel(),
       communityDiscordConfig: createMockModel(),
       communityMember: createMockModel(),
+      botInstance: createMockModel(),
     };
 
     const module: TestingModule = await Test.createTestingModule({
@@ -235,6 +236,52 @@ describe('CommunitiesService', () => {
         }),
       });
     });
+
+    it('should validate botInstanceId exists', async () => {
+      prisma.botInstance.findUnique.mockResolvedValue(null);
+
+      await expect(
+        service.create({
+          platform: 'telegram',
+          platformCommunityId: '-100123456789',
+          botInstanceId: 'bot-123',
+        }),
+      ).rejects.toThrow(NotFoundException);
+    });
+
+    it('should validate botInstanceId platform matches', async () => {
+      prisma.botInstance.findUnique.mockResolvedValue({
+        id: 'bot-123',
+        platform: 'discord',
+      });
+
+      await expect(
+        service.create({
+          platform: 'telegram',
+          platformCommunityId: '-100123456789',
+          botInstanceId: 'bot-123',
+        }),
+      ).rejects.toThrow(BadRequestException);
+    });
+
+    it('should create community with matching botInstanceId', async () => {
+      prisma.botInstance.findUnique.mockResolvedValue({
+        id: 'bot-123',
+        platform: 'telegram',
+      });
+      prisma.community.create.mockResolvedValue({
+        ...mockCommunity,
+        botInstanceId: 'bot-123',
+      });
+
+      const result = await service.create({
+        platform: 'telegram',
+        platformCommunityId: '-100123456789',
+        botInstanceId: 'bot-123',
+      });
+
+      expect(result.botInstanceId).toBe('bot-123');
+    });
   });
 
   describe('update', () => {
@@ -245,7 +292,9 @@ describe('CommunitiesService', () => {
         name: 'Updated Name',
       });
 
-      const result = await service.update('community-1', { name: 'Updated Name' });
+      const result = await service.update('community-1', {
+        name: 'Updated Name',
+      });
 
       expect(result.name).toBe('Updated Name');
     });
@@ -256,6 +305,45 @@ describe('CommunitiesService', () => {
       await expect(
         service.update('nonexistent', { name: 'Updated' }),
       ).rejects.toThrow(NotFoundException);
+    });
+
+    it('should validate botInstanceId exists', async () => {
+      prisma.community.findUnique.mockResolvedValue(mockCommunity);
+      prisma.botInstance.findUnique.mockResolvedValue(null);
+
+      await expect(
+        service.update('community-1', { botInstanceId: 'bot-123' }),
+      ).rejects.toThrow(NotFoundException);
+    });
+
+    it('should validate botInstanceId platform matches community platform', async () => {
+      prisma.community.findUnique.mockResolvedValue(mockCommunity);
+      prisma.botInstance.findUnique.mockResolvedValue({
+        id: 'bot-123',
+        platform: 'discord',
+      });
+
+      await expect(
+        service.update('community-1', { botInstanceId: 'bot-123' }),
+      ).rejects.toThrow(BadRequestException);
+    });
+
+    it('should update community with matching botInstanceId', async () => {
+      prisma.community.findUnique.mockResolvedValue(mockCommunity);
+      prisma.botInstance.findUnique.mockResolvedValue({
+        id: 'bot-123',
+        platform: 'telegram',
+      });
+      prisma.community.update.mockResolvedValue({
+        ...mockCommunity,
+        botInstanceId: 'bot-123',
+      });
+
+      const result = await service.update('community-1', {
+        botInstanceId: 'bot-123',
+      });
+
+      expect(result.botInstanceId).toBe('bot-123');
     });
   });
 
