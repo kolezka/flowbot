@@ -79,4 +79,17 @@ describe('createConnectorServer', () => {
     expect(body.status).toBe('degraded')
     expect(body.connected).toBe(false)
   })
+
+  it('POST /execute is an alias for POST /api/execute-action', async () => {
+    const server = createConnectorServer({ registry: makeRegistry(), logger: mockLogger, healthCheck: () => true })
+    const res = await server.request('/execute', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'ping', params: {} }),
+    })
+    expect(res.status).toBe(200)
+    const body = await res.json() as Record<string, unknown>
+    expect(body.success).toBe(true)
+    expect(body.data).toEqual({ pong: true })
+  })
 })
