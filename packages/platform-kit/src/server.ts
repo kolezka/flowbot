@@ -1,6 +1,7 @@
 import type { Logger } from 'pino'
 import process from 'node:process'
 import { Hono } from 'hono'
+import type { Context } from 'hono'
 import type { ActionRegistry } from './action-registry.js'
 
 export interface ConnectorServerConfig {
@@ -30,7 +31,7 @@ export function createConnectorServer(config: ConnectorServerConfig) {
     }, connected ? 200 : 503)
   })
 
-  server.post('/api/execute-action', async (c) => {
+  async function handleExecute(c: Context) {
     let body: { action?: string; params?: Record<string, unknown> }
     try { body = await c.req.json() }
     catch { return c.json({ success: false, error: 'Invalid JSON body' }, 400) }
@@ -41,7 +42,10 @@ export function createConnectorServer(config: ConnectorServerConfig) {
 
     const result = await registry.execute(body.action, body.params ?? {})
     return c.json(result, result.success ? 200 : 400)
-  })
+  }
+
+  server.post('/api/execute-action', handleExecute)
+  server.post('/execute', handleExecute)
 
   server.get('/api/actions', (c) => {
     return c.json({ actions: registry.getActions() })

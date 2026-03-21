@@ -447,22 +447,6 @@ importers:
         specifier: ^3.2.1
         version: 3.2.4(@types/debug@4.1.12)(@types/node@22.19.11)(jiti@2.6.1)(lightningcss@1.31.1)(terser@5.46.0)(tsx@4.20.4)(yaml@2.8.2)
 
-  packages/discord-transport:
-    dependencies:
-      discord.js:
-        specifier: ^14.16.0
-        version: 14.25.1(bufferutil@4.1.0)(utf-8-validate@5.0.10)
-    devDependencies:
-      '@types/node':
-        specifier: ^22.15.21
-        version: 22.19.11
-      typescript:
-        specifier: ^5.9.2
-        version: 5.9.3
-      vitest:
-        specifier: ^3.1.4
-        version: 3.2.4(@types/debug@4.1.12)(@types/node@22.19.11)(jiti@2.6.1)(lightningcss@1.31.1)(terser@5.46.0)(tsx@4.20.4)(yaml@2.8.2)
-
   packages/flow-shared:
     devDependencies:
       typescript:
@@ -487,6 +471,9 @@ importers:
       '@types/node':
         specifier: ^22.15.21
         version: 22.19.11
+      tsx:
+        specifier: 4.20.4
+        version: 4.20.4
       typescript:
         specifier: ^5.9.2
         version: 5.9.3
