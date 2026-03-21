@@ -25,14 +25,20 @@ export class BotConfigService {
   async findAllBots() {
     return this.prisma.botInstance.findMany({
       orderBy: { createdAt: 'desc' },
-      include: { _count: { select: { commands: true, responses: true, menus: true } } },
+      include: {
+        _count: { select: { commands: true, responses: true, menus: true } },
+      },
     });
   }
 
   async findBot(id: string) {
     const bot = await this.prisma.botInstance.findUnique({
       where: { id },
-      include: { commands: { orderBy: { sortOrder: 'asc' } }, responses: true, menus: { include: { buttons: true } } },
+      include: {
+        commands: { orderBy: { sortOrder: 'asc' } },
+        responses: true,
+        menus: { include: { buttons: true } },
+      },
     });
     if (!bot) throw new NotFoundException(`Bot instance ${id} not found`);
     return bot;
@@ -47,6 +53,27 @@ export class BotConfigService {
     return this.prisma.botInstance.update({ where: { id }, data: dto });
   }
 
+  async updateScope(
+    botInstanceId: string,
+    scope: { groupIds?: string[]; userIds?: string[] },
+  ) {
+    const instance = await this.prisma.botInstance.findUnique({
+      where: { id: botInstanceId },
+    });
+    if (!instance) {
+      throw new NotFoundException(`Bot instance ${botInstanceId} not found`);
+    }
+
+    const currentMetadata =
+      (instance.metadata as Record<string, unknown>) || {};
+    return this.prisma.botInstance.update({
+      where: { id: botInstanceId },
+      data: {
+        metadata: { ...currentMetadata, scope } as any,
+      },
+    });
+  }
+
   async deleteBot(id: string) {
     await this.findBot(id);
     await this.prisma.botInstance.delete({ where: { id } });
@@ -56,7 +83,10 @@ export class BotConfigService {
   // Commands
   async findCommands(botId: string) {
     await this.findBot(botId);
-    return this.prisma.botCommand.findMany({ where: { botId }, orderBy: { sortOrder: 'asc' } });
+    return this.prisma.botCommand.findMany({
+      where: { botId },
+      orderBy: { sortOrder: 'asc' },
+    });
   }
 
   async createCommand(botId: string, dto: CreateBotCommandDto) {
@@ -64,14 +94,25 @@ export class BotConfigService {
     return this.prisma.botCommand.create({ data: { ...dto, botId } });
   }
 
-  async updateCommand(botId: string, commandId: string, dto: UpdateBotCommandDto) {
-    const cmd = await this.prisma.botCommand.findFirst({ where: { id: commandId, botId } });
+  async updateCommand(
+    botId: string,
+    commandId: string,
+    dto: UpdateBotCommandDto,
+  ) {
+    const cmd = await this.prisma.botCommand.findFirst({
+      where: { id: commandId, botId },
+    });
     if (!cmd) throw new NotFoundException(`Command ${commandId} not found`);
-    return this.prisma.botCommand.update({ where: { id: commandId }, data: dto });
+    return this.prisma.botCommand.update({
+      where: { id: commandId },
+      data: dto,
+    });
   }
 
   async deleteCommand(botId: string, commandId: string) {
-    const cmd = await this.prisma.botCommand.findFirst({ where: { id: commandId, botId } });
+    const cmd = await this.prisma.botCommand.findFirst({
+      where: { id: commandId, botId },
+    });
     if (!cmd) throw new NotFoundException(`Command ${commandId} not found`);
     await this.prisma.botCommand.delete({ where: { id: commandId } });
     return { deleted: true };
@@ -90,14 +131,25 @@ export class BotConfigService {
     return this.prisma.botResponse.create({ data: { ...dto, botId } });
   }
 
-  async updateResponse(botId: string, responseId: string, dto: UpdateBotResponseDto) {
-    const resp = await this.prisma.botResponse.findFirst({ where: { id: responseId, botId } });
+  async updateResponse(
+    botId: string,
+    responseId: string,
+    dto: UpdateBotResponseDto,
+  ) {
+    const resp = await this.prisma.botResponse.findFirst({
+      where: { id: responseId, botId },
+    });
     if (!resp) throw new NotFoundException(`Response ${responseId} not found`);
-    return this.prisma.botResponse.update({ where: { id: responseId }, data: dto });
+    return this.prisma.botResponse.update({
+      where: { id: responseId },
+      data: dto,
+    });
   }
 
   async deleteResponse(botId: string, responseId: string) {
-    const resp = await this.prisma.botResponse.findFirst({ where: { id: responseId, botId } });
+    const resp = await this.prisma.botResponse.findFirst({
+      where: { id: responseId, botId },
+    });
     if (!resp) throw new NotFoundException(`Response ${responseId} not found`);
     await this.prisma.botResponse.delete({ where: { id: responseId } });
     return { deleted: true };
@@ -106,7 +158,10 @@ export class BotConfigService {
   // Menus
   async findMenus(botId: string) {
     await this.findBot(botId);
-    return this.prisma.botMenu.findMany({ where: { botId }, include: { buttons: { orderBy: [{ row: 'asc' }, { col: 'asc' }] } } });
+    return this.prisma.botMenu.findMany({
+      where: { botId },
+      include: { buttons: { orderBy: [{ row: 'asc' }, { col: 'asc' }] } },
+    });
   }
 
   async createMenu(botId: string, dto: CreateBotMenuDto) {
@@ -115,26 +170,46 @@ export class BotConfigService {
   }
 
   async deleteMenu(botId: string, menuId: string) {
-    const menu = await this.prisma.botMenu.findFirst({ where: { id: menuId, botId } });
+    const menu = await this.prisma.botMenu.findFirst({
+      where: { id: menuId, botId },
+    });
     if (!menu) throw new NotFoundException(`Menu ${menuId} not found`);
     await this.prisma.botMenu.delete({ where: { id: menuId } });
     return { deleted: true };
   }
 
-  async addMenuButton(botId: string, menuId: string, dto: CreateBotMenuButtonDto) {
-    const menu = await this.prisma.botMenu.findFirst({ where: { id: menuId, botId } });
+  async addMenuButton(
+    botId: string,
+    menuId: string,
+    dto: CreateBotMenuButtonDto,
+  ) {
+    const menu = await this.prisma.botMenu.findFirst({
+      where: { id: menuId, botId },
+    });
     if (!menu) throw new NotFoundException(`Menu ${menuId} not found`);
     return this.prisma.botMenuButton.create({ data: { ...dto, menuId } });
   }
 
-  async updateMenuButton(botId: string, menuId: string, buttonId: string, dto: UpdateBotMenuButtonDto) {
-    const btn = await this.prisma.botMenuButton.findFirst({ where: { id: buttonId, menuId } });
+  async updateMenuButton(
+    botId: string,
+    menuId: string,
+    buttonId: string,
+    dto: UpdateBotMenuButtonDto,
+  ) {
+    const btn = await this.prisma.botMenuButton.findFirst({
+      where: { id: buttonId, menuId },
+    });
     if (!btn) throw new NotFoundException(`Button ${buttonId} not found`);
-    return this.prisma.botMenuButton.update({ where: { id: buttonId }, data: dto });
+    return this.prisma.botMenuButton.update({
+      where: { id: buttonId },
+      data: dto,
+    });
   }
 
   async deleteMenuButton(botId: string, menuId: string, buttonId: string) {
-    const btn = await this.prisma.botMenuButton.findFirst({ where: { id: buttonId, menuId } });
+    const btn = await this.prisma.botMenuButton.findFirst({
+      where: { id: buttonId, menuId },
+    });
     if (!btn) throw new NotFoundException(`Button ${buttonId} not found`);
     await this.prisma.botMenuButton.delete({ where: { id: buttonId } });
     return { deleted: true };
@@ -147,12 +222,25 @@ export class BotConfigService {
 
     // Snapshot the current config state
     const [commands, responses, menus] = await Promise.all([
-      this.prisma.botCommand.findMany({ where: { botId }, orderBy: { sortOrder: 'asc' } }),
-      this.prisma.botResponse.findMany({ where: { botId }, orderBy: { key: 'asc' } }),
-      this.prisma.botMenu.findMany({ where: { botId }, include: { buttons: true } }),
+      this.prisma.botCommand.findMany({
+        where: { botId },
+        orderBy: { sortOrder: 'asc' },
+      }),
+      this.prisma.botResponse.findMany({
+        where: { botId },
+        orderBy: { key: 'asc' },
+      }),
+      this.prisma.botMenu.findMany({
+        where: { botId },
+        include: { buttons: true },
+      }),
     ]);
 
-    const snapshot = { commands: commands.length, responses: responses.length, menus: menus.length };
+    const snapshot = {
+      commands: commands.length,
+      responses: responses.length,
+      menus: menus.length,
+    };
 
     // Read existing version history from metadata
     const existingHistory = (bot as any).configHistory ?? [];
@@ -161,7 +249,10 @@ export class BotConfigService {
       publishedAt: new Date().toISOString(),
       snapshot,
     };
-    const updatedHistory = [...(Array.isArray(existingHistory) ? existingHistory : []), versionEntry];
+    const updatedHistory = [
+      ...(Array.isArray(existingHistory) ? existingHistory : []),
+      versionEntry,
+    ];
 
     const updated = await this.prisma.botInstance.update({
       where: { id: botId },
@@ -171,7 +262,9 @@ export class BotConfigService {
       },
     });
 
-    this.logger.log(`Config published for bot ${botId}, version ${updated.configVersion}`);
+    this.logger.log(
+      `Config published for bot ${botId}, version ${updated.configVersion}`,
+    );
     return { version: updated.configVersion };
   }
 
@@ -180,7 +273,10 @@ export class BotConfigService {
     return { version: bot.configVersion };
   }
 
-  async heartbeat(instanceId: string, capabilities?: string[]): Promise<{
+  async heartbeat(
+    instanceId: string,
+    capabilities?: string[],
+  ): Promise<{
     id: string;
     name: string;
     platform: string;
@@ -200,7 +296,7 @@ export class BotConfigService {
       data: {
         isActive: true,
         metadata: {
-          ...(instance.metadata as Record<string, unknown> ?? {}),
+          ...((instance.metadata as Record<string, unknown>) ?? {}),
           lastHeartbeatAt: new Date().toISOString(),
           capabilities: capabilities ?? [],
         },
@@ -227,7 +323,11 @@ export class BotConfigService {
     for (let v = bot.configVersion; v >= 1; v--) {
       versions.push({
         version: v,
-        publishedAt: v === bot.configVersion ? (bot as any).updatedAt?.toISOString?.() ?? new Date().toISOString() : null,
+        publishedAt:
+          v === bot.configVersion
+            ? ((bot as any).updatedAt?.toISOString?.() ??
+              new Date().toISOString())
+            : null,
       });
     }
     return versions;
@@ -250,21 +350,36 @@ export class BotConfigService {
     await this.findBot(botId);
     const where: any = { botId };
     if (locale) where.locale = locale;
-    const records = await this.prisma.botResponse.findMany({ where, orderBy: { key: 'asc' } });
+    const records = await this.prisma.botResponse.findMany({
+      where,
+      orderBy: { key: 'asc' },
+    });
     return records.map((r) => this.mapToI18nDto(r));
   }
 
   async createI18nString(botId: string, dto: CreateI18nStringDto) {
     await this.findBot(botId);
     const record = await this.prisma.botResponse.create({
-      data: { key: dto.key, locale: dto.locale ?? 'en', text: dto.value, botId },
+      data: {
+        key: dto.key,
+        locale: dto.locale ?? 'en',
+        text: dto.value,
+        botId,
+      },
     });
     return this.mapToI18nDto(record);
   }
 
-  async updateI18nString(botId: string, stringId: string, dto: UpdateI18nStringDto) {
-    const record = await this.prisma.botResponse.findFirst({ where: { id: stringId, botId } });
-    if (!record) throw new NotFoundException(`I18n string ${stringId} not found`);
+  async updateI18nString(
+    botId: string,
+    stringId: string,
+    dto: UpdateI18nStringDto,
+  ) {
+    const record = await this.prisma.botResponse.findFirst({
+      where: { id: stringId, botId },
+    });
+    if (!record)
+      throw new NotFoundException(`I18n string ${stringId} not found`);
     const updated = await this.prisma.botResponse.update({
       where: { id: stringId },
       data: { text: dto.value },
@@ -273,13 +388,19 @@ export class BotConfigService {
   }
 
   async deleteI18nString(botId: string, stringId: string) {
-    const record = await this.prisma.botResponse.findFirst({ where: { id: stringId, botId } });
-    if (!record) throw new NotFoundException(`I18n string ${stringId} not found`);
+    const record = await this.prisma.botResponse.findFirst({
+      where: { id: stringId, botId },
+    });
+    if (!record)
+      throw new NotFoundException(`I18n string ${stringId} not found`);
     await this.prisma.botResponse.delete({ where: { id: stringId } });
     return { deleted: true };
   }
 
-  async batchUpdateI18nStrings(botId: string, items: BatchUpdateI18nStringDto[]) {
+  async batchUpdateI18nStrings(
+    botId: string,
+    items: BatchUpdateI18nStringDto[],
+  ) {
     await this.findBot(botId);
     const results = [];
     for (const item of items) {

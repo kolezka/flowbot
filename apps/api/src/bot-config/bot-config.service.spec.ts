@@ -99,7 +99,9 @@ describe('BotConfigService', () => {
       expect(result).toEqual([mockBot]);
       expect(prisma.botInstance.findMany).toHaveBeenCalledWith({
         orderBy: { createdAt: 'desc' },
-        include: { _count: { select: { commands: true, responses: true, menus: true } } },
+        include: {
+          _count: { select: { commands: true, responses: true, menus: true } },
+        },
       });
     });
   });
@@ -113,7 +115,9 @@ describe('BotConfigService', () => {
 
     it('should throw NotFoundException when bot not found', async () => {
       prisma.botInstance.findUnique.mockResolvedValue(null);
-      await expect(service.findBot('nonexistent')).rejects.toThrow(NotFoundException);
+      await expect(service.findBot('nonexistent')).rejects.toThrow(
+        NotFoundException,
+      );
     });
   });
 
@@ -138,7 +142,49 @@ describe('BotConfigService', () => {
 
     it('should throw NotFoundException if bot does not exist', async () => {
       prisma.botInstance.findUnique.mockResolvedValue(null);
-      await expect(service.updateBot('nonexistent', {} as any)).rejects.toThrow(NotFoundException);
+      await expect(service.updateBot('nonexistent', {} as any)).rejects.toThrow(
+        NotFoundException,
+      );
+    });
+  });
+
+  describe('updateScope', () => {
+    it('should update bot scope with groupIds and userIds', async () => {
+      const botWithMetadata = { ...mockBot, metadata: {} };
+      prisma.botInstance.findUnique.mockResolvedValue(botWithMetadata);
+      const scope = { groupIds: ['group-1'], userIds: ['user-1'] };
+      const updatedBot = {
+        ...botWithMetadata,
+        metadata: { scope },
+      };
+      prisma.botInstance.update.mockResolvedValue(updatedBot);
+      const result = await service.updateScope('bot-1', scope);
+      expect(result.metadata).toEqual({ scope });
+      expect(prisma.botInstance.update).toHaveBeenCalledWith({
+        where: { id: 'bot-1' },
+        data: { metadata: { scope } },
+      });
+    });
+
+    it('should merge scope with existing metadata', async () => {
+      const existingMetadata = { capabilities: ['chat'] };
+      const botWithMetadata = { ...mockBot, metadata: existingMetadata };
+      prisma.botInstance.findUnique.mockResolvedValue(botWithMetadata);
+      const scope = { groupIds: ['group-1'] };
+      const updatedBot = {
+        ...botWithMetadata,
+        metadata: { ...existingMetadata, scope },
+      };
+      prisma.botInstance.update.mockResolvedValue(updatedBot);
+      const result = await service.updateScope('bot-1', scope);
+      expect(result.metadata).toEqual({ ...existingMetadata, scope });
+    });
+
+    it('should throw NotFoundException if bot does not exist', async () => {
+      prisma.botInstance.findUnique.mockResolvedValue(null);
+      await expect(
+        service.updateScope('nonexistent', { groupIds: [] }),
+      ).rejects.toThrow(NotFoundException);
     });
   });
 
@@ -152,7 +198,9 @@ describe('BotConfigService', () => {
 
     it('should throw NotFoundException if bot does not exist', async () => {
       prisma.botInstance.findUnique.mockResolvedValue(null);
-      await expect(service.deleteBot('nonexistent')).rejects.toThrow(NotFoundException);
+      await expect(service.deleteBot('nonexistent')).rejects.toThrow(
+        NotFoundException,
+      );
     });
   });
 
@@ -171,7 +219,9 @@ describe('BotConfigService', () => {
 
     it('should throw if bot does not exist', async () => {
       prisma.botInstance.findUnique.mockResolvedValue(null);
-      await expect(service.findCommands('nonexistent')).rejects.toThrow(NotFoundException);
+      await expect(service.findCommands('nonexistent')).rejects.toThrow(
+        NotFoundException,
+      );
     });
   });
 
@@ -179,7 +229,11 @@ describe('BotConfigService', () => {
     it('should create a command for a bot', async () => {
       prisma.botInstance.findUnique.mockResolvedValue(mockBot);
       const dto = { command: '/help', description: 'Get help' };
-      prisma.botCommand.create.mockResolvedValue({ id: 'cmd-2', botId: 'bot-1', ...dto });
+      prisma.botCommand.create.mockResolvedValue({
+        id: 'cmd-2',
+        botId: 'bot-1',
+        ...dto,
+      });
       const result = await service.createCommand('bot-1', dto as any);
       expect(result.command).toBe('/help');
       expect(prisma.botCommand.create).toHaveBeenCalledWith({
@@ -199,7 +253,9 @@ describe('BotConfigService', () => {
 
     it('should throw NotFoundException if command not found', async () => {
       prisma.botCommand.findFirst.mockResolvedValue(null);
-      await expect(service.updateCommand('bot-1', 'cmd-x', {} as any)).rejects.toThrow(NotFoundException);
+      await expect(
+        service.updateCommand('bot-1', 'cmd-x', {} as any),
+      ).rejects.toThrow(NotFoundException);
     });
   });
 
@@ -213,7 +269,9 @@ describe('BotConfigService', () => {
 
     it('should throw NotFoundException if command not found', async () => {
       prisma.botCommand.findFirst.mockResolvedValue(null);
-      await expect(service.deleteCommand('bot-1', 'cmd-x')).rejects.toThrow(NotFoundException);
+      await expect(service.deleteCommand('bot-1', 'cmd-x')).rejects.toThrow(
+        NotFoundException,
+      );
     });
   });
 
@@ -251,7 +309,11 @@ describe('BotConfigService', () => {
     it('should create a response for a bot', async () => {
       prisma.botInstance.findUnique.mockResolvedValue(mockBot);
       const dto = { key: 'goodbye', text: 'Bye!', locale: 'en' };
-      prisma.botResponse.create.mockResolvedValue({ id: 'resp-2', botId: 'bot-1', ...dto });
+      prisma.botResponse.create.mockResolvedValue({
+        id: 'resp-2',
+        botId: 'bot-1',
+        ...dto,
+      });
       const result = await service.createResponse('bot-1', dto as any);
       expect(result.key).toBe('goodbye');
     });
@@ -262,13 +324,19 @@ describe('BotConfigService', () => {
       prisma.botResponse.findFirst.mockResolvedValue(mockResponse);
       const dto = { text: 'Updated!' };
       prisma.botResponse.update.mockResolvedValue({ ...mockResponse, ...dto });
-      const result = await service.updateResponse('bot-1', 'resp-1', dto as any);
+      const result = await service.updateResponse(
+        'bot-1',
+        'resp-1',
+        dto as any,
+      );
       expect(result.text).toBe('Updated!');
     });
 
     it('should throw NotFoundException if response not found', async () => {
       prisma.botResponse.findFirst.mockResolvedValue(null);
-      await expect(service.updateResponse('bot-1', 'resp-x', {} as any)).rejects.toThrow(NotFoundException);
+      await expect(
+        service.updateResponse('bot-1', 'resp-x', {} as any),
+      ).rejects.toThrow(NotFoundException);
     });
   });
 
@@ -282,7 +350,9 @@ describe('BotConfigService', () => {
 
     it('should throw NotFoundException if response not found', async () => {
       prisma.botResponse.findFirst.mockResolvedValue(null);
-      await expect(service.deleteResponse('bot-1', 'resp-x')).rejects.toThrow(NotFoundException);
+      await expect(service.deleteResponse('bot-1', 'resp-x')).rejects.toThrow(
+        NotFoundException,
+      );
     });
   });
 
@@ -300,7 +370,11 @@ describe('BotConfigService', () => {
     it('should create a menu for a bot', async () => {
       prisma.botInstance.findUnique.mockResolvedValue(mockBot);
       const dto = { name: 'Settings Menu' };
-      prisma.botMenu.create.mockResolvedValue({ id: 'menu-2', botId: 'bot-1', ...dto });
+      prisma.botMenu.create.mockResolvedValue({
+        id: 'menu-2',
+        botId: 'bot-1',
+        ...dto,
+      });
       const result = await service.createMenu('bot-1', dto as any);
       expect(result.name).toBe('Settings Menu');
     });
@@ -316,7 +390,9 @@ describe('BotConfigService', () => {
 
     it('should throw NotFoundException if menu not found', async () => {
       prisma.botMenu.findFirst.mockResolvedValue(null);
-      await expect(service.deleteMenu('bot-1', 'menu-x')).rejects.toThrow(NotFoundException);
+      await expect(service.deleteMenu('bot-1', 'menu-x')).rejects.toThrow(
+        NotFoundException,
+      );
     });
   });
 
@@ -325,7 +401,11 @@ describe('BotConfigService', () => {
     it('should add a button to a menu', async () => {
       prisma.botMenu.findFirst.mockResolvedValue(mockMenu);
       const dto = { label: 'New Button', action: 'url', row: 1, col: 0 };
-      prisma.botMenuButton.create.mockResolvedValue({ id: 'btn-2', menuId: 'menu-1', ...dto });
+      prisma.botMenuButton.create.mockResolvedValue({
+        id: 'btn-2',
+        menuId: 'menu-1',
+        ...dto,
+      });
       const result = await service.addMenuButton('bot-1', 'menu-1', dto as any);
       expect(result.label).toBe('New Button');
       expect(prisma.botMenuButton.create).toHaveBeenCalledWith({
@@ -335,7 +415,9 @@ describe('BotConfigService', () => {
 
     it('should throw NotFoundException if menu not found', async () => {
       prisma.botMenu.findFirst.mockResolvedValue(null);
-      await expect(service.addMenuButton('bot-1', 'menu-x', {} as any)).rejects.toThrow(NotFoundException);
+      await expect(
+        service.addMenuButton('bot-1', 'menu-x', {} as any),
+      ).rejects.toThrow(NotFoundException);
     });
   });
 
@@ -344,13 +426,20 @@ describe('BotConfigService', () => {
       prisma.botMenuButton.findFirst.mockResolvedValue(mockButton);
       const dto = { label: 'Updated Button' };
       prisma.botMenuButton.update.mockResolvedValue({ ...mockButton, ...dto });
-      const result = await service.updateMenuButton('bot-1', 'menu-1', 'btn-1', dto as any);
+      const result = await service.updateMenuButton(
+        'bot-1',
+        'menu-1',
+        'btn-1',
+        dto as any,
+      );
       expect(result.label).toBe('Updated Button');
     });
 
     it('should throw NotFoundException if button not found', async () => {
       prisma.botMenuButton.findFirst.mockResolvedValue(null);
-      await expect(service.updateMenuButton('bot-1', 'menu-1', 'btn-x', {} as any)).rejects.toThrow(NotFoundException);
+      await expect(
+        service.updateMenuButton('bot-1', 'menu-1', 'btn-x', {} as any),
+      ).rejects.toThrow(NotFoundException);
     });
   });
 
@@ -364,7 +453,9 @@ describe('BotConfigService', () => {
 
     it('should throw NotFoundException if button not found', async () => {
       prisma.botMenuButton.findFirst.mockResolvedValue(null);
-      await expect(service.deleteMenuButton('bot-1', 'menu-1', 'btn-x')).rejects.toThrow(NotFoundException);
+      await expect(
+        service.deleteMenuButton('bot-1', 'menu-1', 'btn-x'),
+      ).rejects.toThrow(NotFoundException);
     });
   });
 
@@ -375,7 +466,10 @@ describe('BotConfigService', () => {
       prisma.botCommand.findMany.mockResolvedValue([mockCommand]);
       prisma.botResponse.findMany.mockResolvedValue([mockResponse]);
       prisma.botMenu.findMany.mockResolvedValue([mockMenu]);
-      prisma.botInstance.update.mockResolvedValue({ ...mockBot, configVersion: 2 });
+      prisma.botInstance.update.mockResolvedValue({
+        ...mockBot,
+        configVersion: 2,
+      });
       const result = await service.publishConfig('bot-1');
       expect(result).toEqual({ version: 2 });
       expect(prisma.botInstance.update).toHaveBeenCalledWith(
@@ -388,7 +482,9 @@ describe('BotConfigService', () => {
 
     it('should throw NotFoundException if bot not found', async () => {
       prisma.botInstance.findUnique.mockResolvedValue(null);
-      await expect(service.publishConfig('nonexistent')).rejects.toThrow(NotFoundException);
+      await expect(service.publishConfig('nonexistent')).rejects.toThrow(
+        NotFoundException,
+      );
     });
   });
 
@@ -401,7 +497,9 @@ describe('BotConfigService', () => {
 
     it('should throw NotFoundException if bot not found', async () => {
       prisma.botInstance.findUnique.mockResolvedValue(null);
-      await expect(service.getConfigVersion('nonexistent')).rejects.toThrow(NotFoundException);
+      await expect(service.getConfigVersion('nonexistent')).rejects.toThrow(
+        NotFoundException,
+      );
     });
   });
 });

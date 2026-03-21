@@ -1,4 +1,11 @@
-import { IsString, IsOptional, IsBoolean, IsInt, Min } from 'class-validator';
+import {
+  IsString,
+  IsOptional,
+  IsBoolean,
+  IsInt,
+  Min,
+  IsArray,
+} from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
 // Bot Instance DTOs
@@ -62,7 +69,10 @@ export class UpdateBotMenuButtonDto {
 // I18n String DTOs
 export class CreateI18nStringDto {
   @ApiProperty() @IsString() key: string;
-  @ApiPropertyOptional({ default: 'en' }) @IsOptional() @IsString() locale?: string;
+  @ApiPropertyOptional({ default: 'en' })
+  @IsOptional()
+  @IsString()
+  locale?: string;
   @ApiProperty() @IsString() value: string;
 }
 
@@ -74,4 +84,25 @@ export class BatchUpdateI18nStringDto {
   @ApiProperty() @IsString() key: string;
   @ApiProperty() @IsString() locale: string;
   @ApiProperty() @IsString() value: string;
+}
+
+// Bot Scope DTO
+export class BotScopeDto {
+  @ApiPropertyOptional({
+    type: [String],
+    description: 'Group/chat IDs to respond to',
+  })
+  @IsOptional()
+  @IsArray()
+  @IsString({ each: true })
+  groupIds?: string[];
+
+  @ApiPropertyOptional({
+    type: [String],
+    description: 'User IDs to respond to',
+  })
+  @IsOptional()
+  @IsArray()
+  @IsString({ each: true })
+  userIds?: string[];
 }
