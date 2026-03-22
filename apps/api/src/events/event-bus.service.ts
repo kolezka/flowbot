@@ -1,6 +1,12 @@
 import { Injectable } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
-import type { ModerationEvent, AutomationEvent, SystemEvent, QrAuthEvent } from './event-types';
+import type {
+  ModerationEvent,
+  AutomationEvent,
+  SystemEvent,
+  QrAuthEvent,
+  ExecutionUpdateEvent,
+} from './event-types';
 
 @Injectable()
 export class EventBusService {
@@ -38,5 +44,14 @@ export class EventBusService {
 
   onQrAuth(handler: (event: QrAuthEvent) => void): void {
     this.eventEmitter.on('qr-auth', handler);
+  }
+
+  emitFlowExecution(event: ExecutionUpdateEvent): void {
+    this.eventEmitter.emit('flow:execution:update', event);
+    this.eventEmitter.emit(`flow:execution:update:${event.executionId}`, event);
+  }
+
+  onFlowExecution(handler: (event: ExecutionUpdateEvent) => void): void {
+    this.eventEmitter.on('flow:execution:update', handler);
   }
 }

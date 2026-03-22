@@ -1,12 +1,24 @@
 export interface ModerationEvent {
-  type: 'warning.created' | 'warning.deactivated' | 'member.banned' | 'member.muted' | 'member.unbanned' | 'log.created';
+  type:
+    | 'warning.created'
+    | 'warning.deactivated'
+    | 'member.banned'
+    | 'member.muted'
+    | 'member.unbanned'
+    | 'log.created';
   groupId: string;
   data: Record<string, unknown>;
   timestamp: Date;
 }
 
 export interface AutomationEvent {
-  type: 'broadcast.created' | 'broadcast.completed' | 'broadcast.failed' | 'job.started' | 'job.completed' | 'job.failed';
+  type:
+    | 'broadcast.created'
+    | 'broadcast.completed'
+    | 'broadcast.failed'
+    | 'job.started'
+    | 'job.completed'
+    | 'job.failed';
   jobId: string;
   data: Record<string, unknown>;
   timestamp: Date;
@@ -21,10 +33,25 @@ export interface SystemEvent {
 export interface QrAuthEvent {
   type: 'qr' | 'connected' | 'error' | 'timeout';
   connectionId: string;
-  qr?: string;           // base64 QR code
+  qr?: string; // base64 QR code
   pushName?: string;
   phoneNumber?: string;
   error?: string;
 }
 
-export type AppEvent = ModerationEvent | AutomationEvent | SystemEvent | QrAuthEvent;
+export interface ExecutionUpdateEvent {
+  executionId: string;
+  nodeId: string;
+  status: 'running' | 'completed' | 'failed' | 'skipped';
+  variables?: Record<string, unknown>;
+  output?: unknown;
+  duration?: number;
+  error?: string;
+}
+
+export type AppEvent =
+  | ModerationEvent
+  | AutomationEvent
+  | SystemEvent
+  | QrAuthEvent
+  | ExecutionUpdateEvent;
