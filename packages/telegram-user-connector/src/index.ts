@@ -12,6 +12,7 @@ export type { TelegramUserConnectorConfig } from './connector.js'
 // Action registrars
 export { registerMessagingActions } from './actions/messaging.js'
 export { registerUserActions } from './actions/user-actions.js'
+export { registerFlowActions } from './actions/flow-actions.js'
 
 // Schemas
 export {

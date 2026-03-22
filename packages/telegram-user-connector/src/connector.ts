@@ -3,6 +3,7 @@ import type { Logger } from 'pino'
 import type { ITelegramUserTransport } from './sdk/types.js'
 import { registerMessagingActions } from './actions/messaging.js'
 import { registerUserActions } from './actions/user-actions.js'
+import { registerFlowActions } from './actions/flow-actions.js'
 
 export interface TelegramUserConnectorConfig {
   sessionString: string
@@ -66,5 +67,6 @@ export class TelegramUserConnector {
     if (this.transport === null) return
     registerMessagingActions(this.registry, this.transport)
     registerUserActions(this.registry, this.transport)
+    registerFlowActions(this.registry, this.transport)
   }
 }
