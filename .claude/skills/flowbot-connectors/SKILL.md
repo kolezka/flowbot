@@ -1,6 +1,6 @@
 ---
 name: flowbot-connectors
-description: Use when adding a new platform connector, creating a pool for an existing connector, modifying connector behavior, adding actions or events, or asking about the connector architecture. Triggers on connector lifecycle, pool setup, action registration, event forwarding, scope filtering, or worker thread patterns.
+description: Use when implementing a new platform integration, editing or updating an existing connector, reviewing connector PRs, creating a pool, adding actions or events, or asking about the connector architecture. Triggers on connector lifecycle, pool setup, action registration, event forwarding, scope filtering, worker thread patterns, or code review of connector packages.
 ---
 
 # Flowbot Connector Architecture
@@ -220,6 +220,43 @@ Pool env vars: `DATABASE_URL` (required), `API_URL`, `POOL_HOST`, `POOL_PORT`, `
 ## Flow Engine Dispatch
 
 When the flow engine executes actions targeting a connector, it dispatches via `apps/trigger/src/lib/flow-engine/actions.ts`. Add a case for the new platform's action prefix there. Bot actions route through the connector's `/execute` endpoint; `user_*` prefixed actions route through MTProto connections instead.
+
+## Editing an Existing Connector
+
+When modifying a connector, respect the existing layering:
+
+- **Adding actions** — new file in `actions/`, register in `connector.ts`'s `registerActions()`. Do NOT add actions inline in `connector.ts`.
+- **Changing event mapping** — edit `events/mapper.ts`. Mappers return `FlowTriggerEvent | null` (null = skip). Do NOT throw from mappers.
+- **Changing connect/disconnect lifecycle** — order matters: transport init → `registerActions()` → `registerEventListeners()` → `transport.start()`. Scope middleware (if present) installs before event listeners.
+- **Changing transport** — update `sdk/types.ts` interface first, then impl. Fake transport must stay in sync for tests.
+- **Updating the shell app** — only touches `apps/<platform>/src/main.ts` and `config.ts`. Shell must stay thin — no business logic.
+
+## Reviewing Connector Code
+
+### Invariants to Verify
+
+| Invariant | Why |
+|-----------|-----|
+| Actions registered in `connect()`, not constructor | Transport not available until connect |
+| Scope middleware installed before event listeners | Late install means unfiltered events leak through |
+| Event mappers filter bot's own messages (`return null`) | Prevents self-triggering loops |
+| Mappers return `null` to skip, never throw | Throwing breaks the listener; null filters gracefully |
+| `ActionRegistry` rejects duplicate action names | Check across all action files for collisions |
+| All imports use `.js` extensions | ESM requirement — `.ts` extensions fail at runtime |
+| Valibot `v.picklist()` values use `as const` | Without it, type inference fails silently |
+| Transport injection preserved in config interface | Required for testability with fake transports |
+| `communityId: null` for DMs is intentional | Flow rules checking communityId won't match DMs — by design |
+| Empty/undefined scope means "allow all" | `{}`, `undefined`, and `{ groupIds: [] }` all pass |
+
+### Review Checklist by PR Type
+
+**Connector class changes** — verify lifecycle order, null guards on transport, logger includes `botInstanceId`, all action registration functions still called.
+
+**New action** — schema in `schemas.ts` (Valibot), handler in action file, registration in `registerActions()`, corresponding transport method exists, test covers valid/invalid params + execution.
+
+**Event mapping changes** — mapper returns complete `FlowTriggerEvent` (platform, eventType, botInstanceId required), bot messages filtered, partial objects fetched before mapping (Discord), listener has try-catch with error logging.
+
+**Pool changes** — `toWorkerData` shape matches what `worker.ts` destructures, `getInstances` query filters by platform + `isActive: true`, reconcile interval defaults to 30s.
 
 ## Scaffolding
 
