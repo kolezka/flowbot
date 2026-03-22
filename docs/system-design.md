@@ -217,7 +217,7 @@ flowchart TB
         TYPE -->|condition/switch| BRANCH[Evaluate condition<br/>choose branch]
         TYPE -->|send_message/ban/etc| ACTION[Queue action for dispatch]
         TYPE -->|delay/set_variable| INTERNAL[Execute internally]
-        TYPE -->|user_*| USERACT[Queue for MTProto dispatch]
+        TYPE -->|user_*| USERACT[Queue for pool dispatch]
         BRANCH --> CACHE
         ACTION --> CACHE
         INTERNAL --> CACHE
@@ -227,10 +227,8 @@ flowchart TB
     end
 
     DISPATCH[Dispatch queued actions]
-    DISPATCH --> BOT[POST /execute to bot connector<br/>for bot actions]
-    DISPATCH --> USER[dispatchUserAction via GramJS<br/>for user_* actions]
-    BOT --> DONE
-    USER --> DONE
+    DISPATCH --> POOL[POST /execute to connector pool<br/>for all actions (bot + user_*)]
+    POOL --> DONE
     DONE[Update FlowExecution<br/>status: completed/failed<br/>store nodeResults]
 ```
 

@@ -484,7 +484,7 @@ graph LR
 |-----|----------|
 | Shared | `DATABASE_URL` |
 | Connector Pool | `API_URL`, `POOL_HOST`, `POOL_PORT`, `TG_API_ID`, `TG_API_HASH` (for Telegram user) |
-| Trigger | `DATABASE_URL`, `TG_CLIENT_API_ID`, `TG_CLIENT_API_HASH`, `TG_CLIENT_SESSION` |
+| Trigger | `DATABASE_URL`, `TG_CLIENT_API_ID`, `TG_CLIENT_API_HASH`, `TG_CLIENT_SESSION`, `CONNECTOR_POOL_URL` |
 | API | `DATABASE_URL`, `PORT`, `FRONTEND_URL` |
 | Frontend | `NEXT_PUBLIC_API_URL` |
 

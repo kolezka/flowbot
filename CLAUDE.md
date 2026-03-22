@@ -119,7 +119,7 @@ Schema at `packages/db/prisma/schema.prisma`. After changes: `pnpm db generate &
 |-----|----------|
 | Shared | `DATABASE_URL` |
 | Connector Pool | `DATABASE_URL`, `API_URL`, `POOL_HOST`, `POOL_PORT` (default 3010), `TG_API_ID`, `TG_API_HASH` (for telegram-user), `LOG_LEVEL`, `ENABLE_TELEGRAM_BOT`, `ENABLE_TELEGRAM_USER`, `ENABLE_WHATSAPP_USER`, `ENABLE_DISCORD_BOT` (all default true) |
-| Trigger | `DATABASE_URL`, `TG_CLIENT_API_ID`, `TG_CLIENT_API_HASH`, `TG_CLIENT_SESSION`, `TELEGRAM_BOT_API_URL` |
+| Trigger | `DATABASE_URL`, `TG_CLIENT_API_ID`, `TG_CLIENT_API_HASH`, `TG_CLIENT_SESSION`, `TELEGRAM_BOT_API_URL`, `CONNECTOR_POOL_URL` (default `http://localhost:3010`) |
 | API | `DATABASE_URL`, `PORT`, `FRONTEND_URL` |
 | Frontend | `NEXT_PUBLIC_API_URL` |
 
@@ -166,6 +166,8 @@ Strict mode. `noUncheckedIndexedAccess`, `noImplicitOverride`, `experimentalDeco
 ### User Account Actions (user_* prefix)
 - Nodes prefixed with `user_` require MTProto transport via PlatformConnection
 - Dispatched through `dispatchUserAction()` in `lib/flow-engine/user-actions.ts`
-- Transport cached per connection ID in `lib/flow-engine/connection-transport.ts`
-- Never routed through Bot API — always direct GramJS via `getClient()`
+- Routed via HTTP `POST /execute` to the connector pool (same as bot actions)
+- The pool routes to the correct telegram-user worker by `connectionId` as `instanceId`
+- 18 `user_*` actions registered in `packages/telegram-user-connector/src/actions/flow-actions.ts`
+- `CONNECTOR_POOL_URL` env var (default `http://localhost:3010`) configures the pool endpoint
 - Flow validation enforces `platformConnectionId` or per-node `connectionOverride`
