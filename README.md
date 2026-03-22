@@ -13,8 +13,8 @@
   <img src="https://img.shields.io/badge/NestJS-11-e0234e?logo=nestjs&logoColor=white" alt="NestJS" />
   <img src="https://img.shields.io/badge/Prisma-7-2D3748?logo=prisma&logoColor=white" alt="Prisma" />
   <img src="https://img.shields.io/badge/Trigger.dev-v3-7C3AED?logo=data:image/svg+xml;base64,PHN2Zz48L3N2Zz4=&logoColor=white" alt="Trigger.dev" />
-  <img src="https://img.shields.io/badge/PostgreSQL-18-4169E1?logo=postgresql&logoColor=white" alt="PostgreSQL" />
-  <img src="https://img.shields.io/badge/Tests-791-brightgreen" alt="Tests" />
+  <img src="https://img.shields.io/badge/PostgreSQL-16-4169E1?logo=postgresql&logoColor=white" alt="PostgreSQL" />
+  <img src="https://img.shields.io/badge/Tests-1085-brightgreen" alt="Tests" />
 </p>
 
 ## What is Flowbot?
@@ -43,7 +43,7 @@ graph TB
 
     subgraph API["API"]
         NEST["NestJS 11
-        130+ endpoints / 19 modules
+        ~158 endpoints / 20+ modules
         WebSocket + SSE"]
     end
 
@@ -67,7 +67,7 @@ graph TB
     end
 
     DB[("PostgreSQL
-    Prisma 7 / 35+ models")]
+    Prisma 7 / 35 models")]
 
     FE <-->|"REST + WS"| NEST
     NEST --> DB
@@ -291,20 +291,20 @@ graph TB
 | Workspace | Stack | Tests | Role |
 |-----------|-------|-------|------|
 | `apps/connector-pool` | Hono, Reconciler, worker threads | — | Unified pool for all platform connectors |
-| `apps/api` | NestJS 11 | 238 | REST API + WebSocket + SSE |
+| `apps/api` | NestJS 11 | 238 | REST API + WebSocket + SSE (~158 endpoints) |
 | `apps/frontend` | Next.js 16, React 19 | Playwright | Admin dashboard (44 pages) |
-| `apps/trigger` | Trigger.dev v3 | Vitest | Flow engine + 7 background tasks |
+| `apps/trigger` | Trigger.dev v3 | 294 | Flow engine + 7 background tasks |
 | `packages/platform-kit` | Hono, Valibot | 104 | ActionRegistry, CircuitBreaker, EventForwarder, Reconciler |
 | `packages/telegram-bot-connector` | grammY, Valibot | 106 | Bot API actions, events, features |
 | `packages/telegram-user-connector` | GramJS, Valibot | 95 | MTProto user-account actions |
 | `packages/discord-bot-connector` | discord.js, Valibot | 143 | Gateway actions, events, features |
 | `packages/whatsapp-user-connector` | Baileys, Valibot | 105 | Multi-device actions, events, QR auth |
-| `packages/db` | Prisma 7 | — | Schema + client (35+ models) |
-| `packages/flow-shared` | TypeScript | — | 150+ node type registry |
+| `packages/db` | Prisma 7 | — | Schema + client (35 models) |
+| `packages/flow-shared` | TypeScript | — | 172 node type registry |
 
 ## Visual Flow Builder
 
-170+ node types for cross-platform automations:
+172 node types for cross-platform automations:
 
 <details>
 <summary>Flow node categories</summary>
@@ -379,12 +379,14 @@ erDiagram
 
 | Domain | Models |
 |--------|--------|
-| Identity | `PlatformAccount`, `UserIdentity` |
+| Identity | `UserIdentity`, `PlatformAccount`, `User` (legacy) |
 | Communities | `Community`, `CommunityConfig`, `CommunityTelegramConfig`, `CommunityDiscordConfig`, `CommunityMember` |
 | Connections | `PlatformConnection`, `PlatformConnectionLog` |
-| Analytics | `CommunityAnalyticsSnapshot`, `ReputationScore` |
+| Analytics | `CommunityAnalyticsSnapshot`, `GroupAnalyticsSnapshot` (legacy), `ReputationScore` |
 | Broadcast | `BroadcastMessage`, `CrossPostTemplate` |
 | Moderation | `Warning`, `ModerationLog`, `ScheduledMessage` |
+| Legacy Groups | `ManagedGroup`, `GroupConfig`, `GroupMember` |
+| Legacy Client | `ClientLog`, `ClientSession` |
 | Flow Engine | `FlowDefinition`, `FlowFolder`, `FlowExecution`, `FlowVersion`, `UserFlowContext`, `FlowEvent` |
 | Bot Config | `BotInstance`, `BotCommand`, `BotResponse`, `BotMenu`, `BotMenuButton` |
 | Webhooks | `WebhookEndpoint` |
@@ -393,16 +395,21 @@ erDiagram
 
 | Module | Endpoints | Purpose |
 |--------|-----------|---------|
-| `auth` | `/api/auth/*` | JWT login, token verification |
+| `auth` | `/api/auth/*` | HMAC login, token verification |
 | `identity` | `/api/accounts/*`, `/api/identities/*` | Platform accounts, cross-platform linking |
 | `communities` | `/api/communities/*` | CRUD, config, members, warnings, logs |
-| `connections` | `/api/connections/*` | Platform connections, auth flows |
+| `connections` | `/api/connections/*` | Platform connections, auth flows, QR auth |
+| `users` | `/api/users/*` | Legacy user list, stats, profiles, banning |
+| `moderation` | `/api/groups/*`, `/api/warnings/*`, `/api/moderation/*` | Legacy groups, members, warnings, scheduled messages, crosspost |
 | `broadcast` | `/api/broadcast/*` | Multi-platform broadcast |
-| `flows` | `/api/flows/*` | Flow CRUD, versioning, execution |
+| `flows` | `/api/flows/*` | Flow CRUD, versioning, execution, analytics |
 | `webhooks` | `/api/webhooks/*` | Webhook endpoints |
-| `bot-config` | `/api/bot-config/*` | Bot instances, heartbeat |
-| `reputation` | `/api/reputation/*` | Reputation scores |
-| `analytics` | `/api/analytics/*` | Community analytics |
+| `bot-config` | `/api/bot-config/*` | Bot instances, commands, responses, menus, i18n |
+| `reputation` | `/api/reputation/*` | Reputation scores, leaderboards |
+| `analytics` | `/api/analytics/*` | Community time-series analytics |
+| `automation` | `/api/automation/*` | TG client health, jobs, logs |
+| `tg-client` | `/api/tg-client/*` | Legacy MTProto sessions, auth |
+| `system` | `/api/system/*` | System status |
 | `events` | `/api/events/*` | WebSocket + SSE streams |
 
 ## Background Tasks
@@ -452,7 +459,7 @@ pnpm telegram-bot-connector test     # 106 tests
 pnpm telegram-user-connector test    # 95 tests
 pnpm discord-bot-connector test      # 143 tests
 pnpm whatsapp-user-connector test    # 105 tests
-pnpm trigger test                    # Vitest
+pnpm trigger test                    # 294 tests (Vitest)
 ```
 
 ### Startup Order
@@ -483,14 +490,14 @@ graph LR
 | App | Required |
 |-----|----------|
 | Shared | `DATABASE_URL` |
-| Connector Pool | `API_URL`, `POOL_HOST`, `POOL_PORT`, `TG_API_ID`, `TG_API_HASH` (for Telegram user) |
-| Trigger | `DATABASE_URL`, `TG_CLIENT_API_ID`, `TG_CLIENT_API_HASH`, `TG_CLIENT_SESSION`, `CONNECTOR_POOL_URL` |
+| Connector Pool | `DATABASE_URL`, `API_URL`, `POOL_HOST`, `POOL_PORT`, `TG_API_ID`, `TG_API_HASH` (for Telegram user) |
+| Trigger | `DATABASE_URL`, `TG_CLIENT_API_ID`, `TG_CLIENT_API_HASH`, `TG_CLIENT_SESSION`, `TELEGRAM_BOT_API_URL`, `CONNECTOR_POOL_URL` |
 | API | `DATABASE_URL`, `PORT`, `FRONTEND_URL` |
 | Frontend | `NEXT_PUBLIC_API_URL` |
 
 ## Security
 
-- **Auth** — JWT bearer tokens, `@Public()` decorator for open routes
+- **Auth** — HMAC-SHA256 bearer tokens, `@Public()` decorator for open routes
 - **CORS** — restricted to `FRONTEND_URL`
 - **Input Validation** — Valibot schemas on every connector action, class-validator on API
 - **CircuitBreaker** — generic breaker in platform-kit prevents cascading failures

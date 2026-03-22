@@ -1,6 +1,6 @@
-# apps/trigger, packages/telegram-transport, packages/discord-transport & packages/flow-shared
+# apps/trigger & packages/flow-shared
 
-> Auto-generated: 2026-03-19
+> Auto-generated: 2026-03-22
 
 ---
 
@@ -12,30 +12,21 @@
    - [Library Modules](#library-modules)
    - [Flow Engine](#flow-engine)
    - [Tests](#appstrigger-tests)
-3. [packages/telegram-transport](#packagestelegram-transport)
-   - [Transport Layer](#transport-layer)
-   - [Circuit Breaker](#circuit-breaker)
-   - [Action System](#action-system)
-   - [Tests](#telegram-transport-tests)
-4. [packages/discord-transport](#packagesdiscord-transport)
-   - [Transport Layer](#discord-transport-layer)
-   - [Circuit Breaker](#discord-circuit-breaker)
-   - [Tests](#discord-transport-tests)
-5. [packages/flow-shared](#packagesflow-shared)
+3. [packages/flow-shared](#packagesflow-shared)
    - [Node Registry](#node-registry)
-6. [Environment Variables](#environment-variables)
-7. [Scripts & Commands](#scripts--commands)
+4. [Environment Variables](#environment-variables)
+5. [Scripts & Commands](#scripts--commands)
 
 ---
 
 ## Overview
 
-These workspaces work together to execute background jobs and provide transport abstractions for the Flowbot platform:
+These workspaces handle background job processing and shared flow definitions:
 
-- **`@flowbot/trigger`** (`apps/trigger`) -- A Trigger.dev v3 worker with 7 tasks: broadcasts, cross-posts, scheduled messages, analytics snapshots, health checks, flow execution, and flow event cleanup. Contains the full flow engine with cross-platform action dispatch.
-- **`@flowbot/telegram-transport`** (`packages/telegram-transport`) -- Transport abstraction over GramJS, circuit breaker, action runner with retry/backoff, and Valibot-validated action executors.
-- **`@flowbot/discord-transport`** (`packages/discord-transport`) -- Transport abstraction over discord.js, circuit breaker, and typed interfaces for Discord operations (messaging, moderation, channels, threads, events, interactions).
+- **`@flowbot/trigger`** (`apps/trigger`) -- A Trigger.dev v3 worker with 7 tasks: broadcasts, cross-posts, scheduled messages, analytics snapshots, health checks, flow execution, and flow event cleanup. Contains the full flow engine with cross-platform action dispatch via the connector pool.
 - **`@flowbot/flow-shared`** (`packages/flow-shared`) -- Shared node type definitions (172 node types across Telegram, Discord, General, and Unified categories) used by both the flow engine and the frontend flow editor.
+
+> **Note:** Transport packages (`telegram-transport`, `discord-transport`) have been replaced by connector packages. See [Connector Pool & Packages](./apps-connectors.md) for the current architecture.
 
 ---
 
@@ -49,7 +40,7 @@ These workspaces work together to execute background jobs and provide transport 
 | Type | ESM (`"type": "module"`) |
 | Node | `>=20.0.0` |
 | Trigger.dev SDK | `^3.0.0` |
-| Key deps | `@flowbot/telegram-transport`, `@flowbot/db`, `telegram` (GramJS), `pino` |
+| Key deps | `@flowbot/db`, `pino` |
 
 ### Trigger.dev Configuration
 
@@ -145,11 +136,7 @@ Singleton Prisma client factory using `@flowbot/db`.
 
 #### `src/lib/telegram.ts`
 
-Singleton factory providing:
-- `getTelegramTransport()` -- Connected `GramJsTransport` instance
-- `getCircuitBreaker()` -- Wraps transport (threshold: 5, reset: 30s, window: 60s)
-- `getActionRunner()` -- Wraps circuit breaker (maxRetries: 3, backoff: 1s-60s)
-- `getTelegramLogger()` -- Pino logger with session field redaction
+Legacy singleton factory for direct GramJS transport (used by broadcast/cross-post tasks that predate pool dispatch).
 
 #### `src/lib/manager-bot.ts`
 
@@ -210,12 +197,14 @@ Persistent per-user flow context stored in `UserFlowContext` model:
 
 #### Dispatcher (`dispatcher.ts`)
 
-Cross-platform action dispatch after flow execution:
+Cross-platform action dispatch after flow execution. All actions are dispatched via HTTP `POST /execute` to the connector pool:
 
-- **Telegram dispatch:** Via MTProto (GramJS transport) or Bot API (HTTP to bot instance)
-- **Discord dispatch:** Via Discord bot HTTP API (`/api/execute-action`)
+- **Bot actions:** Routed to the appropriate bot connector worker by `botInstanceId`
+- **User actions (`user_*` prefix):** Routed to the telegram-user connector worker by `connectionId` as `instanceId`
+- **Discord dispatch:** Routed to discord-bot connector worker by `botInstanceId`
 - **Unified dispatch:** Cross-platform actions (`unified_send_message`, `unified_ban_user`, etc.) dispatched to one or both platforms based on `transportConfig.platform`
-- **Transport modes:** `mtproto` (default), `bot_api`, `auto` (tries bot API, falls back to MTProto)
+
+**Pool endpoint:** `CONNECTOR_POOL_URL` env var (default `http://localhost:3010`)
 
 #### Advanced Nodes (`advanced-nodes.ts`)
 
@@ -268,124 +257,6 @@ Test files in `apps/trigger/src/__tests__/`:
 
 ---
 
-## packages/telegram-transport
-
-### Transport Package Details
-
-| Field | Value |
-|-------|-------|
-| Name | `@flowbot/telegram-transport` |
-| Type | ESM (`"type": "module"`) |
-| Node | `>=20.0.0` |
-| Entry | `./src/index.ts` |
-| Key deps | `telegram` (GramJS), `valibot`, `pino` |
-
-### Transport Layer
-
-#### `ITelegramTransport` Interface
-
-```ts
-interface ITelegramTransport {
-  connect(): Promise<void>
-  disconnect(): Promise<void>
-  isConnected(): boolean
-  sendMessage(peer, text, options?): Promise<MessageResult>
-  forwardMessage(fromPeer, toPeer, messageIds, options?): Promise<MessageResult[]>
-  resolveUsername(username): Promise<PeerInfo>
-}
-```
-
-#### `GramJsTransport`
-
-Production implementation backed by GramJS `TelegramClient`. Wraps all calls with error handling, converts to `TransportError`. Extended with methods for photos, videos, documents, stickers, voice, audio, animations, locations, contacts, venues, dice, polls, message editing/pinning, user management, chat management, inline queries, invoices, forum topics, media groups, and more.
-
-#### `FakeTelegramTransport`
-
-In-memory test double with auto-incrementing IDs and assertion helpers.
-
-### Circuit Breaker
-
-States: `CLOSED` -> `OPEN` -> `HALF_OPEN`
-
-| Config | Default | Description |
-|--------|---------|-------------|
-| `failureThreshold` | 5 | Failures to trip |
-| `resetTimeoutMs` | 30,000 | Wait before probe |
-| `windowMs` | 60,000 | Sliding failure window |
-
-### Action System
-
-**ActionType enum:** `SEND_MESSAGE`, `FORWARD_MESSAGE`, `SEND_WELCOME_DM`, `CROSS_POST`, `BROADCAST`
-
-**ActionRunner:** Orchestrates action execution with retries, idempotency caching, and error classification (`FATAL`, `AUTH_EXPIRED`, `RATE_LIMITED`, `RETRYABLE`).
-
-**Executors:** `executeSendMessage`, `executeForwardMessage`, `executeSendWelcomeDm`, `executeCrossPost` (100ms stagger), `executeBroadcast` (200ms stagger).
-
-### Telegram Transport Tests
-
-| File | Coverage |
-|------|----------|
-| `circuit-breaker.test.ts` | State transitions, failure counting, windowed expiry |
-| `action-runner.test.ts` | Retry, fatal/auth errors, idempotency, backoff |
-| `executors.test.ts` | Send, broadcast, cross-post executors |
-
----
-
-## packages/discord-transport
-
-### Discord Transport Package Details
-
-| Field | Value |
-|-------|-------|
-| Name | `@flowbot/discord-transport` |
-| Type | ESM (`"type": "module"`) |
-| Node | `>=20.0.0` |
-| Entry | `./src/index.ts` |
-| Key dep | `discord.js` (^14.16.0) |
-
-### Discord Transport Layer
-
-#### `IDiscordTransport` Interface
-
-Comprehensive Discord operations interface:
-
-**Connection:** `connect()`, `disconnect()`, `isConnected()`
-
-**Messaging:** `sendMessage()`, `sendEmbed()`, `sendDM()`, `editMessage()`, `deleteMessage()`, `pinMessage()`, `unpinMessage()`
-
-**Reactions:** `addReaction()`, `removeReaction()`
-
-**Member management:** `banMember()`, `kickMember()`, `timeoutMember()`, `addRole()`, `removeRole()`, `setNickname()`
-
-**Channel management:** `createChannel()`, `deleteChannel()`, `createThread()`, `sendThreadMessage()`
-
-**Guild management:** `createRole()`, `createInvite()`, `moveMember()`, `createScheduledEvent()`
-
-**Interactions (SP2):** `replyInteraction()`, `showModal()`, `sendComponents()`, `editInteraction()`, `deferReply()`
-
-**Channel permissions & Forums (SP2):** `setChannelPermissions()`, `createForumPost()`, `registerCommands()`
-
-#### `DiscordJsTransport`
-
-Production implementation backed by discord.js `Client`.
-
-#### `FakeDiscordTransport`
-
-In-memory test double with tracking for: sent messages, embeds, DMs, edits, deletes, pins, reactions, bans, kicks, timeouts, role changes, nickname changes, created channels/threads/roles/invites, moved members, and scheduled events.
-
-### Discord Circuit Breaker
-
-Same pattern as Telegram transport: `CircuitBreaker` decorator with `CLOSED`/`OPEN`/`HALF_OPEN` states.
-
-### Discord Transport Tests
-
-| File | Coverage |
-|------|----------|
-| `discord-transport.test.ts` | Transport operations, circuit breaker |
-| `discord-sp2.test.ts` | SP2 interaction and forum operations |
-
----
-
 ## packages/flow-shared
 
 ### Package Details
@@ -431,7 +302,8 @@ Exports `NODE_TYPES` -- an array of 172 `NodeTypeDefinition` objects, each with 
 | `TG_CLIENT_API_ID` | Yes | `apps/trigger` | Telegram API ID (numeric) |
 | `TG_CLIENT_API_HASH` | Yes | `apps/trigger` | Telegram API hash |
 | `TG_CLIENT_SESSION` | No | `apps/trigger` | GramJS StringSession |
-| `MANAGER_BOT_API_URL` | No | `apps/trigger` | Manager bot HTTP URL (default: `http://localhost:3001`) |
+| `TELEGRAM_BOT_API_URL` | No | `apps/trigger` | Telegram bot API URL |
+| `CONNECTOR_POOL_URL` | No | `apps/trigger` | Pool HTTP endpoint (default: `http://localhost:3010`) |
 | `LOG_LEVEL` | No | `apps/trigger` | Pino log level (default: `info`) |
 
 ---
@@ -444,27 +316,9 @@ Exports `NODE_TYPES` -- an array of 172 `NodeTypeDefinition` objects, each with 
 |---------|-------------|
 | `typecheck` | `tsc` -- Type-check |
 | `build` | `tsc --noEmit false` -- Compile |
-| `test` | `vitest run` -- Run tests |
-| `dev` | `npx trigger.dev@3.3.17 dev` -- Dev server |
-| `deploy` | `npx trigger.dev@3.3.17 deploy` -- Deploy |
-
-### packages/telegram-transport
-
-| Command | Description |
-|---------|-------------|
-| `typecheck` | `tsc` |
-| `build` | `tsc --noEmit false` |
-| `test` | `vitest run` |
-| `test:integration` | `vitest run --config vitest.integration.config.ts` |
-
-### packages/discord-transport
-
-| Command | Description |
-|---------|-------------|
-| `typecheck` | `tsc` |
-| `build` | `tsc --noEmit false` |
-| `test` | `vitest run` |
-| `test:integration` | `vitest run --config vitest.integration.config.ts` |
+| `test` | `vitest run` -- Run tests (294 tests) |
+| `dev` | `npx trigger.dev@4.4.3 dev` -- Dev server |
+| `deploy` | `npx trigger.dev@4.4.3 deploy` -- Deploy |
 
 ### packages/flow-shared
 

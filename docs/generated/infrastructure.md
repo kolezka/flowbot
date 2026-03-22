@@ -1,6 +1,6 @@
 # Flowbot Infrastructure Documentation
 
-> Auto-generated: 2026-03-19
+> Auto-generated: 2026-03-22
 
 ---
 
@@ -21,19 +21,17 @@
 
 ## Project Overview
 
-**Flowbot** is a multi-platform (Telegram + Discord) e-commerce and group management platform. It provides:
+**Flowbot** is a multi-platform (Telegram, Discord, WhatsApp) bot management platform. It provides:
 
-- An **e-commerce bot** for product browsing, shopping carts, and order management via Telegram.
-- A **manager bot** for Telegram group moderation, anti-spam, CAPTCHA verification, scheduled messages, cross-posting, and keyword filtering.
-- A **Discord bot** for Discord server event forwarding and flow-based action execution.
+- A **unified connector pool** managing all platform connectors (Telegram bot, Telegram user, WhatsApp user, Discord bot) as worker threads in a single service.
 - A **visual flow builder** for designing cross-platform automation workflows as directed graphs (triggers, conditions, actions, control flow).
 - A **REST API** with WebSocket/SSE real-time updates for the admin dashboard.
-- A **Next.js admin dashboard** with 38 pages covering moderation, analytics, bot configuration, broadcast management, and the flow builder UI.
+- A **Next.js admin dashboard** with 44 pages covering moderation, analytics, bot configuration, communities, connections, identity management, and the flow builder UI.
 - **Background job processing** via Trigger.dev for broadcasts, cross-posts, scheduled messages, flow execution, analytics snapshots, and event cleanup.
-- **MTProto Telegram client** integration (GramJS) with circuit breaker and rate limiting for reliable message delivery.
-- **Discord.js transport** with circuit breaker for reliable Discord API operations.
+- **Platform-kit** shared library providing ActionRegistry, CircuitBreaker, EventForwarder, Reconciler, and worker thread management.
+- **Connector packages** for each platform (grammY, GramJS, Baileys, discord.js) with Valibot-validated action schemas.
 
-The platform is built as a **pnpm monorepo** with 11 workspaces across 3 directories: `apps/`, `packages/`, and `workers/` (currently unused).
+The platform is built as a **pnpm monorepo** with 11 workspaces across 2 directories: `apps/` and `packages/`.
 
 ---
 
@@ -44,24 +42,24 @@ The platform is built as a **pnpm monorepo** with 11 workspaces across 3 directo
 ```
 flowbot/
 +-- apps/
-|   +-- api/                 # REST API + WebSocket + SSE (NestJS 11)
-|   +-- bot/                 # E-commerce Telegram bot (grammY + Hono)
-|   +-- discord-bot/         # Discord bot (discord.js + Hono)
-|   +-- frontend/            # Admin dashboard (Next.js 16, React 19, Radix UI)
-|   +-- manager-bot/         # Group management Telegram bot (grammY + Hono)
-|   +-- tg-client/           # DEPRECATED -- MTProto auth script only
-|   +-- trigger/             # Background job worker (Trigger.dev v3)
+|   +-- api/                        # REST API + WebSocket + SSE (NestJS 11)
+|   +-- connector-pool/             # Unified pool service (Hono, worker threads)
+|   +-- frontend/                   # Admin dashboard (Next.js 16, React 19, Radix UI)
+|   +-- trigger/                    # Background job worker (Trigger.dev v3)
 +-- packages/
-|   +-- db/                  # Prisma 7 schema + generated client (PostgreSQL)
-|   +-- discord-transport/   # Discord.js transport with CircuitBreaker
-|   +-- flow-shared/         # Shared flow node type definitions
-|   +-- telegram-transport/  # GramJS MTProto client with CircuitBreaker
-+-- .github/workflows/       # GitHub Actions CI
-+-- docker-compose.yml       # PostgreSQL 16
-+-- pnpm-workspace.yaml      # Workspace configuration
-+-- tsconfig.base.json       # Shared TypeScript config + path aliases
-+-- tsconfig.json            # Project references
-+-- package.json             # Root scripts (workspace filters)
+|   +-- db/                         # Prisma 7 schema + generated client (PostgreSQL)
+|   +-- platform-kit/               # ActionRegistry, CircuitBreaker, EventForwarder, Reconciler
+|   +-- telegram-bot-connector/     # Telegram Bot connector (grammY)
+|   +-- telegram-user-connector/    # Telegram User connector (GramJS MTProto)
+|   +-- whatsapp-user-connector/    # WhatsApp User connector (Baileys)
+|   +-- discord-bot-connector/      # Discord Bot connector (discord.js)
+|   +-- flow-shared/                # Shared flow node type definitions
++-- .github/workflows/              # GitHub Actions CI
++-- docker-compose.yml              # PostgreSQL 16
++-- pnpm-workspace.yaml             # Workspace configuration
++-- tsconfig.base.json              # Shared TypeScript config + path aliases
++-- tsconfig.json                   # Project references
++-- package.json                    # Root scripts (workspace filters)
 ```
 
 ### Workspace Details
@@ -69,28 +67,35 @@ flowbot/
 | Workspace | Package Name | Module System | Runtime | Key Dependencies |
 |-----------|-------------|---------------|---------|-----------------|
 | `apps/api` | `@flowbot/api` | CommonJS | Node.js (nest CLI) | NestJS 11, Prisma, Socket.IO, Swagger, Trigger.dev SDK |
-| `apps/bot` | `@flowbot/bot` | ESM | tsx | grammY 1.36, Hono, Pino, Valibot |
-| `apps/discord-bot` | `@flowbot/discord-bot` | ESM | tsx | discord.js 14, Hono, @flowbot/db |
+| `apps/connector-pool` | `@flowbot/connector-pool` | ESM | tsx | platform-kit, all connectors, Hono, Pino, Valibot |
 | `apps/frontend` | `@flowbot/frontend` | ESM | Next.js 16 | React 19, Radix UI, XY Flow, Recharts, Socket.IO Client, Tailwind CSS 4, @flowbot/flow-shared |
-| `apps/manager-bot` | `@flowbot/manager-bot` | ESM | tsx | grammY 1.36, Hono, Anthropic SDK, Trigger.dev SDK, Pino |
-| `apps/tg-client` | `@flowbot/tg-client` | ESM | tsx | telegram (GramJS) |
-| `apps/trigger` | `@flowbot/trigger` | ESM | Trigger.dev CLI | Trigger.dev SDK/Build, telegram (GramJS), Pino |
+| `apps/trigger` | `@flowbot/trigger` | ESM | Trigger.dev CLI | Trigger.dev SDK/Build, Pino |
 | `packages/db` | `@flowbot/db` | ESM | tsc | Prisma Client 7, @prisma/adapter-pg |
-| `packages/discord-transport` | `@flowbot/discord-transport` | ESM | tsc | discord.js 14 |
+| `packages/platform-kit` | `@flowbot/platform-kit` | ESM | tsc | Hono, Pino, Valibot |
+| `packages/telegram-bot-connector` | `@flowbot/telegram-bot-connector` | ESM | tsc | platform-kit, grammY 1.36, Pino, Valibot |
+| `packages/telegram-user-connector` | `@flowbot/telegram-user-connector` | ESM | tsc | platform-kit, GramJS 2.26, Pino, Valibot |
+| `packages/whatsapp-user-connector` | `@flowbot/whatsapp-user-connector` | ESM | tsc | platform-kit, Baileys 6.7, Pino, Valibot |
+| `packages/discord-bot-connector` | `@flowbot/discord-bot-connector` | ESM | tsc | platform-kit, discord.js 14, Pino, Valibot |
 | `packages/flow-shared` | `@flowbot/flow-shared` | ESM | tsc | (no runtime deps) |
-| `packages/telegram-transport` | `@flowbot/telegram-transport` | ESM | tsc | telegram (GramJS), Pino, Valibot |
 
 ### Workspace Dependencies (Internal)
 
 ```
-@flowbot/manager-bot   --> @flowbot/db (workspace:*)
-@flowbot/discord-bot   --> @flowbot/db (workspace:*)
-@flowbot/trigger       --> @flowbot/db (workspace:*)
-@flowbot/trigger       --> @flowbot/telegram-transport (workspace:*)
-@flowbot/frontend      --> @flowbot/flow-shared (workspace:*)
+@flowbot/connector-pool         --> @flowbot/platform-kit (workspace:*)
+@flowbot/connector-pool         --> @flowbot/telegram-bot-connector (workspace:*)
+@flowbot/connector-pool         --> @flowbot/telegram-user-connector (workspace:*)
+@flowbot/connector-pool         --> @flowbot/whatsapp-user-connector (workspace:*)
+@flowbot/connector-pool         --> @flowbot/discord-bot-connector (workspace:*)
+@flowbot/connector-pool         --> @flowbot/db (workspace:*)
+@flowbot/telegram-bot-connector --> @flowbot/platform-kit (workspace:*)
+@flowbot/telegram-user-connector --> @flowbot/platform-kit (workspace:*)
+@flowbot/whatsapp-user-connector --> @flowbot/platform-kit (workspace:*)
+@flowbot/discord-bot-connector  --> @flowbot/platform-kit (workspace:*)
+@flowbot/trigger                --> @flowbot/db (workspace:*)
+@flowbot/frontend               --> @flowbot/flow-shared (workspace:*)
 ```
 
-All other workspaces reference `@flowbot/db` via the TypeScript path alias (`tsconfig.base.json`) rather than a `workspace:*` dependency.
+All workspaces reference `@flowbot/db` via the TypeScript path alias (`tsconfig.base.json`).
 
 ---
 
@@ -112,11 +117,13 @@ All other workspaces reference `@flowbot/db` via the TypeScript path alias (`tsc
 |-----|-----------|---------|
 | API | NestJS | 11.x |
 | Frontend | Next.js | 16.x |
-| Telegram Bots | grammY | 1.36.x |
-| Discord Bot | discord.js | 14.x |
-| HTTP servers (bots) | Hono | 4.x |
+| Connector Pool | Hono + worker threads | 4.x |
+| Platform Kit | Hono, Valibot | 4.x |
+| Telegram Bot Connector | grammY | 1.36.x |
+| Telegram User Connector | GramJS (MTProto) | 2.26.x |
+| WhatsApp User Connector | Baileys | 6.7.x |
+| Discord Bot Connector | discord.js | 14.x |
 | Background jobs | Trigger.dev | 3.x (self-hosted) |
-| Telegram MTProto | GramJS (telegram) | 2.26.x |
 
 ### Frontend Stack
 
@@ -267,16 +274,16 @@ Note: `apps/discord-bot`, `packages/discord-transport`, and `packages/flow-share
 | Workspace | `"type"` in package.json | Effective Module System |
 |-----------|--------------------------|------------------------|
 | `apps/api` | (not set) | CommonJS (NestJS default) |
-| `apps/bot` | `"module"` | ESM |
-| `apps/discord-bot` | `"module"` | ESM |
+| `apps/connector-pool` | `"module"` | ESM |
 | `apps/frontend` | (not set) | ESM (Next.js handles) |
-| `apps/manager-bot` | `"module"` | ESM |
-| `apps/tg-client` | `"module"` | ESM |
 | `apps/trigger` | `"module"` | ESM |
 | `packages/db` | `"module"` | ESM |
-| `packages/discord-transport` | `"module"` | ESM |
+| `packages/platform-kit` | `"module"` | ESM |
+| `packages/telegram-bot-connector` | `"module"` | ESM |
+| `packages/telegram-user-connector` | `"module"` | ESM |
+| `packages/whatsapp-user-connector` | `"module"` | ESM |
+| `packages/discord-bot-connector` | `"module"` | ESM |
 | `packages/flow-shared` | `"module"` | ESM |
-| `packages/telegram-transport` | `"module"` | ESM |
 
 ---
 
@@ -313,18 +320,13 @@ The root `package.json` provides filter shortcuts for each workspace:
 
 ```bash
 # Start individual services
-pnpm api start:dev        # NestJS API (watch mode)
-pnpm bot dev              # E-commerce bot (tsc-watch + tsx)
-pnpm manager-bot dev      # Manager bot (tsc-watch + tsx)
+pnpm connector-pool dev   # Unified connector pool (port 3010)
+pnpm api start:dev        # NestJS API (watch mode, port 3000)
 pnpm frontend dev         # Next.js dashboard (port 3001)
 pnpm trigger dev          # Trigger.dev worker
 
-# Discord bot (no root shortcut yet)
-pnpm --filter @flowbot/discord-bot dev
-
 # Build commands
 pnpm api build            # nest build
-pnpm bot build            # tsc --noEmit false
 pnpm frontend build       # next build
 pnpm db build             # tsc (generates dist/)
 ```
@@ -334,10 +336,9 @@ pnpm db build             # tsc (generates dist/)
 1. `docker compose up -d` -- Start PostgreSQL
 2. `pnpm db prisma:generate && pnpm db build` -- Generate Prisma client
 3. `pnpm api start:dev` -- Start API server
-4. `pnpm bot dev` and `pnpm manager-bot dev` -- Start Telegram bots
-5. `pnpm --filter @flowbot/discord-bot dev` -- Start Discord bot
-6. `pnpm frontend dev` -- Start dashboard
-7. `pnpm trigger dev` -- Start background worker
+4. `pnpm connector-pool dev` -- Start unified connector pool (spawns all platform workers)
+5. `pnpm frontend dev` -- Start dashboard
+6. `pnpm trigger dev` -- Start background worker
 
 ### Database Management
 
@@ -353,14 +354,16 @@ pnpm db prisma:studio         # Open Prisma Studio GUI
 
 | Script | Command | Description |
 |--------|---------|-------------|
-| `pnpm bot <cmd>` | `pnpm --filter @flowbot/bot <cmd>` | Run command in bot workspace |
+| `pnpm connector-pool <cmd>` | `pnpm --filter @flowbot/connector-pool <cmd>` | Run command in connector-pool workspace |
 | `pnpm db <cmd>` | `pnpm --filter @flowbot/db <cmd>` | Run command in db workspace |
 | `pnpm frontend <cmd>` | `pnpm --filter @flowbot/frontend <cmd>` | Run command in frontend workspace |
 | `pnpm api <cmd>` | `pnpm --filter @flowbot/api <cmd>` | Run command in api workspace |
-| `pnpm manager-bot <cmd>` | `pnpm --filter @flowbot/manager-bot <cmd>` | Run command in manager-bot workspace |
-| `pnpm tg-client <cmd>` | `pnpm --filter @flowbot/tg-client <cmd>` | Run command in tg-client workspace |
-| `pnpm telegram-transport <cmd>` | `pnpm --filter @flowbot/telegram-transport <cmd>` | Run command in telegram-transport workspace |
+| `pnpm telegram-user-connector <cmd>` | `pnpm --filter @flowbot/telegram-user-connector <cmd>` | Run command in telegram-user-connector workspace |
+| `pnpm telegram-bot-connector <cmd>` | `pnpm --filter @flowbot/telegram-bot-connector <cmd>` | Run command in telegram-bot-connector workspace |
 | `pnpm trigger <cmd>` | `pnpm --filter @flowbot/trigger <cmd>` | Run command in trigger workspace |
+| `pnpm platform-kit <cmd>` | `pnpm --filter @flowbot/platform-kit <cmd>` | Run command in platform-kit workspace |
+| `pnpm whatsapp-user-connector <cmd>` | `pnpm --filter @flowbot/whatsapp-user-connector <cmd>` | Run command in whatsapp-user-connector workspace |
+| `pnpm discord-bot-connector <cmd>` | `pnpm --filter @flowbot/discord-bot-connector <cmd>` | Run command in discord-bot-connector workspace |
 
 ---
 
@@ -372,25 +375,24 @@ Variables are stored in `.env` files per workspace (gitignored).
 
 | Variable | Used By | Description |
 |----------|---------|-------------|
-| `DATABASE_URL` | db, api, manager-bot, trigger, discord-bot | PostgreSQL connection string |
-| `BOT_TOKEN` | bot, manager-bot | Telegram Bot API token |
-| `BOT_MODE` | bot, manager-bot | `polling` (dev) or `webhook` (prod) |
-| `BOT_ADMINS` | bot, manager-bot | JSON array of admin Telegram user IDs |
-| `LOG_LEVEL` | bot, manager-bot | Pino log level |
-| `SERVER_HOST` | bot, manager-bot | Hono HTTP server bind host |
-| `SERVER_PORT` | bot, manager-bot | Hono HTTP server port |
-| `API_SERVER_HOST` | manager-bot | API server hostname |
-| `API_SERVER_PORT` | manager-bot | API server port |
-| `PORT` | api, discord-bot | HTTP listen port |
+| `DATABASE_URL` | db, api, connector-pool, trigger | PostgreSQL connection string |
+| `PORT` | api | HTTP listen port (default: 3000) |
 | `FRONTEND_URL` | api | Allowed CORS origin for the dashboard |
 | `NEXT_PUBLIC_API_URL` | frontend | API base URL for client-side requests |
+| `API_URL` | connector-pool | Main API URL for event forwarding (default: `http://localhost:3000`) |
+| `POOL_HOST` | connector-pool | HTTP server bind host (default: `0.0.0.0`) |
+| `POOL_PORT` | connector-pool | HTTP server port (default: `3010`) |
+| `LOG_LEVEL` | connector-pool | Pino log level |
+| `TG_API_ID` | connector-pool | Telegram API ID (for user connections) |
+| `TG_API_HASH` | connector-pool | Telegram API hash (for user connections) |
+| `ENABLE_TELEGRAM_BOT` | connector-pool | Enable telegram:bot pool (default: true) |
+| `ENABLE_TELEGRAM_USER` | connector-pool | Enable telegram:user pool (default: true) |
+| `ENABLE_WHATSAPP_USER` | connector-pool | Enable whatsapp:user pool (default: true) |
+| `ENABLE_DISCORD_BOT` | connector-pool | Enable discord:bot pool (default: true) |
 | `TG_CLIENT_API_ID` | trigger | Telegram MTProto API ID |
 | `TG_CLIENT_API_HASH` | trigger | Telegram MTProto API hash |
 | `TG_CLIENT_SESSION` | trigger | Stored GramJS session string |
-| `MANAGER_BOT_API_URL` | trigger | Manager bot HTTP API URL |
-| `DISCORD_BOT_TOKEN` | discord-bot | Discord bot token |
-| `DISCORD_CLIENT_ID` | discord-bot | Discord application client ID |
-| `API_URL` | discord-bot, manager-bot | Main API URL for flow webhook forwarding |
+| `CONNECTOR_POOL_URL` | trigger | Pool HTTP endpoint (default: `http://localhost:3010`) |
 
 ### Sensitive Files (Gitignored)
 
@@ -404,15 +406,16 @@ Variables are stored in `.env` files per workspace (gitignored).
 
 ### Test Frameworks by Workspace
 
-| Workspace | Framework | Commands |
-|-----------|-----------|----------|
-| `apps/api` | Jest 30 | `pnpm api test`, `pnpm api test:watch`, `pnpm api test:cov`, `pnpm api test:e2e` |
-| `apps/manager-bot` | Vitest 3.x | `pnpm manager-bot test`, `pnpm manager-bot test:integration` |
-| `apps/trigger` | Vitest 3.x | `pnpm trigger test` |
-| `apps/frontend` | Playwright 1.52 | `pnpm frontend test:e2e` |
-| `apps/discord-bot` | Vitest 3.x | `pnpm --filter @flowbot/discord-bot test` |
-| `packages/telegram-transport` | Vitest 3.x | `pnpm telegram-transport test` |
-| `packages/discord-transport` | Vitest 3.x | `pnpm --filter @flowbot/discord-transport test` |
+| Workspace | Framework | Commands | Tests |
+|-----------|-----------|----------|-------|
+| `apps/api` | Jest 30 | `pnpm api test` | 238 |
+| `apps/trigger` | Vitest 3.x | `pnpm trigger test` | 294 |
+| `apps/frontend` | Playwright 1.52 | `pnpm frontend test:e2e` | — |
+| `packages/platform-kit` | Vitest 3.x | `pnpm platform-kit test` | 104 |
+| `packages/telegram-bot-connector` | Vitest 3.x | `pnpm telegram-bot-connector test` | 106 |
+| `packages/telegram-user-connector` | Vitest 3.x | `pnpm telegram-user-connector test` | 95 |
+| `packages/whatsapp-user-connector` | Vitest 3.x | `pnpm whatsapp-user-connector test` | 105 |
+| `packages/discord-bot-connector` | Vitest 3.x | `pnpm discord-bot-connector test` | 143 |
 
 ### Load Testing (API)
 
@@ -436,18 +439,12 @@ The CI pipeline runs on push to `main` and on pull requests. It defines 9 parall
 | Job | Workspace | Framework |
 |-----|-----------|-----------|
 | `api-unit` | `apps/api` | Jest |
-| `manager-bot-unit` | `apps/manager-bot` | Vitest |
-| `telegram-transport-unit` | `packages/telegram-transport` | Vitest |
-| `discord-transport-unit` | `packages/discord-transport` | Vitest |
 | `trigger-unit` | `apps/trigger` | Vitest |
-| `discord-bot-unit` | `apps/discord-bot` | Vitest |
-
-#### Integration Tests
-
-| Job | Workspace | Notes |
-|-----|-----------|-------|
-| `manager-bot-integration` | `apps/manager-bot` | Uses `vitest.integration.config.ts` |
-| `telegram-transport-integration` | `packages/telegram-transport` | Uses `vitest.integration.config.ts` |
+| `platform-kit-unit` | `packages/platform-kit` | Vitest |
+| `telegram-bot-connector-unit` | `packages/telegram-bot-connector` | Vitest |
+| `telegram-user-connector-unit` | `packages/telegram-user-connector` | Vitest |
+| `whatsapp-user-connector-unit` | `packages/whatsapp-user-connector` | Vitest |
+| `discord-bot-connector-unit` | `packages/discord-bot-connector` | Vitest |
 
 #### E2E Tests
 
@@ -460,12 +457,11 @@ All jobs share the same setup steps: checkout, pnpm setup, Node.js LTS, `pnpm in
 
 ### Deployment Notes
 
-- **Trigger.dev** has a dedicated deploy command: `pnpm trigger deploy` (runs `npx trigger.dev@3.3.17 deploy`).
+- **Trigger.dev** has a dedicated deploy command: `pnpm trigger deploy` (runs `npx trigger.dev@4.4.3 deploy`).
 - Trigger.dev is self-hosted at `trigger.raqz.link`.
 - The API has a production start script: `pnpm api start:prod` (runs `node dist/main`).
 - The frontend has a production build/start: `pnpm frontend build && pnpm frontend start` (port 3001).
-- Bots can run in production via `pnpm bot start` or `pnpm manager-bot start`.
-- Discord bot runs via `pnpm --filter @flowbot/discord-bot start`.
+- The connector pool runs via `pnpm connector-pool start`.
 
 ---
 

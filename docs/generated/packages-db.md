@@ -1,6 +1,6 @@
 # @flowbot/db
 
-> Auto-generated: 2026-03-19
+> Auto-generated: 2026-03-22
 
 ## Overview
 
@@ -8,15 +8,15 @@
 
 The package:
 
-- Defines the full database schema via Prisma (26 models)
+- Defines the full database schema via Prisma (35 models)
 - Exports a factory function (`createPrismaClient`) that creates a Prisma client using the `@prisma/adapter-pg` PostgreSQL adapter
 - Re-exports all generated Prisma types for use by consuming packages
-- Provides a cross-app identity service for resolving and linking Telegram users
+- Provides a cross-app identity service for resolving and linking platform users
 - Exports flow-builder type definitions (node types, edges, categories)
 
 ---
 
-## Database Models (26)
+## Database Models (35)
 
 ### 1. User
 
@@ -67,7 +67,141 @@ Relations: `user` -> User? (one-to-one)
 
 ---
 
-### 3. ManagedGroup
+### 3. PlatformAccount
+
+Multi-platform user account representing a user on a specific platform, linked to a UserIdentity.
+
+| Field | Type | Constraints | Description |
+|---|---|---|---|
+| id | String | PK, cuid | Unique identifier |
+| identityId | String | FK -> UserIdentity.id | Linked identity |
+| platform | String | | Platform: telegram, discord, whatsapp |
+| platformUserId | String | | User ID on the platform |
+| username | String? | | Platform username |
+| firstName | String? | | First name |
+| lastName | String? | | Last name |
+| metadata | Json? | | Platform-specific metadata |
+| isBanned | Boolean | default: false | Whether banned |
+| messageCount | Int | default: 0 | Total messages |
+| commandCount | Int | default: 0 | Total commands |
+| isVerified | Boolean | default: false | Verification status |
+| referralCode | String? | unique | Referral code |
+
+Unique constraint: `(platform, platformUserId)`
+
+Relations: `identity` -> UserIdentity, `referrals` -> PlatformAccount[], `communityMemberships` -> CommunityMember[]
+
+---
+
+### 4. Community
+
+Represents a managed community (group/server) on any platform.
+
+| Field | Type | Constraints | Description |
+|---|---|---|---|
+| id | String | PK, cuid | Unique identifier |
+| platform | String | | Platform: telegram, discord, whatsapp |
+| platformCommunityId | String | | Platform-specific community ID |
+| name | String? | | Community name |
+| type | String? | | Community type (group, supergroup, server) |
+| memberCount | Int | default: 0 | Member count |
+| isActive | Boolean | default: true | Active status |
+| metadata | Json? | | Platform-specific metadata |
+| botInstanceId | String? | FK -> BotInstance.id | Managing bot |
+
+Unique constraint: `(platform, platformCommunityId)`
+
+Relations: `config`, `telegramConfig`, `discordConfig`, `members`, `analyticsSnapshots`, `botInstance`
+
+---
+
+### 5. CommunityConfig
+
+Platform-agnostic configuration for a community (30+ settings).
+
+Key fields: `welcomeEnabled`, `welcomeMessage`, `rulesText`, `antiSpamEnabled`, `antiSpamAction`, `antiLinkEnabled`, `antiLinkAction`, `antiLinkWhitelist`, `warnThresholdMute` (3), `warnThresholdBan` (5), `warnDecayDays` (30), `defaultMuteDurationS` (3600), `logChannelId`, `silentMode`, `keywordFiltersEnabled`, `keywordFilters`, `aiModerationEnabled`, `aiModerationAction`, `aiModThreshold` (0.8), `notificationEvents`, `pipelineEnabled`.
+
+Relation: `community` -> Community (cascade delete)
+
+---
+
+### 6. CommunityTelegramConfig
+
+Telegram-specific community settings.
+
+Key fields: `captchaEnabled`, `captchaMode` ("button"), `captchaTimeoutS` (60), `quarantineEnabled`, `quarantineDurationS` (86400), `slowModeDelay`, `forumTopicMgmt`.
+
+Relation: `community` -> Community (cascade delete)
+
+---
+
+### 7. CommunityDiscordConfig
+
+Discord-specific community settings.
+
+Key fields: `autoModRules` (Json), `verificationLevel`, `defaultChannelId`, `modLogChannelId`, `welcomeChannelId`, `roleOnJoin`.
+
+Relation: `community` -> Community (cascade delete)
+
+---
+
+### 8. CommunityMember
+
+Tracks membership of a platform account within a community.
+
+Key fields: `communityId`, `platformAccountId`, `role` ("member"), `messageCount`, `joinedAt`, `warningCount`, `isMuted`, `muteExpiresAt`, `isQuarantined`, `quarantineExpiresAt`, `lastSeenAt`.
+
+Unique constraint: `(communityId, platformAccountId)`
+
+Relations: `community` -> Community, `platformAccount` -> PlatformAccount
+
+---
+
+### 9. PlatformConnection
+
+Represents a user-level platform connection (MTProto session, WhatsApp session, etc.).
+
+| Field | Type | Constraints | Description |
+|---|---|---|---|
+| id | String | PK, cuid | Unique identifier |
+| platform | String | | Platform: telegram, whatsapp |
+| name | String | | Display name |
+| connectionType | String | | Connection type: mtproto, baileys |
+| status | String | | Status: pending, active, error, disconnected |
+| credentials | Json? | | Encrypted credentials/session data |
+| metadata | Json? | | Additional metadata |
+| errorCount | Int | default: 0 | Consecutive errors |
+| lastErrorMessage | String? | | Last error description |
+| lastActiveAt | DateTime? | | Last activity timestamp |
+| botInstanceId | String? | FK -> BotInstance.id | Associated bot instance |
+
+Relations: `logs` -> PlatformConnectionLog[], `botInstance` -> BotInstance?
+
+---
+
+### 10. PlatformConnectionLog
+
+Log entries for platform connections.
+
+Key fields: `connectionId`, `level`, `message`, `details` (Json).
+
+Relation: `connection` -> PlatformConnection (cascade delete)
+
+---
+
+### 11. CommunityAnalyticsSnapshot
+
+Analytics snapshot for a community with configurable granularity.
+
+Key fields: `communityId`, `date`, `granularity` (DAY/WEEK/MONTH), `memberCount`, `newMembers`, `leftMembers`, `messageCount`, `spamDetected`, `warningsIssued`, `moderationActions`, `metadata`.
+
+Unique constraint: `(communityId, date, granularity)`
+
+Relation: `community` -> Community (cascade delete)
+
+---
+
+### 12. ManagedGroup (Legacy)
 
 Represents a Telegram group managed by the manager bot.
 

@@ -5,7 +5,7 @@
 > **Port:** `3000` (configurable via `PORT` env)
 > **Swagger UI:** `http://localhost:3000/api/docs`
 
-> Auto-generated: 2026-03-19
+> Auto-generated: 2026-03-22
 
 ---
 
@@ -83,6 +83,19 @@ AppModule (@Global)
   +-- SystemModule         -- SystemController, SystemService
   +-- BotConfigModule      -- BotConfigController, BotConfigService
   +-- TgClientModule       -- TgClientController, TgClientService
+  +-- PlatformModule (@Global) -- PlatformStrategyRegistry
+  +-- IdentityModule
+  |     +-- AccountsController, AccountsService
+  |     +-- IdentityController, IdentityService
+  +-- CommunitiesModule
+  |     +-- CommunitiesController, CommunitiesService
+  |     +-- MembersController
+  |     +-- CommunityWarningsController
+  |     +-- CommunityLogsController
+  |     +-- CommunityScheduledController
+  +-- ConnectionsModule
+  |     +-- ConnectionsController, ConnectionsService
+  |     +-- QrAuthController
   +-- FlowsModule          -- FlowsController, FlowsService, CorrelationService
   +-- WebhooksModule       -- WebhooksController, WebhooksService
   +-- AutomationModule     -- AutomationController, AutomationService
@@ -309,6 +322,81 @@ Shared-secret + HMAC token authentication:
 | `POST` | `/api/tg-client/auth/start` | Start MTProto auth |
 | `POST` | `/api/tg-client/auth/code` | Submit verification code |
 | `POST` | `/api/tg-client/auth/password` | Submit 2FA password |
+
+### Identity -- Accounts (`/api/accounts`) (new)
+
+| Method | Path | Description |
+|--------|------|-------------|
+| `GET` | `/api/accounts` | Paginated accounts (search, isBanned, platform filter) |
+| `GET` | `/api/accounts/stats` | Account statistics |
+| `GET` | `/api/accounts/:id` | Account by ID |
+| `PUT` | `/api/accounts/:id/ban` | Ban or unban account |
+
+### Identity -- Identities (`/api/identities`) (new)
+
+| Method | Path | Description |
+|--------|------|-------------|
+| `GET` | `/api/identities` | Paginated identities (search) |
+| `GET` | `/api/identities/:id` | Identity by ID |
+| `POST` | `/api/identities/:id/link` | Link platform account to identity |
+| `DELETE` | `/api/identities/:id/link/:accountId` | Unlink account from identity |
+
+### Communities (`/api/communities`) (new)
+
+| Method | Path | Description |
+|--------|------|-------------|
+| `GET` | `/api/communities` | List communities (platform, search, isActive filter) |
+| `GET` | `/api/communities/:id` | Community detail |
+| `POST` | `/api/communities` | Create community |
+| `PUT` | `/api/communities/:id` | Update community |
+| `DELETE` | `/api/communities/:id` | Deactivate community |
+| `GET` | `/api/communities/:id/config` | Get community config |
+| `PUT` | `/api/communities/:id/config` | Update config |
+| `GET` | `/api/communities/:id/config/telegram` | Get Telegram-specific config |
+| `PUT` | `/api/communities/:id/config/telegram` | Update Telegram config |
+| `GET` | `/api/communities/:id/config/discord` | Get Discord-specific config |
+| `PUT` | `/api/communities/:id/config/discord` | Update Discord config |
+
+### Communities -- Members (`/api/communities/:communityId/members`) (new)
+
+| Method | Path | Description |
+|--------|------|-------------|
+| `GET` | `.../members` | List members (search, role filter) |
+| `GET` | `.../members/:id` | Member detail |
+| `PUT` | `.../members/:id/role` | Update member role |
+
+### Communities -- Warnings (`/api/communities/:communityId/warnings`) (new)
+
+| Method | Path | Description |
+|--------|------|-------------|
+| `GET` | `.../warnings` | List warnings (isActive filter) |
+
+### Communities -- Logs (`/api/communities/:communityId/logs`) (new)
+
+| Method | Path | Description |
+|--------|------|-------------|
+| `GET` | `.../logs` | List moderation logs |
+
+### Communities -- Scheduled (`/api/communities/:communityId/scheduled-messages`) (new)
+
+| Method | Path | Description |
+|--------|------|-------------|
+| `GET` | `.../scheduled-messages` | List scheduled messages |
+
+### Connections (`/api/connections`) (new)
+
+| Method | Path | Description |
+|--------|------|-------------|
+| `GET` | `/api/connections` | List connections (platform, status filter) |
+| `GET` | `/api/connections/health` | Connection health overview |
+| `GET` | `/api/connections/:id` | Connection by ID |
+| `POST` | `/api/connections` | Create connection |
+| `PUT` | `/api/connections/:id/status` | Update connection status |
+| `POST` | `/api/connections/:id/auth/start` | Start auth flow |
+| `POST` | `/api/connections/:id/auth/step` | Submit auth step |
+| `GET` | `/api/connections/:id/logs` | Connection logs |
+| `DELETE` | `/api/connections/:id` | Deactivate connection |
+| `POST` | `/api/connections/:id/qr-update` | Handle QR auth updates (WhatsApp) |
 
 ### Webhooks (`/api/webhooks`)
 

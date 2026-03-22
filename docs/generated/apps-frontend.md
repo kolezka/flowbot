@@ -1,12 +1,12 @@
 # apps/frontend -- Flowbot Dashboard
 
-> Auto-generated: 2026-03-19
+> Auto-generated: 2026-03-22
 
 ---
 
 ## Overview & Tech Stack
 
-The frontend is a **Next.js 16** application (React 19) providing a full-featured admin dashboard for managing Telegram bots, Discord bots, users, groups, moderation, automation flows, broadcasts, and system health. It runs on port **3001** by default.
+The frontend is a **Next.js 16** application (React 19) providing a full-featured admin dashboard for managing multi-platform bots, communities, connections, user identity, moderation, automation flows, broadcasts, and system health. It runs on port **3001** by default.
 
 | Layer | Technology |
 |---|---|
@@ -58,7 +58,7 @@ All `/dashboard/**` routes wrapped with:
 
 ---
 
-## Route Map (38 dashboard pages + 2 top-level)
+## Route Map (44 dashboard pages + 2 top-level)
 
 ### Top-level
 
@@ -89,7 +89,33 @@ All `/dashboard/**` routes wrapped with:
 | `/dashboard/moderation/analytics` | Time-series charts and summaries |
 | `/dashboard/moderation/scheduled-messages` | Scheduled message management |
 
-### Community
+### Identity (new)
+
+| Route | Purpose |
+|---|---|
+| `/dashboard/identity/accounts` | Platform accounts list (cross-platform, search, ban/active filter) |
+| `/dashboard/identity/linked` | Linked identities with expandable account cards |
+
+### Communities (new)
+
+| Route | Purpose |
+|---|---|
+| `/dashboard/communities` | Community list with platform filter and search |
+| `/dashboard/communities/create` | Create new community form |
+| `/dashboard/communities/[id]` | Community detail with tabbed config (Config, Telegram, Members, Warnings, Logs) |
+| `/dashboard/communities/[id]/members` | Community member list with role management |
+| `/dashboard/communities/[id]/warnings` | Community warnings |
+
+### Connections (new)
+
+| Route | Purpose |
+|---|---|
+| `/dashboard/connections` | Platform connections list with health summary |
+| `/dashboard/connections/auth` | Auth wizard (WhatsApp QR, MTProto) |
+| `/dashboard/connections/health` | Connection health dashboard |
+| `/dashboard/connections/[id]` | Connection detail page |
+
+### Community (Legacy)
 
 | Route | Purpose |
 |---|---|
@@ -135,15 +161,6 @@ All `/dashboard/**` routes wrapped with:
 |---|---|
 | `/dashboard/webhooks` | Webhook endpoint CRUD |
 
-### TG Client
-
-| Route | Purpose |
-|---|---|
-| `/dashboard/tg-client` | TG client overview |
-| `/dashboard/tg-client/sessions/[id]` | Session detail |
-| `/dashboard/tg-client/auth` | Multi-step auth wizard |
-| `/dashboard/tg-client/health` | Transport health metrics |
-
 ### System
 
 | Route | Purpose |
@@ -175,6 +192,14 @@ All `/dashboard/**` routes wrapped with:
 | **ExportButton** | CSV/JSON export button |
 | **ResponsiveTable** | Dual-mode table (full on desktop, cards on mobile) |
 | **Breadcrumb** | Auto-generated breadcrumb navigation |
+
+### Multi-Platform Components (new)
+
+| Component | Description |
+|---|---|
+| **PlatformBadge** | Colored badge for platform (telegram=cyan, discord=indigo, whatsapp=green, slack=purple) |
+| **PlatformFilter** | Button group to toggle between All/Telegram/Discord platforms |
+| **PlatformProvider** | Context provider storing selected platform in localStorage, exposes `usePlatform()` hook |
 
 ### UI Primitives (`src/components/ui/`)
 
