@@ -217,6 +217,9 @@ export default function ConnectionsPage() {
                     </span>
                   )}
                   {statusBadge(conn.status)}
+                  <Button variant="ghost" size="sm" asChild>
+                    <Link href={`/dashboard/connections/${conn.id}`}>View</Link>
+                  </Button>
                 </div>
               </div>
             ))}
