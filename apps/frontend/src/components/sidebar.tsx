@@ -147,7 +147,6 @@ const navigation: NavSection[] = [
     icon: Globe,
     children: [
       { label: "Overview", href: "/dashboard/connections", icon: Globe },
-      { label: "Add Connection", href: "/dashboard/connections/auth", icon: Radio },
       { label: "Health", href: "/dashboard/connections/health", icon: Activity },
     ],
   },

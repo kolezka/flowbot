@@ -186,7 +186,7 @@ export default function ConnectionDetailPage() {
               <Button
                 variant="outline"
                 size="sm"
-                onClick={() => router.push("/dashboard/connections/auth")}
+                onClick={() => router.push("/dashboard/connections")}
               >
                 Re-authenticate
               </Button>

@@ -1134,7 +1134,7 @@ function ConnectionOverridePanel({
           {connections.length === 0 ? (
             <p className="text-[10px] text-muted-foreground">
               No user accounts connected.{" "}
-              <a href="/dashboard/connections/auth" className="underline text-primary">
+              <a href="/dashboard/connections" className="underline text-primary">
                 Connect one
               </a>
             </p>
@@ -1462,7 +1462,7 @@ export default function FlowEditorPage() {
                     {mtprotoConnections.length === 0 ? (
                       <span className="text-xs text-muted-foreground">
                         No user accounts connected.{" "}
-                        <a href="/dashboard/connections/auth" className="underline text-primary">Connect one</a>
+                        <a href="/dashboard/connections" className="underline text-primary">Connect one</a>
                       </span>
                     ) : (
                       <select
