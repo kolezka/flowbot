@@ -508,9 +508,12 @@ export interface BotInstance {
   name: string;
   botToken?: string | null;
   botUsername?: string;
+  platform?: string;
   type: string;
+  apiUrl?: string;
+  metadata?: Record<string, unknown>;
   isActive: boolean;
-  configVersion: number;
+  configVersion?: number;
   _count?: { commands: number; responses: number; menus: number };
   commands?: BotCommand[];
   responses?: BotResponse[];
@@ -1302,8 +1305,14 @@ class ApiClient {
   }
 
   // Bot Config
-  async getBotInstances(platform?: string): Promise<BotInstance[]> {
-    const qs = platform ? `?platform=${encodeURIComponent(platform)}` : '';
+  async getBotInstances(platformOrParams?: string | { platform?: string }): Promise<BotInstance[]> {
+    let platformValue: string | undefined;
+    if (typeof platformOrParams === 'string') {
+      platformValue = platformOrParams;
+    } else {
+      platformValue = platformOrParams?.platform;
+    }
+    const qs = platformValue ? `?platform=${encodeURIComponent(platformValue)}` : '';
     return this.request<BotInstance[]>(`/api/bot-config${qs}`);
   }
 
@@ -1454,6 +1463,14 @@ class ApiClient {
     if (params?.status) searchParams.append('status', params.status);
     const qs = searchParams.toString();
     return this.request<FlowsResponse>(`/api/flows${qs ? `?${qs}` : ''}`);
+  }
+
+  async getFlowTemplates(): Promise<{ id: string; name: string; description: string; category: string; platform: string; nodeCount: number }[]> {
+    return this.request(`/api/flows/templates`);
+  }
+
+  async createFlowFromTemplate(templateId: string): Promise<FlowDefinition> {
+    return this.request<FlowDefinition>(`/api/flows/from-template/${templateId}`, { method: 'POST' });
   }
 
   async getFlow(id: string): Promise<FlowDefinition> {
@@ -1707,6 +1724,37 @@ class ApiClient {
     if (params?.page) searchParams.set("page", String(params.page));
     if (params?.limit) searchParams.set("limit", String(params.limit));
     return this.request<{ data: any[]; total: number; page: number; limit: number; totalPages: number }>(`/api/communities/${communityId}/logs?${searchParams}`);
+  }
+
+  async createCommunity(data: {
+    platform: string;
+    platformCommunityId: string;
+    name: string;
+    type?: string;
+    botInstanceId?: string;
+  }): Promise<Community> {
+    return this.request<Community>('/api/communities', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  }
+
+  async deleteCommunity(id: string): Promise<void> {
+    return this.request<void>(`/api/communities/${id}`, { method: 'DELETE' });
+  }
+
+  async updateCommunity(id: string, data: { name?: string; isActive?: boolean; botInstanceId?: string }): Promise<Community> {
+    return this.request<Community>(`/api/communities/${id}`, {
+      method: 'PATCH',
+      body: JSON.stringify(data),
+    });
+  }
+
+  async updateBotScope(botInstanceId: string, scope: { groupIds?: string[]; userIds?: string[] }): Promise<unknown> {
+    return this.request<unknown>(`/api/bot-config/${botInstanceId}/scope`, {
+      method: 'PUT',
+      body: JSON.stringify(scope),
+    });
   }
 
   // Connections

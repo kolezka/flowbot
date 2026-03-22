@@ -118,9 +118,14 @@ export default function CommunitiesPage() {
   return (
     <div className="space-y-8">
       {/* Header */}
-      <div>
-        <h1 className="text-2xl font-bold">Communities</h1>
-        <p className="text-muted-foreground">Manage communities across all platforms</p>
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-bold">Communities</h1>
+          <p className="text-muted-foreground">Manage communities across all platforms</p>
+        </div>
+        <Link href="/dashboard/communities/create">
+          <Button>Add Community</Button>
+        </Link>
       </div>
 
       {/* Communities Table */}
