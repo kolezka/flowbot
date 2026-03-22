@@ -20,6 +20,7 @@ import { Label } from "@/components/ui/label";
 // ---------------------------------------------------------------------------
 
 type Platform = "telegram" | "discord" | "whatsapp" | null;
+type TelegramType = "bot" | "account" | null;
 type TelegramStep = "name" | "phone" | "code" | "password" | "done";
 type DiscordStep = "name" | "token" | "done";
 
@@ -280,6 +281,131 @@ function TelegramAuthFlow() {
 }
 
 // ---------------------------------------------------------------------------
+// Telegram bot auth flow
+// ---------------------------------------------------------------------------
+
+function TelegramBotAuthFlow() {
+  const router = useRouter();
+  const [step, setStep] = useState<DiscordStep>("name");
+  const [name, setName] = useState("");
+  const [token, setToken] = useState("");
+  const [connectionId, setConnectionId] = useState("");
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  const steps = ["Name", "Token", "Done"];
+  const stepIndex: Record<DiscordStep, number> = { name: 0, token: 1, done: 2 };
+
+  const handleCreateConnection = async () => {
+    setLoading(true);
+    setError("");
+    try {
+      const conn = await api.createConnection({
+        platform: "telegram",
+        name,
+        connectionType: "bot_token",
+      });
+      setConnectionId(conn.id);
+      setStep("token");
+    } catch (e: unknown) {
+      const msg = e instanceof Error ? e.message : "Failed to create connection";
+      setError(msg);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSubmitToken = async () => {
+    setLoading(true);
+    setError("");
+    try {
+      await api.startConnectionAuth(connectionId, { botToken: token });
+      setStep("done");
+    } catch (e: unknown) {
+      const msg = e instanceof Error ? e.message : "Failed to connect";
+      setError(msg);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="space-y-6">
+      <StepIndicator steps={steps} current={stepIndex[step]} />
+
+      {step === "name" && (
+        <Card>
+          <CardHeader>
+            <CardTitle>Connection Name</CardTitle>
+            <CardDescription>
+              Give this Telegram bot connection a recognisable name
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div>
+              <Label htmlFor="tg-bot-name">Name</Label>
+              <Input
+                id="tg-bot-name"
+                placeholder="My Telegram Bot"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+              />
+            </div>
+            {error && <p className="text-sm text-destructive">{error}</p>}
+            <Button onClick={handleCreateConnection} disabled={!name || loading}>
+              {loading ? "Creating..." : "Continue"}
+            </Button>
+          </CardContent>
+        </Card>
+      )}
+
+      {step === "token" && (
+        <Card>
+          <CardHeader>
+            <CardTitle>Bot Token</CardTitle>
+            <CardDescription>
+              Enter your bot token from @BotFather
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div>
+              <Label htmlFor="tg-bot-token">Bot Token</Label>
+              <Input
+                id="tg-bot-token"
+                type="password"
+                placeholder="123456:ABC-DEF..."
+                value={token}
+                onChange={(e) => setToken(e.target.value)}
+              />
+            </div>
+            {error && <p className="text-sm text-destructive">{error}</p>}
+            <Button onClick={handleSubmitToken} disabled={!token || loading}>
+              {loading ? "Connecting..." : "Connect"}
+            </Button>
+          </CardContent>
+        </Card>
+      )}
+
+      {step === "done" && (
+        <Card>
+          <CardHeader>
+            <CardTitle>Connection Created</CardTitle>
+            <CardDescription>
+              Your Telegram bot connection has been set up successfully
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Button onClick={() => router.push("/dashboard/connections")}>
+              View Connections
+            </Button>
+          </CardContent>
+        </Card>
+      )}
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
 // Discord auth flow
 // ---------------------------------------------------------------------------
 
@@ -410,6 +536,7 @@ function DiscordAuthFlow() {
 
 export default function ConnectionAuthPage() {
   const [platform, setPlatform] = useState<Platform>(null);
+  const [telegramType, setTelegramType] = useState<TelegramType>(null);
 
   return (
     <div className="mx-auto max-w-lg space-y-6">
@@ -468,12 +595,46 @@ export default function ConnectionAuthPage() {
         <div className="space-y-4">
           <button
             type="button"
-            onClick={() => setPlatform(null)}
+            onClick={() => { setPlatform(null); setTelegramType(null); }}
             className="text-sm text-muted-foreground underline"
           >
             &larr; Change platform
           </button>
-          <TelegramAuthFlow />
+
+          {telegramType === null && (
+            <div className="space-y-4">
+              <p className="text-muted-foreground">
+                Choose the type of Telegram connection.
+              </p>
+              <div className="grid grid-cols-2 gap-4">
+                <button
+                  type="button"
+                  onClick={() => setTelegramType("bot")}
+                  className="flex flex-col items-center gap-3 rounded-xl border-2 border-border p-6 hover:border-primary hover:bg-accent/50 transition-colors"
+                >
+                  <span className="text-3xl">🤖</span>
+                  <span className="font-semibold">Bot</span>
+                  <span className="text-xs text-muted-foreground text-center">
+                    Connect with a bot token from @BotFather
+                  </span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setTelegramType("account")}
+                  className="flex flex-col items-center gap-3 rounded-xl border-2 border-border p-6 hover:border-primary hover:bg-accent/50 transition-colors"
+                >
+                  <span className="text-3xl">👤</span>
+                  <span className="font-semibold">Account</span>
+                  <span className="text-xs text-muted-foreground text-center">
+                    Connect with a user account via MTProto
+                  </span>
+                </button>
+              </div>
+            </div>
+          )}
+
+          {telegramType === "bot" && <TelegramBotAuthFlow />}
+          {telegramType === "account" && <TelegramAuthFlow />}
         </div>
       )}
 
