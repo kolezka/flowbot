@@ -2,20 +2,16 @@
   "name": "flowbot",
   "packageManager": "pnpm@10.32.1",
   "scripts": {
-    "telegram-bot": "pnpm --filter @flowbot/telegram-bot",
+    "connector-pool": "pnpm --filter @flowbot/connector-pool",
     "db": "pnpm --filter @flowbot/db",
     "frontend": "pnpm --filter @flowbot/frontend",
     "api": "pnpm --filter @flowbot/api",
-    "telegram-user": "pnpm --filter @flowbot/telegram-user",
     "telegram-user-connector": "pnpm --filter @flowbot/telegram-user-connector",
     "telegram-bot-connector": "pnpm --filter @flowbot/telegram-bot-connector",
     "trigger": "pnpm --filter @flowbot/trigger",
     "platform-kit": "pnpm --filter @flowbot/platform-kit",
-    "whatsapp-user": "pnpm --filter @flowbot/whatsapp-user",
     "whatsapp-user-connector": "pnpm --filter @flowbot/whatsapp-user-connector",
-    "discord-bot": "pnpm --filter @flowbot/discord-bot",
-    "discord-bot-connector": "pnpm --filter @flowbot/discord-bot-connector",
-    "telegram-bot-pool": "pnpm --filter @flowbot/telegram-bot-pool"
+    "discord-bot-connector": "pnpm --filter @flowbot/discord-bot-connector"
   },
   "devDependencies": {
     "@types/node": "^25.3.0"

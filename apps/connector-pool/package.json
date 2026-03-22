@@ -1,0 +1,29 @@
+{
+  "name": "@flowbot/connector-pool",
+  "type": "module",
+  "version": "0.1.0",
+  "private": true,
+  "engines": { "node": ">=20.0.0" },
+  "scripts": {
+    "dev": "tsx watch ./src/main.ts",
+    "start": "tsx ./src/main.ts",
+    "typecheck": "tsc"
+  },
+  "dependencies": {
+    "@flowbot/platform-kit": "workspace:*",
+    "@flowbot/telegram-bot-connector": "workspace:*",
+    "@flowbot/telegram-user-connector": "workspace:*",
+    "@flowbot/whatsapp-user-connector": "workspace:*",
+    "@flowbot/discord-bot-connector": "workspace:*",
+    "@flowbot/db": "workspace:*",
+    "hono": "4.7.10",
+    "pino": "9.9.0",
+    "pino-pretty": "13.0.0",
+    "tsx": "4.20.4",
+    "valibot": "0.42.1"
+  },
+  "devDependencies": {
+    "@types/node": "^22.15.21",
+    "typescript": "^5.9.2"
+  }
+}

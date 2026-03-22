@@ -1,11 +1,26 @@
 import {
-  Controller, Get, Post, Patch, Delete,
-  Param, Body, Query, BadRequestException, NotFoundException,
+  Controller,
+  Get,
+  Post,
+  Patch,
+  Delete,
+  Param,
+  Body,
+  Query,
+  BadRequestException,
+  NotFoundException,
 } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse, ApiParam, ApiQuery } from '@nestjs/swagger';
+import {
+  ApiTags,
+  ApiOperation,
+  ApiResponse,
+  ApiParam,
+  ApiQuery,
+} from '@nestjs/swagger';
 import { FlowsService } from './flows.service';
 import { CorrelationService } from './correlation.service';
 import { CreateFlowDto, UpdateFlowDto } from './dto';
+import { FLOW_TEMPLATES, getFlowTemplate } from './flow-templates';
 
 @ApiTags('Flows')
 @Controller('api/flows')
@@ -17,17 +32,45 @@ export class FlowsController {
 
   @Get()
   @ApiOperation({ summary: 'List all flow definitions' })
-  @ApiQuery({ name: 'page', required: false, type: Number, description: 'Page number' })
-  @ApiQuery({ name: 'limit', required: false, type: Number, description: 'Items per page' })
-  @ApiQuery({ name: 'status', required: false, type: String, description: 'Filter by status (draft, active, inactive)' })
+  @ApiQuery({
+    name: 'page',
+    required: false,
+    type: Number,
+    description: 'Page number',
+  })
+  @ApiQuery({
+    name: 'limit',
+    required: false,
+    type: Number,
+    description: 'Items per page',
+  })
+  @ApiQuery({
+    name: 'status',
+    required: false,
+    type: String,
+    description: 'Filter by status (draft, active, inactive)',
+  })
   @ApiResponse({ status: 200, description: 'Paginated list of flows' })
-  findAll(@Query('page') page?: string, @Query('limit') limit?: string, @Query('status') status?: string) {
-    return this.service.findAll(page ? parseInt(page) : undefined, limit ? parseInt(limit) : undefined, status);
+  findAll(
+    @Query('page') page?: string,
+    @Query('limit') limit?: string,
+    @Query('status') status?: string,
+  ) {
+    return this.service.findAll(
+      page ? parseInt(page) : undefined,
+      limit ? parseInt(limit) : undefined,
+      status,
+    );
   }
 
   @Get('analytics')
   @ApiOperation({ summary: 'Get global flow analytics' })
-  @ApiQuery({ name: 'days', required: false, type: Number, description: 'Number of days to look back (default 30)' })
+  @ApiQuery({
+    name: 'days',
+    required: false,
+    type: Number,
+    description: 'Number of days to look back (default 30)',
+  })
   @ApiResponse({ status: 200, description: 'Global flow analytics data' })
   getGlobalAnalytics(@Query('days') days?: string) {
     return this.service.getGlobalAnalytics(days ? parseInt(days) : undefined);
@@ -35,14 +78,23 @@ export class FlowsController {
 
   @Get('user-context/:telegramId')
   @ApiOperation({ summary: 'Get correlated user context across bots' })
-  @ApiParam({ name: 'telegramId', type: String, description: 'Telegram user ID' })
-  @ApiResponse({ status: 200, description: 'Unified user data from User and UserIdentity tables' })
+  @ApiParam({
+    name: 'telegramId',
+    type: String,
+    description: 'Telegram user ID',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Unified user data from User and UserIdentity tables',
+  })
   getUserContext(@Param('telegramId') telegramId: string) {
     return this.correlationService.getCorrelatedContext(BigInt(telegramId));
   }
 
   @Get('trigger-registry')
-  @ApiOperation({ summary: 'Get active flow trigger registry for bot matching' })
+  @ApiOperation({
+    summary: 'Get active flow trigger registry for bot matching',
+  })
   @ApiResponse({ status: 200, description: 'Trigger registry with version' })
   getTriggerRegistry() {
     return this.service.getTriggerRegistry();
@@ -56,8 +108,13 @@ export class FlowsController {
   }
 
   @Get('context-keys')
-  @ApiOperation({ summary: 'Get distinct context keys for variable autocomplete' })
-  @ApiResponse({ status: 200, description: 'List of context keys with usage counts' })
+  @ApiOperation({
+    summary: 'Get distinct context keys for variable autocomplete',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'List of context keys with usage counts',
+  })
   getContextKeys() {
     return this.service.getContextKeys();
   }
@@ -104,6 +161,51 @@ export class FlowsController {
     return this.service.getExecution(executionId);
   }
 
+  // --- Flow Templates ---
+
+  @Get('templates')
+  @ApiOperation({ summary: 'List all available flow templates' })
+  @ApiResponse({ status: 200, description: 'List of flow templates' })
+  getTemplates() {
+    return FLOW_TEMPLATES.map(
+      ({ id, name, description, category, platform, nodes }) => ({
+        id,
+        name,
+        description,
+        category,
+        platform,
+        nodeCount: nodes.length,
+      }),
+    );
+  }
+
+  @Get('templates/:templateId')
+  @ApiOperation({
+    summary: 'Get a flow template by ID (with full node/edge data)',
+  })
+  @ApiParam({ name: 'templateId', type: String, description: 'Template ID' })
+  @ApiResponse({
+    status: 200,
+    description: 'Full template with nodes and edges',
+  })
+  @ApiResponse({ status: 404, description: 'Template not found' })
+  getTemplateById(@Param('templateId') templateId: string) {
+    const template = getFlowTemplate(templateId);
+    if (!template) throw new NotFoundException('Template not found');
+    return template;
+  }
+
+  @Post('from-template/:templateId')
+  @ApiOperation({ summary: 'Create a new flow pre-populated from a template' })
+  @ApiParam({ name: 'templateId', type: String, description: 'Template ID' })
+  @ApiResponse({ status: 201, description: 'Flow created from template' })
+  @ApiResponse({ status: 404, description: 'Template not found' })
+  createFromTemplate(@Param('templateId') templateId: string) {
+    const template = getFlowTemplate(templateId);
+    if (!template) throw new NotFoundException('Template not found');
+    return this.service.createFromTemplate(template);
+  }
+
   @Get(':id')
   @ApiOperation({ summary: 'Get a flow definition by ID' })
   @ApiParam({ name: 'id', type: String, description: 'Flow ID (CUID)' })
@@ -111,7 +213,18 @@ export class FlowsController {
   @ApiResponse({ status: 404, description: 'Flow not found' })
   findOne(@Param('id') id: string) {
     // Reject reserved sub-route names that shouldn't match :id
-    const reserved = ['analytics', 'webhook', 'user-context', 'executions', 'trigger-registry', 'context-keys', 'folders', 'debug'];
+    const reserved = [
+      'analytics',
+      'webhook',
+      'user-context',
+      'executions',
+      'trigger-registry',
+      'context-keys',
+      'folders',
+      'templates',
+      'from-template',
+      'debug',
+    ];
     if (reserved.includes(id)) {
       throw new NotFoundException(`Flow not found`);
     }
@@ -121,28 +234,39 @@ export class FlowsController {
   @Post()
   @ApiOperation({ summary: 'Create a new flow definition' })
   @ApiResponse({ status: 201, description: 'Flow created' })
-  create(@Body() dto: CreateFlowDto) { return this.service.create(dto); }
+  create(@Body() dto: CreateFlowDto) {
+    return this.service.create(dto);
+  }
 
   @Patch(':id')
   @ApiOperation({ summary: 'Update a flow definition' })
   @ApiParam({ name: 'id', type: String, description: 'Flow ID' })
   @ApiResponse({ status: 200, description: 'Flow updated' })
   @ApiResponse({ status: 404, description: 'Flow not found' })
-  update(@Param('id') id: string, @Body() dto: UpdateFlowDto) { return this.service.update(id, dto); }
+  update(@Param('id') id: string, @Body() dto: UpdateFlowDto) {
+    return this.service.update(id, dto);
+  }
 
   @Delete(':id')
   @ApiOperation({ summary: 'Delete a flow definition' })
   @ApiParam({ name: 'id', type: String, description: 'Flow ID' })
   @ApiResponse({ status: 200, description: 'Flow deleted' })
   @ApiResponse({ status: 404, description: 'Flow not found' })
-  delete(@Param('id') id: string) { return this.service.delete(id); }
+  delete(@Param('id') id: string) {
+    return this.service.delete(id);
+  }
 
   @Post(':id/validate')
   @ApiOperation({ summary: 'Validate a flow definition' })
   @ApiParam({ name: 'id', type: String, description: 'Flow ID' })
-  @ApiResponse({ status: 200, description: 'Validation result with errors array' })
+  @ApiResponse({
+    status: 200,
+    description: 'Validation result with errors array',
+  })
   @ApiResponse({ status: 404, description: 'Flow not found' })
-  validate(@Param('id') id: string) { return this.service.validate(id); }
+  validate(@Param('id') id: string) {
+    return this.service.validate(id);
+  }
 
   @Post(':id/activate')
   @ApiOperation({ summary: 'Activate a flow (validates first)' })
@@ -150,23 +274,45 @@ export class FlowsController {
   @ApiResponse({ status: 200, description: 'Flow activated' })
   @ApiResponse({ status: 400, description: 'Flow validation failed' })
   @ApiResponse({ status: 404, description: 'Flow not found' })
-  activate(@Param('id') id: string) { return this.service.activate(id); }
+  activate(@Param('id') id: string) {
+    return this.service.activate(id);
+  }
 
   @Post(':id/deactivate')
   @ApiOperation({ summary: 'Deactivate a flow' })
   @ApiParam({ name: 'id', type: String, description: 'Flow ID' })
   @ApiResponse({ status: 200, description: 'Flow deactivated' })
   @ApiResponse({ status: 404, description: 'Flow not found' })
-  deactivate(@Param('id') id: string) { return this.service.deactivate(id); }
+  deactivate(@Param('id') id: string) {
+    return this.service.deactivate(id);
+  }
 
   @Get(':id/executions')
   @ApiOperation({ summary: 'List executions for a flow' })
   @ApiParam({ name: 'id', type: String, description: 'Flow ID' })
-  @ApiQuery({ name: 'page', required: false, type: Number, description: 'Page number' })
-  @ApiQuery({ name: 'limit', required: false, type: Number, description: 'Items per page' })
+  @ApiQuery({
+    name: 'page',
+    required: false,
+    type: Number,
+    description: 'Page number',
+  })
+  @ApiQuery({
+    name: 'limit',
+    required: false,
+    type: Number,
+    description: 'Items per page',
+  })
   @ApiResponse({ status: 200, description: 'Paginated list of executions' })
-  getExecutions(@Param('id') id: string, @Query('page') page?: string, @Query('limit') limit?: string) {
-    return this.service.getExecutions(id, page ? parseInt(page) : undefined, limit ? parseInt(limit) : undefined);
+  getExecutions(
+    @Param('id') id: string,
+    @Query('page') page?: string,
+    @Query('limit') limit?: string,
+  ) {
+    return this.service.getExecutions(
+      id,
+      page ? parseInt(page) : undefined,
+      limit ? parseInt(limit) : undefined,
+    );
   }
 
   @Get(':id/versions')
@@ -199,10 +345,17 @@ export class FlowsController {
   @Post(':id/versions/:versionId/restore')
   @ApiOperation({ summary: 'Restore a flow to a specific version' })
   @ApiParam({ name: 'id', type: String, description: 'Flow ID' })
-  @ApiParam({ name: 'versionId', type: String, description: 'Version ID to restore' })
+  @ApiParam({
+    name: 'versionId',
+    type: String,
+    description: 'Version ID to restore',
+  })
   @ApiResponse({ status: 200, description: 'Flow restored to version' })
   @ApiResponse({ status: 404, description: 'Flow or version not found' })
-  restoreVersion(@Param('id') id: string, @Param('versionId') versionId: string) {
+  restoreVersion(
+    @Param('id') id: string,
+    @Param('versionId') versionId: string,
+  ) {
     return this.service.restoreVersion(id, versionId);
   }
 

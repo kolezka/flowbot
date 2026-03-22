@@ -4,6 +4,8 @@
       "args": [
         "trigger.dev@4.4.2",
         "mcp",
+        "--project-ref", "proj_cjvcqgulcerjdqdcrqhy",
+        "--api-url", "https://trigger.raqz.link",
         "--dev-only"
       ],
       "command": "npx"

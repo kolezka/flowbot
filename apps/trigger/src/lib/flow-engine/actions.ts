@@ -89,8 +89,6 @@ export async function executeAction(node: FlowNode, ctx: FlowContext): Promise<u
       return executeAnswerPreCheckout(node, ctx);
     case 'set_chat_menu_button':
       return executeSetChatMenuButton(node, ctx);
-    case 'send_media_group':
-      return executeSendMediaGroupAction(node, ctx);
     case 'create_forum_topic':
       return executeCreateForumTopic(node, ctx);
     case 'set_my_commands':

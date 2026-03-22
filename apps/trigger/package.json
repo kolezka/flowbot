@@ -10,12 +10,12 @@
     "typecheck": "tsc",
     "build": "tsc --noEmit false",
     "test": "vitest run",
-    "dev": "npx trigger.dev@3.3.17 dev",
-    "deploy": "npx trigger.dev@3.3.17 deploy"
+    "dev": "npx trigger.dev@4.4.3 dev --api-url https://trigger.raqz.link",
+    "deploy": "npx trigger.dev@4.4.3 deploy --api-url https://trigger.raqz.link"
   },
   "dependencies": {
-    "@trigger.dev/sdk": "^3.0.0",
-    "@trigger.dev/build": "^3.0.0",
+    "@trigger.dev/sdk": "4.4.3",
+    "@trigger.dev/build": "4.4.3",
     "@flowbot/telegram-user-connector": "workspace:*",
     "@flowbot/db": "workspace:*",
     "telegram": "^2.26.22",

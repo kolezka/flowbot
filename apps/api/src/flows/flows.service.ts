@@ -1,14 +1,32 @@
-import { Injectable, NotFoundException, BadRequestException, Logger } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  BadRequestException,
+  Logger,
+} from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateFlowDto, UpdateFlowDto } from './dto';
+import type { FlowTemplate } from './flow-templates';
 
 const USER_ACCOUNT_ACTIONS = new Set([
-  'user_get_chat_history', 'user_search_messages', 'user_get_all_members',
-  'user_get_chat_info', 'user_get_contacts', 'user_get_dialogs',
-  'user_join_chat', 'user_leave_chat', 'user_create_group',
-  'user_create_channel', 'user_invite_users', 'user_send_message',
-  'user_send_media', 'user_forward_message', 'user_delete_messages',
-  'user_update_profile', 'user_set_status', 'user_get_profile_photos',
+  'user_get_chat_history',
+  'user_search_messages',
+  'user_get_all_members',
+  'user_get_chat_info',
+  'user_get_contacts',
+  'user_get_dialogs',
+  'user_join_chat',
+  'user_leave_chat',
+  'user_create_group',
+  'user_create_channel',
+  'user_invite_users',
+  'user_send_message',
+  'user_send_media',
+  'user_forward_message',
+  'user_delete_messages',
+  'user_update_profile',
+  'user_set_status',
+  'user_get_profile_photos',
 ]);
 
 @Injectable()
@@ -25,7 +43,9 @@ export class FlowsService {
 
     const [flows, total] = await Promise.all([
       this.prisma.flowDefinition.findMany({
-        where, skip, take: limit,
+        where,
+        skip,
+        take: limit,
         orderBy: { updatedAt: 'desc' },
         include: { _count: { select: { executions: true } } },
       }),
@@ -34,7 +54,9 @@ export class FlowsService {
 
     return {
       data: flows,
-      total, page, limit,
+      total,
+      page,
+      limit,
       totalPages: Math.ceil(total / limit),
     };
   }
@@ -56,6 +78,18 @@ export class FlowsService {
     return this.prisma.flowDefinition.create({ data });
   }
 
+  async createFromTemplate(template: FlowTemplate) {
+    return this.prisma.flowDefinition.create({
+      data: {
+        name: template.name,
+        description: template.description,
+        nodesJson: template.nodes as any,
+        edgesJson: template.edges as any,
+        transportConfig: { platform: template.platform, transport: 'auto' },
+      },
+    });
+  }
+
   async update(id: string, dto: UpdateFlowDto) {
     await this.findOne(id);
     const data: any = {};
@@ -63,7 +97,8 @@ export class FlowsService {
     if (dto.description !== undefined) data.description = dto.description;
     if (dto.nodesJson !== undefined) data.nodesJson = dto.nodesJson;
     if (dto.edgesJson !== undefined) data.edgesJson = dto.edgesJson;
-    if (dto.transportConfig !== undefined) data.transportConfig = dto.transportConfig;
+    if (dto.transportConfig !== undefined)
+      data.transportConfig = dto.transportConfig;
     if (dto.platform !== undefined) {
       // Merge platform into existing transportConfig
       const existing = (await this.findOne(id)) as any;
@@ -128,16 +163,22 @@ export class FlowsService {
     // Check all edges reference existing nodes
     const nodeIds = new Set(nodes.map((n: any) => n.id));
     for (const edge of edges) {
-      if (!nodeIds.has(edge.source)) errors.push(`Edge references non-existent source node: ${edge.source}`);
-      if (!nodeIds.has(edge.target)) errors.push(`Edge references non-existent target node: ${edge.target}`);
+      if (!nodeIds.has(edge.source))
+        errors.push(`Edge references non-existent source node: ${edge.source}`);
+      if (!nodeIds.has(edge.target))
+        errors.push(`Edge references non-existent target node: ${edge.target}`);
     }
 
     // Check for user account nodes without a connection
-    const transportConfig = flow.transportConfig as Record<string, unknown> | null;
+    const transportConfig = flow.transportConfig as Record<
+      string,
+      unknown
+    > | null;
     const hasFlowConnection = !!transportConfig?.platformConnectionId;
 
     for (const node of nodes) {
-      const nodeType = (node.data as Record<string, unknown>)?.type as string ?? node.type;
+      const nodeType =
+        ((node.data as Record<string, unknown>)?.type as string) ?? node.type;
       if (USER_ACCOUNT_ACTIONS.has(nodeType)) {
         const nodeData = node.data as Record<string, unknown> | undefined;
         const hasNodeOverride = !!nodeData?.connectionOverride;
@@ -145,7 +186,7 @@ export class FlowsService {
         if (!hasFlowConnection && !hasNodeOverride) {
           errors.push(
             `Node "${(node.data as any)?.label ?? nodeType}" requires a User Account connection. ` +
-            `Select one in flow settings or set a per-node override.`,
+              `Select one in flow settings or set a per-node override.`,
           );
         }
       }
@@ -157,7 +198,9 @@ export class FlowsService {
   async activate(id: string) {
     const validation = await this.validate(id);
     if (!validation.valid) {
-      throw new BadRequestException(`Flow validation failed: ${validation.errors.join(', ')}`);
+      throw new BadRequestException(
+        `Flow validation failed: ${validation.errors.join(', ')}`,
+      );
     }
 
     // Check for circular run_flow references
@@ -203,7 +246,9 @@ export class FlowsService {
       where: { id: versionId },
     });
     if (!version || version.flowId !== flowId) {
-      throw new NotFoundException(`Version ${versionId} not found for flow ${flowId}`);
+      throw new NotFoundException(
+        `Version ${versionId} not found for flow ${flowId}`,
+      );
     }
     return version;
   }
@@ -233,7 +278,9 @@ export class FlowsService {
       where: { id: versionId },
     });
     if (!version || version.flowId !== flowId) {
-      throw new NotFoundException(`Version ${versionId} not found for flow ${flowId}`);
+      throw new NotFoundException(
+        `Version ${versionId} not found for flow ${flowId}`,
+      );
     }
 
     return this.prisma.flowDefinition.update({
@@ -251,11 +298,18 @@ export class FlowsService {
 
     const [total, completed, failed, executions] = await Promise.all([
       this.prisma.flowExecution.count({ where: { flowId } }),
-      this.prisma.flowExecution.count({ where: { flowId, status: 'completed' } }),
+      this.prisma.flowExecution.count({
+        where: { flowId, status: 'completed' },
+      }),
       this.prisma.flowExecution.count({ where: { flowId, status: 'failed' } }),
       this.prisma.flowExecution.findMany({
         where: { flowId, completedAt: { not: null } },
-        select: { startedAt: true, completedAt: true, status: true, error: true },
+        select: {
+          startedAt: true,
+          completedAt: true,
+          status: true,
+          error: true,
+        },
         orderBy: { startedAt: 'desc' },
         take: 500,
       }),
@@ -268,7 +322,9 @@ export class FlowsService {
 
     for (const exec of executions) {
       if (exec.completedAt) {
-        totalDurationMs += new Date(exec.completedAt).getTime() - new Date(exec.startedAt).getTime();
+        totalDurationMs +=
+          new Date(exec.completedAt).getTime() -
+          new Date(exec.startedAt).getTime();
         durationCount++;
       }
       if (exec.status === 'failed' && exec.error) {
@@ -277,8 +333,10 @@ export class FlowsService {
       }
     }
 
-    const avgDurationMs = durationCount > 0 ? Math.round(totalDurationMs / durationCount) : 0;
-    const errorRate = total > 0 ? Math.round((failed / total) * 10000) / 100 : 0;
+    const avgDurationMs =
+      durationCount > 0 ? Math.round(totalDurationMs / durationCount) : 0;
+    const errorRate =
+      total > 0 ? Math.round((failed / total) * 10000) / 100 : 0;
 
     // Top errors
     const commonErrors = Object.entries(errorCounts)
@@ -311,14 +369,26 @@ export class FlowsService {
       recentExecutions,
       topFlowsRaw,
     ] = await Promise.all([
-      this.prisma.flowExecution.count({ where: { startedAt: { gte: sinceDate } } }),
-      this.prisma.flowExecution.count({ where: { startedAt: { gte: sinceDate }, status: 'completed' } }),
-      this.prisma.flowExecution.count({ where: { startedAt: { gte: sinceDate }, status: 'failed' } }),
+      this.prisma.flowExecution.count({
+        where: { startedAt: { gte: sinceDate } },
+      }),
+      this.prisma.flowExecution.count({
+        where: { startedAt: { gte: sinceDate }, status: 'completed' },
+      }),
+      this.prisma.flowExecution.count({
+        where: { startedAt: { gte: sinceDate }, status: 'failed' },
+      }),
       this.prisma.flowDefinition.count({ where: { status: 'active' } }),
       this.prisma.flowDefinition.count(),
       this.prisma.flowExecution.findMany({
         where: { startedAt: { gte: sinceDate } },
-        select: { startedAt: true, completedAt: true, status: true, error: true, flowId: true },
+        select: {
+          startedAt: true,
+          completedAt: true,
+          status: true,
+          error: true,
+          flowId: true,
+        },
         orderBy: { startedAt: 'desc' },
         take: 2000,
       }),
@@ -332,7 +402,10 @@ export class FlowsService {
     ]);
 
     // Build daily stats
-    const dailyMap: Record<string, { total: number; completed: number; failed: number }> = {};
+    const dailyMap: Record<
+      string,
+      { total: number; completed: number; failed: number }
+    > = {};
     let totalDurationMs = 0;
     let durationCount = 0;
     const errorCounts: Record<string, number> = {};
@@ -347,7 +420,9 @@ export class FlowsService {
       if (exec.status === 'failed') dailyMap[dayKey]!.failed++;
 
       if (exec.completedAt) {
-        totalDurationMs += new Date(exec.completedAt).getTime() - new Date(exec.startedAt).getTime();
+        totalDurationMs +=
+          new Date(exec.completedAt).getTime() -
+          new Date(exec.startedAt).getTime();
         durationCount++;
       }
       if (exec.status === 'failed' && exec.error) {
@@ -357,7 +432,12 @@ export class FlowsService {
     }
 
     // Fill in missing days
-    const dailyStats: Array<{ date: string; total: number; completed: number; failed: number }> = [];
+    const dailyStats: Array<{
+      date: string;
+      total: number;
+      completed: number;
+      failed: number;
+    }> = [];
     for (let i = days - 1; i >= 0; i--) {
       const d = new Date();
       d.setDate(d.getDate() - i);
@@ -370,17 +450,22 @@ export class FlowsService {
       });
     }
 
-    const avgDurationMs = durationCount > 0 ? Math.round(totalDurationMs / durationCount) : 0;
-    const successRate = totalExecutions > 0 ? Math.round((completedCount / totalExecutions) * 10000) / 100 : 0;
+    const avgDurationMs =
+      durationCount > 0 ? Math.round(totalDurationMs / durationCount) : 0;
+    const successRate =
+      totalExecutions > 0
+        ? Math.round((completedCount / totalExecutions) * 10000) / 100
+        : 0;
 
     // Enrich top flows with names
     const flowIds = topFlowsRaw.map((f) => f.flowId);
-    const flowDefs = flowIds.length > 0
-      ? await this.prisma.flowDefinition.findMany({
-          where: { id: { in: flowIds } },
-          select: { id: true, name: true, status: true },
-        })
-      : [];
+    const flowDefs =
+      flowIds.length > 0
+        ? await this.prisma.flowDefinition.findMany({
+            where: { id: { in: flowIds } },
+            select: { id: true, name: true, status: true },
+          })
+        : [];
     const flowMap = new Map(flowDefs.map((f) => [f.id, f]));
 
     // Calculate per-flow success rates
@@ -390,7 +475,8 @@ export class FlowsService {
       if (flowIds.includes(exec.flowId)) {
         flowTotalCounts[exec.flowId] = (flowTotalCounts[exec.flowId] ?? 0) + 1;
         if (exec.status === 'completed') {
-          flowSuccessCounts[exec.flowId] = (flowSuccessCounts[exec.flowId] ?? 0) + 1;
+          flowSuccessCounts[exec.flowId] =
+            (flowSuccessCounts[exec.flowId] ?? 0) + 1;
         }
       }
     }
@@ -404,7 +490,8 @@ export class FlowsService {
         name: def?.name ?? 'Unknown',
         status: def?.status ?? 'unknown',
         executions: f._count.id,
-        successRate: total > 0 ? Math.round((succeeded / total) * 10000) / 100 : 0,
+        successRate:
+          total > 0 ? Math.round((succeeded / total) * 10000) / 100 : 0,
       };
     });
 
@@ -433,20 +520,29 @@ export class FlowsService {
     const skip = (page - 1) * limit;
     const [executions, total] = await Promise.all([
       this.prisma.flowExecution.findMany({
-        where: { flowId }, skip, take: limit,
+        where: { flowId },
+        skip,
+        take: limit,
         orderBy: { startedAt: 'desc' },
       }),
       this.prisma.flowExecution.count({ where: { flowId } }),
     ]);
 
-    return { data: executions, total, page, limit, totalPages: Math.ceil(total / limit) };
+    return {
+      data: executions,
+      total,
+      page,
+      limit,
+      totalPages: Math.ceil(total / limit),
+    };
   }
 
   async getExecution(executionId: string) {
     const execution = await this.prisma.flowExecution.findUnique({
       where: { id: executionId },
     });
-    if (!execution) throw new NotFoundException(`Execution ${executionId} not found`);
+    if (!execution)
+      throw new NotFoundException(`Execution ${executionId} not found`);
     return execution;
   }
 
@@ -467,14 +563,29 @@ export class FlowsService {
 
     // Simulate execution in background (non-blocking)
     this.simulateExecution(execution.id, nodes, edges).catch((err) => {
-      this.logger.error(`Test execution ${execution.id} failed: ${err.message}`);
+      this.logger.error(
+        `Test execution ${execution.id} failed: ${err.message}`,
+      );
     });
 
     return execution;
   }
 
-  private async simulateExecution(executionId: string, nodes: any[], edges: any[]) {
-    const nodeResults: Record<string, { status: string; output?: any; startedAt: string; completedAt?: string; error?: string }> = {};
+  private async simulateExecution(
+    executionId: string,
+    nodes: any[],
+    edges: any[],
+  ) {
+    const nodeResults: Record<
+      string,
+      {
+        status: string;
+        output?: any;
+        startedAt: string;
+        completedAt?: string;
+        error?: string;
+      }
+    > = {};
 
     // Build adjacency for traversal
     const adjacency = new Map<string, string[]>();
@@ -504,7 +615,10 @@ export class FlowsService {
         if (!node) continue;
 
         // Mark node as running
-        nodeResults[nodeId] = { status: 'running', startedAt: new Date().toISOString() };
+        nodeResults[nodeId] = {
+          status: 'running',
+          startedAt: new Date().toISOString(),
+        };
         await this.prisma.flowExecution.update({
           where: { id: executionId },
           data: { nodeResults: nodeResults as any },
@@ -535,12 +649,21 @@ export class FlowsService {
       // Mark execution as completed
       await this.prisma.flowExecution.update({
         where: { id: executionId },
-        data: { status: 'completed', completedAt: new Date(), nodeResults: nodeResults as any },
+        data: {
+          status: 'completed',
+          completedAt: new Date(),
+          nodeResults: nodeResults as any,
+        },
       });
     } catch (error: any) {
       await this.prisma.flowExecution.update({
         where: { id: executionId },
-        data: { status: 'failed', completedAt: new Date(), error: error.message, nodeResults: nodeResults as any },
+        data: {
+          status: 'failed',
+          completedAt: new Date(),
+          error: error.message,
+          nodeResults: nodeResults as any,
+        },
       });
     }
   }
@@ -549,112 +672,330 @@ export class FlowsService {
     const type = node.data?.nodeType ?? node.type;
     switch (type) {
       // Triggers
-      case 'message_received': return { text: 'Hello bot!', from: { id: 12345, name: 'Test User' }, messageType: 'text' };
-      case 'user_joins': return { userId: 12345, username: 'testuser' };
-      case 'user_leaves': return { userId: 12345, username: 'testuser', wasKicked: false };
-      case 'callback_query': return { callbackQueryId: 'cq_123', callbackData: 'action:confirm', from: { id: 12345, name: 'Test User' } };
-      case 'command_received': return { command: '/start', args: 'ref123', from: { id: 12345, name: 'Test User' } };
-      case 'message_edited': return { messageId: 555, text: 'Edited message text', from: { id: 12345, name: 'Test User' } };
-      case 'chat_member_updated': return { userId: 12345, oldStatus: 'member', newStatus: 'administrator' };
-      case 'schedule': return { triggeredAt: new Date().toISOString() };
-      case 'webhook': return { payload: { key: 'value' } };
+      case 'message_received':
+        return {
+          text: 'Hello bot!',
+          from: { id: 12345, name: 'Test User' },
+          messageType: 'text',
+        };
+      case 'user_joins':
+        return { userId: 12345, username: 'testuser' };
+      case 'user_leaves':
+        return { userId: 12345, username: 'testuser', wasKicked: false };
+      case 'callback_query':
+        return {
+          callbackQueryId: 'cq_123',
+          callbackData: 'action:confirm',
+          from: { id: 12345, name: 'Test User' },
+        };
+      case 'command_received':
+        return {
+          command: '/start',
+          args: 'ref123',
+          from: { id: 12345, name: 'Test User' },
+        };
+      case 'message_edited':
+        return {
+          messageId: 555,
+          text: 'Edited message text',
+          from: { id: 12345, name: 'Test User' },
+        };
+      case 'chat_member_updated':
+        return {
+          userId: 12345,
+          oldStatus: 'member',
+          newStatus: 'administrator',
+        };
+      case 'schedule':
+        return { triggeredAt: new Date().toISOString() };
+      case 'webhook':
+        return { payload: { key: 'value' } };
       // Conditions
-      case 'keyword_match': return { matched: true, keyword: 'test' };
-      case 'user_role': return { role: 'member', allowed: true };
-      case 'time_based': return { inRange: true };
-      case 'message_type': return { messageType: 'text', matched: true };
-      case 'chat_type': return { chatType: 'supergroup', matched: true };
-      case 'regex_match': return { matched: true, pattern: '\\d+', match: '42' };
-      case 'has_media': return { hasMedia: true, mediaType: 'photo' };
+      case 'keyword_match':
+        return { matched: true, keyword: 'test' };
+      case 'user_role':
+        return { role: 'member', allowed: true };
+      case 'time_based':
+        return { inRange: true };
+      case 'message_type':
+        return { messageType: 'text', matched: true };
+      case 'chat_type':
+        return { chatType: 'supergroup', matched: true };
+      case 'regex_match':
+        return { matched: true, pattern: '\\d+', match: '42' };
+      case 'has_media':
+        return { hasMedia: true, mediaType: 'photo' };
       // Actions
-      case 'send_message': return { messageId: 999, sent: true };
-      case 'send_photo': return { messageId: 1000, sent: true, photoUrl: 'https://example.com/photo.jpg' };
-      case 'forward_message': return { forwarded: true, messageId: 1001 };
-      case 'copy_message': return { messageId: 1002, copied: true };
-      case 'edit_message': return { messageId: 555, edited: true };
-      case 'delete_message': return { messageId: 555, deleted: true };
-      case 'pin_message': return { messageId: 555, pinned: true };
-      case 'unpin_message': return { unpinned: true };
-      case 'ban_user': return { banned: true, userId: 12345 };
-      case 'mute_user': return { muted: true, userId: 12345, duration: 3600 };
-      case 'restrict_user': return { restricted: true, userId: 12345, permissions: { canSendMessages: false } };
-      case 'promote_user': return { promoted: true, userId: 12345, privileges: { canManageChat: true } };
-      case 'create_poll': return { pollId: 'poll_123', question: 'Test poll?', sent: true };
-      case 'answer_callback_query': return { answered: true, callbackQueryId: 'cq_123' };
-      case 'api_call': return { statusCode: 200, body: { ok: true } };
-      case 'delay': return { waited: '1s' };
-      case 'bot_action': return { action: 'sendMessage', status: 200, executed: true };
+      case 'send_message':
+        return { messageId: 999, sent: true };
+      case 'send_photo':
+        return {
+          messageId: 1000,
+          sent: true,
+          photoUrl: 'https://example.com/photo.jpg',
+        };
+      case 'forward_message':
+        return { forwarded: true, messageId: 1001 };
+      case 'copy_message':
+        return { messageId: 1002, copied: true };
+      case 'edit_message':
+        return { messageId: 555, edited: true };
+      case 'delete_message':
+        return { messageId: 555, deleted: true };
+      case 'pin_message':
+        return { messageId: 555, pinned: true };
+      case 'unpin_message':
+        return { unpinned: true };
+      case 'ban_user':
+        return { banned: true, userId: 12345 };
+      case 'mute_user':
+        return { muted: true, userId: 12345, duration: 3600 };
+      case 'restrict_user':
+        return {
+          restricted: true,
+          userId: 12345,
+          permissions: { canSendMessages: false },
+        };
+      case 'promote_user':
+        return {
+          promoted: true,
+          userId: 12345,
+          privileges: { canManageChat: true },
+        };
+      case 'create_poll':
+        return { pollId: 'poll_123', question: 'Test poll?', sent: true };
+      case 'answer_callback_query':
+        return { answered: true, callbackQueryId: 'cq_123' };
+      case 'api_call':
+        return { statusCode: 200, body: { ok: true } };
+      case 'delay':
+        return { waited: '1s' };
+      case 'bot_action':
+        return { action: 'sendMessage', status: 200, executed: true };
       // Advanced
-      case 'db_query': return { rows: 3 };
-      case 'transform': return { transformed: true };
-      case 'loop': return { loopCount: 3 };
-      case 'switch': return { matchedCase: 'default' };
-      case 'parallel_branch': return { branchCount: 2, results: {} };
+      case 'db_query':
+        return { rows: 3 };
+      case 'transform':
+        return { transformed: true };
+      case 'loop':
+        return { loopCount: 3 };
+      case 'switch':
+        return { matchedCase: 'default' };
+      case 'parallel_branch':
+        return { branchCount: 2, results: {} };
       // New triggers
-      case 'poll_answer': return { userId: 12345, pollId: 'poll_456', optionIds: [0, 2] };
-      case 'inline_query': return { userId: 12345, queryId: 'iq_789', query: 'search term', offset: '' };
-      case 'my_chat_member': return { chatId: '-100123456', oldStatus: 'member', newStatus: 'kicked' };
-      case 'new_chat_title': return { chatId: '-100123456', userId: 12345, title: 'New Group Title' };
-      case 'new_chat_photo': return { chatId: '-100123456', userId: 12345, photoUpdated: true };
+      case 'poll_answer':
+        return { userId: 12345, pollId: 'poll_456', optionIds: [0, 2] };
+      case 'inline_query':
+        return {
+          userId: 12345,
+          queryId: 'iq_789',
+          query: 'search term',
+          offset: '',
+        };
+      case 'my_chat_member':
+        return {
+          chatId: '-100123456',
+          oldStatus: 'member',
+          newStatus: 'kicked',
+        };
+      case 'new_chat_title':
+        return {
+          chatId: '-100123456',
+          userId: 12345,
+          title: 'New Group Title',
+        };
+      case 'new_chat_photo':
+        return { chatId: '-100123456', userId: 12345, photoUpdated: true };
       // New conditions
-      case 'user_is_admin': return { isAdmin: true, status: 'administrator' };
-      case 'message_length': return { length: 42, matched: true, threshold: 100 };
-      case 'callback_data_match': return { matched: true, pattern: 'action:*', callbackData: 'action:confirm' };
-      case 'user_is_bot': return { isBot: false, matched: true };
+      case 'user_is_admin':
+        return { isAdmin: true, status: 'administrator' };
+      case 'message_length':
+        return { length: 42, matched: true, threshold: 100 };
+      case 'callback_data_match':
+        return {
+          matched: true,
+          pattern: 'action:*',
+          callbackData: 'action:confirm',
+        };
+      case 'user_is_bot':
+        return { isBot: false, matched: true };
       // New actions
-      case 'send_video': return { messageId: 1010, sent: true, videoUrl: 'https://example.com/video.mp4' };
-      case 'send_document': return { messageId: 1011, sent: true, documentUrl: 'https://example.com/file.pdf' };
-      case 'send_sticker': return { messageId: 1012, sent: true, sticker: 'CAACAgIAAxkBAAI...' };
-      case 'send_location': return { messageId: 1013, sent: true, latitude: 51.5074, longitude: -0.1278 };
-      case 'send_voice': return { messageId: 1014, sent: true, voiceUrl: 'https://example.com/voice.ogg' };
-      case 'send_contact': return { messageId: 1015, sent: true, phoneNumber: '+1234567890', firstName: 'John' };
-      case 'set_chat_title': return { chatId: '-100123456', title: 'New Title', updated: true };
-      case 'set_chat_description': return { chatId: '-100123456', description: 'New description', updated: true };
-      case 'export_invite_link': return { inviteLink: 'https://t.me/+abc123xyz', chatId: '-100123456' };
-      case 'get_chat_member': return { userId: 12345, status: 'member', canSendMessages: true };
+      case 'send_video':
+        return {
+          messageId: 1010,
+          sent: true,
+          videoUrl: 'https://example.com/video.mp4',
+        };
+      case 'send_document':
+        return {
+          messageId: 1011,
+          sent: true,
+          documentUrl: 'https://example.com/file.pdf',
+        };
+      case 'send_sticker':
+        return { messageId: 1012, sent: true, sticker: 'CAACAgIAAxkBAAI...' };
+      case 'send_location':
+        return {
+          messageId: 1013,
+          sent: true,
+          latitude: 51.5074,
+          longitude: -0.1278,
+        };
+      case 'send_voice':
+        return {
+          messageId: 1014,
+          sent: true,
+          voiceUrl: 'https://example.com/voice.ogg',
+        };
+      case 'send_contact':
+        return {
+          messageId: 1015,
+          sent: true,
+          phoneNumber: '+1234567890',
+          firstName: 'John',
+        };
+      case 'set_chat_title':
+        return { chatId: '-100123456', title: 'New Title', updated: true };
+      case 'set_chat_description':
+        return {
+          chatId: '-100123456',
+          description: 'New description',
+          updated: true,
+        };
+      case 'export_invite_link':
+        return { inviteLink: 'https://t.me/+abc123xyz', chatId: '-100123456' };
+      case 'get_chat_member':
+        return { userId: 12345, status: 'member', canSendMessages: true };
       // Discord Triggers
-      case 'discord_message_received': return { content: 'Hello!', author: { id: '123456789', username: 'TestUser' }, channelId: '987654321', guildId: '111222333' };
-      case 'discord_member_join': return { userId: '123456789', username: 'TestUser', guildId: '111222333' };
-      case 'discord_member_leave': return { userId: '123456789', username: 'TestUser', guildId: '111222333' };
-      case 'discord_reaction_add': return { userId: '123456789', messageId: '555666777', emoji: '👍', channelId: '987654321' };
-      case 'discord_reaction_remove': return { userId: '123456789', messageId: '555666777', emoji: '👍', channelId: '987654321' };
-      case 'discord_voice_state_update': return { userId: '123456789', channelId: '987654321', guildId: '111222333', selfMute: false };
-      case 'discord_interaction_create': return { interactionId: 'int_123', type: 2, commandName: 'test', userId: '123456789' };
-      case 'discord_channel_create': return { channelId: '987654321', name: 'new-channel', type: 'text', guildId: '111222333' };
-      case 'discord_channel_delete': return { channelId: '987654321', name: 'deleted-channel', guildId: '111222333' };
-      case 'discord_role_update': return { roleId: '444555666', name: 'Updated Role', guildId: '111222333' };
-      case 'discord_scheduled_event': return { eventId: 'evt_123', name: 'Test Event', guildId: '111222333' };
+      case 'discord_message_received':
+        return {
+          content: 'Hello!',
+          author: { id: '123456789', username: 'TestUser' },
+          channelId: '987654321',
+          guildId: '111222333',
+        };
+      case 'discord_member_join':
+        return {
+          userId: '123456789',
+          username: 'TestUser',
+          guildId: '111222333',
+        };
+      case 'discord_member_leave':
+        return {
+          userId: '123456789',
+          username: 'TestUser',
+          guildId: '111222333',
+        };
+      case 'discord_reaction_add':
+        return {
+          userId: '123456789',
+          messageId: '555666777',
+          emoji: '👍',
+          channelId: '987654321',
+        };
+      case 'discord_reaction_remove':
+        return {
+          userId: '123456789',
+          messageId: '555666777',
+          emoji: '👍',
+          channelId: '987654321',
+        };
+      case 'discord_voice_state_update':
+        return {
+          userId: '123456789',
+          channelId: '987654321',
+          guildId: '111222333',
+          selfMute: false,
+        };
+      case 'discord_interaction_create':
+        return {
+          interactionId: 'int_123',
+          type: 2,
+          commandName: 'test',
+          userId: '123456789',
+        };
+      case 'discord_channel_create':
+        return {
+          channelId: '987654321',
+          name: 'new-channel',
+          type: 'text',
+          guildId: '111222333',
+        };
+      case 'discord_channel_delete':
+        return {
+          channelId: '987654321',
+          name: 'deleted-channel',
+          guildId: '111222333',
+        };
+      case 'discord_role_update':
+        return {
+          roleId: '444555666',
+          name: 'Updated Role',
+          guildId: '111222333',
+        };
+      case 'discord_scheduled_event':
+        return { eventId: 'evt_123', name: 'Test Event', guildId: '111222333' };
       // Discord Conditions
-      case 'discord_has_role': return { hasRole: true, roleId: '444555666' };
-      case 'discord_channel_type': return { channelType: 'text', matched: true };
-      case 'discord_is_bot': return { isBot: false, matched: true };
-      case 'discord_message_has_embed': return { hasEmbed: true, embedCount: 1 };
-      case 'discord_member_permissions': return { hasPermissions: true, permissions: ['MANAGE_MESSAGES'] };
+      case 'discord_has_role':
+        return { hasRole: true, roleId: '444555666' };
+      case 'discord_channel_type':
+        return { channelType: 'text', matched: true };
+      case 'discord_is_bot':
+        return { isBot: false, matched: true };
+      case 'discord_message_has_embed':
+        return { hasEmbed: true, embedCount: 1 };
+      case 'discord_member_permissions':
+        return { hasPermissions: true, permissions: ['MANAGE_MESSAGES'] };
       // Discord Actions
-      case 'discord_send_message': return { messageId: '888999000', sent: true, channelId: '987654321' };
-      case 'discord_send_embed': return { messageId: '888999001', sent: true, channelId: '987654321' };
-      case 'discord_send_dm': return { messageId: '888999002', sent: true, userId: '123456789' };
-      case 'discord_edit_message': return { messageId: '555666777', edited: true };
-      case 'discord_delete_message': return { messageId: '555666777', deleted: true };
-      case 'discord_add_reaction': return { messageId: '555666777', emoji: '👍', added: true };
-      case 'discord_remove_reaction': return { messageId: '555666777', emoji: '👍', removed: true };
-      case 'discord_pin_message': return { messageId: '555666777', pinned: true };
-      case 'discord_unpin_message': return { messageId: '555666777', unpinned: true };
-      case 'discord_ban_member': return { userId: '123456789', banned: true };
-      case 'discord_kick_member': return { userId: '123456789', kicked: true };
-      case 'discord_timeout_member': return { userId: '123456789', timedOut: true, durationMs: 60000 };
-      case 'discord_add_role': return { userId: '123456789', roleId: '444555666', added: true };
-      case 'discord_remove_role': return { userId: '123456789', roleId: '444555666', removed: true };
-      case 'discord_create_role': return { roleId: '777888999', name: 'New Role', created: true };
-      case 'discord_set_nickname': return { userId: '123456789', nickname: 'NewNick', updated: true };
-      case 'discord_create_channel': return { channelId: '999888777', name: 'new-channel', created: true };
-      case 'discord_delete_channel': return { channelId: '987654321', deleted: true };
-      case 'discord_move_member': return { userId: '123456789', channelId: '987654321', moved: true };
-      case 'discord_create_thread': return { threadId: '111000999', name: 'New Thread', created: true };
-      case 'discord_send_thread_message': return { messageId: '888999003', threadId: '111000999', sent: true };
-      case 'discord_create_invite': return { inviteCode: 'abc123', url: 'https://discord.gg/abc123' };
-      case 'discord_create_scheduled_event': return { eventId: 'evt_456', name: 'Scheduled Event', created: true };
-      default: return { executed: true };
+      case 'discord_send_message':
+        return { messageId: '888999000', sent: true, channelId: '987654321' };
+      case 'discord_send_embed':
+        return { messageId: '888999001', sent: true, channelId: '987654321' };
+      case 'discord_send_dm':
+        return { messageId: '888999002', sent: true, userId: '123456789' };
+      case 'discord_edit_message':
+        return { messageId: '555666777', edited: true };
+      case 'discord_delete_message':
+        return { messageId: '555666777', deleted: true };
+      case 'discord_add_reaction':
+        return { messageId: '555666777', emoji: '👍', added: true };
+      case 'discord_remove_reaction':
+        return { messageId: '555666777', emoji: '👍', removed: true };
+      case 'discord_pin_message':
+        return { messageId: '555666777', pinned: true };
+      case 'discord_unpin_message':
+        return { messageId: '555666777', unpinned: true };
+      case 'discord_ban_member':
+        return { userId: '123456789', banned: true };
+      case 'discord_kick_member':
+        return { userId: '123456789', kicked: true };
+      case 'discord_timeout_member':
+        return { userId: '123456789', timedOut: true, durationMs: 60000 };
+      case 'discord_add_role':
+        return { userId: '123456789', roleId: '444555666', added: true };
+      case 'discord_remove_role':
+        return { userId: '123456789', roleId: '444555666', removed: true };
+      case 'discord_create_role':
+        return { roleId: '777888999', name: 'New Role', created: true };
+      case 'discord_set_nickname':
+        return { userId: '123456789', nickname: 'NewNick', updated: true };
+      case 'discord_create_channel':
+        return { channelId: '999888777', name: 'new-channel', created: true };
+      case 'discord_delete_channel':
+        return { channelId: '987654321', deleted: true };
+      case 'discord_move_member':
+        return { userId: '123456789', channelId: '987654321', moved: true };
+      case 'discord_create_thread':
+        return { threadId: '111000999', name: 'New Thread', created: true };
+      case 'discord_send_thread_message':
+        return { messageId: '888999003', threadId: '111000999', sent: true };
+      case 'discord_create_invite':
+        return { inviteCode: 'abc123', url: 'https://discord.gg/abc123' };
+      case 'discord_create_scheduled_event':
+        return { eventId: 'evt_456', name: 'Scheduled Event', created: true };
+      default:
+        return { executed: true };
     }
   }
 
@@ -730,7 +1071,10 @@ export class FlowsService {
         select: { nodesJson: true },
       });
       if (!flow) return [];
-      const nodes = flow.nodesJson as Array<{ type: string; config: { flowId?: string } }>;
+      const nodes = flow.nodesJson as Array<{
+        type: string;
+        config: { flowId?: string };
+      }>;
       if (!Array.isArray(nodes)) return [];
       return nodes
         .filter((n) => n.type === 'run_flow' && n.config?.flowId)
@@ -782,7 +1126,9 @@ export class FlowsService {
     if (parentId) {
       const depth = await this.getFolderDepth(parentId);
       if (depth >= this.MAX_FOLDER_DEPTH) {
-        throw new BadRequestException(`Maximum folder depth (${this.MAX_FOLDER_DEPTH}) exceeded`);
+        throw new BadRequestException(
+          `Maximum folder depth (${this.MAX_FOLDER_DEPTH}) exceeded`,
+        );
       }
     }
     return this.prisma.flowFolder.create({ data: { name, parentId } });
@@ -804,11 +1150,16 @@ export class FlowsService {
     });
   }
 
-  async updateFolder(id: string, data: { name?: string; parentId?: string; order?: number }) {
+  async updateFolder(
+    id: string,
+    data: { name?: string; parentId?: string; order?: number },
+  ) {
     if (data.parentId) {
       const depth = await this.getFolderDepth(data.parentId);
       if (depth >= this.MAX_FOLDER_DEPTH) {
-        throw new BadRequestException(`Maximum folder depth (${this.MAX_FOLDER_DEPTH}) exceeded`);
+        throw new BadRequestException(
+          `Maximum folder depth (${this.MAX_FOLDER_DEPTH}) exceeded`,
+        );
       }
     }
     return this.prisma.flowFolder.update({ where: { id }, data });

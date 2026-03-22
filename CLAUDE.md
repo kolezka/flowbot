@@ -12,13 +12,10 @@ The platform uses a **Platform Discriminator** pattern: each entity (account, co
 
 | Workspace | Stack | Module | Tests |
 |-----------|-------|--------|-------|
-| `apps/telegram-bot` | Thin shell, platform-kit server | ESM (tsx) | Vitest |
+| `apps/connector-pool` | Unified pool service, Hono, Reconciler, worker threads | ESM (tsx) | — |
 | `apps/api` | NestJS 11, Swagger 11, class-validator, Socket.IO 4.8, Trigger SDK 3.3 | CJS | Jest |
 | `apps/frontend` | Next.js 16.1, React 19.2, @xyflow/react 12.6, Recharts 3.8, Radix UI, Tailwind 4 | ESM | Playwright |
 | `apps/trigger` | Trigger.dev SDK 3.x, GramJS (telegram), Pino 9.9 | ESM | Vitest |
-| `apps/telegram-user` | Thin shell, platform-kit server | ESM (tsx) | Vitest |
-| `apps/whatsapp-user` | Thin shell, platform-kit server | ESM (tsx) | Vitest |
-| `apps/discord-bot` | Thin shell, platform-kit server | ESM (tsx) | Vitest |
 | `packages/db` | Prisma 7, @prisma/adapter-pg 7 | ESM | None |
 | `packages/telegram-user-connector` | GramJS (MTProto), platform-kit, Valibot 0.42 | ESM | Vitest |
 | `packages/telegram-bot-connector` | grammY, platform-kit, Valibot 0.42 | ESM | Vitest |
@@ -27,45 +24,24 @@ The platform uses a **Platform Discriminator** pattern: each entity (account, co
 | `packages/platform-kit` | ActionRegistry, CircuitBreaker, EventForwarder, Hono server factory | ESM | Vitest |
 | `packages/flow-shared` | Shared flow types/utils | ESM | None |
 
-### Telegram Components (connector pattern)
+### Connector Pool Architecture
 
-| Component | Type | Protocol | Identity | Purpose |
-|-----------|------|----------|----------|---------|
-| `packages/telegram-bot-connector` | Package (library) | Bot API (grammY) | Bot account | Connector with ActionRegistry, event mapper, webhook auth, DB-backed state |
-| `apps/telegram-bot` | App (thin shell) | — | — | Boots bot connector, starts platform-kit HTTP server |
-| `packages/telegram-user-connector` | Package (library) | MTProto (GramJS) | User account | Connector with ActionRegistry, event mapper, QR/phone auth, DB-backed session |
-| `apps/telegram-user` | App (thin shell) | — | — | Boots user connector, starts platform-kit HTTP server |
-| `packages/platform-kit` | Package (shared) | — | — | ActionRegistry, CircuitBreaker, EventForwarder, server factory |
+All connectors run in a single unified pool service (`apps/connector-pool`). The pool polls the database for active instances and spawns each connector as a worker thread. No tokens or credentials are needed at startup — everything comes from the database via the dashboard.
 
-**Auth flow (bot):** Dashboard webhook config → grammY bot token stored in `PlatformConnection.credentials` → connector auto-reconnects.
+| Pool | DB Table | Filter | Worker Script |
+|------|----------|--------|---------------|
+| `telegram:bot` | `BotInstance` | `platform='telegram', isActive=true` | `packages/telegram-bot-connector/src/worker.ts` |
+| `telegram:user` | `PlatformConnection` | `platform='telegram', connectionType='mtproto', status='active'` | `packages/telegram-user-connector/src/worker.ts` |
+| `whatsapp:user` | `PlatformConnection` | `platform='whatsapp', status='active'` | `packages/whatsapp-user-connector/src/worker.ts` |
+| `discord:bot` | `BotInstance` | `platform='discord', isActive=true` | `packages/discord-bot-connector/src/worker.ts` |
 
-**Auth flow (user):** Dashboard phone/QR auth → MTProto session string stored in `PlatformConnection.credentials` → connector auto-reconnects from stored session.
+**Pool lifecycle:** Reconciler polls DB every 30s → compares desired vs running workers → spawns new / stops removed → workers run connectors in threads.
 
-**Connector pattern:** `platform-kit` provides the shared infrastructure. Each connector registers typed action handlers via `ActionRegistry` with Valibot schemas. Events are forwarded via `EventForwarder`. The thin shell app uses `createConnectorServer()` to expose a standard HTTP contract: `POST /execute`, `GET /health`, `GET /actions`.
+**Auth flows:** All authentication (bot tokens, MTProto sessions, WhatsApp QR, Discord tokens) happens via the dashboard and API. Credentials are stored in `BotInstance.botToken` or `PlatformConnection.credentials`. The pool only picks up already-authenticated instances.
 
-### WhatsApp Components (connector pattern)
+**Connector packages:** Each connector package (`packages/*-connector`) contains the platform-specific logic including `worker.ts`, `connector.ts`, actions, events, and SDK transport. The pool service does not mix platform logic — it only configures which worker script to use and how to extract credentials from DB records.
 
-| Component | Type | Protocol | Identity | Purpose |
-|-----------|------|----------|----------|---------|
-| `packages/whatsapp-user-connector` | Package (library) | Baileys (multi-device) | User account | Connector with ActionRegistry, event mapper, QR auth, DB-backed session |
-| `apps/whatsapp-user` | App (thin shell) | — | — | Boots connector, starts platform-kit HTTP server |
-| `packages/platform-kit` | Package (shared) | — | — | ActionRegistry, CircuitBreaker, EventForwarder, server factory |
-
-**Auth flow:** Dashboard QR scan → Baileys auth keys stored in `PlatformConnection.credentials` → connector auto-reconnects from stored session.
-
-**Connector pattern:** `platform-kit` provides the shared infrastructure. The connector registers typed action handlers via `ActionRegistry` with Valibot schemas. Events are forwarded via `EventForwarder`. The thin shell app uses `createConnectorServer()` to expose a standard HTTP contract: `POST /execute`, `GET /health`, `GET /actions`.
-
-### Discord Components (connector pattern)
-
-| Component | Type | Protocol | Identity | Purpose |
-|-----------|------|----------|----------|---------|
-| `packages/discord-bot-connector` | Package (library) | Discord.js (gateway) | Bot account | Connector with ActionRegistry, event mapper, DB-backed state |
-| `apps/discord-bot` | App (thin shell) | — | — | Boots bot connector, starts platform-kit HTTP server |
-| `packages/platform-kit` | Package (shared) | — | — | ActionRegistry, CircuitBreaker, EventForwarder, server factory |
-
-**Auth flow:** Dashboard bot token config → token stored in env/config → connector connects via Discord gateway.
-
-**Connector pattern:** `platform-kit` provides the shared infrastructure. The connector registers typed action handlers via `ActionRegistry` with Valibot schemas. Events are forwarded via `EventForwarder`. The thin shell app uses `createConnectorServer()` to expose a standard HTTP contract: `POST /execute`, `GET /health`, `GET /actions`.
+**HTTP API:** Single Hono server on port 3010 with routes: `POST /execute`, `GET /health`, `GET /pools`, `GET /instances`, `GET /instances/:id/health`, `POST /instances/:id/restart`, `GET /metrics`.
 
 ### Path Aliases (`tsconfig.base.json`)
 - `@flowbot/db` → `packages/db/src/index.ts`
@@ -82,29 +58,27 @@ pnpm db generate                        # Regenerate Prisma Client
 pnpm db build                           # Compile db package
 
 # Dev
-pnpm telegram-bot dev | pnpm telegram-user dev | pnpm whatsapp-user dev | pnpm discord-bot dev | pnpm api start:dev | pnpm frontend dev | pnpm trigger dev
+pnpm connector-pool dev | pnpm api start:dev | pnpm frontend dev | pnpm trigger dev
 
 # Build
-pnpm telegram-bot build | pnpm api build | pnpm frontend build
+pnpm api build | pnpm frontend build
 
 # Typecheck
-pnpm telegram-bot typecheck | pnpm telegram-user-connector typecheck | pnpm telegram-bot-connector typecheck | pnpm trigger typecheck | pnpm whatsapp-user-connector typecheck | pnpm discord-bot-connector typecheck
+pnpm connector-pool typecheck | pnpm telegram-user-connector typecheck | pnpm telegram-bot-connector typecheck | pnpm trigger typecheck | pnpm whatsapp-user-connector typecheck | pnpm discord-bot-connector typecheck
 
 # Lint
-pnpm telegram-bot lint | pnpm api lint | pnpm frontend lint
+pnpm api lint | pnpm frontend lint
 pnpm api format                         # Prettier (API only)
 
 # Test
 pnpm api test                           # Jest (238 tests)
 pnpm api test -- --testPathPattern=X    # Specific test
-pnpm telegram-bot test                  # Vitest
 pnpm telegram-user-connector test       # Vitest
 pnpm telegram-bot-connector test        # Vitest
 pnpm whatsapp-user-connector test       # Vitest (86 tests)
 pnpm discord-bot-connector test         # Vitest
 pnpm platform-kit test                  # Vitest (29 tests)
 pnpm trigger test                       # Vitest
-pnpm telegram-user dev                  # Start telegram-user connector app
 
 # Trigger.dev
 pnpm trigger dev | pnpm trigger deploy
@@ -126,7 +100,7 @@ Schema at `packages/db/prisma/schema.prisma`. After changes: `pnpm db generate &
 
 ## App Structure
 
-**Telegram Bot (`apps/telegram-bot/src/`):** grammY bot with flow-event forwarding. Basic features in `bot/features/` (welcome, menu, profile, language, admin). Flow integration middlewares (flow-events, flow-trigger). HTTP server with `/api/execute-action`, `/api/flow-event`, `/api/send-message`. i18n in `locales/`.
+**Connector Pool (`apps/connector-pool/src/`):** Unified pool service managing all platform connectors. Pools config in `pools/` (telegram-bot, telegram-user, whatsapp-user, discord-bot). Multiplexed Hono HTTP server in `server.ts`. Each pool runs a `Reconciler` from platform-kit that polls DB and spawns worker threads running connector instances.
 
 **Trigger (`apps/trigger/src/`):** Tasks in `trigger/` (analytics-snapshot, broadcast, cross-post, flow-event-cleanup, flow-execution, health-check, scheduled-message). Libs in `lib/` (prisma, telegram, telegram-bot, flow-engine/).
 
@@ -144,8 +118,7 @@ Schema at `packages/db/prisma/schema.prisma`. After changes: `pnpm db generate &
 | App | Required |
 |-----|----------|
 | Shared | `DATABASE_URL` |
-| Telegram Bot | `BOT_TOKEN`, `BOT_MODE`, `BOT_ADMINS`, `LOG_LEVEL`, `SERVER_HOST`, `SERVER_PORT`, `API_SERVER_HOST`, `API_SERVER_PORT` |
-| WhatsApp User | `WA_CONNECTION_ID`, `WA_BOT_INSTANCE_ID`, `DATABASE_URL`, `API_URL`, `SERVER_PORT` (default 3004), `LOG_LEVEL` |
+| Connector Pool | `DATABASE_URL`, `API_URL`, `POOL_HOST`, `POOL_PORT` (default 3010), `TG_API_ID`, `TG_API_HASH` (for telegram-user), `LOG_LEVEL`, `ENABLE_TELEGRAM_BOT`, `ENABLE_TELEGRAM_USER`, `ENABLE_WHATSAPP_USER`, `ENABLE_DISCORD_BOT` (all default true) |
 | Trigger | `DATABASE_URL`, `TG_CLIENT_API_ID`, `TG_CLIENT_API_HASH`, `TG_CLIENT_SESSION`, `TELEGRAM_BOT_API_URL` |
 | API | `DATABASE_URL`, `PORT`, `FRONTEND_URL` |
 | Frontend | `NEXT_PUBLIC_API_URL` |
@@ -184,15 +157,11 @@ Strict mode. `noUncheckedIndexedAccess`, `noImplicitOverride`, `experimentalDeco
 ### Running Trigger.dev Worker
 
 - **Secret key:** stored in `.trigger-secret-key` file (contains `TRIGGER_SECRET_KEY=...`)
-- **Project ref:** `proj_hilpmfmsfxxbgutxovgl` (configured in `apps/trigger/trigger.config.ts`)
-- **SDK version:** `@trigger.dev/sdk@3.3.17` — CLI must match, do NOT use `@latest` (currently 4.x, incompatible)
-- **Login required:** first run needs `npx trigger.dev@3.3.17 login --api-url https://trigger.raqz.link` (opens browser auth flow)
+- **Project ref:** `proj_cjvcqgulcerjdqdcrqhy` (configured in `apps/trigger/trigger.config.ts`)
+- **SDK version:** `@trigger.dev/sdk@4.4.3` — CLI version must match
+- **Login required:** first run needs `npx trigger.dev@4.4.3 login --api-url https://trigger.raqz.link` (opens browser auth flow)
 - **Auth config:** stored in `~/.config/trigger/config.json` after login
-- **Start command:**
-  ```bash
-  TRIGGER_SECRET_KEY=tr_dev_pd7r4ISDoUW36jlJSVLH npx trigger.dev@3.3.17 dev --api-url https://trigger.raqz.link --skip-update-check
-  ```
-- **Note:** `pnpm trigger dev` uses `npx trigger.dev@latest` which causes version mismatch errors — use the explicit command above instead
+- **Start command:** `pnpm trigger dev` (runs `npx trigger.dev@4.4.3 dev --api-url https://trigger.raqz.link`)
 
 ### User Account Actions (user_* prefix)
 - Nodes prefixed with `user_` require MTProto transport via PlatformConnection
