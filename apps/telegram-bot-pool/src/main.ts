@@ -29,6 +29,7 @@ const pool = createPoolServer({
     botToken: instance.botToken ?? '',
     apiUrl: config.apiUrl,
     logLevel: config.logLevel,
+    scope: (instance.metadata as Record<string, unknown> | null)?.scope,
   }),
   updateApiUrl: async (instanceId, apiUrl) => {
     await prisma.botInstance.update({ where: { id: instanceId }, data: { apiUrl } })

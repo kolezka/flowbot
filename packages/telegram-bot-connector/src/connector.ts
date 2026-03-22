@@ -1,4 +1,5 @@
 import { ActionRegistry, EventForwarder } from '@flowbot/platform-kit'
+import type { BotScope } from '@flowbot/platform-kit'
 import type { Logger } from 'pino'
 import type { ITelegramBotTransport } from './sdk/types.js'
 import { registerMessagingActions } from './actions/messaging.js'
@@ -7,12 +8,15 @@ import { registerChatActions } from './actions/chat.js'
 import { registerMessageMgmtActions } from './actions/message-mgmt.js'
 import { registerEventListeners } from './events/listeners.js'
 import { registerFeatures } from './features/index.js'
+import { shouldProcessMessage } from './scope-filter.js'
 
 export interface TelegramBotConnectorConfig {
   botToken: string
   botInstanceId: string
   logger: Logger
   apiUrl: string
+  /** Optional scope to restrict which chats/users this bot instance processes. */
+  scope?: BotScope
   /** Optional transport override — used in tests to inject FakeTelegramBot. */
   transport?: ITelegramBotTransport
 }
@@ -40,6 +44,19 @@ export class TelegramBotConnector {
       this.transport = new GrammyBot({
         botToken: this.config.botToken,
         logger: this.logger,
+      })
+    }
+
+    // Install scope filter middleware before any other handlers
+    if (this.config.scope) {
+      const scope = this.config.scope
+      this.transport.getBot().use(async (ctx, next) => {
+        const chatId = String(ctx.chat?.id ?? '')
+        const userId = String(ctx.from?.id ?? '')
+        if (!shouldProcessMessage(scope, chatId, userId)) {
+          return
+        }
+        await next()
       })
     }
 

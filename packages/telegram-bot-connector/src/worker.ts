@@ -6,6 +6,7 @@
  */
 
 import { runWorker } from '@flowbot/platform-kit'
+import type { BotScope } from '@flowbot/platform-kit'
 import { pino } from 'pino'
 import { TelegramBotConnector } from './connector.ts'
 
@@ -20,5 +21,6 @@ runWorker((config) => {
     botInstanceId: config.instanceId,
     logger,
     apiUrl: config['apiUrl'] as string,
+    scope: config['scope'] as BotScope | undefined,
   })
 })
