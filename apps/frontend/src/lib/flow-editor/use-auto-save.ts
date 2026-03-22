@@ -19,7 +19,7 @@ export function useAutoSave({
 }: UseAutoSaveOptions) {
   const [saveState, setSaveState] = useState<SaveState>("saved");
   const [lastSaved, setLastSaved] = useState<Date | null>(null);
-  const timerRef = useRef<ReturnType<typeof setTimeout>>();
+  const timerRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
   const latestRef = useRef({ nodesJson, edgesJson });
   const lastJsonRef = useRef<string>("");
 
