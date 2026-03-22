@@ -1,5 +1,8 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { NotFoundException } from '@nestjs/common';
+import {
+  InternalServerErrorException,
+  NotFoundException,
+} from '@nestjs/common';
 import { ConnectionsService } from './connections.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { PlatformStrategyRegistry } from '../platform/strategy-registry.service';
@@ -437,6 +440,187 @@ describe('ConnectionsService', () => {
       await service.updateStatus('conn-1', 'active');
 
       expect(prisma.botInstance.update).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('getAvailableGroups', () => {
+    const mockGroups = [
+      { id: 'g-1', name: 'Group Alpha', memberCount: 42 },
+      { id: 'g-2', name: 'Group Beta', memberCount: 7 },
+    ];
+
+    function mockFetch(body: unknown, ok = true, status = 200) {
+      global.fetch = jest.fn().mockResolvedValue({
+        ok,
+        status,
+        json: jest.fn().mockResolvedValue(body),
+        text: jest.fn().mockResolvedValue(JSON.stringify(body)),
+      }) as unknown as typeof fetch;
+    }
+
+    afterEach(() => {
+      jest.restoreAllMocks();
+    });
+
+    it('should throw NotFoundException when connection does not exist', async () => {
+      prisma.platformConnection.findUnique.mockResolvedValue(null);
+
+      await expect(service.getAvailableGroups('missing')).rejects.toThrow(
+        NotFoundException,
+      );
+    });
+
+    it('should throw InternalServerErrorException for unknown connection type', async () => {
+      prisma.platformConnection.findUnique.mockResolvedValue({
+        ...mockConnection,
+        platform: 'unknown',
+        connectionType: 'custom',
+      });
+      mockFetch({ success: true, data: { groups: [] } });
+
+      await expect(service.getAvailableGroups('conn-1')).rejects.toThrow(
+        InternalServerErrorException,
+      );
+    });
+
+    it('should use connection id as instanceId for mtproto connections', async () => {
+      prisma.platformConnection.findUnique.mockResolvedValue(mockConnection);
+      mockFetch({ success: true, data: { groups: mockGroups } });
+
+      const result = await service.getAvailableGroups('conn-1');
+
+      const fetchCall = (global.fetch as jest.Mock).mock.calls[0] as [
+        string,
+        RequestInit,
+      ];
+      const body = JSON.parse(fetchCall[1].body as string) as {
+        action: string;
+        instanceId: string;
+        params: Record<string, unknown>;
+      };
+      expect(body.action).toBe('user_list_groups');
+      expect(body.instanceId).toBe('conn-1');
+      expect(result.groups).toEqual(mockGroups);
+    });
+
+    it('should use botInstanceId as instanceId for bot_token connections', async () => {
+      const botConn = {
+        ...mockConnection,
+        connectionType: 'bot_token',
+        botInstanceId: 'bot-99',
+      };
+      prisma.platformConnection.findUnique.mockResolvedValue(botConn);
+      mockFetch({ success: true, data: { groups: mockGroups } });
+
+      await service.getAvailableGroups('conn-1');
+
+      const fetchCall = (global.fetch as jest.Mock).mock.calls[0] as [
+        string,
+        RequestInit,
+      ];
+      const body = JSON.parse(fetchCall[1].body as string) as {
+        action: string;
+        instanceId: string;
+      };
+      expect(body.action).toBe('list_groups');
+      expect(body.instanceId).toBe('bot-99');
+    });
+
+    it('should handle connector pool returning an array directly', async () => {
+      prisma.platformConnection.findUnique.mockResolvedValue(mockConnection);
+      mockFetch({ success: true, data: mockGroups });
+
+      const result = await service.getAvailableGroups('conn-1');
+
+      expect(result.groups).toEqual(mockGroups);
+    });
+
+    it('should throw InternalServerErrorException when pool returns ok=false', async () => {
+      prisma.platformConnection.findUnique.mockResolvedValue(mockConnection);
+      mockFetch('Service unavailable', false, 503);
+
+      await expect(service.getAvailableGroups('conn-1')).rejects.toThrow(
+        InternalServerErrorException,
+      );
+    });
+
+    it('should throw InternalServerErrorException when pool returns success=false', async () => {
+      prisma.platformConnection.findUnique.mockResolvedValue(mockConnection);
+      mockFetch({ success: false, error: 'Worker not running' });
+
+      await expect(service.getAvailableGroups('conn-1')).rejects.toThrow(
+        InternalServerErrorException,
+      );
+    });
+
+    it('should use user_list_groups for telegram mtproto', async () => {
+      prisma.platformConnection.findUnique.mockResolvedValue({
+        ...mockConnection,
+        platform: 'telegram',
+        connectionType: 'mtproto',
+      });
+      mockFetch({ success: true, data: { groups: [] } });
+
+      await service.getAvailableGroups('conn-1');
+
+      const fetchCall = (global.fetch as jest.Mock).mock.calls[0] as [
+        string,
+        RequestInit,
+      ];
+      const body = JSON.parse(fetchCall[1].body as string) as {
+        action: string;
+      };
+      expect(body.action).toBe('user_list_groups');
+    });
+
+    it('should use discord_list_groups for discord bot_token', async () => {
+      prisma.platformConnection.findUnique.mockResolvedValue({
+        ...mockConnection,
+        platform: 'discord',
+        connectionType: 'bot_token',
+        botInstanceId: 'discord-bot-1',
+      });
+      mockFetch({ success: true, data: { groups: [] } });
+
+      await service.getAvailableGroups('conn-1');
+
+      const fetchCall = (global.fetch as jest.Mock).mock.calls[0] as [
+        string,
+        RequestInit,
+      ];
+      const body = JSON.parse(fetchCall[1].body as string) as {
+        action: string;
+      };
+      expect(body.action).toBe('discord_list_groups');
+    });
+
+    it('should use list_groups for whatsapp baileys', async () => {
+      prisma.platformConnection.findUnique.mockResolvedValue({
+        ...mockConnection,
+        platform: 'whatsapp',
+        connectionType: 'baileys',
+      });
+      mockFetch({ success: true, data: { groups: [] } });
+
+      await service.getAvailableGroups('conn-1');
+
+      const fetchCall = (global.fetch as jest.Mock).mock.calls[0] as [
+        string,
+        RequestInit,
+      ];
+      const body = JSON.parse(fetchCall[1].body as string) as {
+        action: string;
+      };
+      expect(body.action).toBe('list_groups');
+    });
+
+    it('should return empty groups array when data is nullish', async () => {
+      prisma.platformConnection.findUnique.mockResolvedValue(mockConnection);
+      mockFetch({ success: true, data: null });
+
+      const result = await service.getAvailableGroups('conn-1');
+
+      expect(result.groups).toEqual([]);
     });
   });
 });

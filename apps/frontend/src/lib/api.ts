@@ -1819,6 +1819,10 @@ class ApiClient {
       method: 'POST',
     });
   }
+
+  async getAvailableGroups(connectionId: string): Promise<{ groups: Array<{ id: string; name: string; memberCount: number }> }> {
+    return this.request<{ groups: Array<{ id: string; name: string; memberCount: number }> }>(`/api/connections/${connectionId}/available-groups`);
+  }
 }
 
 export const api = new ApiClient();
@@ -1949,6 +1953,10 @@ export async function getConnectionLogs(id: string, params?: {
 
 export async function deactivateConnection(id: string): Promise<PlatformConnectionType> {
   return api.deactivateConnection(id);
+}
+
+export async function getAvailableGroups(connectionId: string): Promise<{ groups: Array<{ id: string; name: string; memberCount: number }> }> {
+  return api.getAvailableGroups(connectionId);
 }
 
 export async function createMultiPlatformBroadcast(data: {

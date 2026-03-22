@@ -99,6 +99,20 @@ export class ConnectionsController {
     return this.service.submitAuthStep(id, dto.step, dto.data);
   }
 
+  @Get(':id/available-groups')
+  @ApiOperation({
+    summary: 'List groups available to a connection via the connector pool',
+  })
+  @ApiParam({ name: 'id', type: String })
+  @ApiResponse({
+    status: 200,
+    description: 'Available groups returned by the connector',
+  })
+  @ApiResponse({ status: 404, description: 'Connection not found' })
+  getAvailableGroups(@Param('id') id: string) {
+    return this.service.getAvailableGroups(id);
+  }
+
   @Get(':id/logs')
   @ApiOperation({ summary: 'Get logs for a connection' })
   @ApiParam({ name: 'id', type: String })

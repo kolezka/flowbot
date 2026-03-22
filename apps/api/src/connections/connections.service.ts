@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  InternalServerErrorException,
+} from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { PlatformStrategyRegistry } from '../platform/strategy-registry.service';
 import { TelegramConnectionStrategy } from './strategies/telegram-connection.strategy';
@@ -9,6 +13,22 @@ import {
   ConnectionHealthDto,
   CreateConnectionDto,
 } from './dto';
+
+const CONNECTOR_POOL_URL =
+  process.env['CONNECTOR_POOL_URL'] ?? 'http://localhost:3010';
+
+export interface AvailableGroup {
+  id: string;
+  name: string;
+  memberCount: number;
+}
+
+const ACTION_BY_TYPE: Record<string, string> = {
+  'telegram:bot_token': 'list_groups',
+  'telegram:mtproto': 'user_list_groups',
+  'discord:bot_token': 'discord_list_groups',
+  'whatsapp:baileys': 'list_groups',
+};
 
 @Injectable()
 export class ConnectionsService {
@@ -254,6 +274,66 @@ export class ConnectionsService {
     }
 
     return { totalConnections, activeConnections, errorConnections, platforms };
+  }
+
+  async getAvailableGroups(
+    connectionId: string,
+  ): Promise<{ groups: AvailableGroup[] }> {
+    const connection = await this.prisma.platformConnection.findUnique({
+      where: { id: connectionId },
+    });
+    if (!connection) {
+      throw new NotFoundException(`Connection ${connectionId} not found`);
+    }
+
+    const typeKey = `${connection.platform}:${connection.connectionType}`;
+    const action = ACTION_BY_TYPE[typeKey];
+    if (!action) {
+      throw new InternalServerErrorException(
+        `No list_groups action for connection type '${typeKey}'`,
+      );
+    }
+
+    // PlatformConnection-based (mtproto, baileys) → instanceId = connection.id
+    // BotInstance-based (bot_token) → instanceId = connection.botInstanceId
+    const instanceId =
+      connection.connectionType === 'bot_token'
+        ? (connection.botInstanceId ?? connectionId)
+        : connectionId;
+
+    const response = await fetch(`${CONNECTOR_POOL_URL}/execute`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action, instanceId, params: {} }),
+      signal: AbortSignal.timeout(30_000),
+    });
+
+    if (!response.ok) {
+      const text = await response.text().catch(() => '');
+      throw new InternalServerErrorException(
+        `Connector pool returned ${response.status}: ${text}`,
+      );
+    }
+
+    const result = (await response.json()) as {
+      success: boolean;
+      data?: { groups?: AvailableGroup[] } | AvailableGroup[];
+      error?: string;
+    };
+
+    if (!result.success) {
+      throw new InternalServerErrorException(
+        result.error ?? 'Connector pool returned failure',
+      );
+    }
+
+    // Normalise: some connectors wrap in { groups: [...] }, others return an array directly
+    const raw = result.data;
+    const groups: AvailableGroup[] = Array.isArray(raw)
+      ? raw
+      : ((raw as { groups?: AvailableGroup[] })?.groups ?? []);
+
+    return { groups };
   }
 
   async deactivate(id: string): Promise<ConnectionDto> {
