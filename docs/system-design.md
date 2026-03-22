@@ -16,15 +16,13 @@ graph TB
         NestJS[NestJS 11<br/>REST + WS + SSE<br/>:3000]
     end
 
-    subgraph Connectors
-        TB[telegram-bot<br/>grammY :3002]
-        TU[telegram-user<br/>GramJS :3003]
-        WA[whatsapp-user<br/>Baileys :3004]
-        DC[discord-bot<br/>discord.js :3005]
-    end
-
-    subgraph Pool
-        POOL[telegram-bot-pool<br/>worker_threads<br/>:3006]
+    subgraph "Connector Pool :3010"
+        CP[Unified Pool Service<br/>4 Reconcilers]
+        TBW[Telegram Bot Workers<br/>grammY]
+        TUW[Telegram User Workers<br/>GramJS / MTProto]
+        WAW[WhatsApp User Workers<br/>Baileys]
+        DCW[Discord Bot Workers<br/>discord.js]
+        CP --> TBW & TUW & WAW & DCW
     end
 
     subgraph Background
@@ -45,18 +43,17 @@ graph TB
     FE -- REST / WS / SSE --> NestJS
     NestJS -- trigger task --> TRIGHOST
     TRIGHOST -- runs --> TRIGGER
-    TRIGGER -- POST /execute --> TB & TU & WA & DC & POOL
+    TRIGGER -- POST /execute --> CP
     NestJS -- reads/writes --> PG
     TRIGGER -- reads/writes --> PG
+    CP -- polls for instances --> PG
 
-    TB -- Bot API --> TG_API
-    TU -- MTProto --> TG_API
-    WA -- multi-device --> WA_API
-    DC -- gateway --> DC_API
-    POOL -- Bot API via workers --> TG_API
+    TBW -- Bot API --> TG_API
+    TUW -- MTProto --> TG_API
+    WAW -- multi-device --> WA_API
+    DCW -- gateway --> DC_API
 
-    TB & TU & WA & DC -- POST /api/flow/webhook --> NestJS
-    POOL -- POST /api/flow/webhook --> NestJS
+    TBW & TUW & WAW & DCW -- POST /api/flow/webhook --> NestJS
 ```
 
 ---
@@ -73,35 +70,41 @@ graph LR
         AR[ActionRegistry<br/>Valibot schemas]
         EF[EventForwarder<br/>POST to API]
         CB[CircuitBreaker]
-        SF[createConnectorServer<br/>Hono HTTP]
+        REC[Reconciler<br/>polls DB, manages workers]
     end
 
     subgraph "packages/*-connector"
         CON[Platform Connector<br/>grammY / GramJS / Baileys / discord.js]
+        WRK[worker.ts<br/>Worker thread entry point]
         MAP[Event Mapper<br/>platform → FlowTriggerEvent]
         ACT[Action Handlers<br/>send_message, ban_user, etc.]
     end
 
-    subgraph "apps/*"
-        SHELL[Thin Shell App<br/>main.ts boot only]
+    subgraph "apps/connector-pool"
+        POOL[Unified Pool Service<br/>Multiplexed Hono server]
     end
 
-    SHELL --> CON
+    POOL -->|spawns| WRK
+    WRK --> CON
     CON --> AR
     CON --> EF
     CON --> CB
-    SHELL --> SF
     CON --> MAP
     CON --> ACT
+    POOL --> REC
 ```
 
-All shell apps expose the same HTTP contract:
+All connectors run as worker threads inside the unified pool service. No tokens or credentials are needed at startup — the pool polls the database for active instances and spawns workers dynamically. The pool exposes a single HTTP API:
 
 | Endpoint | Purpose |
 |----------|---------|
-| `POST /execute` | Execute an action (`{ action, params, instanceId }`) |
-| `GET /health` | Health check (uptime, memory, connected status) |
-| `GET /actions` | List registered action handlers |
+| `POST /execute` | Execute an action (`{ action, params, instanceId }`) — routes to correct worker |
+| `GET /health` | Aggregated health across all pools |
+| `GET /pools` | List all pool types with per-pool worker counts |
+| `GET /instances` | List all workers across all pools |
+| `GET /instances/:id/health` | Individual worker health |
+| `POST /instances/:id/restart` | Restart a specific worker |
+| `GET /metrics` | Per-worker action/error counts |
 
 ### Platform Discriminator
 
@@ -231,21 +234,30 @@ flowchart TB
     DONE[Update FlowExecution<br/>status: completed/failed<br/>store nodeResults]
 ```
 
-### 3e. Pool Reconciliation
+### 3e. Unified Pool Reconciliation
+
+The connector pool runs 4 reconcilers — one per platform/type combination:
+
+| Reconciler | DB Table | Filter |
+|------------|----------|--------|
+| `telegram:bot` | `BotInstance` | `platform='telegram', isActive=true` |
+| `discord:bot` | `BotInstance` | `platform='discord', isActive=true` |
+| `telegram:user` | `PlatformConnection` | `platform='telegram', connectionType='mtproto', status='active'` |
+| `whatsapp:user` | `PlatformConnection` | `platform='whatsapp', status='active'` |
 
 ```mermaid
 sequenceDiagram
-    participant R as Reconciler
+    participant R as Reconciler (per platform)
     participant DB as PostgreSQL
     participant W as Worker Threads
 
     loop Every 30s
-        R->>DB: getInstances()<br/>SELECT * FROM BotInstance<br/>WHERE platform=telegram AND isActive=true
+        R->>DB: getInstances()<br/>Query BotInstance or PlatformConnection
         R->>R: Diff desired vs running workers
 
         alt New instance found
             R->>W: Spawn worker thread<br/>(batch: 20, delay: 1s between batches)
-            W->>W: Create TelegramBotConnector<br/>Connect via grammY
+            W->>W: Create platform connector<br/>Connect via SDK
             W-->>R: MessagePort: {type: "ready"}
             R->>DB: Update apiUrl to pool URL
         end
@@ -261,17 +273,6 @@ sequenceDiagram
         end
     end
 ```
-
-**Pool HTTP endpoints:**
-
-| Endpoint | Purpose |
-|----------|---------|
-| `POST /execute` | Route action to specific worker by `instanceId` |
-| `GET /health` | Aggregate health (healthy >80%, degraded >=50%, unhealthy <50%) |
-| `GET /instances` | List all workers with status |
-| `GET /instances/:id/health` | Individual worker health |
-| `GET /metrics` | Per-worker action/error counts |
-| `POST /instances/:id/restart` | Restart a specific worker |
 
 ---
 
@@ -379,12 +380,8 @@ erDiagram
 | `apps/api` | Central REST/WS/SSE API | Single source of truth for all data, auth, and orchestration |
 | `apps/frontend` | Admin dashboard | Visual flow builder, connection management, analytics |
 | `apps/trigger` | Background job worker | Long-running tasks (flow execution, broadcasts, analytics) off the API hot path |
-| `apps/telegram-bot` | Telegram bot shell | Boots `telegram-bot-connector`, exposes HTTP for action dispatch |
-| `apps/telegram-user` | Telegram user shell | Boots `telegram-user-connector` for MTProto user accounts |
-| `apps/whatsapp-user` | WhatsApp shell | Boots `whatsapp-user-connector` for Baileys multi-device |
-| `apps/discord-bot` | Discord bot shell | Boots `discord-bot-connector` for Discord.js gateway |
-| `apps/telegram-bot-pool` | Multi-bot pool | Runs N Telegram bots in one process via worker threads |
-| `packages/platform-kit` | Shared connector infra | ActionRegistry, EventForwarder, CircuitBreaker, server factory, pool |
+| `apps/connector-pool` | Unified connector pool | Manages all platform connectors as worker threads, polls DB for instances |
+| `packages/platform-kit` | Shared connector infra | ActionRegistry, EventForwarder, CircuitBreaker, Reconciler, pool server |
 | `packages/telegram-bot-connector` | Telegram Bot API lib | grammY-based connector with typed actions and event mapping |
 | `packages/telegram-user-connector` | Telegram MTProto lib | GramJS-based connector for user account automation |
 | `packages/whatsapp-user-connector` | WhatsApp lib | Baileys-based connector for WhatsApp multi-device |

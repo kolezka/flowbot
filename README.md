@@ -14,7 +14,7 @@
   <img src="https://img.shields.io/badge/Prisma-7-2D3748?logo=prisma&logoColor=white" alt="Prisma" />
   <img src="https://img.shields.io/badge/Trigger.dev-v3-7C3AED?logo=data:image/svg+xml;base64,PHN2Zz48L3N2Zz4=&logoColor=white" alt="Trigger.dev" />
   <img src="https://img.shields.io/badge/PostgreSQL-18-4169E1?logo=postgresql&logoColor=white" alt="PostgreSQL" />
-  <img src="https://img.shields.io/badge/Tests-639-brightgreen" alt="Tests" />
+  <img src="https://img.shields.io/badge/Tests-791-brightgreen" alt="Tests" />
 </p>
 
 ## What is Flowbot?
@@ -47,17 +47,19 @@ graph TB
         WebSocket + SSE"]
     end
 
-    subgraph Connectors["Connectors"]
-        direction LR
-        TGB["telegram-bot"]
-        TGU["telegram-user"]
-        DCB["discord-bot"]
-        WAU["whatsapp-user"]
+    subgraph Pool["Connector Pool :3010"]
+        CP["Unified Pool Service
+        4 Reconcilers / worker threads"]
+        TBW["Telegram Bot workers"]
+        TUW["Telegram User workers"]
+        DCW["Discord Bot workers"]
+        WAW["WhatsApp User workers"]
+        CP --> TBW & TUW & DCW & WAW
     end
 
     subgraph Shared["platform-kit"]
         PK["ActionRegistry / CircuitBreaker
-        EventForwarder / Server Factory"]
+        EventForwarder / Reconciler"]
     end
 
     subgraph Jobs["Trigger.dev"]
@@ -70,32 +72,33 @@ graph TB
     FE <-->|"REST + WS"| NEST
     NEST --> DB
     TR --> DB
+    CP -->|"polls for instances"| DB
 
-    TGB & TGU & DCB & WAU --> PK
-    TGB <-->|"Bot API"| TG
-    TGU <-->|"MTProto"| TG
-    DCB <-->|"Gateway"| DC
-    WAU <-->|"Baileys"| WA
+    TBW & TUW & DCW & WAW --> PK
+    TBW <-->|"Bot API"| TG
+    TUW <-->|"MTProto"| TG
+    DCW <-->|"Gateway"| DC
+    WAW <-->|"Baileys"| WA
 
-    TR <-->|"POST /execute"| TGB & TGU & DCB & WAU
-    TGB & TGU & DCB & WAU -->|"POST /api/flows/webhook"| NEST
+    TR <-->|"POST /execute"| CP
+    TBW & TUW & DCW & WAW -->|"POST /api/flows/webhook"| NEST
 
     style Platforms fill:#f9f,stroke:#333
     style Dashboard fill:#e1f5fe,stroke:#333
     style API fill:#fff3e0,stroke:#333
-    style Connectors fill:#e8f5e9,stroke:#333
+    style Pool fill:#e8f5e9,stroke:#333
     style Shared fill:#fff9c4,stroke:#333
     style Jobs fill:#f3e5f5,stroke:#333
 ```
 
 </details>
 
-### Connector Pattern
+### Connector Pool
 
-Every platform connector follows the same three-layer architecture:
+All connectors run inside a single unified pool service (`apps/connector-pool`). The pool polls the database for active instances and spawns each connector as a worker thread. No tokens or credentials are needed at startup — everything comes from the dashboard.
 
 <details>
-<summary>Connector architecture diagram</summary>
+<summary>Connector pool architecture</summary>
 
 ```mermaid
 graph TB
@@ -103,22 +106,25 @@ graph TB
         AR["ActionRegistry"]
         CB["CircuitBreaker"]
         EF["EventForwarder"]
-        SF["createConnectorServer()"]
+        REC["Reconciler"]
     end
 
     subgraph Layer2["packages/*-connector"]
         SDK["Platform SDK wrapper"]
         ACT["Action handlers + Valibot schemas"]
         EVT["Event mapper"]
-        CON["Connector class"]
+        WRK["worker.ts entry point"]
     end
 
-    subgraph Layer3["apps/*"]
-        SHELL["Thin shell ~50 lines
-        boot connector + start server"]
+    subgraph Layer3["apps/connector-pool"]
+        POOL["Unified Pool Service
+        Multiplexed Hono server
+        4 Reconcilers"]
     end
 
-    Layer1 --> Layer2 --> Layer3
+    Layer1 --> Layer2
+    Layer3 -->|spawns| WRK
+    Layer3 --> REC
 
     style Layer1 fill:#fff9c4,stroke:#333
     style Layer2 fill:#e8f5e9,stroke:#333
@@ -127,15 +133,17 @@ graph TB
 
 </details>
 
-Every connector exposes the same HTTP contract:
+The pool exposes a single HTTP API on port 3010:
 
 | Endpoint | Purpose |
 |----------|---------|
-| `POST /execute` | `{ action, params }` &rarr; `{ success, data?, error? }` |
-| `GET /health` | `{ status, uptime, connected }` |
-| `GET /actions` | List of registered actions with schemas |
+| `POST /execute` | `{ instanceId, action, params }` — routes to correct worker |
+| `GET /health` | Aggregated health across all pools |
+| `GET /pools` | List pool types with per-pool worker counts |
+| `GET /instances` | All workers across all pools |
+| `POST /instances/:id/restart` | Restart a specific worker |
 
-The dispatcher is platform-agnostic — it resolves a community's connector URL and sends `{ action, params }`. No platform-specific routing.
+Each pool reconciler polls its DB table every 30s, spawning/stopping workers to match the desired state.
 
 ### Platform Matrix
 
@@ -251,10 +259,7 @@ sequenceDiagram
 ```mermaid
 graph TB
     subgraph Apps["apps/"]
-        A1["telegram-bot"]
-        A2["telegram-user"]
-        A3["discord-bot"]
-        A4["whatsapp-user"]
+        A1["connector-pool"]
         A5["api"]
         A6["frontend"]
         A7["trigger"]
@@ -270,10 +275,7 @@ graph TB
         P7["flow-shared"]
     end
 
-    A1 --> P2
-    A2 --> P3
-    A3 --> P4
-    A4 --> P5
+    A1 --> P2 & P3 & P4 & P5
     P2 & P3 & P4 & P5 --> P1
     A5 & A7 --> P6
     A7 --> P7
@@ -288,18 +290,15 @@ graph TB
 
 | Workspace | Stack | Tests | Role |
 |-----------|-------|-------|------|
-| `apps/telegram-bot` | Thin shell | — | Boots telegram-bot-connector |
-| `apps/telegram-user` | Thin shell | — | Boots telegram-user-connector |
-| `apps/discord-bot` | Thin shell | — | Boots discord-bot-connector |
-| `apps/whatsapp-user` | Thin shell | — | Boots whatsapp-user-connector |
+| `apps/connector-pool` | Hono, Reconciler, worker threads | — | Unified pool for all platform connectors |
 | `apps/api` | NestJS 11 | 238 | REST API + WebSocket + SSE |
 | `apps/frontend` | Next.js 16, React 19 | Playwright | Admin dashboard (44 pages) |
 | `apps/trigger` | Trigger.dev v3 | Vitest | Flow engine + 7 background tasks |
-| `packages/platform-kit` | Hono, Valibot | 29 | ActionRegistry, CircuitBreaker, EventForwarder |
-| `packages/telegram-bot-connector` | grammY, Valibot | 75 | Bot API actions, events, features |
+| `packages/platform-kit` | Hono, Valibot | 104 | ActionRegistry, CircuitBreaker, EventForwarder, Reconciler |
+| `packages/telegram-bot-connector` | grammY, Valibot | 106 | Bot API actions, events, features |
 | `packages/telegram-user-connector` | GramJS, Valibot | 95 | MTProto user-account actions |
-| `packages/discord-bot-connector` | discord.js, Valibot | 116 | Gateway actions, events, features |
-| `packages/whatsapp-user-connector` | Baileys, Valibot | 86 | Multi-device actions, events, QR auth |
+| `packages/discord-bot-connector` | discord.js, Valibot | 143 | Gateway actions, events, features |
+| `packages/whatsapp-user-connector` | Baileys, Valibot | 105 | Multi-device actions, events, QR auth |
 | `packages/db` | Prisma 7 | — | Schema + client (35+ models) |
 | `packages/flow-shared` | TypeScript | — | 150+ node type registry |
 
@@ -439,10 +438,7 @@ pnpm db generate && pnpm db build
 
 ```bash
 pnpm api start:dev          # API on :3000
-pnpm telegram-bot dev       # Telegram bot connector
-pnpm telegram-user dev      # Telegram user connector
-pnpm discord-bot dev        # Discord bot connector
-pnpm whatsapp-user dev      # WhatsApp connector on :3004
+pnpm connector-pool dev     # All connectors on :3010
 pnpm frontend dev           # Dashboard on :3001
 pnpm trigger dev            # Trigger.dev worker
 ```
@@ -451,11 +447,11 @@ pnpm trigger dev            # Trigger.dev worker
 
 ```bash
 pnpm api test                        # 238 tests (Jest)
-pnpm platform-kit test               # 29 tests (Vitest)
-pnpm telegram-bot-connector test     # 75 tests
+pnpm platform-kit test               # 104 tests (Vitest)
+pnpm telegram-bot-connector test     # 106 tests
 pnpm telegram-user-connector test    # 95 tests
-pnpm discord-bot-connector test      # 116 tests
-pnpm whatsapp-user-connector test    # 86 tests
+pnpm discord-bot-connector test      # 143 tests
+pnpm whatsapp-user-connector test    # 105 tests
 pnpm trigger test                    # Vitest
 ```
 
@@ -468,14 +464,14 @@ pnpm trigger test                    # Vitest
 graph LR
     PG["PostgreSQL"] --> MIG["Migrations"]
     MIG --> API["API"]
-    API --> CON["Connectors"]
-    CON --> FE["Frontend"]
+    API --> CP["Connector Pool"]
+    CP --> FE["Frontend"]
     FE --> TR["Trigger.dev"]
 
     style PG fill:#4169E1,color:#fff
     style MIG fill:#2D3748,color:#fff
     style API fill:#e0234e,color:#fff
-    style CON fill:#26A5E4,color:#fff
+    style CP fill:#26A5E4,color:#fff
     style FE fill:#000,color:#fff
     style TR fill:#7C3AED,color:#fff
 ```
@@ -487,10 +483,7 @@ graph LR
 | App | Required |
 |-----|----------|
 | Shared | `DATABASE_URL` |
-| Telegram Bot | `BOT_TOKEN`, `BOT_MODE`, `BOT_ADMINS`, `SERVER_HOST`, `SERVER_PORT` |
-| Telegram User | `TG_SESSION_STRING`, `TG_API_ID`, `TG_API_HASH` |
-| Discord Bot | `DISCORD_BOT_TOKEN`, `DISCORD_BOT_INSTANCE_ID`, `API_URL` |
-| WhatsApp User | `WA_CONNECTION_ID`, `WA_BOT_INSTANCE_ID`, `DATABASE_URL`, `API_URL` |
+| Connector Pool | `API_URL`, `POOL_HOST`, `POOL_PORT`, `TG_API_ID`, `TG_API_HASH` (for Telegram user) |
 | Trigger | `DATABASE_URL`, `TG_CLIENT_API_ID`, `TG_CLIENT_API_HASH`, `TG_CLIENT_SESSION` |
 | API | `DATABASE_URL`, `PORT`, `FRONTEND_URL` |
 | Frontend | `NEXT_PUBLIC_API_URL` |
