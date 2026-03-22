@@ -8,10 +8,21 @@ interface Variable {
   description?: string;
 }
 
+/** Variables sourced from the variable registry (upstream graph scoping). */
+interface RegistryVariable {
+  name: string;
+  type: string;
+  source: string;
+}
+
 interface VariableAutocompleteProps {
   value: string;
   onChange: (value: string) => void;
   variables: Variable[];
+  /** Optional: registry variables from getAvailableVariables(). When provided,
+   *  shown in the dropdown grouped by source with type hints. Legacy `variables`
+   *  prop is still used as fallback when this is absent. */
+  registryVariables?: ReadonlyArray<RegistryVariable>;
   multiline?: boolean;
   placeholder?: string;
   className?: string;
@@ -19,10 +30,69 @@ interface VariableAutocompleteProps {
   label?: string;
 }
 
+// ---------------------------------------------------------------------------
+// Internal unified shape used by the dropdown
+// ---------------------------------------------------------------------------
+
+interface DropdownItem {
+  name: string;
+  source: string;
+  typeHint?: string;
+  description?: string;
+}
+
+function toDropdownItems(
+  legacy: Variable[],
+  registry: ReadonlyArray<RegistryVariable> | undefined,
+): DropdownItem[] {
+  if (registry && registry.length > 0) {
+    return registry.map((v) => ({
+      name: v.name,
+      source: v.source,
+      typeHint: v.type,
+    }));
+  }
+  return legacy.map((v) => ({
+    name: v.name,
+    source: v.source,
+    description: v.description,
+  }));
+}
+
+// ---------------------------------------------------------------------------
+// Grouping helpers
+// ---------------------------------------------------------------------------
+
+interface GroupedItems {
+  source: string;
+  items: DropdownItem[];
+}
+
+function groupBySource(items: DropdownItem[]): GroupedItems[] {
+  const map = new Map<string, DropdownItem[]>();
+  for (const item of items) {
+    const group = map.get(item.source);
+    if (group) {
+      group.push(item);
+    } else {
+      map.set(item.source, [item]);
+    }
+  }
+  return Array.from(map.entries()).map(([source, groupItems]) => ({
+    source,
+    items: groupItems,
+  }));
+}
+
+// ---------------------------------------------------------------------------
+// Component
+// ---------------------------------------------------------------------------
+
 export function VariableAutocomplete({
   value,
   onChange,
   variables,
+  registryVariables,
   multiline,
   placeholder,
   className,
@@ -34,6 +104,8 @@ export function VariableAutocomplete({
   const [cursorPosition, setCursorPosition] = useState(0);
   const [selectedIndex, setSelectedIndex] = useState(0);
   const containerRef = useRef<HTMLDivElement>(null);
+
+  const allItems = toDropdownItems(variables, registryVariables);
 
   const handleInput = useCallback(
     (newValue: string, selectionStart: number) => {
@@ -56,12 +128,15 @@ export function VariableAutocomplete({
     [onChange],
   );
 
-  const filteredVariables = variables.filter((v) =>
+  const filteredItems = allItems.filter((v) =>
     v.name.toLowerCase().includes(filter.toLowerCase()),
   );
 
-  const selectVariable = useCallback(
-    (variable: Variable) => {
+  // Keep legacy filteredVariables shape for keyboard navigation index
+  const flatFiltered = filteredItems;
+
+  const selectItem = useCallback(
+    (item: DropdownItem) => {
       const before = value.slice(0, cursorPosition);
       const openIndex = before.lastIndexOf("{{");
       const after = value.slice(cursorPosition);
@@ -69,7 +144,7 @@ export function VariableAutocomplete({
 
       const prefix = value.slice(0, openIndex);
       const suffix = closeIndex >= 0 ? after.slice(closeIndex + 2) : after;
-      const newValue = `${prefix}{{${variable.name}}}${suffix}`;
+      const newValue = `${prefix}{{${item.name}}}${suffix}`;
 
       onChange(newValue);
       setShowDropdown(false);
@@ -79,29 +154,32 @@ export function VariableAutocomplete({
 
   const handleKeyDown = useCallback(
     (e: React.KeyboardEvent) => {
-      if (!showDropdown || filteredVariables.length === 0) return;
+      if (!showDropdown || flatFiltered.length === 0) return;
 
       if (e.key === "ArrowDown") {
         e.preventDefault();
-        setSelectedIndex((i) => Math.min(i + 1, filteredVariables.length - 1));
+        setSelectedIndex((i) => Math.min(i + 1, flatFiltered.length - 1));
       } else if (e.key === "ArrowUp") {
         e.preventDefault();
         setSelectedIndex((i) => Math.max(i - 1, 0));
       } else if (e.key === "Enter" && showDropdown) {
         e.preventDefault();
-        const selected = filteredVariables[selectedIndex];
-        if (selected) selectVariable(selected);
+        const selected = flatFiltered[selectedIndex];
+        if (selected) selectItem(selected);
       } else if (e.key === "Escape") {
         setShowDropdown(false);
       }
     },
-    [showDropdown, filteredVariables, selectedIndex, selectVariable],
+    [showDropdown, flatFiltered, selectedIndex, selectItem],
   );
 
   // Close dropdown on click outside
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
-      if (containerRef.current && !containerRef.current.contains(e.target as globalThis.Node)) {
+      if (
+        containerRef.current &&
+        !containerRef.current.contains(e.target as globalThis.Node)
+      ) {
         setShowDropdown(false);
       }
     };
@@ -112,6 +190,21 @@ export function VariableAutocomplete({
   const baseClass =
     className ??
     "w-full rounded-md border border-border bg-background px-2 py-1.5 text-sm";
+
+  // Determine whether to render grouped (registry) or flat (legacy) dropdown
+  const useGrouped = registryVariables && registryVariables.length > 0;
+  const groupedItems = useGrouped ? groupBySource(filteredItems) : null;
+
+  // Build a flat index → item map for keyboard selection highlighting
+  let flatIndex = 0;
+  const indexMap = new Map<string, number>();
+  if (groupedItems) {
+    for (const group of groupedItems) {
+      for (const item of group.items) {
+        indexMap.set(item.name, flatIndex++);
+      }
+    }
+  }
 
   return (
     <div ref={containerRef} className="relative">
@@ -143,24 +236,57 @@ export function VariableAutocomplete({
           onKeyDown={handleKeyDown}
         />
       )}
-      {showDropdown && filteredVariables.length > 0 && (
+      {showDropdown && flatFiltered.length > 0 && (
         <div className="absolute z-50 mt-1 w-full rounded-md border border-border bg-popover shadow-lg max-h-48 overflow-y-auto">
-          {filteredVariables.map((v, i) => (
-            <button
-              key={v.name}
-              onClick={() => selectVariable(v)}
-              className={`w-full text-left px-3 py-1.5 text-sm hover:bg-accent ${
-                i === selectedIndex ? "bg-accent" : ""
-              }`}
-            >
-              <span className="font-mono text-xs text-primary">{`{{${v.name}}}`}</span>
-              {v.description && (
-                <span className="ml-2 text-muted-foreground text-xs">
-                  {v.description}
-                </span>
-              )}
-            </button>
-          ))}
+          {groupedItems ? (
+            // Registry-sourced variables: grouped by source node with type hints
+            groupedItems.map((group) => (
+              <div key={group.source}>
+                <div className="px-3 py-1 text-xs font-semibold text-muted-foreground bg-muted/50 sticky top-0">
+                  {group.source}
+                </div>
+                {group.items.map((item) => {
+                  const itemIndex = indexMap.get(item.name) ?? 0;
+                  return (
+                    <button
+                      key={item.name}
+                      onClick={() => selectItem(item)}
+                      className={`w-full text-left px-3 py-1.5 text-sm hover:bg-accent flex items-center justify-between ${
+                        itemIndex === selectedIndex ? "bg-accent" : ""
+                      }`}
+                    >
+                      <span className="font-mono text-xs text-primary">
+                        {`{{${item.name}}}`}
+                      </span>
+                      {item.typeHint && (
+                        <span className="ml-2 text-muted-foreground text-xs shrink-0">
+                          {item.typeHint}
+                        </span>
+                      )}
+                    </button>
+                  );
+                })}
+              </div>
+            ))
+          ) : (
+            // Legacy flat list
+            flatFiltered.map((item, i) => (
+              <button
+                key={item.name}
+                onClick={() => selectItem(item)}
+                className={`w-full text-left px-3 py-1.5 text-sm hover:bg-accent ${
+                  i === selectedIndex ? "bg-accent" : ""
+                }`}
+              >
+                <span className="font-mono text-xs text-primary">{`{{${item.name}}}`}</span>
+                {item.description && (
+                  <span className="ml-2 text-muted-foreground text-xs">
+                    {item.description}
+                  </span>
+                )}
+              </button>
+            ))
+          )}
         </div>
       )}
     </div>
