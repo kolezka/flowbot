@@ -141,10 +141,17 @@ export interface CreatedEvent {
  * In-memory test double for IDiscordBotTransport.
  * Records all calls so tests can assert on them.
  */
+export interface FakeGuild {
+  id: string
+  name: string
+  memberCount: number
+}
+
 export class FakeDiscordClient implements IDiscordBotTransport {
   private _connected = false
   private nextId = 1
   private sentMessages: SentMessage[] = []
+  private fakeGuilds: Map<string, FakeGuild> = new Map()
   private sentEmbeds: SentEmbed[] = []
   private sentDMs: SentDM[] = []
   private editedMessages: EditedMessage[] = []
@@ -195,11 +202,21 @@ export class FakeDiscordClient implements IDiscordBotTransport {
   }
 
   getClient(): Client {
-    // Return a Proxy stub so event listeners can register without crashing
-    const stub = new Proxy({} as Client, {
-      get: () => () => stub,
+    const guildCache = this.fakeGuilds
+    // Return a Proxy stub so event listeners can register without crashing.
+    // guilds.cache is a real Map so list_groups can iterate it.
+    const stub = new Proxy({ guilds: { cache: guildCache } } as unknown as Client, {
+      get: (target, prop) => {
+        if (prop === 'guilds') return target.guilds
+        return () => stub
+      },
     })
     return stub
+  }
+
+  /** Seed a fake guild for testing list_groups. */
+  addFakeGuild(guild: FakeGuild): void {
+    this.fakeGuilds.set(guild.id, guild)
   }
 
   // --- Messaging ---
@@ -413,6 +430,7 @@ export class FakeDiscordClient implements IDiscordBotTransport {
     this.createdInvites = []
     this.movedMembers = []
     this.createdEvents = []
+    this.fakeGuilds = new Map()
     this.nextId = 1
   }
 }

@@ -4,6 +4,7 @@ import type { IDiscordBotTransport } from './sdk/types.js'
 import { registerMessagingActions } from './actions/messaging.js'
 import { registerAdminActions } from './actions/admin.js'
 import { registerChannelActions } from './actions/channel.js'
+import { registerGroupsActions } from './actions/groups.js'
 import { registerEventListeners } from './events/listeners.js'
 
 export interface DiscordBotConnectorConfig {
@@ -74,5 +75,6 @@ export class DiscordBotConnector {
     registerMessagingActions(this.registry, this.transport)
     registerAdminActions(this.registry, this.transport)
     registerChannelActions(this.registry, this.transport)
+    registerGroupsActions(this.registry, this.transport)
   }
 }

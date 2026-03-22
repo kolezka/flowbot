@@ -5,6 +5,7 @@ import { registerMessagingActions } from '../actions/messaging.js'
 import { registerGroupAdminActions } from '../actions/group-admin.js'
 import { registerMessageMgmtActions } from '../actions/message-mgmt.js'
 import { registerPresenceActions } from '../actions/presence.js'
+import { registerGroupsActions } from '../actions/groups.js'
 
 const USER_JID = '123@s.whatsapp.net'
 const GROUP_JID = 'group123@g.us'
@@ -235,5 +236,38 @@ describe('presence actions', () => {
     const result = await registry.execute('send_presence', { chatId: USER_JID })
     expect(result.success).toBe(false)
     expect(result.error).toContain('Invalid params')
+  })
+})
+
+describe('groups actions (list_groups)', () => {
+  let transport: FakeWhatsAppTransport
+  let registry: ActionRegistry
+
+  beforeEach(() => {
+    transport = new FakeWhatsAppTransport()
+    registry = new ActionRegistry()
+    registerGroupsActions(registry, transport)
+  })
+
+  it('list_groups returns empty array when no groups exist', async () => {
+    const result = await registry.execute('list_groups', {})
+    expect(result.success).toBe(true)
+    const data = result.data as { groups: unknown[] }
+    expect(data.groups).toEqual([])
+  })
+
+  it('list_groups returns groups with member counts', async () => {
+    transport.setFakeGroups({
+      [GROUP_JID]: { subject: 'My Group', participants: [{ id: '1' }, { id: '2' }, { id: '3' }] },
+      'group2@g.us': { subject: 'Another Group', participants: [{ id: '10' }, { id: '11' }] },
+    })
+    const result = await registry.execute('list_groups', {})
+    expect(result.success).toBe(true)
+    const data = result.data as { groups: Array<{ id: string; name: string; memberCount: number }> }
+    expect(data.groups).toHaveLength(2)
+    const myGroup = data.groups.find((g) => g.id === GROUP_JID)
+    expect(myGroup).toMatchObject({ id: GROUP_JID, name: 'My Group', memberCount: 3 })
+    const otherGroup = data.groups.find((g) => g.id === 'group2@g.us')
+    expect(otherGroup).toMatchObject({ id: 'group2@g.us', name: 'Another Group', memberCount: 2 })
   })
 })

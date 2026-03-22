@@ -4,6 +4,7 @@ import { FakeDiscordClient } from '../sdk/fake-client.js'
 import { registerMessagingActions } from '../actions/messaging.js'
 import { registerAdminActions } from '../actions/admin.js'
 import { registerChannelActions } from '../actions/channel.js'
+import { registerGroupsActions } from '../actions/groups.js'
 
 const CHANNEL_ID = '123456789'
 const GUILD_ID = '987654321'
@@ -382,5 +383,34 @@ describe('channel actions', () => {
     })
     expect(result.success).toBe(false)
     expect(result.error).toContain('Invalid params')
+  })
+})
+
+describe('groups actions (discord_list_groups)', () => {
+  let transport: FakeDiscordClient
+  let registry: ActionRegistry
+
+  beforeEach(() => {
+    transport = new FakeDiscordClient()
+    registry = new ActionRegistry()
+    registerGroupsActions(registry, transport)
+  })
+
+  it('discord_list_groups returns empty array when no guilds in cache', async () => {
+    const result = await registry.execute('discord_list_groups', {})
+    expect(result.success).toBe(true)
+    const data = result.data as { groups: unknown[] }
+    expect(data.groups).toEqual([])
+  })
+
+  it('discord_list_groups returns guilds from cache', async () => {
+    transport.addFakeGuild({ id: GUILD_ID, name: 'My Server', memberCount: 42 })
+    transport.addFakeGuild({ id: '111222333', name: 'Other Server', memberCount: 100 })
+    const result = await registry.execute('discord_list_groups', {})
+    expect(result.success).toBe(true)
+    const data = result.data as { groups: Array<{ id: string; name: string; memberCount: number }> }
+    expect(data.groups).toHaveLength(2)
+    expect(data.groups[0]).toMatchObject({ id: GUILD_ID, name: 'My Server', memberCount: 42 })
+    expect(data.groups[1]).toMatchObject({ id: '111222333', name: 'Other Server', memberCount: 100 })
   })
 })

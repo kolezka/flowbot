@@ -29,11 +29,16 @@ export interface ForwardedMessage {
  * In-memory test double implementing ITelegramUserTransport.
  * Records sent/forwarded messages for assertion in unit tests.
  */
+export interface FakeDialog {
+  entity: { className: string; id: string | number; title: string; participantsCount?: number } | null
+}
+
 export class FakeTelegramUserTransport implements ITelegramUserTransport {
   private connected = false
   private nextId = 1
   private sentMessages: SentMessage[] = []
   private forwardedMessages: ForwardedMessage[] = []
+  private fakeDialogs: FakeDialog[] = []
 
   private makeResult(peer: string | bigint): MessageResult {
     return {
@@ -58,7 +63,15 @@ export class FakeTelegramUserTransport implements ITelegramUserTransport {
   }
 
   getClient(): unknown {
-    return null
+    const dialogs = this.fakeDialogs
+    return {
+      getDialogs: async (_opts: unknown) => dialogs,
+    }
+  }
+
+  /** Seed fake dialogs for testing user_list_groups. */
+  setFakeDialogs(dialogs: FakeDialog[]): void {
+    this.fakeDialogs = [...dialogs]
   }
 
   // --- Messaging ---
@@ -244,6 +257,7 @@ export class FakeTelegramUserTransport implements ITelegramUserTransport {
   clear(): void {
     this.sentMessages = []
     this.forwardedMessages = []
+    this.fakeDialogs = []
     this.nextId = 1
   }
 }

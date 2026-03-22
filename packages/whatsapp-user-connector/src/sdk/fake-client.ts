@@ -27,6 +27,11 @@ export interface KickedParticipant {
   userJid: string
 }
 
+export interface FakeGroupMeta {
+  subject: string
+  participants: unknown[]
+}
+
 export class FakeWhatsAppTransport implements IWhatsAppTransport {
   private connected = false
   private nextId = 1
@@ -35,6 +40,7 @@ export class FakeWhatsAppTransport implements IWhatsAppTransport {
   private kickedParticipants: KickedParticipant[] = []
   private qrCallback: ((qr: string) => void) | null = null
   private connectionUpdateCallback: ((update: { connection?: string; lastDisconnect?: unknown }) => void) | null = null
+  private fakeGroups: Record<string, FakeGroupMeta> = {}
 
   private makeKey(jid: string): WhatsAppMessageKey {
     return { remoteJid: jid, fromMe: true, id: `fake-msg-${this.nextId++}` }
@@ -67,7 +73,15 @@ export class FakeWhatsAppTransport implements IWhatsAppTransport {
   }
 
   getClient(): unknown {
-    return null
+    const groups = this.fakeGroups
+    return {
+      groupFetchAllParticipating: async () => groups,
+    }
+  }
+
+  /** Seed fake groups for testing list_groups. */
+  setFakeGroups(groups: Record<string, FakeGroupMeta>): void {
+    this.fakeGroups = { ...groups }
   }
 
   // --- Messaging ---
@@ -182,6 +196,7 @@ export class FakeWhatsAppTransport implements IWhatsAppTransport {
     this.sentMessages = []
     this.deletedMessages = []
     this.kickedParticipants = []
+    this.fakeGroups = {}
     this.nextId = 1
   }
 }

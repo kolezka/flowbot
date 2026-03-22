@@ -6,6 +6,7 @@ import { registerMessagingActions } from './actions/messaging.js'
 import { registerAdminActions } from './actions/admin.js'
 import { registerChatActions } from './actions/chat.js'
 import { registerMessageMgmtActions } from './actions/message-mgmt.js'
+import { registerGroupsActions } from './actions/groups.js'
 import { registerEventListeners } from './events/listeners.js'
 import { registerFeatures } from './features/index.js'
 import { shouldProcessMessage } from './scope-filter.js'
@@ -95,5 +96,6 @@ export class TelegramBotConnector {
     registerAdminActions(this.registry, this.transport)
     registerChatActions(this.registry, this.transport)
     registerMessageMgmtActions(this.registry, this.transport)
+    registerGroupsActions(this.registry, this.transport)
   }
 }

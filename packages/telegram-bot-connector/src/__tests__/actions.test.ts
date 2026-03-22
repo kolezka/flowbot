@@ -5,6 +5,7 @@ import { registerMessagingActions } from '../actions/messaging.js'
 import { registerAdminActions } from '../actions/admin.js'
 import { registerChatActions } from '../actions/chat.js'
 import { registerMessageMgmtActions } from '../actions/message-mgmt.js'
+import { registerGroupsActions } from '../actions/groups.js'
 
 const CHAT_ID = '-1001234567890'
 const USER_ID = 12345
@@ -333,5 +334,24 @@ describe('message management actions', () => {
     })
     expect(result.success).toBe(false)
     expect(result.error).toContain('Invalid params')
+  })
+})
+
+describe('groups actions', () => {
+  let transport: FakeTelegramBot
+  let registry: ActionRegistry
+
+  beforeEach(() => {
+    transport = new FakeTelegramBot()
+    registry = new ActionRegistry()
+    registerGroupsActions(registry, transport)
+  })
+
+  it('list_groups returns empty array with note', async () => {
+    const result = await registry.execute('list_groups', {})
+    expect(result.success).toBe(true)
+    const data = result.data as { groups: unknown[]; note: string }
+    expect(data.groups).toEqual([])
+    expect(data.note).toContain('Telegram Bot API')
   })
 })

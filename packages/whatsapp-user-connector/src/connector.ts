@@ -5,6 +5,7 @@ import { registerMessagingActions } from './actions/messaging.js'
 import { registerGroupAdminActions } from './actions/group-admin.js'
 import { registerMessageMgmtActions } from './actions/message-mgmt.js'
 import { registerPresenceActions } from './actions/presence.js'
+import { registerGroupsActions } from './actions/groups.js'
 import { registerEventListeners } from './events/listeners.js'
 import { setupQrAuth } from './auth.js'
 
@@ -79,5 +80,6 @@ export class WhatsAppUserConnector {
     registerGroupAdminActions(this.registry, this.transport)
     registerMessageMgmtActions(this.registry, this.transport)
     registerPresenceActions(this.registry, this.transport)
+    registerGroupsActions(this.registry, this.transport)
   }
 }

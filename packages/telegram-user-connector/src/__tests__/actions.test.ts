@@ -3,6 +3,7 @@ import { ActionRegistry } from '@flowbot/platform-kit'
 import { FakeTelegramUserTransport } from '../sdk/fake-client.js'
 import { registerMessagingActions } from '../actions/messaging.js'
 import { registerUserActions } from '../actions/user-actions.js'
+import { registerGroupsActions } from '../actions/groups.js'
 
 const PEER = 'channel123'
 const USER_ID = 'user456'
@@ -316,5 +317,49 @@ describe('user actions', () => {
       iconEmojiId: 'emoji123',
     })
     expect(result.success).toBe(true)
+  })
+})
+
+describe('groups actions (user_list_groups)', () => {
+  let transport: FakeTelegramUserTransport
+  let registry: ActionRegistry
+
+  beforeEach(async () => {
+    transport = new FakeTelegramUserTransport()
+    await transport.connect()
+    registry = new ActionRegistry()
+    registerGroupsActions(registry, transport)
+  })
+
+  it('user_list_groups returns empty list when no dialogs exist', async () => {
+    const result = await registry.execute('user_list_groups', {})
+    expect(result.success).toBe(true)
+    const data = result.data as { groups: unknown[] }
+    expect(data.groups).toEqual([])
+  })
+
+  it('user_list_groups returns groups filtered from dialogs', async () => {
+    transport.setFakeDialogs([
+      { entity: { className: 'Channel', id: '-100111', title: 'My Channel', participantsCount: 50 } },
+      { entity: { className: 'Chat', id: '-100222', title: 'My Group', participantsCount: 10 } },
+      { entity: { className: 'User', id: '999', title: 'Direct User' } },
+    ])
+    const result = await registry.execute('user_list_groups', {})
+    expect(result.success).toBe(true)
+    const data = result.data as { groups: Array<{ id: string; name: string; memberCount: number }> }
+    expect(data.groups).toHaveLength(2)
+    expect(data.groups[0]).toMatchObject({ id: '-100111', name: 'My Channel', memberCount: 50 })
+    expect(data.groups[1]).toMatchObject({ id: '-100222', name: 'My Group', memberCount: 10 })
+  })
+
+  it('user_list_groups ignores dialogs with null entity', async () => {
+    transport.setFakeDialogs([
+      { entity: null },
+      { entity: { className: 'Channel', id: '-100333', title: 'Valid Channel', participantsCount: 5 } },
+    ])
+    const result = await registry.execute('user_list_groups', {})
+    expect(result.success).toBe(true)
+    const data = result.data as { groups: unknown[] }
+    expect(data.groups).toHaveLength(1)
   })
 })
