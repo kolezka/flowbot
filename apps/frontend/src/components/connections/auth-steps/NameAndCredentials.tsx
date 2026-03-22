@@ -10,7 +10,7 @@ interface NameAndCredentialsProps {
   platform: string;
   connectionType: string;
   onBack: () => void;
-  onSubmit: (data: { name: string; connectionId: string; sessionId: string }) => void;
+  onSubmit: (data: { name: string; connectionId: string; sessionId: string; phoneNumber?: string }) => void;
 }
 
 function getCredentialConfig(
@@ -97,7 +97,9 @@ export function NameAndCredentials({
         sessionId = authResult.sessionId ?? "";
       }
 
-      onSubmit({ name: name.trim(), connectionId, sessionId });
+      const phoneNumber =
+        connectionType === "mtproto" ? credential.trim() : undefined;
+      onSubmit({ name: name.trim(), connectionId, sessionId, phoneNumber });
     } catch (e: unknown) {
       const msg = e instanceof Error ? e.message : "Something went wrong";
       setError(msg);

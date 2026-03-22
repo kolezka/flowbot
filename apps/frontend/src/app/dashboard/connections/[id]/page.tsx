@@ -4,14 +4,13 @@ import { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { api } from "@/lib/api";
-import type { PlatformConnectionType, BotInstance } from "@/lib/api";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import type { PlatformConnectionType } from "@/lib/api";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { PlatformBadge } from "@/components/platform-badge";
-import { ArrowLeft, Trash2, Plus } from "lucide-react";
+import { ScopeManager } from "@/components/connections/ScopeManager";
+import { ArrowLeft } from "lucide-react";
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -40,160 +39,6 @@ function getConnectionTypeLabel(connectionType: string): string {
 }
 
 // ---------------------------------------------------------------------------
-// Scope editor — shown only for bot_token connections with a botInstanceId
-// ---------------------------------------------------------------------------
-
-function ScopeEditor({ botInstanceId }: { botInstanceId: string }) {
-  const [groupIds, setGroupIds] = useState<string[]>([]);
-  const [userIds, setUserIds] = useState<string[]>([]);
-  const [newGroupId, setNewGroupId] = useState("");
-  const [newUserId, setNewUserId] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [saved, setSaved] = useState(false);
-  const [error, setError] = useState("");
-
-  useEffect(() => {
-    api.getBotInstance(botInstanceId).then((bot: BotInstance) => {
-      const scope = bot.metadata?.scope as { groupIds?: string[]; userIds?: string[] } | undefined;
-      if (scope) {
-        setGroupIds(scope.groupIds ?? []);
-        setUserIds(scope.userIds ?? []);
-      }
-    }).catch(() => {});
-  }, [botInstanceId]);
-
-  const handleSave = async () => {
-    setLoading(true);
-    setError("");
-    setSaved(false);
-    try {
-      await api.updateBotScope(botInstanceId, { groupIds, userIds });
-      setSaved(true);
-    } catch (e: unknown) {
-      const msg = e instanceof Error ? e.message : "Failed to save scope";
-      setError(msg);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const addGroupId = () => {
-    const trimmed = newGroupId.trim();
-    if (trimmed && !groupIds.includes(trimmed)) {
-      setGroupIds([...groupIds, trimmed]);
-      setSaved(false);
-    }
-    setNewGroupId("");
-  };
-
-  const removeGroupId = (id: string) => {
-    setGroupIds(groupIds.filter((g) => g !== id));
-    setSaved(false);
-  };
-
-  const addUserId = () => {
-    const trimmed = newUserId.trim();
-    if (trimmed && !userIds.includes(trimmed)) {
-      setUserIds([...userIds, trimmed]);
-      setSaved(false);
-    }
-    setNewUserId("");
-  };
-
-  const removeUserId = (id: string) => {
-    setUserIds(userIds.filter((u) => u !== id));
-    setSaved(false);
-  };
-
-  return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Bot Scope Configuration</CardTitle>
-        <CardDescription>
-          Restrict which groups and users this bot responds to. Leave both lists empty to allow all.
-        </CardDescription>
-      </CardHeader>
-      <CardContent className="space-y-6">
-        {/* Group IDs */}
-        <div className="space-y-2">
-          <Label>Allowed Group IDs</Label>
-          <div className="space-y-1">
-            {groupIds.length === 0 && (
-              <p className="text-sm text-muted-foreground">No groups scoped — bot responds in all groups.</p>
-            )}
-            {groupIds.map((id) => (
-              <div key={id} className="flex items-center justify-between rounded-md border border-border px-3 py-1.5">
-                <span className="text-sm font-mono">{id}</span>
-                <button
-                  type="button"
-                  onClick={() => removeGroupId(id)}
-                  className="text-muted-foreground hover:text-destructive transition-colors"
-                  aria-label={`Remove group ${id}`}
-                >
-                  <Trash2 className="h-4 w-4" />
-                </button>
-              </div>
-            ))}
-          </div>
-          <div className="flex gap-2">
-            <Input
-              placeholder="Group chat ID (e.g. -1001234567890)"
-              value={newGroupId}
-              onChange={(e) => setNewGroupId(e.target.value)}
-              onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); addGroupId(); } }}
-            />
-            <Button variant="outline" size="sm" onClick={addGroupId} disabled={!newGroupId.trim()}>
-              <Plus className="h-4 w-4" />
-            </Button>
-          </div>
-        </div>
-
-        {/* User IDs */}
-        <div className="space-y-2">
-          <Label>Allowed User IDs</Label>
-          <div className="space-y-1">
-            {userIds.length === 0 && (
-              <p className="text-sm text-muted-foreground">No users scoped — bot responds to all users.</p>
-            )}
-            {userIds.map((id) => (
-              <div key={id} className="flex items-center justify-between rounded-md border border-border px-3 py-1.5">
-                <span className="text-sm font-mono">{id}</span>
-                <button
-                  type="button"
-                  onClick={() => removeUserId(id)}
-                  className="text-muted-foreground hover:text-destructive transition-colors"
-                  aria-label={`Remove user ${id}`}
-                >
-                  <Trash2 className="h-4 w-4" />
-                </button>
-              </div>
-            ))}
-          </div>
-          <div className="flex gap-2">
-            <Input
-              placeholder="User ID (e.g. 123456789)"
-              value={newUserId}
-              onChange={(e) => setNewUserId(e.target.value)}
-              onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); addUserId(); } }}
-            />
-            <Button variant="outline" size="sm" onClick={addUserId} disabled={!newUserId.trim()}>
-              <Plus className="h-4 w-4" />
-            </Button>
-          </div>
-        </div>
-
-        {error && <p className="text-sm text-destructive">{error}</p>}
-        {saved && <p className="text-sm text-green-600">Scope saved successfully.</p>}
-
-        <Button onClick={handleSave} disabled={loading}>
-          {loading ? "Saving..." : "Save Scope"}
-        </Button>
-      </CardContent>
-    </Card>
-  );
-}
-
-// ---------------------------------------------------------------------------
 // Main detail page
 // ---------------------------------------------------------------------------
 
@@ -215,6 +60,16 @@ export default function ConnectionDetailPage() {
       })
       .finally(() => setLoading(false));
   }, [params.id]);
+
+  function fetchConnection() {
+    if (!params.id) return;
+    api.getConnection(params.id)
+      .then(setConnection)
+      .catch((e: unknown) => {
+        const msg = e instanceof Error ? e.message : "Failed to reload connection";
+        setError(msg);
+      });
+  }
 
   const handleDeactivate = async () => {
     if (!connection) return;
@@ -251,9 +106,6 @@ export default function ConnectionDetailPage() {
       </div>
     );
   }
-
-  const showScopeEditor =
-    connection.connectionType === "bot_token" && !!connection.botInstanceId;
 
   return (
     <div className="space-y-6">
@@ -343,10 +195,8 @@ export default function ConnectionDetailPage() {
         </CardContent>
       </Card>
 
-      {/* Bot scope section */}
-      {showScopeEditor && (
-        <ScopeEditor botInstanceId={connection.botInstanceId!} />
-      )}
+      {/* Scope manager */}
+      <ScopeManager connectionId={connection.id} onComplete={() => fetchConnection()} />
     </div>
   );
 }

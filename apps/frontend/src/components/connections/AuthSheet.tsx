@@ -4,6 +4,9 @@ import { useState } from "react";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { PlatformSelect } from "./auth-steps/PlatformSelect";
 import { NameAndCredentials } from "./auth-steps/NameAndCredentials";
+import { Verification } from "./auth-steps/Verification";
+import { HealthCheck } from "./auth-steps/HealthCheck";
+import { ScopeManager } from "./ScopeManager";
 
 type Step = "platform" | "credentials" | "verification" | "health" | "scope";
 
@@ -19,6 +22,8 @@ interface AuthState {
   name: string;
   connectionId: string;
   sessionId: string;
+  /** Phone number for MTProto verification — captured from the credentials step */
+  phoneNumber?: string;
 }
 
 const STEP_LABELS: Record<Step, string> = {
@@ -76,8 +81,8 @@ export function AuthSheet({ open, onOpenChange, onComplete }: AuthSheetProps) {
             platform={state.platform!}
             connectionType={state.connectionType!}
             onBack={() => setStep("platform")}
-            onSubmit={({ name, connectionId, sessionId }) => {
-              setState((prev) => ({ ...prev, name, connectionId, sessionId }));
+            onSubmit={({ name, connectionId, sessionId, phoneNumber }) => {
+              setState((prev) => ({ ...prev, name, connectionId, sessionId, phoneNumber }));
               const skipVerification =
                 state.connectionType === "bot_token" ||
                 state.platform === "discord";
@@ -85,21 +90,28 @@ export function AuthSheet({ open, onOpenChange, onComplete }: AuthSheetProps) {
             }}
           />
         )}
-        {/* Verification, HealthCheck, and ScopeManager steps will be added in Tasks 4, 5, and 8 */}
         {step === "verification" && (
-          <div className="py-8 text-center text-sm text-muted-foreground">
-            Verification step — coming in Task 4
-          </div>
+          <Verification
+            connectionId={state.connectionId!}
+            sessionId={state.sessionId!}
+            platform={state.platform!}
+            connectionType={state.connectionType!}
+            phoneNumber={state.phoneNumber}
+            onBack={() => setStep("credentials")}
+            onComplete={() => setStep("health")}
+          />
         )}
         {step === "health" && (
-          <div className="py-8 text-center text-sm text-muted-foreground">
-            Health check — coming in Task 5
-          </div>
+          <HealthCheck
+            connectionId={state.connectionId!}
+            onComplete={() => setStep("scope")}
+          />
         )}
         {step === "scope" && (
-          <div className="py-8 text-center text-sm text-muted-foreground">
-            Scope manager — coming in Task 8
-          </div>
+          <ScopeManager
+            connectionId={state.connectionId!}
+            onComplete={onComplete}
+          />
         )}
       </SheetContent>
     </Sheet>
