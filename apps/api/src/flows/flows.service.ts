@@ -115,6 +115,24 @@ export class FlowsService {
     return { deleted: true };
   }
 
+  async saveDraft(
+    flowId: string,
+    data: { nodesJson: unknown; edgesJson: unknown },
+  ) {
+    return this.prisma.flowDefinition.update({
+      where: { id: flowId },
+      data: { draftJson: data as any },
+    });
+  }
+
+  async getDraft(flowId: string) {
+    const flow = await this.prisma.flowDefinition.findUnique({
+      where: { id: flowId },
+      select: { draftJson: true },
+    });
+    return flow?.draftJson ?? null;
+  }
+
   async validate(id: string) {
     const flow = await this.findOne(id);
     const nodes = flow.nodesJson as any[];

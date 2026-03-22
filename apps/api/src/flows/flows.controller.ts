@@ -2,6 +2,7 @@ import {
   Controller,
   Get,
   Post,
+  Put,
   Patch,
   Delete,
   Param,
@@ -375,6 +376,28 @@ export class FlowsController {
   @ApiResponse({ status: 404, description: 'Flow not found' })
   testExecute(@Param('id') id: string, @Body() body: { triggerData?: any }) {
     return this.service.testExecute(id, body.triggerData);
+  }
+
+  @Put(':id/draft')
+  @ApiOperation({ summary: 'Save draft state for a flow' })
+  @ApiParam({ name: 'id', type: String, description: 'Flow ID' })
+  @ApiResponse({ status: 200, description: 'Draft saved' })
+  @ApiResponse({ status: 404, description: 'Flow not found' })
+  async saveDraft(
+    @Param('id') id: string,
+    @Body() body: { nodesJson: unknown; edgesJson: unknown },
+  ) {
+    await this.service.saveDraft(id, body);
+    return { success: true };
+  }
+
+  @Get(':id/draft')
+  @ApiOperation({ summary: 'Get draft state for a flow' })
+  @ApiParam({ name: 'id', type: String, description: 'Flow ID' })
+  @ApiResponse({ status: 200, description: 'Draft data or null' })
+  @ApiResponse({ status: 404, description: 'Flow not found' })
+  getDraft(@Param('id') id: string) {
+    return this.service.getDraft(id);
   }
 
   @Post('webhook/:flowId')

@@ -582,6 +582,7 @@ model FlowDefinition {
   nodesJson   Json     @default("[]")
   edgesJson   Json     @default("[]")
   transportConfig Json? // { platform?: 'telegram'|'discord', transport: 'mtproto'|'bot_api'|'discord_bot'|'auto', botInstanceId?, discordBotInstanceId? }
+  draftJson   Json?    // Auto-saved draft state (nodes + edges), separate from published
   platform    String   @default("telegram") // telegram | discord | cross_platform
   status      String   @default("draft") // draft | active | inactive
   version     Int      @default(1)

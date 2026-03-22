@@ -1550,6 +1550,14 @@ class ApiClient {
     return this.request<FlowGlobalAnalytics>(`/api/flows/analytics${qs}`);
   }
 
+  async saveFlowDraft(flowId: string, data: { nodesJson: unknown; edgesJson: unknown }): Promise<void> {
+    return this.request(`/api/flows/${flowId}/draft`, { method: "PUT", body: JSON.stringify(data) });
+  }
+
+  async getFlowDraft(flowId: string): Promise<{ nodesJson: unknown; edgesJson: unknown } | null> {
+    return this.request(`/api/flows/${flowId}/draft`);
+  }
+
   async startTgAuth(phoneNumber: string): Promise<{ sessionId: string; status: string }> {
     return this.request<{ sessionId: string; status: string }>('/api/tg-client/auth/start', { method: 'POST', body: JSON.stringify({ phoneNumber }) });
   }
