@@ -45,7 +45,31 @@ export class BotConfigService {
   }
 
   async createBot(dto: CreateBotInstanceDto) {
-    return this.prisma.botInstance.create({ data: dto });
+    const bot = await this.prisma.botInstance.create({ data: dto });
+
+    if (dto.platform !== 'discord' && dto.botToken) {
+      try {
+        const res = await fetch(
+          `https://api.telegram.org/bot${dto.botToken}/getMe`,
+        );
+        const json = (await res.json()) as {
+          ok: boolean;
+          result?: { username?: string };
+        };
+        if (json.ok && json.result?.username) {
+          return this.prisma.botInstance.update({
+            where: { id: bot.id },
+            data: { botUsername: json.result.username },
+          });
+        }
+      } catch (err) {
+        this.logger.warn(
+          `Failed to fetch bot info via getMe for bot ${bot.id}: ${err}`,
+        );
+      }
+    }
+
+    return bot;
   }
 
   async updateBot(id: string, dto: UpdateBotInstanceDto) {

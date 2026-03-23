@@ -1,5 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import {
+  BadRequestException,
   InternalServerErrorException,
   NotFoundException,
 } from '@nestjs/common';
@@ -220,6 +221,30 @@ describe('ConnectionsService', () => {
       await expect(service.startAuth('missing', {})).rejects.toThrow(
         NotFoundException,
       );
+    });
+
+    it('should throw BadRequestException when params is undefined', async () => {
+      prisma.platformConnection.findUnique.mockResolvedValue(mockConnection);
+
+      await expect(
+        service.startAuth(
+          'conn-1',
+          undefined as unknown as Record<string, unknown>,
+        ),
+      ).rejects.toThrow(BadRequestException);
+    });
+
+    it('should throw BadRequestException when botToken is missing for telegram bot_token connection', async () => {
+      const botTokenConn = {
+        ...mockConnection,
+        connectionType: 'bot_token',
+        platform: 'telegram',
+      };
+      prisma.platformConnection.findUnique.mockResolvedValue(botTokenConn);
+
+      await expect(
+        service.startAuth('conn-1', { phoneNumber: '+123' }),
+      ).rejects.toThrow(BadRequestException);
     });
   });
 

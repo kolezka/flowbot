@@ -1320,7 +1320,7 @@ class ApiClient {
     return this.request<BotInstance>(`/api/bot-config/${botId}`);
   }
 
-  async createBotInstance(data: { name: string; botToken?: string; botUsername?: string; type?: string }): Promise<BotInstance> {
+  async createBotInstance(data: { name: string; botToken?: string; botUsername?: string; platform?: string; type?: string }): Promise<BotInstance> {
     return this.request<BotInstance>('/api/bot-config', { method: 'POST', body: JSON.stringify(data) });
   }
 
@@ -1804,7 +1804,7 @@ class ApiClient {
   async startConnectionAuth(id: string, params: Record<string, unknown>): Promise<{ connectionId: string; status: string; sessionId?: string }> {
     return this.request<{ connectionId: string; status: string; sessionId?: string }>(`/api/connections/${id}/auth/start`, {
       method: 'POST',
-      body: JSON.stringify(params),
+      body: JSON.stringify({ params }),
     });
   }
 

@@ -65,6 +65,7 @@ export type FlowDefinitionCountAggregateOutputType = {
   nodesJson: number
   edgesJson: number
   transportConfig: number
+  draftJson: number
   platform: number
   status: number
   version: number
@@ -114,6 +115,7 @@ export type FlowDefinitionCountAggregateInputType = {
   nodesJson?: true
   edgesJson?: true
   transportConfig?: true
+  draftJson?: true
   platform?: true
   status?: true
   version?: true
@@ -216,6 +218,7 @@ export type FlowDefinitionGroupByOutputType = {
   nodesJson: runtime.JsonValue
   edgesJson: runtime.JsonValue
   transportConfig: runtime.JsonValue | null
+  draftJson: runtime.JsonValue | null
   platform: string
   status: string
   version: number
@@ -254,6 +257,7 @@ export type FlowDefinitionWhereInput = {
   nodesJson?: Prisma.JsonFilter<"FlowDefinition">
   edgesJson?: Prisma.JsonFilter<"FlowDefinition">
   transportConfig?: Prisma.JsonNullableFilter<"FlowDefinition">
+  draftJson?: Prisma.JsonNullableFilter<"FlowDefinition">
   platform?: Prisma.StringFilter<"FlowDefinition"> | string
   status?: Prisma.StringFilter<"FlowDefinition"> | string
   version?: Prisma.IntFilter<"FlowDefinition"> | number
@@ -271,6 +275,7 @@ export type FlowDefinitionOrderByWithRelationInput = {
   nodesJson?: Prisma.SortOrder
   edgesJson?: Prisma.SortOrder
   transportConfig?: Prisma.SortOrderInput | Prisma.SortOrder
+  draftJson?: Prisma.SortOrderInput | Prisma.SortOrder
   platform?: Prisma.SortOrder
   status?: Prisma.SortOrder
   version?: Prisma.SortOrder
@@ -291,6 +296,7 @@ export type FlowDefinitionWhereUniqueInput = Prisma.AtLeast<{
   nodesJson?: Prisma.JsonFilter<"FlowDefinition">
   edgesJson?: Prisma.JsonFilter<"FlowDefinition">
   transportConfig?: Prisma.JsonNullableFilter<"FlowDefinition">
+  draftJson?: Prisma.JsonNullableFilter<"FlowDefinition">
   platform?: Prisma.StringFilter<"FlowDefinition"> | string
   status?: Prisma.StringFilter<"FlowDefinition"> | string
   version?: Prisma.IntFilter<"FlowDefinition"> | number
@@ -308,6 +314,7 @@ export type FlowDefinitionOrderByWithAggregationInput = {
   nodesJson?: Prisma.SortOrder
   edgesJson?: Prisma.SortOrder
   transportConfig?: Prisma.SortOrderInput | Prisma.SortOrder
+  draftJson?: Prisma.SortOrderInput | Prisma.SortOrder
   platform?: Prisma.SortOrder
   status?: Prisma.SortOrder
   version?: Prisma.SortOrder
@@ -331,6 +338,7 @@ export type FlowDefinitionScalarWhereWithAggregatesInput = {
   nodesJson?: Prisma.JsonWithAggregatesFilter<"FlowDefinition">
   edgesJson?: Prisma.JsonWithAggregatesFilter<"FlowDefinition">
   transportConfig?: Prisma.JsonNullableWithAggregatesFilter<"FlowDefinition">
+  draftJson?: Prisma.JsonNullableWithAggregatesFilter<"FlowDefinition">
   platform?: Prisma.StringWithAggregatesFilter<"FlowDefinition"> | string
   status?: Prisma.StringWithAggregatesFilter<"FlowDefinition"> | string
   version?: Prisma.IntWithAggregatesFilter<"FlowDefinition"> | number
@@ -346,6 +354,7 @@ export type FlowDefinitionCreateInput = {
   nodesJson?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   edgesJson?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   transportConfig?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  draftJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   platform?: string
   status?: string
   version?: number
@@ -362,6 +371,7 @@ export type FlowDefinitionUncheckedCreateInput = {
   nodesJson?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   edgesJson?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   transportConfig?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  draftJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   platform?: string
   status?: string
   version?: number
@@ -378,6 +388,7 @@ export type FlowDefinitionUpdateInput = {
   nodesJson?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   edgesJson?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   transportConfig?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  draftJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   platform?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.StringFieldUpdateOperationsInput | string
   version?: Prisma.IntFieldUpdateOperationsInput | number
@@ -394,6 +405,7 @@ export type FlowDefinitionUncheckedUpdateInput = {
   nodesJson?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   edgesJson?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   transportConfig?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  draftJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   platform?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.StringFieldUpdateOperationsInput | string
   version?: Prisma.IntFieldUpdateOperationsInput | number
@@ -410,6 +422,7 @@ export type FlowDefinitionCreateManyInput = {
   nodesJson?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   edgesJson?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   transportConfig?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  draftJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   platform?: string
   status?: string
   version?: number
@@ -425,6 +438,7 @@ export type FlowDefinitionUpdateManyMutationInput = {
   nodesJson?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   edgesJson?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   transportConfig?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  draftJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   platform?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.StringFieldUpdateOperationsInput | string
   version?: Prisma.IntFieldUpdateOperationsInput | number
@@ -439,6 +453,7 @@ export type FlowDefinitionUncheckedUpdateManyInput = {
   nodesJson?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   edgesJson?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   transportConfig?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  draftJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   platform?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.StringFieldUpdateOperationsInput | string
   version?: Prisma.IntFieldUpdateOperationsInput | number
@@ -454,6 +469,7 @@ export type FlowDefinitionCountOrderByAggregateInput = {
   nodesJson?: Prisma.SortOrder
   edgesJson?: Prisma.SortOrder
   transportConfig?: Prisma.SortOrder
+  draftJson?: Prisma.SortOrder
   platform?: Prisma.SortOrder
   status?: Prisma.SortOrder
   version?: Prisma.SortOrder
@@ -572,6 +588,7 @@ export type FlowDefinitionCreateWithoutFolderInput = {
   nodesJson?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   edgesJson?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   transportConfig?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  draftJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   platform?: string
   status?: string
   version?: number
@@ -587,6 +604,7 @@ export type FlowDefinitionUncheckedCreateWithoutFolderInput = {
   nodesJson?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   edgesJson?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   transportConfig?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  draftJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   platform?: string
   status?: string
   version?: number
@@ -631,6 +649,7 @@ export type FlowDefinitionScalarWhereInput = {
   nodesJson?: Prisma.JsonFilter<"FlowDefinition">
   edgesJson?: Prisma.JsonFilter<"FlowDefinition">
   transportConfig?: Prisma.JsonNullableFilter<"FlowDefinition">
+  draftJson?: Prisma.JsonNullableFilter<"FlowDefinition">
   platform?: Prisma.StringFilter<"FlowDefinition"> | string
   status?: Prisma.StringFilter<"FlowDefinition"> | string
   version?: Prisma.IntFilter<"FlowDefinition"> | number
@@ -646,6 +665,7 @@ export type FlowDefinitionCreateWithoutExecutionsInput = {
   nodesJson?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   edgesJson?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   transportConfig?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  draftJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   platform?: string
   status?: string
   version?: number
@@ -661,6 +681,7 @@ export type FlowDefinitionUncheckedCreateWithoutExecutionsInput = {
   nodesJson?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   edgesJson?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   transportConfig?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  draftJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   platform?: string
   status?: string
   version?: number
@@ -692,6 +713,7 @@ export type FlowDefinitionUpdateWithoutExecutionsInput = {
   nodesJson?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   edgesJson?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   transportConfig?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  draftJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   platform?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.StringFieldUpdateOperationsInput | string
   version?: Prisma.IntFieldUpdateOperationsInput | number
@@ -707,6 +729,7 @@ export type FlowDefinitionUncheckedUpdateWithoutExecutionsInput = {
   nodesJson?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   edgesJson?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   transportConfig?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  draftJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   platform?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.StringFieldUpdateOperationsInput | string
   version?: Prisma.IntFieldUpdateOperationsInput | number
@@ -722,6 +745,7 @@ export type FlowDefinitionCreateManyFolderInput = {
   nodesJson?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   edgesJson?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   transportConfig?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  draftJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   platform?: string
   status?: string
   version?: number
@@ -736,6 +760,7 @@ export type FlowDefinitionUpdateWithoutFolderInput = {
   nodesJson?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   edgesJson?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   transportConfig?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  draftJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   platform?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.StringFieldUpdateOperationsInput | string
   version?: Prisma.IntFieldUpdateOperationsInput | number
@@ -751,6 +776,7 @@ export type FlowDefinitionUncheckedUpdateWithoutFolderInput = {
   nodesJson?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   edgesJson?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   transportConfig?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  draftJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   platform?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.StringFieldUpdateOperationsInput | string
   version?: Prisma.IntFieldUpdateOperationsInput | number
@@ -766,6 +792,7 @@ export type FlowDefinitionUncheckedUpdateManyWithoutFolderInput = {
   nodesJson?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   edgesJson?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   transportConfig?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  draftJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   platform?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.StringFieldUpdateOperationsInput | string
   version?: Prisma.IntFieldUpdateOperationsInput | number
@@ -811,6 +838,7 @@ export type FlowDefinitionSelect<ExtArgs extends runtime.Types.Extensions.Intern
   nodesJson?: boolean
   edgesJson?: boolean
   transportConfig?: boolean
+  draftJson?: boolean
   platform?: boolean
   status?: boolean
   version?: boolean
@@ -829,6 +857,7 @@ export type FlowDefinitionSelectCreateManyAndReturn<ExtArgs extends runtime.Type
   nodesJson?: boolean
   edgesJson?: boolean
   transportConfig?: boolean
+  draftJson?: boolean
   platform?: boolean
   status?: boolean
   version?: boolean
@@ -845,6 +874,7 @@ export type FlowDefinitionSelectUpdateManyAndReturn<ExtArgs extends runtime.Type
   nodesJson?: boolean
   edgesJson?: boolean
   transportConfig?: boolean
+  draftJson?: boolean
   platform?: boolean
   status?: boolean
   version?: boolean
@@ -861,6 +891,7 @@ export type FlowDefinitionSelectScalar = {
   nodesJson?: boolean
   edgesJson?: boolean
   transportConfig?: boolean
+  draftJson?: boolean
   platform?: boolean
   status?: boolean
   version?: boolean
@@ -869,7 +900,7 @@ export type FlowDefinitionSelectScalar = {
   updatedAt?: boolean
 }
 
-export type FlowDefinitionOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "name" | "description" | "nodesJson" | "edgesJson" | "transportConfig" | "platform" | "status" | "version" | "folderId" | "createdAt" | "updatedAt", ExtArgs["result"]["flowDefinition"]>
+export type FlowDefinitionOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "name" | "description" | "nodesJson" | "edgesJson" | "transportConfig" | "draftJson" | "platform" | "status" | "version" | "folderId" | "createdAt" | "updatedAt", ExtArgs["result"]["flowDefinition"]>
 export type FlowDefinitionInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   folder?: boolean | Prisma.FlowDefinition$folderArgs<ExtArgs>
   executions?: boolean | Prisma.FlowDefinition$executionsArgs<ExtArgs>
@@ -895,6 +926,7 @@ export type $FlowDefinitionPayload<ExtArgs extends runtime.Types.Extensions.Inte
     nodesJson: runtime.JsonValue
     edgesJson: runtime.JsonValue
     transportConfig: runtime.JsonValue | null
+    draftJson: runtime.JsonValue | null
     platform: string
     status: string
     version: number
@@ -1332,6 +1364,7 @@ export interface FlowDefinitionFieldRefs {
   readonly nodesJson: Prisma.FieldRef<"FlowDefinition", 'Json'>
   readonly edgesJson: Prisma.FieldRef<"FlowDefinition", 'Json'>
   readonly transportConfig: Prisma.FieldRef<"FlowDefinition", 'Json'>
+  readonly draftJson: Prisma.FieldRef<"FlowDefinition", 'Json'>
   readonly platform: Prisma.FieldRef<"FlowDefinition", 'String'>
   readonly status: Prisma.FieldRef<"FlowDefinition", 'String'>
   readonly version: Prisma.FieldRef<"FlowDefinition", 'Int'>

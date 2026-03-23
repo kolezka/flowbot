@@ -245,7 +245,7 @@ export function NodePalette({ onDragStart, onAddTemplate }: NodePaletteProps) {
               className="mb-1 flex w-full items-center justify-between text-xs font-medium uppercase text-muted-foreground hover:text-foreground"
             >
               <span>
-                {cat}s ({catNodes.length})
+                {cat === "advanced" ? "Advanced" : `${cat}s`} ({catNodes.length})
               </span>
               <span className="text-[10px]">{isCollapsed ? "+" : "-"}</span>
             </button>

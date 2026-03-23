@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
+import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { PlatformSelect } from "./auth-steps/PlatformSelect";
 import { NameAndCredentials } from "./auth-steps/NameAndCredentials";
 import { Verification } from "./auth-steps/Verification";
@@ -54,6 +54,9 @@ export function AuthSheet({ open, onOpenChange, onComplete }: AuthSheetProps) {
       <SheetContent className="w-[440px] overflow-y-auto sm:max-w-[440px]">
         <SheetHeader>
           <SheetTitle>New Connection</SheetTitle>
+          <SheetDescription className="sr-only">
+            Set up a new platform connection
+          </SheetDescription>
         </SheetHeader>
 
         {/* Breadcrumb */}

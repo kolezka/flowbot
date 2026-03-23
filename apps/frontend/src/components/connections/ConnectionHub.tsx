@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ConnectionCard } from "./ConnectionCard";
+import { api } from "@/lib/api";
 
 interface Connection {
   id: string;
@@ -54,9 +55,8 @@ export function ConnectionHub({
 
   const fetchConnections = useCallback(async () => {
     try {
-      const res = await fetch("/api/connections?limit=100");
-      const json = await res.json();
-      setConnections(json.data ?? []);
+      const { data } = await api.getConnections({ limit: 100 });
+      setConnections(data ?? []);
     } catch {
       // silently fail, connections remain empty
     } finally {

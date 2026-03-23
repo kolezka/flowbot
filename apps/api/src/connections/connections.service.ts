@@ -1,6 +1,7 @@
 import {
   Injectable,
   NotFoundException,
+  BadRequestException,
   InternalServerErrorException,
 } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
@@ -128,27 +129,29 @@ export class ConnectionsService {
   ): Promise<ConnectionDto> {
     const connection = await this.findOne(id);
 
-    // Bot token flow — delegate to strategy
+    if (!params || typeof params !== 'object') {
+      throw new BadRequestException('params is required and must be an object');
+    }
+
     if (
       connection.connectionType === 'bot_token' &&
       connection.platform === 'telegram'
     ) {
+      const botToken = params['botToken'];
+      if (!botToken || typeof botToken !== 'string') {
+        throw new BadRequestException(
+          'params.botToken is required for telegram bot_token connections',
+        );
+      }
       const strategy = this.registry.get<TelegramConnectionStrategy>(
         'connections',
         'telegram',
       );
-      await strategy.handleBotTokenAuth(id, params['botToken'] as string);
+      await strategy.handleBotTokenAuth(id, botToken);
       return this.findOne(id);
     }
 
-    const existing = await this.prisma.platformConnection.findUnique({
-      where: { id },
-    });
-
-    const existingMetadata =
-      existing && existing.metadata && typeof existing.metadata === 'object'
-        ? (existing.metadata as Record<string, unknown>)
-        : {};
+    const existingMetadata = connection.metadata ?? {};
 
     const updated = await this.prisma.platformConnection.update({
       where: { id },
@@ -169,16 +172,9 @@ export class ConnectionsService {
     step: string,
     data: unknown,
   ): Promise<ConnectionDto> {
-    await this.findOne(id);
+    const connection = await this.findOne(id);
 
-    const existing = await this.prisma.platformConnection.findUnique({
-      where: { id },
-    });
-
-    const existingMetadata =
-      existing && existing.metadata && typeof existing.metadata === 'object'
-        ? (existing.metadata as Record<string, unknown>)
-        : {};
+    const existingMetadata = connection.metadata ?? {};
 
     const existingAuthState =
       existingMetadata['authState'] &&

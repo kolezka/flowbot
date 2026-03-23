@@ -13,6 +13,7 @@ export class CreateBotInstanceDto {
   @ApiProperty() @IsString() name: string;
   @ApiProperty({ required: false }) @IsOptional() @IsString() botToken?: string;
   @ApiPropertyOptional() @IsOptional() @IsString() botUsername?: string;
+  @ApiPropertyOptional() @IsOptional() @IsString() platform?: string;
   @ApiPropertyOptional() @IsOptional() @IsString() type?: string;
 }
 

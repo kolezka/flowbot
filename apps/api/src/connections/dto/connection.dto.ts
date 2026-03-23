@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsString, IsOptional } from 'class-validator';
+import { IsString, IsOptional, IsObject, IsNotEmpty } from 'class-validator';
 
 export class ConnectionDto {
   @ApiProperty() id!: string;
@@ -28,12 +28,18 @@ export class CreateConnectionDto {
   @IsString() @ApiProperty() platform!: string;
   @IsString() @ApiProperty() name!: string;
   @IsString() @ApiProperty() connectionType!: string;
-  @IsOptional() @ApiProperty({ required: false }) metadata?: Record<string, unknown>;
-  @IsOptional() @IsString() @ApiProperty({ required: false }) botInstanceId?: string;
+  @IsOptional() @ApiProperty({ required: false }) metadata?: Record<
+    string,
+    unknown
+  >;
+  @IsOptional()
+  @IsString()
+  @ApiProperty({ required: false })
+  botInstanceId?: string;
 }
 
 export class StartAuthDto {
-  @ApiProperty() params!: Record<string, unknown>;
+  @IsObject() @IsNotEmpty() @ApiProperty() params!: Record<string, unknown>;
 }
 
 export class SubmitAuthStepDto {
@@ -43,7 +49,10 @@ export class SubmitAuthStepDto {
 
 export class UpdateStatusDto {
   @IsString() @ApiProperty() status!: string;
-  @IsOptional() @IsString() @ApiProperty({ required: false }) errorMessage?: string;
+  @IsOptional()
+  @IsString()
+  @ApiProperty({ required: false })
+  errorMessage?: string;
 }
 
 export class ConnectionLogDto {
@@ -59,5 +68,8 @@ export class ConnectionHealthDto {
   @ApiProperty() totalConnections!: number;
   @ApiProperty() activeConnections!: number;
   @ApiProperty() errorConnections!: number;
-  @ApiProperty() platforms!: Record<string, { total: number; active: number; error: number }>;
+  @ApiProperty() platforms!: Record<
+    string,
+    { total: number; active: number; error: number }
+  >;
 }
