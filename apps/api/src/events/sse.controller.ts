@@ -2,7 +2,14 @@ import { Controller, Sse, Query, Logger } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse, ApiQuery } from '@nestjs/swagger';
 import { Observable, Subject, filter, map } from 'rxjs';
 import { EventBusService } from './event-bus.service';
-import type { AppEvent } from './event-types';
+import type {
+  AppEvent,
+  ModerationEvent,
+  AutomationEvent,
+  SystemEvent,
+} from './event-types';
+
+type RoomEvent = ModerationEvent | AutomationEvent | SystemEvent;
 
 interface MessageEvent {
   data: string;
@@ -24,10 +31,19 @@ export class SseController {
 
   @Sse('stream')
   @ApiOperation({ summary: 'Subscribe to real-time event stream (SSE)' })
-  @ApiQuery({ name: 'rooms', required: false, type: String, description: 'Comma-separated room names (moderation, automation, system)' })
+  @ApiQuery({
+    name: 'rooms',
+    required: false,
+    type: String,
+    description: 'Comma-separated room names (moderation, automation, system)',
+  })
   @ApiResponse({ status: 200, description: 'SSE stream of events' })
   stream(@Query('rooms') rooms?: string): Observable<MessageEvent> {
-    const roomList = rooms?.split(',') ?? ['moderation', 'automation', 'system'];
+    const roomList = rooms?.split(',') ?? [
+      'moderation',
+      'automation',
+      'system',
+    ];
 
     this.logger.debug(`SSE client connected, rooms: ${roomList.join(',')}`);
 
@@ -39,7 +55,7 @@ export class SseController {
       }),
       map((event) => ({
         data: JSON.stringify(event),
-        type: event.type,
+        type: (event as RoomEvent).type,
       })),
     );
   }

@@ -16,6 +16,7 @@ describe('WsGateway', () => {
     onAutomation: jest.fn(),
     onSystem: jest.fn(),
     onQrAuth: jest.fn(),
+    onFlowExecution: jest.fn(),
   };
 
   beforeEach(async () => {
@@ -49,9 +50,7 @@ describe('WsGateway', () => {
 
     it('should register system event handler', () => {
       gateway.afterInit();
-      expect(mockEventBus.onSystem).toHaveBeenCalledWith(
-        expect.any(Function),
-      );
+      expect(mockEventBus.onSystem).toHaveBeenCalledWith(expect.any(Function));
     });
 
     it('should emit moderation events to the moderation room', () => {
