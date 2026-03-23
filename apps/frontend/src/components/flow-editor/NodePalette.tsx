@@ -10,11 +10,22 @@ const RECENT_KEY = "flow-editor-recent-nodes";
 const PLATFORM_KEY = "flow-editor-platform";
 const MAX_RECENT = 8;
 
-interface NodePaletteProps {
-  onDragStart: (type: string, label: string, category: string, requiresConnection?: boolean) => void;
+const TEMPLATES = [
+  { name: "welcome", label: "Welcome Flow", description: "Send a welcome message when a member joins" },
+  { name: "moderation", label: "Moderation Flow", description: "Check new messages and delete spam" },
+] as const;
+
+interface TemplateData {
+  nodes: unknown[];
+  edges: unknown[];
 }
 
-export function NodePalette({ onDragStart }: NodePaletteProps) {
+interface NodePaletteProps {
+  onDragStart: (type: string, label: string, category: string, requiresConnection?: boolean) => void;
+  onAddTemplate?: (template: TemplateData) => void;
+}
+
+export function NodePalette({ onDragStart, onAddTemplate }: NodePaletteProps) {
   const [platformFilter, setPlatformFilter] = useState<PlatformFilter>("all");
   const [searchQuery, setSearchQuery] = useState("");
   const [recentTypes, setRecentTypes] = useState<string[]>([]);
@@ -97,6 +108,18 @@ export function NodePalette({ onDragStart }: NodePaletteProps) {
     onDragStart(node.type, node.label, node.category, node.requiresConnection);
   };
 
+  const handleAddTemplate = async (templateName: string) => {
+    if (!onAddTemplate) return;
+    try {
+      const res = await fetch(`/flow-templates/${templateName}.json`);
+      if (!res.ok) throw new Error(`Failed to fetch template: ${res.status}`);
+      const data: TemplateData = await res.json();
+      onAddTemplate(data);
+    } catch (err) {
+      console.error("Failed to load template", templateName, err);
+    }
+  };
+
   const toggleCategory = (category: string) => {
     setCollapsedCategories((prev) => {
       const next = new Set(prev);
@@ -174,6 +197,30 @@ export function NodePalette({ onDragStart }: NodePaletteProps) {
               >
                 {node.label}
               </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Templates */}
+      {onAddTemplate && (
+        <div className="mb-4">
+          <h4 className="mb-1 text-xs font-medium uppercase text-muted-foreground">
+            Templates
+          </h4>
+          <div className="space-y-1">
+            {TEMPLATES.map((tpl) => (
+              <button
+                key={tpl.name}
+                onClick={() => handleAddTemplate(tpl.name)}
+                className="w-full text-left rounded-md border border-border px-2 py-1.5 text-xs hover:bg-accent transition-colors"
+              >
+                <span className="mr-1">📋</span>
+                <span className="font-medium">{tpl.label}</span>
+                <p className="mt-0.5 text-[10px] text-muted-foreground leading-snug">
+                  {tpl.description}
+                </p>
+              </button>
             ))}
           </div>
         </div>

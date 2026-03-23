@@ -1,0 +1,21 @@
+{
+  "name": "Welcome Flow",
+  "description": "Send a welcome message when a member joins",
+  "nodes": [
+    {
+      "id": "template_trigger_1",
+      "type": "custom",
+      "data": { "type": "member_joined", "label": "Member Joined" },
+      "position": { "x": 0, "y": 0 }
+    },
+    {
+      "id": "template_action_1",
+      "type": "custom",
+      "data": { "type": "send_message", "label": "Send Welcome", "chatId": "{{trigger.chatId}}", "text": "Welcome {{trigger.senderName}}! 👋" },
+      "position": { "x": 300, "y": 0 }
+    }
+  ],
+  "edges": [
+    { "id": "template_edge_1", "source": "template_trigger_1", "target": "template_action_1" }
+  ]
+}

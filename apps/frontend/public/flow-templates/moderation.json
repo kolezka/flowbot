@@ -1,0 +1,35 @@
+{
+  "name": "Moderation Flow",
+  "description": "Check new messages and delete spam",
+  "nodes": [
+    {
+      "id": "template_trigger_1",
+      "type": "custom",
+      "data": { "type": "message_received", "label": "Message Received" },
+      "position": { "x": 0, "y": 0 }
+    },
+    {
+      "id": "template_condition_1",
+      "type": "custom",
+      "data": { "type": "condition", "label": "Contains Spam?", "field": "trigger.messageText", "operator": "contains", "value": "spam" },
+      "position": { "x": 300, "y": 0 }
+    },
+    {
+      "id": "template_action_1",
+      "type": "custom",
+      "data": { "type": "delete_message", "label": "Delete Message", "chatId": "{{trigger.chatId}}", "messageId": "{{trigger.messageId}}" },
+      "position": { "x": 600, "y": -50 }
+    },
+    {
+      "id": "template_action_2",
+      "type": "custom",
+      "data": { "type": "send_message", "label": "Warn User", "chatId": "{{trigger.chatId}}", "text": "⚠️ Spam detected from {{trigger.senderName}}" },
+      "position": { "x": 600, "y": 80 }
+    }
+  ],
+  "edges": [
+    { "id": "template_edge_1", "source": "template_trigger_1", "target": "template_condition_1" },
+    { "id": "template_edge_2", "source": "template_condition_1", "target": "template_action_1", "sourceHandle": "yes" },
+    { "id": "template_edge_3", "source": "template_condition_1", "target": "template_action_2", "sourceHandle": "yes" }
+  ]
+}
