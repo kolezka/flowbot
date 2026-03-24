@@ -312,18 +312,18 @@ function WhatsAppVerification({
     if (!connectionId) return;
     const room = `qr-auth:${connectionId}`;
     joinRoom(room);
+    // Small delay so the room-join message reaches the server before we trigger auth
+    const timer = setTimeout(() => {
+      void api.startConnectionAuth(connectionId, {}).catch((e: unknown) => {
+        const msg = e instanceof Error ? e.message : "Failed to start WhatsApp auth";
+        setError(msg);
+      });
+    }, 100);
     return () => {
+      clearTimeout(timer);
       leaveRoom(room);
     };
   }, [connectionId, joinRoom, leaveRoom]);
-
-  useEffect(() => {
-    if (!connectionId) return;
-    void api.startConnectionAuth(connectionId, {}).catch((e: unknown) => {
-      const msg = e instanceof Error ? e.message : "Failed to start WhatsApp auth";
-      setError(msg);
-    });
-  }, [connectionId]);
 
   const handleQrEvent = useCallback(
     (data: QrAuthEvent) => {

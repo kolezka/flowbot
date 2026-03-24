@@ -1,3 +1,4 @@
+import QRCode from 'qrcode'
 import type { IWhatsAppTransport } from './sdk/types.js'
 import type { Logger } from 'pino'
 
@@ -16,10 +17,11 @@ export function setupQrAuth(
 ): void {
   transport.onQrCode(async (qr: string) => {
     try {
+      const dataUrl = await QRCode.toDataURL(qr, { width: 300, margin: 2 })
       await fetch(`${apiUrl}/api/connections/${connectionId}/qr-update`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ type: 'qr', qr, connectionId }),
+        body: JSON.stringify({ type: 'qr', qr: dataUrl, connectionId }),
         signal: AbortSignal.timeout(5_000),
       })
     } catch (err) {

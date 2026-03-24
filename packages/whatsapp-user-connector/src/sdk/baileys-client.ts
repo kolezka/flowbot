@@ -1,7 +1,7 @@
-import makeWASocket, {
-  DisconnectReason,
-  fetchLatestBaileysVersion,
-} from '@whiskeysockets/baileys'
+import baileys from '@whiskeysockets/baileys'
+// CJS/ESM interop: when loaded via tsx ESM hooks in worker threads, the default
+// import is the namespace object. Access named exports from it directly.
+const { makeWASocket, DisconnectReason, fetchLatestBaileysVersion } = baileys
 import type { Logger } from 'pino'
 import type {
   IWhatsAppTransport,

@@ -9,7 +9,7 @@
  */
 
 import { runWorker } from '@flowbot/platform-kit'
-import { PrismaClient } from '@flowbot/db'
+import { createPrismaClient } from '@flowbot/db'
 import { pino } from 'pino'
 import { WhatsAppUserConnector } from './connector.ts'
 
@@ -19,9 +19,7 @@ runWorker((config) => {
     name: `whatsapp-user:${config.instanceId}`,
   })
 
-  const prisma = new PrismaClient({
-    datasourceUrl: config['databaseUrl'] as string,
-  })
+  const prisma = createPrismaClient(config['databaseUrl'] as string)
 
   return new WhatsAppUserConnector({
     connectionId: config['connectionId'] as string,

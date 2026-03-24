@@ -1,3 +1,6 @@
+import baileys from '@whiskeysockets/baileys'
+const { initAuthCreds } = baileys
+
 export interface AuthStateKeys {
   get(type: string, ids: string[]): Promise<Record<string, unknown>>
   set(data: Record<string, Record<string, unknown>>): Promise<void>
@@ -31,7 +34,10 @@ export async function createDbAuthState(
   })
 
   const stored = record?.credentials as { creds?: Record<string, unknown>; keys?: Record<string, Record<string, unknown>> } | null | undefined
-  const creds: Record<string, unknown> = stored?.creds ?? {}
+  // Use stored creds or generate fresh ones (required for Baileys handshake + QR)
+  const creds: Record<string, unknown> = (stored?.creds && Object.keys(stored.creds).length > 0)
+    ? stored.creds
+    : initAuthCreds()
   const keyStore: Record<string, Record<string, unknown>> = stored?.keys ?? {}
 
   const persistKeys = async (): Promise<void> => {

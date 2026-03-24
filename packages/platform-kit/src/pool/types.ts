@@ -45,6 +45,7 @@ export interface PoolConfig {
   maxWorkersPerProcess?: number   // default 50
   poolUrl: string                 // this pool's URL for DB apiUrl updates
   logger: Logger
+  execArgv?: string[]             // extra node flags for workers, e.g. ['--import', 'tsx']
   updateApiUrl?(instanceId: string, apiUrl: string): Promise<void>
 }
 

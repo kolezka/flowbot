@@ -13,6 +13,7 @@ export interface WorkerWrapperConfig {
   readyTimeoutMs?: number
   executeTimeoutMs?: number
   shutdownTimeoutMs?: number
+  execArgv?: string[]
   onCrash?: (instanceId: string, code: number | null) => void
   onFatalError?: (instanceId: string, code: string, message: string) => void
 }
@@ -208,6 +209,7 @@ export class Reconciler {
       workerScript: this.config.workerScript,
       workerData,
       logger: this.logger,
+      execArgv: this.config.execArgv,
       onCrash: (id, code) => {
         this.logger.warn({ instanceId: id, code }, 'Worker crashed — removing from map (will restart next cycle)')
         this.workers.delete(id)

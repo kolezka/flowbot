@@ -25,7 +25,7 @@ export function createWhatsappUserPool(deps: {
 
     getInstances: async () => {
       const instances = await prisma.platformConnection.findMany({
-        where: { platform: 'whatsapp', status: 'active' },
+        where: { platform: 'whatsapp', status: { in: ['active', 'authenticating'] } },
         select: { id: true, platform: true, credentials: true, botInstanceId: true, metadata: true },
       })
       return instances as unknown as InstanceRecord[]
