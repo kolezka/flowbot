@@ -6,7 +6,7 @@ Multi-platform bot management platform ("Flowbot") with admin dashboard, group m
 
 ### Multi-Platform Architecture
 
-The platform uses a **Platform Discriminator** pattern: each entity (account, community, connection) has a `platform` string field. Platform-specific logic lives in strategy classes registered at runtime via `PlatformStrategyRegistry`. Design spec at `docs/superpowers/specs/2026-03-19-multi-platform-architecture-design.md`.
+The platform uses a **Platform Discriminator** pattern: each entity (account, connection) has a `platform` string field. Platform-specific logic lives in strategy classes registered at runtime via `PlatformStrategyRegistry`. Design spec at `docs/superpowers/specs/2026-03-19-multi-platform-architecture-design.md`.
 
 ### Workspaces
 
@@ -90,10 +90,8 @@ Schema at `packages/db/prisma/schema.prisma`. After changes: `pnpm db generate &
 
 **Domains:**
 - **Identity (new):** PlatformAccount (multi-platform user), UserIdentity (cross-platform umbrella linking accounts)
-- **Communities (new):** Community, CommunityConfig, CommunityTelegramConfig, CommunityDiscordConfig, CommunityMember
-- **Connections (new):** PlatformConnection, PlatformConnectionLog (replaces TG Client)
-- **Analytics (new):** CommunityAnalyticsSnapshot
-- **Legacy (kept for migration):** User, ManagedGroup, GroupConfig, GroupMember, Warning, ModerationLog, ScheduledMessage, GroupAnalyticsSnapshot, ReputationScore, ClientLog, ClientSession, CrossPostTemplate, BroadcastMessage
+- **Connections (new):** PlatformConnection, PlatformConnectionLog
+- **Legacy (kept for migration):** User, ManagedGroup, GroupConfig, GroupMember, Warning, ModerationLog, ScheduledMessage, GroupAnalyticsSnapshot
 - **Bot Config:** BotInstance (multi-platform), BotCommand, BotResponse, BotMenu, BotMenuButton
 - **Flow Engine:** FlowDefinition, FlowFolder, FlowExecution, FlowVersion, UserFlowContext, FlowEvent
 - **Webhooks:** WebhookEndpoint
@@ -102,16 +100,16 @@ Schema at `packages/db/prisma/schema.prisma`. After changes: `pnpm db generate &
 
 **Connector Pool (`apps/connector-pool/src/`):** Unified pool service managing all platform connectors. Pools config in `pools/` (telegram-bot, telegram-user, whatsapp-user, discord-bot). Multiplexed Hono HTTP server in `server.ts`. Each pool runs a `Reconciler` from platform-kit that polls DB and spawns worker threads running connector instances.
 
-**Trigger (`apps/trigger/src/`):** Tasks in `trigger/` (analytics-snapshot, broadcast, cross-post, flow-event-cleanup, flow-execution, health-check, scheduled-message). Libs in `lib/` (prisma, telegram, telegram-bot, flow-engine/).
+**Trigger (`apps/trigger/src/`):** Tasks in `trigger/` (flow-event-cleanup, flow-execution, health-check, scheduled-message). Libs in `lib/` (prisma, telegram, telegram-bot, flow-engine/).
 
 **API (`apps/api/src/`):** NestJS modules:
-- **New multi-platform:** platform (global strategy registry), identity (accounts + identity linking), communities (CRUD + config + members + strategies + community-scoped warnings/logs/scheduled-messages), connections (CRUD + auth state machine + health + strategies)
-- **Updated:** broadcast (multi-platform support), reputation (account/identity/community endpoints), analytics (community time series), bot-config (heartbeat endpoint)
-- **Legacy (kept):** users, moderation (groups, members, warnings, logs, crosspost, scheduled-messages), tg-client
-- **Unchanged:** auth, automation, system, flows, webhooks, events (EventBus, WsGateway, SSE)
+- **New multi-platform:** platform (global strategy registry), identity (accounts + identity linking), connections (CRUD + auth state machine + health + strategies)
+- **Updated:** analytics (time series), bot-config (heartbeat endpoint)
+- **Legacy (kept):** users, moderation (groups, members, warnings, logs, scheduled-messages)
+- **Unchanged:** auth, system, flows, webhooks, events (EventBus, WsGateway, SSE)
 - All endpoints under `/api/`.
 
-**Frontend (`apps/frontend/src/`):** Next.js App Router. Dashboard pages under `app/dashboard/`. API client in `lib/api.ts`. Radix UI components in `components/ui/`. WebSocket in `lib/websocket.tsx`. Multi-platform components: `PlatformBadge`, `PlatformFilter`, `PlatformProvider` context. New pages: `identity/accounts`, `identity/linked`, `communities/`, `connections/`.
+**Frontend (`apps/frontend/src/`):** Next.js App Router. Dashboard pages under `app/dashboard/`. API client in `lib/api.ts`. Radix UI components in `components/ui/`. WebSocket in `lib/websocket.tsx`. Multi-platform components: `PlatformBadge`, `PlatformFilter`, `PlatformProvider` context. New pages: `identity/accounts`, `identity/linked`, `connections/`.
 
 ## Environment Variables
 
@@ -124,21 +122,6 @@ Schema at `packages/db/prisma/schema.prisma`. After changes: `pnpm db generate &
 | Frontend | `NEXT_PUBLIC_API_URL` |
 
 Docker Compose: PostgreSQL on port 5432 (postgres/postgres/flowbot_db).
-
-## Migration Scripts
-
-Data migration scripts in `scripts/` for the multi-platform refactoring. Run in order:
-
-```bash
-npx --package=tsx tsx scripts/migrate-slice1-identity.ts         # User → PlatformAccount + UserIdentity
-npx --package=tsx tsx scripts/migrate-slice2-communities.ts      # ManagedGroup → Community + configs + members
-npx --package=tsx tsx scripts/migrate-slice3-connections.ts       # ClientSession → PlatformConnection
-npx --package=tsx tsx scripts/migrate-slice4-broadcast.ts         # Annotate broadcasts with multi-platform metadata
-npx --package=tsx tsx scripts/migrate-slice5-reputation-analytics.ts  # Copy analytics to Community model
-npx --package=tsx tsx scripts/migrate-slice7-cleanup.ts           # Verification report (what's safe to drop)
-```
-
-Requires `DATABASE_URL` env var. All scripts are idempotent (safe to re-run).
 
 ## TypeScript
 

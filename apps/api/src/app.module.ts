@@ -9,7 +9,6 @@ import { ModerationModule } from './moderation/moderation.module';
 import { SystemModule } from './system/system.module';
 import { EventsModule } from './events/events.module';
 import { BotConfigModule } from './bot-config/bot-config.module';
-import { TgClientModule } from './tg-client/tg-client.module';
 import { FlowsModule } from './flows/flows.module';
 import { WebhooksModule } from './webhooks/webhooks.module';
 import { AuthModule } from './auth/auth.module';
@@ -32,7 +31,6 @@ import { ConnectionsModule } from './connections/connections.module';
     SystemModule,
     EventsModule,
     BotConfigModule,
-    TgClientModule,
     FlowsModule,
     WebhooksModule,
     IdentityModule,
