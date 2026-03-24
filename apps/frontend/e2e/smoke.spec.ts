@@ -7,15 +7,14 @@ test.describe('Dashboard home', () => {
     await expect(page.getByText('Total Users')).toBeVisible();
     await expect(page.getByText('Active Groups')).toBeVisible();
     await expect(page.getByText('Active Warnings')).toBeVisible();
-    await expect(page.getByText('Pending Jobs')).toBeVisible();
+    await expect(page.getByText('Active Warnings')).toBeVisible();
   });
 
-  test('shows automation and group health sections', async ({ page }) => {
+  test('shows system health and quick actions sections', async ({ page }) => {
     await page.goto('/dashboard');
 
-    await expect(page.getByText('Automation').first()).toBeVisible();
-    await expect(page.getByText('Group Health')).toBeVisible();
-    await expect(page.getByText('Quick Links')).toBeVisible();
+    await expect(page.getByText('System Health').first()).toBeVisible();
+    await expect(page.getByText('Quick Actions')).toBeVisible();
   });
 
   test('recent activity section is visible', async ({ page }) => {
@@ -39,12 +38,9 @@ test.describe('Dashboard home', () => {
 test.describe('Page navigation smoke tests', () => {
   const pages = [
     { path: '/dashboard/identity/accounts', text: /accounts/i },
-    { path: '/dashboard/broadcast', text: /broadcast/i },
     { path: '/dashboard/moderation', text: /moderation/i },
     { path: '/dashboard/flows', text: /flows/i },
     { path: '/dashboard/bot-config', text: /bot/i },
-    { path: '/dashboard/automation/jobs', text: /jobs|automation/i },
-    { path: '/dashboard/community/reputation', text: /reputation/i },
   ];
 
   for (const { path, text } of pages) {

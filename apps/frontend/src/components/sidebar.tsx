@@ -13,23 +13,17 @@ import {
   Users,
   BarChart3,
   FileText,
-  Radio,
   Eye,
   Layers,
   X,
   Workflow,
-  Zap,
   Calendar,
-  Copy,
-  Heart,
-  Trophy,
   Gauge,
   LogOut,
   Bot,
   Settings,
   Globe,
   FileText as FileTextIcon,
-  Building2,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 
@@ -89,13 +83,6 @@ const navigation: NavSection[] = [
     ],
   },
   {
-    label: "Communities",
-    icon: Building2,
-    children: [
-      { label: "Overview", href: "/dashboard/communities", icon: Building2 },
-    ],
-  },
-  {
     label: "Identity",
     icon: Users,
     children: [
@@ -120,27 +107,6 @@ const navigation: NavSection[] = [
         href: "/dashboard/moderation/scheduled-messages",
         icon: Calendar,
       },
-    ],
-  },
-  {
-    label: "Community",
-    icon: Heart,
-    children: [
-      {
-        label: "Reputation",
-        href: "/dashboard/community/reputation",
-        icon: Trophy,
-      },
-    ],
-  },
-  {
-    label: "Automation",
-    icon: Zap,
-    children: [
-      { label: "Broadcast", href: "/dashboard/broadcast", icon: Radio },
-      { label: "Health", href: "/dashboard/automation/health", icon: Activity },
-      { label: "Jobs", href: "/dashboard/automation/jobs", icon: Activity },
-      { label: "Cross-post", href: "/dashboard/automation/crosspost-templates", icon: Copy },
     ],
   },
   {
