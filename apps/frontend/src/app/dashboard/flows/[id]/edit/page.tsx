@@ -439,7 +439,30 @@ function FlowEditorInner() {
         {/* Left: Node Palette */}
         <NodePalette onDragStart={() => {}} />
 
-        {/* Center: Flow Canvas with Context Menu */}
+        {/* Center: Flow Canvas */}
+        <FlowCanvas
+          nodes={styledNodes}
+          edges={edges}
+          onNodesChange={onNodesChange}
+          onEdgesChange={onEdgesChange}
+          onConnect={onConnect}
+          onNodeSelect={handleNodeSelect}
+          onDrop={handleDrop}
+          onNodeContextMenu={(e, node) => {
+            e.preventDefault();
+            useFlowStore.getState().openNodeMenu(node, { x: e.clientX, y: e.clientY });
+          }}
+          onEdgeContextMenu={(e, edge) => {
+            e.preventDefault();
+            useFlowStore.getState().openEdgeMenu(edge, { x: e.clientX, y: e.clientY });
+          }}
+          onPaneContextMenu={(e) => {
+            e.preventDefault();
+            useFlowStore.getState().openCanvasMenu({ x: (e as MouseEvent).clientX, y: (e as MouseEvent).clientY });
+          }}
+        />
+
+        {/* Context Menu (renders as positioned portal, not a wrapper) */}
         <FlowContextMenu
           useStore={useFlowStore}
           onFitView={() => reactFlowInstance?.fitView()}
@@ -450,29 +473,7 @@ function FlowEditorInner() {
           screenToFlowPosition={(pos) =>
             reactFlowInstance?.screenToFlowPosition(pos) ?? pos
           }
-        >
-          <FlowCanvas
-            nodes={styledNodes}
-            edges={edges}
-            onNodesChange={onNodesChange}
-            onEdgesChange={onEdgesChange}
-            onConnect={onConnect}
-            onNodeSelect={handleNodeSelect}
-            onDrop={handleDrop}
-            onNodeContextMenu={(e, node) => {
-              e.preventDefault();
-              useFlowStore.getState().openNodeMenu(node, { x: e.clientX, y: e.clientY });
-            }}
-            onEdgeContextMenu={(e, edge) => {
-              e.preventDefault();
-              useFlowStore.getState().openEdgeMenu(edge, { x: e.clientX, y: e.clientY });
-            }}
-            onPaneContextMenu={(e) => {
-              e.preventDefault();
-              useFlowStore.getState().openCanvasMenu({ x: (e as MouseEvent).clientX, y: (e as MouseEvent).clientY });
-            }}
-          />
-        </FlowContextMenu>
+        />
 
         {/* Right: Property Panel or Version History */}
         {showHistory ? (
