@@ -89,13 +89,10 @@ model PlatformAccount {
   verifiedAt          DateTime?
   lastSeenAt          DateTime?
   lastMessageAt       DateTime?
-  lastCommunityId     String?
   referralCode        String?   @unique
   referredByAccountId String?
   referredBy          PlatformAccount? @relation("AccountReferrals", fields: [referredByAccountId], references: [id])
   referrals           PlatformAccount[] @relation("AccountReferrals")
-
-  communityMemberships CommunityMember[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -107,147 +104,6 @@ model PlatformAccount {
   @@index([username])
   @@index([createdAt])
   @@index([identityId])
-}
-
-// ==========================================
-// Community Models
-// ==========================================
-
-model Community {
-  id                    String    @id @default(cuid())
-  platform              String    // "telegram" | "discord" | etc.
-  platformCommunityId   String    // Was chatId (BigInt), now string
-  name                  String?
-  type                  String?   // supergroup, guild, workspace, etc.
-  memberCount           Int       @default(0)
-  isActive              Boolean   @default(true)
-  metadata              Json?     // Platform-specific: invite link, icon, etc.
-  botInstanceId         String?
-  botInstance           BotInstance? @relation(fields: [botInstanceId], references: [id])
-  joinedAt              DateTime  @default(now())
-  leftAt                DateTime?
-
-  config                CommunityConfig?
-  telegramConfig        CommunityTelegramConfig?
-  discordConfig         CommunityDiscordConfig?
-  members               CommunityMember[]
-  analyticsSnapshots    CommunityAnalyticsSnapshot[]
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  @@unique([platform, platformCommunityId])
-  @@index([platform])
-  @@index([isActive])
-  @@index([botInstanceId])
-}
-
-model CommunityConfig {
-  id                    String    @id @default(cuid())
-  communityId           String    @unique
-  community             Community @relation(fields: [communityId], references: [id], onDelete: Cascade)
-
-  welcomeEnabled        Boolean   @default(true)
-  welcomeMessage        String?
-  rulesText             String?
-
-  antiSpamEnabled       Boolean   @default(true)
-  antiSpamAction        String    @default("delete")
-  antiSpamMaxMessages   Int       @default(10)
-  antiSpamWindowSeconds Int       @default(10)
-
-  antiLinkEnabled       Boolean   @default(false)
-  antiLinkAction        String    @default("delete")
-  antiLinkWhitelist     String[]
-
-  warnThresholdMute     Int       @default(3)
-  warnThresholdBan      Int       @default(5)
-  warnDecayDays         Int       @default(30)
-  defaultMuteDurationS  Int       @default(3600)
-
-  logChannelId          String?
-  autoDeleteCommandsS   Int       @default(10)
-  silentMode            Boolean   @default(false)
-
-  keywordFiltersEnabled Boolean   @default(false)
-  keywordFilters        String[]
-
-  aiModerationEnabled   Boolean   @default(false)
-  aiModerationAction    String    @default("delete")
-  aiModThreshold        Float     @default(0.8)
-
-  notificationEvents    String[]
-
-  pipelineEnabled       Boolean   @default(false)
-  pipelineDmTemplate    String?
-  pipelineDeeplink      String?
-
-  metadata              Json?
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-}
-
-model CommunityTelegramConfig {
-  id                  String    @id @default(cuid())
-  communityId         String    @unique
-  community           Community @relation(fields: [communityId], references: [id], onDelete: Cascade)
-
-  captchaEnabled      Boolean   @default(false)
-  captchaMode         String    @default("button")
-  captchaTimeoutS     Int       @default(60)
-
-  quarantineEnabled   Boolean   @default(false)
-  quarantineDurationS Int       @default(86400)
-
-  slowModeDelay       Int       @default(0)
-  forumTopicMgmt      Boolean   @default(false)
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-}
-
-model CommunityDiscordConfig {
-  id                String    @id @default(cuid())
-  communityId       String    @unique
-  community         Community @relation(fields: [communityId], references: [id], onDelete: Cascade)
-
-  autoModRules      Json?
-  verificationLevel String?
-  defaultChannelId  String?
-  modLogChannelId   String?
-  welcomeChannelId  String?
-  roleOnJoin        String?
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-}
-
-model CommunityMember {
-  id                  String    @id @default(cuid())
-  communityId         String
-  community           Community @relation(fields: [communityId], references: [id], onDelete: Cascade)
-  platformAccountId   String
-  platformAccount     PlatformAccount @relation(fields: [platformAccountId], references: [id])
-  role                String    @default("member")
-  messageCount        Int       @default(0)
-  joinedAt            DateTime  @default(now())
-  warningCount        Int       @default(0)
-  isMuted             Boolean   @default(false)
-  muteExpiresAt       DateTime?
-  isQuarantined       Boolean   @default(false)
-  quarantineExpiresAt DateTime?
-  lastSeenAt          DateTime  @default(now())
-  metadata            Json?
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  @@unique([communityId, platformAccountId])
-  @@index([communityId])
-  @@index([platformAccountId])
-  @@index([communityId, role])
-  @@index([lastSeenAt])
 }
 
 // ==========================================
@@ -469,108 +325,6 @@ model GroupAnalyticsSnapshot {
   @@index([date])
 }
 
-model CommunityAnalyticsSnapshot {
-  id                String    @id @default(cuid())
-  communityId       String
-  community         Community @relation(fields: [communityId], references: [id], onDelete: Cascade)
-  date              DateTime  @db.Date
-  granularity       String    @default("DAY") // DAY | WEEK | MONTH
-  memberCount       Int       @default(0)
-  newMembers        Int       @default(0)
-  leftMembers       Int       @default(0)
-  messageCount      Int       @default(0)
-  spamDetected      Int       @default(0)
-  warningsIssued    Int       @default(0)
-  moderationActions Int       @default(0)
-  metadata          Json?     // linksBlocked, mutesIssued, bansIssued, deletedMessages
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  @@unique([communityId, date, granularity])
-  @@index([communityId])
-  @@index([date])
-}
-
-model ReputationScore {
-  id              String   @id @default(cuid())
-  telegramId      BigInt   @unique
-  totalScore      Int      @default(0)
-  messageFactor   Int      @default(0)
-  tenureFactor    Int      @default(0)
-  warningPenalty  Int      @default(0)
-  moderationBonus Int      @default(0)
-  lastCalculated  DateTime @default(now())
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
-
-  @@index([telegramId])
-  @@index([totalScore])
-}
-
-model CrossPostTemplate {
-  id           String   @id @default(cuid())
-  name         String   @unique
-  messageText  String
-  targetChatIds BigInt[]
-  isActive     Boolean  @default(true)
-  createdBy    BigInt
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
-
-  @@index([name])
-  @@index([isActive])
-}
-
-// ==========================================
-// TG Client Models
-// ==========================================
-
-model BroadcastMessage {
-  id            String   @id @default(cuid())
-  status        String   @default("pending")
-  text          String
-  targetChatIds BigInt[]
-  results       Json?
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
-
-  @@index([status])
-  @@index([createdAt])
-  @@index([status, createdAt])
-}
-
-model ClientLog {
-  id        String   @id @default(cuid())
-  level     String
-  message   String
-  details   Json?
-  createdAt DateTime @default(now())
-
-  @@index([createdAt])
-  @@index([level])
-}
-
-model ClientSession {
-  id            String   @id @default(cuid())
-  sessionString String
-  isActive      Boolean  @default(true)
-  lastUsedAt    DateTime @default(now())
-  phoneNumber   String?
-  displayName   String?
-  dcId          Int?
-  sessionType   String   @default("user") // user | bot
-  errorCount    Int      @default(0)
-  lastError     String?
-  lastErrorAt   DateTime?
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
-
-  @@index([isActive])
-  @@index([sessionType])
-  @@index([isActive, sessionType])
-}
-
 // ==========================================
 // Flow Builder Models
 // ==========================================
@@ -651,7 +405,6 @@ model BotInstance {
   commands     BotCommand[]
   responses    BotResponse[]
   menus        BotMenu[]
-  communities  Community[]
   connections  PlatformConnection[]
 
   createdAt DateTime @default(now())

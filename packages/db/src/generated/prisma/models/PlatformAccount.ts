@@ -53,7 +53,6 @@ export type PlatformAccountMinAggregateOutputType = {
   verifiedAt: Date | null
   lastSeenAt: Date | null
   lastMessageAt: Date | null
-  lastCommunityId: string | null
   referralCode: string | null
   referredByAccountId: string | null
   createdAt: Date | null
@@ -77,7 +76,6 @@ export type PlatformAccountMaxAggregateOutputType = {
   verifiedAt: Date | null
   lastSeenAt: Date | null
   lastMessageAt: Date | null
-  lastCommunityId: string | null
   referralCode: string | null
   referredByAccountId: string | null
   createdAt: Date | null
@@ -102,7 +100,6 @@ export type PlatformAccountCountAggregateOutputType = {
   verifiedAt: number
   lastSeenAt: number
   lastMessageAt: number
-  lastCommunityId: number
   referralCode: number
   referredByAccountId: number
   createdAt: number
@@ -138,7 +135,6 @@ export type PlatformAccountMinAggregateInputType = {
   verifiedAt?: true
   lastSeenAt?: true
   lastMessageAt?: true
-  lastCommunityId?: true
   referralCode?: true
   referredByAccountId?: true
   createdAt?: true
@@ -162,7 +158,6 @@ export type PlatformAccountMaxAggregateInputType = {
   verifiedAt?: true
   lastSeenAt?: true
   lastMessageAt?: true
-  lastCommunityId?: true
   referralCode?: true
   referredByAccountId?: true
   createdAt?: true
@@ -187,7 +182,6 @@ export type PlatformAccountCountAggregateInputType = {
   verifiedAt?: true
   lastSeenAt?: true
   lastMessageAt?: true
-  lastCommunityId?: true
   referralCode?: true
   referredByAccountId?: true
   createdAt?: true
@@ -299,7 +293,6 @@ export type PlatformAccountGroupByOutputType = {
   verifiedAt: Date | null
   lastSeenAt: Date | null
   lastMessageAt: Date | null
-  lastCommunityId: string | null
   referralCode: string | null
   referredByAccountId: string | null
   createdAt: Date
@@ -347,7 +340,6 @@ export type PlatformAccountWhereInput = {
   verifiedAt?: Prisma.DateTimeNullableFilter<"PlatformAccount"> | Date | string | null
   lastSeenAt?: Prisma.DateTimeNullableFilter<"PlatformAccount"> | Date | string | null
   lastMessageAt?: Prisma.DateTimeNullableFilter<"PlatformAccount"> | Date | string | null
-  lastCommunityId?: Prisma.StringNullableFilter<"PlatformAccount"> | string | null
   referralCode?: Prisma.StringNullableFilter<"PlatformAccount"> | string | null
   referredByAccountId?: Prisma.StringNullableFilter<"PlatformAccount"> | string | null
   createdAt?: Prisma.DateTimeFilter<"PlatformAccount"> | Date | string
@@ -355,7 +347,6 @@ export type PlatformAccountWhereInput = {
   identity?: Prisma.XOR<Prisma.UserIdentityNullableScalarRelationFilter, Prisma.UserIdentityWhereInput> | null
   referredBy?: Prisma.XOR<Prisma.PlatformAccountNullableScalarRelationFilter, Prisma.PlatformAccountWhereInput> | null
   referrals?: Prisma.PlatformAccountListRelationFilter
-  communityMemberships?: Prisma.CommunityMemberListRelationFilter
 }
 
 export type PlatformAccountOrderByWithRelationInput = {
@@ -376,7 +367,6 @@ export type PlatformAccountOrderByWithRelationInput = {
   verifiedAt?: Prisma.SortOrderInput | Prisma.SortOrder
   lastSeenAt?: Prisma.SortOrderInput | Prisma.SortOrder
   lastMessageAt?: Prisma.SortOrderInput | Prisma.SortOrder
-  lastCommunityId?: Prisma.SortOrderInput | Prisma.SortOrder
   referralCode?: Prisma.SortOrderInput | Prisma.SortOrder
   referredByAccountId?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
@@ -384,7 +374,6 @@ export type PlatformAccountOrderByWithRelationInput = {
   identity?: Prisma.UserIdentityOrderByWithRelationInput
   referredBy?: Prisma.PlatformAccountOrderByWithRelationInput
   referrals?: Prisma.PlatformAccountOrderByRelationAggregateInput
-  communityMemberships?: Prisma.CommunityMemberOrderByRelationAggregateInput
 }
 
 export type PlatformAccountWhereUniqueInput = Prisma.AtLeast<{
@@ -410,14 +399,12 @@ export type PlatformAccountWhereUniqueInput = Prisma.AtLeast<{
   verifiedAt?: Prisma.DateTimeNullableFilter<"PlatformAccount"> | Date | string | null
   lastSeenAt?: Prisma.DateTimeNullableFilter<"PlatformAccount"> | Date | string | null
   lastMessageAt?: Prisma.DateTimeNullableFilter<"PlatformAccount"> | Date | string | null
-  lastCommunityId?: Prisma.StringNullableFilter<"PlatformAccount"> | string | null
   referredByAccountId?: Prisma.StringNullableFilter<"PlatformAccount"> | string | null
   createdAt?: Prisma.DateTimeFilter<"PlatformAccount"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"PlatformAccount"> | Date | string
   identity?: Prisma.XOR<Prisma.UserIdentityNullableScalarRelationFilter, Prisma.UserIdentityWhereInput> | null
   referredBy?: Prisma.XOR<Prisma.PlatformAccountNullableScalarRelationFilter, Prisma.PlatformAccountWhereInput> | null
   referrals?: Prisma.PlatformAccountListRelationFilter
-  communityMemberships?: Prisma.CommunityMemberListRelationFilter
 }, "id" | "referralCode" | "platform_platformUserId">
 
 export type PlatformAccountOrderByWithAggregationInput = {
@@ -438,7 +425,6 @@ export type PlatformAccountOrderByWithAggregationInput = {
   verifiedAt?: Prisma.SortOrderInput | Prisma.SortOrder
   lastSeenAt?: Prisma.SortOrderInput | Prisma.SortOrder
   lastMessageAt?: Prisma.SortOrderInput | Prisma.SortOrder
-  lastCommunityId?: Prisma.SortOrderInput | Prisma.SortOrder
   referralCode?: Prisma.SortOrderInput | Prisma.SortOrder
   referredByAccountId?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
@@ -471,7 +457,6 @@ export type PlatformAccountScalarWhereWithAggregatesInput = {
   verifiedAt?: Prisma.DateTimeNullableWithAggregatesFilter<"PlatformAccount"> | Date | string | null
   lastSeenAt?: Prisma.DateTimeNullableWithAggregatesFilter<"PlatformAccount"> | Date | string | null
   lastMessageAt?: Prisma.DateTimeNullableWithAggregatesFilter<"PlatformAccount"> | Date | string | null
-  lastCommunityId?: Prisma.StringNullableWithAggregatesFilter<"PlatformAccount"> | string | null
   referralCode?: Prisma.StringNullableWithAggregatesFilter<"PlatformAccount"> | string | null
   referredByAccountId?: Prisma.StringNullableWithAggregatesFilter<"PlatformAccount"> | string | null
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"PlatformAccount"> | Date | string
@@ -495,14 +480,12 @@ export type PlatformAccountCreateInput = {
   verifiedAt?: Date | string | null
   lastSeenAt?: Date | string | null
   lastMessageAt?: Date | string | null
-  lastCommunityId?: string | null
   referralCode?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   identity?: Prisma.UserIdentityCreateNestedOneWithoutPlatformAccountsInput
   referredBy?: Prisma.PlatformAccountCreateNestedOneWithoutReferralsInput
   referrals?: Prisma.PlatformAccountCreateNestedManyWithoutReferredByInput
-  communityMemberships?: Prisma.CommunityMemberCreateNestedManyWithoutPlatformAccountInput
 }
 
 export type PlatformAccountUncheckedCreateInput = {
@@ -523,13 +506,11 @@ export type PlatformAccountUncheckedCreateInput = {
   verifiedAt?: Date | string | null
   lastSeenAt?: Date | string | null
   lastMessageAt?: Date | string | null
-  lastCommunityId?: string | null
   referralCode?: string | null
   referredByAccountId?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   referrals?: Prisma.PlatformAccountUncheckedCreateNestedManyWithoutReferredByInput
-  communityMemberships?: Prisma.CommunityMemberUncheckedCreateNestedManyWithoutPlatformAccountInput
 }
 
 export type PlatformAccountUpdateInput = {
@@ -549,14 +530,12 @@ export type PlatformAccountUpdateInput = {
   verifiedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   lastSeenAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   lastMessageAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  lastCommunityId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   referralCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   identity?: Prisma.UserIdentityUpdateOneWithoutPlatformAccountsNestedInput
   referredBy?: Prisma.PlatformAccountUpdateOneWithoutReferralsNestedInput
   referrals?: Prisma.PlatformAccountUpdateManyWithoutReferredByNestedInput
-  communityMemberships?: Prisma.CommunityMemberUpdateManyWithoutPlatformAccountNestedInput
 }
 
 export type PlatformAccountUncheckedUpdateInput = {
@@ -577,13 +556,11 @@ export type PlatformAccountUncheckedUpdateInput = {
   verifiedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   lastSeenAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   lastMessageAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  lastCommunityId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   referralCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   referredByAccountId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   referrals?: Prisma.PlatformAccountUncheckedUpdateManyWithoutReferredByNestedInput
-  communityMemberships?: Prisma.CommunityMemberUncheckedUpdateManyWithoutPlatformAccountNestedInput
 }
 
 export type PlatformAccountCreateManyInput = {
@@ -604,7 +581,6 @@ export type PlatformAccountCreateManyInput = {
   verifiedAt?: Date | string | null
   lastSeenAt?: Date | string | null
   lastMessageAt?: Date | string | null
-  lastCommunityId?: string | null
   referralCode?: string | null
   referredByAccountId?: string | null
   createdAt?: Date | string
@@ -628,7 +604,6 @@ export type PlatformAccountUpdateManyMutationInput = {
   verifiedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   lastSeenAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   lastMessageAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  lastCommunityId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   referralCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -652,7 +627,6 @@ export type PlatformAccountUncheckedUpdateManyInput = {
   verifiedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   lastSeenAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   lastMessageAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  lastCommunityId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   referralCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   referredByAccountId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -697,7 +671,6 @@ export type PlatformAccountCountOrderByAggregateInput = {
   verifiedAt?: Prisma.SortOrder
   lastSeenAt?: Prisma.SortOrder
   lastMessageAt?: Prisma.SortOrder
-  lastCommunityId?: Prisma.SortOrder
   referralCode?: Prisma.SortOrder
   referredByAccountId?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
@@ -726,7 +699,6 @@ export type PlatformAccountMaxOrderByAggregateInput = {
   verifiedAt?: Prisma.SortOrder
   lastSeenAt?: Prisma.SortOrder
   lastMessageAt?: Prisma.SortOrder
-  lastCommunityId?: Prisma.SortOrder
   referralCode?: Prisma.SortOrder
   referredByAccountId?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
@@ -750,7 +722,6 @@ export type PlatformAccountMinOrderByAggregateInput = {
   verifiedAt?: Prisma.SortOrder
   lastSeenAt?: Prisma.SortOrder
   lastMessageAt?: Prisma.SortOrder
-  lastCommunityId?: Prisma.SortOrder
   referralCode?: Prisma.SortOrder
   referredByAccountId?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
@@ -760,11 +731,6 @@ export type PlatformAccountMinOrderByAggregateInput = {
 export type PlatformAccountSumOrderByAggregateInput = {
   messageCount?: Prisma.SortOrder
   commandCount?: Prisma.SortOrder
-}
-
-export type PlatformAccountScalarRelationFilter = {
-  is?: Prisma.PlatformAccountWhereInput
-  isNot?: Prisma.PlatformAccountWhereInput
 }
 
 export type PlatformAccountCreateNestedManyWithoutIdentityInput = {
@@ -867,20 +833,6 @@ export type PlatformAccountUncheckedUpdateManyWithoutReferredByNestedInput = {
   deleteMany?: Prisma.PlatformAccountScalarWhereInput | Prisma.PlatformAccountScalarWhereInput[]
 }
 
-export type PlatformAccountCreateNestedOneWithoutCommunityMembershipsInput = {
-  create?: Prisma.XOR<Prisma.PlatformAccountCreateWithoutCommunityMembershipsInput, Prisma.PlatformAccountUncheckedCreateWithoutCommunityMembershipsInput>
-  connectOrCreate?: Prisma.PlatformAccountCreateOrConnectWithoutCommunityMembershipsInput
-  connect?: Prisma.PlatformAccountWhereUniqueInput
-}
-
-export type PlatformAccountUpdateOneRequiredWithoutCommunityMembershipsNestedInput = {
-  create?: Prisma.XOR<Prisma.PlatformAccountCreateWithoutCommunityMembershipsInput, Prisma.PlatformAccountUncheckedCreateWithoutCommunityMembershipsInput>
-  connectOrCreate?: Prisma.PlatformAccountCreateOrConnectWithoutCommunityMembershipsInput
-  upsert?: Prisma.PlatformAccountUpsertWithoutCommunityMembershipsInput
-  connect?: Prisma.PlatformAccountWhereUniqueInput
-  update?: Prisma.XOR<Prisma.XOR<Prisma.PlatformAccountUpdateToOneWithWhereWithoutCommunityMembershipsInput, Prisma.PlatformAccountUpdateWithoutCommunityMembershipsInput>, Prisma.PlatformAccountUncheckedUpdateWithoutCommunityMembershipsInput>
-}
-
 export type PlatformAccountCreateWithoutIdentityInput = {
   id?: string
   platform: string
@@ -898,13 +850,11 @@ export type PlatformAccountCreateWithoutIdentityInput = {
   verifiedAt?: Date | string | null
   lastSeenAt?: Date | string | null
   lastMessageAt?: Date | string | null
-  lastCommunityId?: string | null
   referralCode?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   referredBy?: Prisma.PlatformAccountCreateNestedOneWithoutReferralsInput
   referrals?: Prisma.PlatformAccountCreateNestedManyWithoutReferredByInput
-  communityMemberships?: Prisma.CommunityMemberCreateNestedManyWithoutPlatformAccountInput
 }
 
 export type PlatformAccountUncheckedCreateWithoutIdentityInput = {
@@ -924,13 +874,11 @@ export type PlatformAccountUncheckedCreateWithoutIdentityInput = {
   verifiedAt?: Date | string | null
   lastSeenAt?: Date | string | null
   lastMessageAt?: Date | string | null
-  lastCommunityId?: string | null
   referralCode?: string | null
   referredByAccountId?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   referrals?: Prisma.PlatformAccountUncheckedCreateNestedManyWithoutReferredByInput
-  communityMemberships?: Prisma.CommunityMemberUncheckedCreateNestedManyWithoutPlatformAccountInput
 }
 
 export type PlatformAccountCreateOrConnectWithoutIdentityInput = {
@@ -980,7 +928,6 @@ export type PlatformAccountScalarWhereInput = {
   verifiedAt?: Prisma.DateTimeNullableFilter<"PlatformAccount"> | Date | string | null
   lastSeenAt?: Prisma.DateTimeNullableFilter<"PlatformAccount"> | Date | string | null
   lastMessageAt?: Prisma.DateTimeNullableFilter<"PlatformAccount"> | Date | string | null
-  lastCommunityId?: Prisma.StringNullableFilter<"PlatformAccount"> | string | null
   referralCode?: Prisma.StringNullableFilter<"PlatformAccount"> | string | null
   referredByAccountId?: Prisma.StringNullableFilter<"PlatformAccount"> | string | null
   createdAt?: Prisma.DateTimeFilter<"PlatformAccount"> | Date | string
@@ -1004,13 +951,11 @@ export type PlatformAccountCreateWithoutReferralsInput = {
   verifiedAt?: Date | string | null
   lastSeenAt?: Date | string | null
   lastMessageAt?: Date | string | null
-  lastCommunityId?: string | null
   referralCode?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   identity?: Prisma.UserIdentityCreateNestedOneWithoutPlatformAccountsInput
   referredBy?: Prisma.PlatformAccountCreateNestedOneWithoutReferralsInput
-  communityMemberships?: Prisma.CommunityMemberCreateNestedManyWithoutPlatformAccountInput
 }
 
 export type PlatformAccountUncheckedCreateWithoutReferralsInput = {
@@ -1031,12 +976,10 @@ export type PlatformAccountUncheckedCreateWithoutReferralsInput = {
   verifiedAt?: Date | string | null
   lastSeenAt?: Date | string | null
   lastMessageAt?: Date | string | null
-  lastCommunityId?: string | null
   referralCode?: string | null
   referredByAccountId?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
-  communityMemberships?: Prisma.CommunityMemberUncheckedCreateNestedManyWithoutPlatformAccountInput
 }
 
 export type PlatformAccountCreateOrConnectWithoutReferralsInput = {
@@ -1061,13 +1004,11 @@ export type PlatformAccountCreateWithoutReferredByInput = {
   verifiedAt?: Date | string | null
   lastSeenAt?: Date | string | null
   lastMessageAt?: Date | string | null
-  lastCommunityId?: string | null
   referralCode?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   identity?: Prisma.UserIdentityCreateNestedOneWithoutPlatformAccountsInput
   referrals?: Prisma.PlatformAccountCreateNestedManyWithoutReferredByInput
-  communityMemberships?: Prisma.CommunityMemberCreateNestedManyWithoutPlatformAccountInput
 }
 
 export type PlatformAccountUncheckedCreateWithoutReferredByInput = {
@@ -1088,12 +1029,10 @@ export type PlatformAccountUncheckedCreateWithoutReferredByInput = {
   verifiedAt?: Date | string | null
   lastSeenAt?: Date | string | null
   lastMessageAt?: Date | string | null
-  lastCommunityId?: string | null
   referralCode?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   referrals?: Prisma.PlatformAccountUncheckedCreateNestedManyWithoutReferredByInput
-  communityMemberships?: Prisma.CommunityMemberUncheckedCreateNestedManyWithoutPlatformAccountInput
 }
 
 export type PlatformAccountCreateOrConnectWithoutReferredByInput = {
@@ -1134,13 +1073,11 @@ export type PlatformAccountUpdateWithoutReferralsInput = {
   verifiedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   lastSeenAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   lastMessageAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  lastCommunityId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   referralCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   identity?: Prisma.UserIdentityUpdateOneWithoutPlatformAccountsNestedInput
   referredBy?: Prisma.PlatformAccountUpdateOneWithoutReferralsNestedInput
-  communityMemberships?: Prisma.CommunityMemberUpdateManyWithoutPlatformAccountNestedInput
 }
 
 export type PlatformAccountUncheckedUpdateWithoutReferralsInput = {
@@ -1161,12 +1098,10 @@ export type PlatformAccountUncheckedUpdateWithoutReferralsInput = {
   verifiedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   lastSeenAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   lastMessageAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  lastCommunityId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   referralCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   referredByAccountId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  communityMemberships?: Prisma.CommunityMemberUncheckedUpdateManyWithoutPlatformAccountNestedInput
 }
 
 export type PlatformAccountUpsertWithWhereUniqueWithoutReferredByInput = {
@@ -1183,126 +1118,6 @@ export type PlatformAccountUpdateWithWhereUniqueWithoutReferredByInput = {
 export type PlatformAccountUpdateManyWithWhereWithoutReferredByInput = {
   where: Prisma.PlatformAccountScalarWhereInput
   data: Prisma.XOR<Prisma.PlatformAccountUpdateManyMutationInput, Prisma.PlatformAccountUncheckedUpdateManyWithoutReferredByInput>
-}
-
-export type PlatformAccountCreateWithoutCommunityMembershipsInput = {
-  id?: string
-  platform: string
-  platformUserId: string
-  username?: string | null
-  firstName?: string | null
-  lastName?: string | null
-  metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
-  isBanned?: boolean
-  bannedAt?: Date | string | null
-  banReason?: string | null
-  messageCount?: number
-  commandCount?: number
-  isVerified?: boolean
-  verifiedAt?: Date | string | null
-  lastSeenAt?: Date | string | null
-  lastMessageAt?: Date | string | null
-  lastCommunityId?: string | null
-  referralCode?: string | null
-  createdAt?: Date | string
-  updatedAt?: Date | string
-  identity?: Prisma.UserIdentityCreateNestedOneWithoutPlatformAccountsInput
-  referredBy?: Prisma.PlatformAccountCreateNestedOneWithoutReferralsInput
-  referrals?: Prisma.PlatformAccountCreateNestedManyWithoutReferredByInput
-}
-
-export type PlatformAccountUncheckedCreateWithoutCommunityMembershipsInput = {
-  id?: string
-  identityId?: string | null
-  platform: string
-  platformUserId: string
-  username?: string | null
-  firstName?: string | null
-  lastName?: string | null
-  metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
-  isBanned?: boolean
-  bannedAt?: Date | string | null
-  banReason?: string | null
-  messageCount?: number
-  commandCount?: number
-  isVerified?: boolean
-  verifiedAt?: Date | string | null
-  lastSeenAt?: Date | string | null
-  lastMessageAt?: Date | string | null
-  lastCommunityId?: string | null
-  referralCode?: string | null
-  referredByAccountId?: string | null
-  createdAt?: Date | string
-  updatedAt?: Date | string
-  referrals?: Prisma.PlatformAccountUncheckedCreateNestedManyWithoutReferredByInput
-}
-
-export type PlatformAccountCreateOrConnectWithoutCommunityMembershipsInput = {
-  where: Prisma.PlatformAccountWhereUniqueInput
-  create: Prisma.XOR<Prisma.PlatformAccountCreateWithoutCommunityMembershipsInput, Prisma.PlatformAccountUncheckedCreateWithoutCommunityMembershipsInput>
-}
-
-export type PlatformAccountUpsertWithoutCommunityMembershipsInput = {
-  update: Prisma.XOR<Prisma.PlatformAccountUpdateWithoutCommunityMembershipsInput, Prisma.PlatformAccountUncheckedUpdateWithoutCommunityMembershipsInput>
-  create: Prisma.XOR<Prisma.PlatformAccountCreateWithoutCommunityMembershipsInput, Prisma.PlatformAccountUncheckedCreateWithoutCommunityMembershipsInput>
-  where?: Prisma.PlatformAccountWhereInput
-}
-
-export type PlatformAccountUpdateToOneWithWhereWithoutCommunityMembershipsInput = {
-  where?: Prisma.PlatformAccountWhereInput
-  data: Prisma.XOR<Prisma.PlatformAccountUpdateWithoutCommunityMembershipsInput, Prisma.PlatformAccountUncheckedUpdateWithoutCommunityMembershipsInput>
-}
-
-export type PlatformAccountUpdateWithoutCommunityMembershipsInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
-  platform?: Prisma.StringFieldUpdateOperationsInput | string
-  platformUserId?: Prisma.StringFieldUpdateOperationsInput | string
-  username?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  firstName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  lastName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
-  isBanned?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  bannedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  banReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  messageCount?: Prisma.IntFieldUpdateOperationsInput | number
-  commandCount?: Prisma.IntFieldUpdateOperationsInput | number
-  isVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  verifiedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  lastSeenAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  lastMessageAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  lastCommunityId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  referralCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  identity?: Prisma.UserIdentityUpdateOneWithoutPlatformAccountsNestedInput
-  referredBy?: Prisma.PlatformAccountUpdateOneWithoutReferralsNestedInput
-  referrals?: Prisma.PlatformAccountUpdateManyWithoutReferredByNestedInput
-}
-
-export type PlatformAccountUncheckedUpdateWithoutCommunityMembershipsInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
-  identityId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  platform?: Prisma.StringFieldUpdateOperationsInput | string
-  platformUserId?: Prisma.StringFieldUpdateOperationsInput | string
-  username?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  firstName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  lastName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
-  isBanned?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  bannedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  banReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  messageCount?: Prisma.IntFieldUpdateOperationsInput | number
-  commandCount?: Prisma.IntFieldUpdateOperationsInput | number
-  isVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  verifiedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  lastSeenAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  lastMessageAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  lastCommunityId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  referralCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  referredByAccountId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  referrals?: Prisma.PlatformAccountUncheckedUpdateManyWithoutReferredByNestedInput
 }
 
 export type PlatformAccountCreateManyIdentityInput = {
@@ -1322,7 +1137,6 @@ export type PlatformAccountCreateManyIdentityInput = {
   verifiedAt?: Date | string | null
   lastSeenAt?: Date | string | null
   lastMessageAt?: Date | string | null
-  lastCommunityId?: string | null
   referralCode?: string | null
   referredByAccountId?: string | null
   createdAt?: Date | string
@@ -1346,13 +1160,11 @@ export type PlatformAccountUpdateWithoutIdentityInput = {
   verifiedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   lastSeenAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   lastMessageAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  lastCommunityId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   referralCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   referredBy?: Prisma.PlatformAccountUpdateOneWithoutReferralsNestedInput
   referrals?: Prisma.PlatformAccountUpdateManyWithoutReferredByNestedInput
-  communityMemberships?: Prisma.CommunityMemberUpdateManyWithoutPlatformAccountNestedInput
 }
 
 export type PlatformAccountUncheckedUpdateWithoutIdentityInput = {
@@ -1372,13 +1184,11 @@ export type PlatformAccountUncheckedUpdateWithoutIdentityInput = {
   verifiedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   lastSeenAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   lastMessageAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  lastCommunityId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   referralCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   referredByAccountId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   referrals?: Prisma.PlatformAccountUncheckedUpdateManyWithoutReferredByNestedInput
-  communityMemberships?: Prisma.CommunityMemberUncheckedUpdateManyWithoutPlatformAccountNestedInput
 }
 
 export type PlatformAccountUncheckedUpdateManyWithoutIdentityInput = {
@@ -1398,7 +1208,6 @@ export type PlatformAccountUncheckedUpdateManyWithoutIdentityInput = {
   verifiedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   lastSeenAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   lastMessageAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  lastCommunityId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   referralCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   referredByAccountId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1423,7 +1232,6 @@ export type PlatformAccountCreateManyReferredByInput = {
   verifiedAt?: Date | string | null
   lastSeenAt?: Date | string | null
   lastMessageAt?: Date | string | null
-  lastCommunityId?: string | null
   referralCode?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -1446,13 +1254,11 @@ export type PlatformAccountUpdateWithoutReferredByInput = {
   verifiedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   lastSeenAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   lastMessageAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  lastCommunityId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   referralCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   identity?: Prisma.UserIdentityUpdateOneWithoutPlatformAccountsNestedInput
   referrals?: Prisma.PlatformAccountUpdateManyWithoutReferredByNestedInput
-  communityMemberships?: Prisma.CommunityMemberUpdateManyWithoutPlatformAccountNestedInput
 }
 
 export type PlatformAccountUncheckedUpdateWithoutReferredByInput = {
@@ -1473,12 +1279,10 @@ export type PlatformAccountUncheckedUpdateWithoutReferredByInput = {
   verifiedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   lastSeenAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   lastMessageAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  lastCommunityId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   referralCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   referrals?: Prisma.PlatformAccountUncheckedUpdateManyWithoutReferredByNestedInput
-  communityMemberships?: Prisma.CommunityMemberUncheckedUpdateManyWithoutPlatformAccountNestedInput
 }
 
 export type PlatformAccountUncheckedUpdateManyWithoutReferredByInput = {
@@ -1499,7 +1303,6 @@ export type PlatformAccountUncheckedUpdateManyWithoutReferredByInput = {
   verifiedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   lastSeenAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   lastMessageAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  lastCommunityId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   referralCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1512,12 +1315,10 @@ export type PlatformAccountUncheckedUpdateManyWithoutReferredByInput = {
 
 export type PlatformAccountCountOutputType = {
   referrals: number
-  communityMemberships: number
 }
 
 export type PlatformAccountCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   referrals?: boolean | PlatformAccountCountOutputTypeCountReferralsArgs
-  communityMemberships?: boolean | PlatformAccountCountOutputTypeCountCommunityMembershipsArgs
 }
 
 /**
@@ -1535,13 +1336,6 @@ export type PlatformAccountCountOutputTypeDefaultArgs<ExtArgs extends runtime.Ty
  */
 export type PlatformAccountCountOutputTypeCountReferralsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   where?: Prisma.PlatformAccountWhereInput
-}
-
-/**
- * PlatformAccountCountOutputType without action
- */
-export type PlatformAccountCountOutputTypeCountCommunityMembershipsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  where?: Prisma.CommunityMemberWhereInput
 }
 
 
@@ -1563,7 +1357,6 @@ export type PlatformAccountSelect<ExtArgs extends runtime.Types.Extensions.Inter
   verifiedAt?: boolean
   lastSeenAt?: boolean
   lastMessageAt?: boolean
-  lastCommunityId?: boolean
   referralCode?: boolean
   referredByAccountId?: boolean
   createdAt?: boolean
@@ -1571,7 +1364,6 @@ export type PlatformAccountSelect<ExtArgs extends runtime.Types.Extensions.Inter
   identity?: boolean | Prisma.PlatformAccount$identityArgs<ExtArgs>
   referredBy?: boolean | Prisma.PlatformAccount$referredByArgs<ExtArgs>
   referrals?: boolean | Prisma.PlatformAccount$referralsArgs<ExtArgs>
-  communityMemberships?: boolean | Prisma.PlatformAccount$communityMembershipsArgs<ExtArgs>
   _count?: boolean | Prisma.PlatformAccountCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["platformAccount"]>
 
@@ -1593,7 +1385,6 @@ export type PlatformAccountSelectCreateManyAndReturn<ExtArgs extends runtime.Typ
   verifiedAt?: boolean
   lastSeenAt?: boolean
   lastMessageAt?: boolean
-  lastCommunityId?: boolean
   referralCode?: boolean
   referredByAccountId?: boolean
   createdAt?: boolean
@@ -1620,7 +1411,6 @@ export type PlatformAccountSelectUpdateManyAndReturn<ExtArgs extends runtime.Typ
   verifiedAt?: boolean
   lastSeenAt?: boolean
   lastMessageAt?: boolean
-  lastCommunityId?: boolean
   referralCode?: boolean
   referredByAccountId?: boolean
   createdAt?: boolean
@@ -1647,19 +1437,17 @@ export type PlatformAccountSelectScalar = {
   verifiedAt?: boolean
   lastSeenAt?: boolean
   lastMessageAt?: boolean
-  lastCommunityId?: boolean
   referralCode?: boolean
   referredByAccountId?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }
 
-export type PlatformAccountOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "identityId" | "platform" | "platformUserId" | "username" | "firstName" | "lastName" | "metadata" | "isBanned" | "bannedAt" | "banReason" | "messageCount" | "commandCount" | "isVerified" | "verifiedAt" | "lastSeenAt" | "lastMessageAt" | "lastCommunityId" | "referralCode" | "referredByAccountId" | "createdAt" | "updatedAt", ExtArgs["result"]["platformAccount"]>
+export type PlatformAccountOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "identityId" | "platform" | "platformUserId" | "username" | "firstName" | "lastName" | "metadata" | "isBanned" | "bannedAt" | "banReason" | "messageCount" | "commandCount" | "isVerified" | "verifiedAt" | "lastSeenAt" | "lastMessageAt" | "referralCode" | "referredByAccountId" | "createdAt" | "updatedAt", ExtArgs["result"]["platformAccount"]>
 export type PlatformAccountInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   identity?: boolean | Prisma.PlatformAccount$identityArgs<ExtArgs>
   referredBy?: boolean | Prisma.PlatformAccount$referredByArgs<ExtArgs>
   referrals?: boolean | Prisma.PlatformAccount$referralsArgs<ExtArgs>
-  communityMemberships?: boolean | Prisma.PlatformAccount$communityMembershipsArgs<ExtArgs>
   _count?: boolean | Prisma.PlatformAccountCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type PlatformAccountIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -1677,7 +1465,6 @@ export type $PlatformAccountPayload<ExtArgs extends runtime.Types.Extensions.Int
     identity: Prisma.$UserIdentityPayload<ExtArgs> | null
     referredBy: Prisma.$PlatformAccountPayload<ExtArgs> | null
     referrals: Prisma.$PlatformAccountPayload<ExtArgs>[]
-    communityMemberships: Prisma.$CommunityMemberPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
@@ -1697,7 +1484,6 @@ export type $PlatformAccountPayload<ExtArgs extends runtime.Types.Extensions.Int
     verifiedAt: Date | null
     lastSeenAt: Date | null
     lastMessageAt: Date | null
-    lastCommunityId: string | null
     referralCode: string | null
     referredByAccountId: string | null
     createdAt: Date
@@ -2099,7 +1885,6 @@ export interface Prisma__PlatformAccountClient<T, Null = never, ExtArgs extends 
   identity<T extends Prisma.PlatformAccount$identityArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.PlatformAccount$identityArgs<ExtArgs>>): Prisma.Prisma__UserIdentityClient<runtime.Types.Result.GetResult<Prisma.$UserIdentityPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
   referredBy<T extends Prisma.PlatformAccount$referredByArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.PlatformAccount$referredByArgs<ExtArgs>>): Prisma.Prisma__PlatformAccountClient<runtime.Types.Result.GetResult<Prisma.$PlatformAccountPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
   referrals<T extends Prisma.PlatformAccount$referralsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.PlatformAccount$referralsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$PlatformAccountPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
-  communityMemberships<T extends Prisma.PlatformAccount$communityMembershipsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.PlatformAccount$communityMembershipsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$CommunityMemberPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -2146,7 +1931,6 @@ export interface PlatformAccountFieldRefs {
   readonly verifiedAt: Prisma.FieldRef<"PlatformAccount", 'DateTime'>
   readonly lastSeenAt: Prisma.FieldRef<"PlatformAccount", 'DateTime'>
   readonly lastMessageAt: Prisma.FieldRef<"PlatformAccount", 'DateTime'>
-  readonly lastCommunityId: Prisma.FieldRef<"PlatformAccount", 'String'>
   readonly referralCode: Prisma.FieldRef<"PlatformAccount", 'String'>
   readonly referredByAccountId: Prisma.FieldRef<"PlatformAccount", 'String'>
   readonly createdAt: Prisma.FieldRef<"PlatformAccount", 'DateTime'>
@@ -2606,30 +2390,6 @@ export type PlatformAccount$referralsArgs<ExtArgs extends runtime.Types.Extensio
   take?: number
   skip?: number
   distinct?: Prisma.PlatformAccountScalarFieldEnum | Prisma.PlatformAccountScalarFieldEnum[]
-}
-
-/**
- * PlatformAccount.communityMemberships
- */
-export type PlatformAccount$communityMembershipsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  /**
-   * Select specific fields to fetch from the CommunityMember
-   */
-  select?: Prisma.CommunityMemberSelect<ExtArgs> | null
-  /**
-   * Omit specific fields from the CommunityMember
-   */
-  omit?: Prisma.CommunityMemberOmit<ExtArgs> | null
-  /**
-   * Choose, which related nodes to fetch as well
-   */
-  include?: Prisma.CommunityMemberInclude<ExtArgs> | null
-  where?: Prisma.CommunityMemberWhereInput
-  orderBy?: Prisma.CommunityMemberOrderByWithRelationInput | Prisma.CommunityMemberOrderByWithRelationInput[]
-  cursor?: Prisma.CommunityMemberWhereUniqueInput
-  take?: number
-  skip?: number
-  distinct?: Prisma.CommunityMemberScalarFieldEnum | Prisma.CommunityMemberScalarFieldEnum[]
 }
 
 /**
