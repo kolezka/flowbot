@@ -330,7 +330,7 @@ export function ExecutionDebugger({
 
   return (
     <div
-      className="fixed bottom-0 left-0 right-0 border-t border-border bg-card shadow-lg z-50 flex flex-col"
+      className="border-t border-border bg-card shadow-lg flex flex-col shrink-0"
       style={{ height: panelHeight }}
     >
       {/* ── Resize handle ── */}

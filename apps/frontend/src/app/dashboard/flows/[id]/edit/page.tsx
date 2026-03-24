@@ -16,12 +16,6 @@ import {
   type PlatformConnectionType,
   getConnections,
 } from "@/lib/api";
-import {
-  ExecutionToolbar,
-  ExecutionPanel,
-  applyExecutionStyles,
-  useExecutionState,
-} from "@/components/flow-execution-overlay";
 
 // New extracted components
 import { NodePalette } from "@/components/flow-editor/NodePalette";
@@ -81,7 +75,6 @@ function FlowEditorInner() {
   // ── Panel visibility ────────────────────────────────────────────────────
   const [showHistory, setShowHistory] = useState(false);
   const [showDebugger, setShowDebugger] = useState(false);
-  const [executionId, setExecutionId] = useState<string | null>(null);
 
   // ── Platform & transport config ─────────────────────────────────────────
   const [botInstances, setBotInstances] = useState<BotInstance[]>([]);
@@ -97,9 +90,6 @@ function FlowEditorInner() {
   const [flowPlatform, setFlowPlatform] = useState<
     "telegram" | "discord" | "cross-platform"
   >("telegram");
-
-  // ── Execution overlay state ─────────────────────────────────────────────
-  const { executionState, setExecutionState } = useExecutionState();
 
   // ── Command palette ─────────────────────────────────────────────────────
   const cmdPalette = useCommandPalette();
@@ -398,17 +388,9 @@ function FlowEditorInner() {
     [saveNow, handleTestRun, handleValidate, handlePublish],
   );
 
-  // ── Apply execution styles to nodes/edges ───────────────────────────────
-  const { styledNodes, styledEdges } = useMemo(() => {
-    if (executionState.execution) {
-      return applyExecutionStyles(nodes, edges, executionState);
-    }
-    return { styledNodes: nodes, styledEdges: edges };
-  }, [nodes, edges, executionState]);
-
   // ── Apply disabled node visual treatment ────────────────────────────────
-  const disabledStyledNodes = useMemo(() => {
-    return styledNodes.map((node) =>
+  const styledNodes = useMemo(() => {
+    return nodes.map((node) =>
       node.data?.disabled
         ? {
             ...node,
@@ -420,7 +402,7 @@ function FlowEditorInner() {
           }
         : node,
     );
-  }, [styledNodes]);
+  }, [nodes]);
 
   // ── Loading state ───────────────────────────────────────────────────────
   if (!loaded) return (
@@ -470,8 +452,8 @@ function FlowEditorInner() {
           }
         >
           <FlowCanvas
-            nodes={disabledStyledNodes}
-            edges={styledEdges}
+            nodes={styledNodes}
+            edges={edges}
             onNodesChange={onNodesChange}
             onEdgesChange={onEdgesChange}
             onConnect={onConnect}
@@ -518,28 +500,14 @@ function FlowEditorInner() {
         ) : null}
       </div>
 
-      {/* Bottom: Execution Panel (existing overlay) */}
-      <ExecutionPanel executionState={executionState} nodes={nodes} />
-
-      {/* Bottom: Execution Debugger (new) */}
+      {/* Bottom: Execution Debugger */}
       {showDebugger && (
         <ExecutionDebugger
           flowId={flowId}
-          executionId={executionId}
+          executionId={null}
           onClose={() => setShowDebugger(false)}
         />
       )}
-
-      {/* Floating: Execution Toolbar (test run controls) */}
-      <div className="absolute top-14 right-4 z-10">
-        <ExecutionToolbar
-          flowId={flowId}
-          nodes={nodes}
-          edges={edges}
-          executionState={executionState}
-          onExecutionStateChange={setExecutionState}
-        />
-      </div>
 
       {/* Floating: Command Palette */}
       <CommandPalette
