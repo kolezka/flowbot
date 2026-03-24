@@ -181,7 +181,9 @@ export default function AutomationJobsPage() {
       : "0.0";
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-6">
+      <h1 className="text-2xl font-bold">Automation Jobs</h1>
+
       {/* Stats Cards */}
       <div className="grid grid-cols-2 gap-4 md:grid-cols-5">
         <Card>

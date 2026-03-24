@@ -10,6 +10,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { PlatformBadge } from "@/components/platform-badge";
 import { ScopeManager } from "@/components/connections/ScopeManager";
+import { Skeleton, SkeletonCard } from "@/components/ui/skeleton";
 import { ArrowLeft } from "lucide-react";
 
 // ---------------------------------------------------------------------------
@@ -87,9 +88,19 @@ export default function ConnectionDetailPage() {
 
   if (loading) {
     return (
-      <div className="animate-pulse space-y-4">
-        <div className="h-8 w-48 bg-muted rounded" />
-        <div className="h-48 bg-muted rounded-xl" />
+      <div className="space-y-4">
+        <Skeleton className="h-4 w-32" />
+        <div className="flex items-start justify-between">
+          <div className="space-y-2">
+            <Skeleton className="h-8 w-48" />
+            <Skeleton className="h-4 w-32" />
+          </div>
+          <div className="flex gap-2">
+            <Skeleton className="h-6 w-20 rounded-full" />
+            <Skeleton className="h-6 w-16 rounded-full" />
+          </div>
+        </div>
+        <SkeletonCard />
       </div>
     );
   }

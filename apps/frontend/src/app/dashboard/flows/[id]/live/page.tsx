@@ -14,6 +14,7 @@ import "@xyflow/react/dist/style.css";
 import { api } from "@/lib/api";
 import type { FlowDefinition, FlowExecution } from "@/lib/api";
 import { Badge } from "@/components/ui/badge";
+import { Skeleton } from "@/components/ui/skeleton";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 const STATUS_COLORS: Record<string, string> = {
@@ -110,7 +111,10 @@ export default function LiveExecutionPage() {
   if (loading) {
     return (
       <div className="flex h-[calc(100vh-4rem)] items-center justify-center" role="status" aria-busy="true">
-        <div className="animate-pulse text-muted-foreground">Loading execution view...</div>
+        <div className="space-y-3 text-center">
+          <Skeleton className="mx-auto h-12 w-12 rounded-full" />
+          <Skeleton className="mx-auto h-4 w-48" />
+        </div>
       </div>
     );
   }

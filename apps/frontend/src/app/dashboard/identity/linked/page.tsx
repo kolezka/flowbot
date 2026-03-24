@@ -7,6 +7,8 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { PlatformBadge } from "@/components/platform-badge";
+import { EmptyState } from "@/components/empty-state";
+import { SkeletonCard } from "@/components/ui/skeleton";
 import { Search, Link2, Link2Off, ChevronDown, ChevronUp, Users } from "lucide-react";
 
 export default function LinkedIdentitiesPage() {
@@ -79,11 +81,11 @@ export default function LinkedIdentitiesPage() {
   const totalPages = Math.ceil(total / pageSize);
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-6">
       {/* Header */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">Linked Identities</h1>
+          <h1 className="text-2xl font-bold">Linked Identities</h1>
           <p className="text-muted-foreground text-sm mt-1">
             Manage cross-platform user identities and linked accounts.
           </p>
@@ -117,15 +119,14 @@ export default function LinkedIdentitiesPage() {
       {loading ? (
         <div className="space-y-3">
           {Array.from({ length: 5 }).map((_, i) => (
-            <Card key={i} className="animate-pulse">
-              <CardContent className="h-16 p-4" />
-            </Card>
+            <SkeletonCard key={i} />
           ))}
         </div>
       ) : identities.length === 0 ? (
-        <div className="text-center py-12 text-muted-foreground">
-          No identities found.
-        </div>
+        <EmptyState
+          icon={Users}
+          title="No identities found"
+        />
       ) : (
         <div className="space-y-3">
           {identities.map((identity) => {

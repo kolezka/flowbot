@@ -135,6 +135,8 @@ export default function AnalyticsPage() {
 
   return (
     <div className="space-y-6">
+      <h1 className="text-2xl font-bold">Moderation Analytics</h1>
+
       {/* Overview Stats */}
       <div className="grid gap-4 md:grid-cols-5">
         <Card>

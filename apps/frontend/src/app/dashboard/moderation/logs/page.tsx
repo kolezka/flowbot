@@ -151,7 +151,9 @@ export default function ModerationLogsPage() {
   const totalPages = Math.ceil(total / pageSize);
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-6">
+      <h1 className="text-2xl font-bold">Moderation Logs</h1>
+
       {/* Filters */}
       <Card>
         <CardHeader>

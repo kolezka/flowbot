@@ -11,6 +11,7 @@ import { Label } from "@/components/ui/label";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { ConfirmDialog } from "@/components/confirm-dialog";
+import { EmptyState } from "@/components/empty-state";
 import { toast } from "sonner";
 import {
   Plus,
@@ -24,6 +25,7 @@ import {
   Save,
   Loader2,
 } from "lucide-react";
+import { Skeleton, SkeletonTable } from "@/components/ui/skeleton";
 
 // Default .ftl strings for each bot type (used as reference defaults)
 const DEFAULT_STRINGS: Record<string, Record<string, string>> = {
@@ -299,17 +301,11 @@ export default function I18nEditorPage() {
 
   if (loading) {
     return (
-      <div className="animate-pulse space-y-4">
-        <div className="flex items-center gap-4">
-          <div className="h-8 w-48 bg-muted rounded" />
-        </div>
-        <div className="h-10 bg-muted rounded-lg" />
-        <div className="h-9 w-48 bg-muted rounded-lg" />
-        <div className="space-y-2">
-          {Array.from({ length: 8 }).map((_, i) => (
-            <div key={i} className="h-14 bg-muted rounded-lg" />
-          ))}
-        </div>
+      <div className="space-y-4">
+        <Skeleton className="h-8 w-48" />
+        <Skeleton className="h-10 w-full rounded-lg" />
+        <Skeleton className="h-9 w-48 rounded-lg" />
+        <SkeletonTable rows={8} cols={3} />
       </div>
     );
   }
@@ -434,14 +430,12 @@ export default function I18nEditorPage() {
             <Card>
               <CardContent className="p-0">
                 {filteredStrings.length === 0 ? (
-                  <div className="flex flex-col items-center py-12">
-                    <Globe className="h-10 w-10 text-muted-foreground mb-3" />
-                    <p className="text-muted-foreground">
-                      {searchQuery
-                        ? "No matching strings found"
-                        : `No strings for locale "${locale}".`}
-                    </p>
-                  </div>
+                  <EmptyState
+                    icon={Globe}
+                    title={searchQuery
+                      ? "No matching strings found"
+                      : `No strings for locale "${locale}".`}
+                  />
                 ) : (
                   <>
                     {/* Table header */}

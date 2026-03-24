@@ -8,8 +8,10 @@ import type { BotInstance, BotConfigVersion } from "@/lib/api";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { EmptyState } from "@/components/empty-state";
 import { ArrowLeft, Save, Clock, Package, Hash, FileText, LayoutGrid, MessageSquare } from "lucide-react";
 import { toast } from "sonner";
+import { Skeleton, SkeletonCard } from "@/components/ui/skeleton";
 
 export default function VersionsPage() {
   const params = useParams();
@@ -58,15 +60,15 @@ export default function VersionsPage() {
 
   if (loading) {
     return (
-      <div className="animate-pulse space-y-4">
+      <div className="space-y-4">
         <div className="flex items-center gap-4">
-          <div className="h-8 w-8 bg-muted rounded" />
-          <div className="h-8 w-48 bg-muted rounded" />
+          <Skeleton className="h-8 w-8" />
+          <Skeleton className="h-8 w-48" />
         </div>
-        <div className="h-32 bg-muted rounded-xl" />
+        <SkeletonCard />
         <div className="space-y-2">
           {Array.from({ length: 4 }).map((_, i) => (
-            <div key={i} className="h-16 bg-muted rounded-lg" />
+            <Skeleton key={i} className="h-16 w-full rounded-lg" />
           ))}
         </div>
       </div>
@@ -121,11 +123,11 @@ export default function VersionsPage() {
         </CardHeader>
         <CardContent>
           {versions.length === 0 ? (
-            <div className="py-12 text-center">
-              <Clock className="mx-auto h-12 w-12 text-muted-foreground/40" />
-              <p className="mt-4 text-lg font-medium text-muted-foreground">No versions published yet</p>
-              <p className="mt-1 text-sm text-muted-foreground">Click &quot;Publish New Version&quot; to create the first version snapshot.</p>
-            </div>
+            <EmptyState
+              icon={Clock}
+              title="No versions published yet"
+              description='Click "Publish New Version" to create the first version snapshot.'
+            />
           ) : (
             <div className="space-y-2">
               {versions.map((v) => {

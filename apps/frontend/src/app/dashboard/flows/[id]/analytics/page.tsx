@@ -7,6 +7,7 @@ import type { FlowAnalytics, FlowDefinition } from "@/lib/api";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Skeleton, SkeletonCard } from "@/components/ui/skeleton";
 
 function StatCard({ label, value, sub }: { label: string; value: string | number; sub?: string }) {
   return (
@@ -42,7 +43,26 @@ export default function FlowAnalyticsPage() {
       .finally(() => setLoading(false));
   }, [flowId]);
 
-  if (loading) return <div className="animate-pulse h-64 bg-muted rounded-xl" />;
+  if (loading) return (
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <div className="space-y-2">
+          <Skeleton className="h-8 w-40" />
+          <Skeleton className="h-4 w-24" />
+        </div>
+        <div className="flex gap-2">
+          <Skeleton className="h-9 w-28" />
+          <Skeleton className="h-9 w-20" />
+        </div>
+      </div>
+      <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
+        {Array.from({ length: 4 }).map((_, i) => (
+          <SkeletonCard key={i} />
+        ))}
+      </div>
+      <SkeletonCard />
+    </div>
+  );
   if (!analytics || !flow) return <p className="text-muted-foreground">Failed to load analytics.</p>;
 
   const formatDuration = (ms: number) => {

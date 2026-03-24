@@ -8,6 +8,8 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { EmptyState } from "@/components/empty-state";
+import { Skeleton, SkeletonCard } from "@/components/ui/skeleton";
 import { Plus, Copy, Trash2, Globe } from "lucide-react";
 
 export default function WebhooksPage() {
@@ -38,7 +40,19 @@ export default function WebhooksPage() {
     navigator.clipboard.writeText(url);
   };
 
-  if (loading) return <div className="animate-pulse h-64 bg-muted rounded-xl" />;
+  if (loading) return (
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <Skeleton className="h-8 w-32" />
+        <Skeleton className="h-9 w-32" />
+      </div>
+      <div className="space-y-3">
+        {Array.from({ length: 3 }).map((_, i) => (
+          <SkeletonCard key={i} />
+        ))}
+      </div>
+    </div>
+  );
 
   return (
     <div className="space-y-6">
@@ -78,11 +92,11 @@ export default function WebhooksPage() {
           </Card>
         ))}
         {webhooks.length === 0 && (
-          <div className="py-12 text-center">
-            <Globe className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
-            <h3 className="text-lg font-semibold">No webhooks yet</h3>
-            <p className="text-sm text-muted-foreground mt-1">Create a webhook to receive external events</p>
-          </div>
+          <EmptyState
+            icon={Globe}
+            title="No webhooks yet"
+            description="Create a webhook to receive external events"
+          />
         )}
       </div>
     </div>

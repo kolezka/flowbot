@@ -23,6 +23,7 @@ import {
   DialogFooter,
   DialogDescription,
 } from "@/components/ui/dialog";
+import { EmptyState } from "@/components/empty-state";
 import { Bot, Plus } from "lucide-react";
 import { toast } from "sonner";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -142,14 +143,12 @@ export default function BotConfigPage() {
       </div>
 
       {bots.length === 0 && (
-        <div className="flex flex-col items-center py-12 text-center">
-          <Bot className="h-12 w-12 text-muted-foreground mb-4" />
-          <h3 className="text-lg font-semibold">No bots configured</h3>
-          <p className="text-sm text-muted-foreground mt-1">Add a bot instance to get started</p>
-          <Button className="mt-4" onClick={() => setDialogOpen(true)}>
-            <Plus className="mr-2 h-4 w-4" />Add your first bot
-          </Button>
-        </div>
+        <EmptyState
+          icon={Bot}
+          title="No bots configured"
+          description="Add a bot instance to get started"
+          action={{ label: "Add your first bot", onClick: () => setDialogOpen(true) }}
+        />
       )}
 
       <DialogContent open={dialogOpen} onClose={handleClose}>

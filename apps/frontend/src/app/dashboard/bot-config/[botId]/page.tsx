@@ -10,6 +10,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Save, Clock, History } from "lucide-react";
 import { toast } from "sonner";
+import { Skeleton, SkeletonCard } from "@/components/ui/skeleton";
 
 export default function BotDetailPage() {
   const params = useParams();
@@ -48,7 +49,20 @@ export default function BotDetailPage() {
     }
   };
 
-  if (loading) return <div className="animate-pulse h-64 bg-muted rounded-xl" />;
+  if (loading) return (
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <div className="space-y-2">
+          <Skeleton className="h-8 w-48" />
+          <Skeleton className="h-4 w-32" />
+        </div>
+        <Skeleton className="h-9 w-32" />
+      </div>
+      {Array.from({ length: 3 }).map((_, i) => (
+        <SkeletonCard key={i} />
+      ))}
+    </div>
+  );
   if (!bot) return <p>Bot not found</p>;
 
   return (

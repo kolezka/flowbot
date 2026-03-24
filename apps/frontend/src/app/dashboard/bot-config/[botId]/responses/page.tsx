@@ -12,6 +12,7 @@ import { Label } from "@/components/ui/label";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { ConfirmDialog } from "@/components/confirm-dialog";
 import { toast } from "sonner";
+import { Skeleton, SkeletonTable } from "@/components/ui/skeleton";
 import { ArrowLeft, Plus, Pencil, Trash2, X, Check, Eye } from "lucide-react";
 
 function renderTelegramMarkdown(text: string): string {
@@ -125,7 +126,15 @@ export default function ResponsesEditorPage() {
     }
   };
 
-  if (loading) return <div className="animate-pulse space-y-4"><div className="h-8 w-48 bg-muted rounded" /><div className="h-64 bg-muted rounded-xl" /></div>;
+  if (loading) return (
+    <div className="space-y-4">
+      <div className="flex items-center gap-4">
+        <Skeleton className="h-8 w-8" />
+        <Skeleton className="h-8 w-48" />
+      </div>
+      <SkeletonTable rows={6} cols={2} />
+    </div>
+  );
 
   return (
     <div className="space-y-6">

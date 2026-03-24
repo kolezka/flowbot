@@ -1,14 +1,19 @@
+import { Skeleton, SkeletonCard } from "@/components/ui/skeleton";
+
 export default function Loading() {
   return (
-    <div className="animate-pulse space-y-4">
-      <div className="h-8 w-64 bg-muted rounded" />
-      <div className="grid gap-4 sm:grid-cols-3">
-        <div className="h-24 bg-muted rounded-xl" />
-        <div className="h-24 bg-muted rounded-xl" />
-        <div className="h-24 bg-muted rounded-xl" />
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <Skeleton className="h-8 w-48" />
+        <Skeleton className="h-9 w-36" />
       </div>
-      <div className="h-10 bg-muted rounded" />
-      <div className="h-64 bg-muted rounded-xl" />
+      <div className="grid gap-4 sm:grid-cols-3">
+        {Array.from({ length: 3 }).map((_, i) => (
+          <SkeletonCard key={i} />
+        ))}
+      </div>
+      <Skeleton className="h-10 w-full rounded" />
+      <SkeletonCard />
     </div>
   );
 }

@@ -116,7 +116,7 @@ export default function CommunitiesPage() {
   const totalPages = Math.ceil(total / pageSize);
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>

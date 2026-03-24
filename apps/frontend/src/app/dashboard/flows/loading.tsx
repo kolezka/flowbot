@@ -1,10 +1,15 @@
+import { Skeleton, SkeletonCard } from "@/components/ui/skeleton";
+
 export default function FlowsLoading() {
   return (
-    <div className="animate-pulse space-y-4">
-      <div className="h-8 w-48 bg-muted rounded" />
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <Skeleton className="h-8 w-32" />
+        <Skeleton className="h-9 w-28" />
+      </div>
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {Array.from({ length: 6 }).map((_, i) => (
-          <div key={i} className="h-32 bg-muted rounded-xl" />
+          <SkeletonCard key={i} />
         ))}
       </div>
     </div>

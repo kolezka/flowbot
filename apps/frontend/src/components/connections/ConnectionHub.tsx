@@ -129,7 +129,7 @@ export function ConnectionHub({
       {/* Header */}
       <div className="flex items-center justify-between border-b border-white/[0.06] px-6 py-5">
         <div>
-          <h1 className="text-xl font-semibold">Connections</h1>
+          <h1 className="text-2xl font-bold">Connections</h1>
           <p className="mt-0.5 text-sm text-muted-foreground">
             {health.active} active · {health.error > 0 ? `${health.error} error · ` : ""}
             {health.total} total

@@ -6,6 +6,7 @@ import type { ConnectionHealth } from "@/lib/api";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { PlatformBadge } from "@/components/platform-badge";
+import { Skeleton, SkeletonCard } from "@/components/ui/skeleton";
 import { RefreshCw, CheckCircle, XCircle, Globe } from "lucide-react";
 
 // ---------------------------------------------------------------------------
@@ -56,14 +57,14 @@ export default function ConnectionHealthPage() {
 
   if (loading) {
     return (
-      <div className="animate-pulse space-y-4">
-        <div className="h-8 w-64 bg-muted rounded" />
+      <div className="space-y-4">
+        <Skeleton className="h-8 w-64" />
         <div className="grid gap-4 sm:grid-cols-3">
-          {[0, 1, 2].map((i) => (
-            <div key={i} className="h-24 bg-muted rounded-xl" />
+          {Array.from({ length: 3 }).map((_, i) => (
+            <SkeletonCard key={i} />
           ))}
         </div>
-        <div className="h-64 bg-muted rounded-xl" />
+        <SkeletonCard />
       </div>
     );
   }

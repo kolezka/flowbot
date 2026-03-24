@@ -142,7 +142,9 @@ export default function AccountsPage() {
   const totalPages = Math.ceil(total / pageSize);
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-6">
+      <h1 className="text-2xl font-bold">Platform Accounts</h1>
+
       {/* Stats Cards */}
       <div className="grid gap-4 grid-cols-2 lg:grid-cols-4">
         <StatCard

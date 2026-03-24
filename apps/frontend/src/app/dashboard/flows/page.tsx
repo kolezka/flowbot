@@ -7,6 +7,8 @@ import type { FlowDefinition } from "@/lib/api";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { EmptyState } from "@/components/empty-state";
+import { Skeleton, SkeletonCard } from "@/components/ui/skeleton";
 import { Plus, Workflow } from "lucide-react";
 
 export default function FlowsPage() {
@@ -22,7 +24,19 @@ export default function FlowsPage() {
     window.location.href = `/dashboard/flows/${flow.id}/edit`;
   };
 
-  if (loading) return <div className="animate-pulse space-y-4"><div className="h-8 w-48 bg-muted rounded" /><div className="h-64 bg-muted rounded-xl" /></div>;
+  if (loading) return (
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <Skeleton className="h-8 w-32" />
+        <Skeleton className="h-9 w-28" />
+      </div>
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        {Array.from({ length: 6 }).map((_, i) => (
+          <SkeletonCard key={i} />
+        ))}
+      </div>
+    </div>
+  );
 
   return (
     <div className="space-y-6">
@@ -55,12 +69,12 @@ export default function FlowsPage() {
       </div>
 
       {flows.length === 0 && (
-        <div className="flex flex-col items-center py-12 text-center">
-          <Workflow className="h-12 w-12 text-muted-foreground mb-4" />
-          <h3 className="text-lg font-semibold">No flows yet</h3>
-          <p className="text-sm text-muted-foreground mt-1">Create your first automation flow</p>
-          <Button onClick={handleCreate} className="mt-4" size="sm"><Plus className="mr-2 h-4 w-4" />Create Flow</Button>
-        </div>
+        <EmptyState
+          icon={Workflow}
+          title="No flows yet"
+          description="Create your first automation flow"
+          action={{ label: "Create Flow", onClick: handleCreate }}
+        />
       )}
     </div>
   );

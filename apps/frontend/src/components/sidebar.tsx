@@ -66,6 +66,38 @@ const navigation: NavSection[] = [
     href: "/dashboard",
   },
   {
+    label: "Bot Config",
+    icon: Bot,
+    children: [
+      { label: "Instances", href: "/dashboard/bot-config", icon: Settings },
+    ],
+  },
+  {
+    label: "Connections",
+    icon: Globe,
+    children: [
+      { label: "Overview", href: "/dashboard/connections", icon: Globe },
+      { label: "Health", href: "/dashboard/connections/health", icon: Activity },
+    ],
+  },
+  {
+    label: "Flows",
+    icon: Workflow,
+    children: [
+      { label: "All Flows", href: "/dashboard/flows", icon: Workflow },
+      { label: "Analytics", href: "/dashboard/flows/analytics", icon: BarChart3 },
+      { label: "Templates", href: "/dashboard/flows/templates", icon: FileTextIcon },
+      { label: "Webhooks", href: "/dashboard/webhooks", icon: Globe },
+    ],
+  },
+  {
+    label: "Communities",
+    icon: Building2,
+    children: [
+      { label: "Overview", href: "/dashboard/communities", icon: Building2 },
+    ],
+  },
+  {
     label: "Identity",
     icon: Users,
     children: [
@@ -74,23 +106,11 @@ const navigation: NavSection[] = [
     ],
   },
   {
-    label: "Communities",
-    icon: Building2,
-    children: [
-      { label: "Overview", href: "/dashboard/communities", icon: Building2 },
-      {
-        label: "Scheduled Messages",
-        href: "/dashboard/moderation/scheduled-messages",
-        icon: Calendar,
-      },
-    ],
-  },
-  {
     label: "Moderation",
     icon: Shield,
     children: [
       { label: "Overview", href: "/dashboard/moderation", icon: Eye },
-      { label: "Groups", href: "/dashboard/communities", icon: Layers },
+      { label: "Groups", href: "/dashboard/moderation/groups", icon: Layers },
       { label: "Logs", href: "/dashboard/moderation/logs", icon: FileText },
       {
         label: "Analytics",
@@ -123,31 +143,6 @@ const navigation: NavSection[] = [
       { label: "Health", href: "/dashboard/automation/health", icon: Activity },
       { label: "Jobs", href: "/dashboard/automation/jobs", icon: Activity },
       { label: "Cross-post", href: "/dashboard/automation/crosspost-templates", icon: Copy },
-    ],
-  },
-  {
-    label: "Bot Config",
-    icon: Bot,
-    children: [
-      { label: "Instances", href: "/dashboard/bot-config", icon: Settings },
-    ],
-  },
-  {
-    label: "Flows",
-    icon: Workflow,
-    children: [
-      { label: "All Flows", href: "/dashboard/flows", icon: Workflow },
-      { label: "Analytics", href: "/dashboard/flows/analytics", icon: BarChart3 },
-      { label: "Templates", href: "/dashboard/flows/templates", icon: FileTextIcon },
-      { label: "Webhooks", href: "/dashboard/webhooks", icon: Globe },
-    ],
-  },
-  {
-    label: "Connections",
-    icon: Globe,
-    children: [
-      { label: "Overview", href: "/dashboard/connections", icon: Globe },
-      { label: "Health", href: "/dashboard/connections/health", icon: Activity },
     ],
   },
   {

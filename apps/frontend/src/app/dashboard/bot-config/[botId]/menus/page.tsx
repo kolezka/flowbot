@@ -12,6 +12,8 @@ import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { ConfirmDialog } from "@/components/confirm-dialog";
 import { toast } from "sonner";
+import { Skeleton, SkeletonCard } from "@/components/ui/skeleton";
+import { EmptyState } from "@/components/empty-state";
 import { ArrowLeft, Plus, Pencil, Trash2, X, Check, LayoutGrid } from "lucide-react";
 
 function ButtonGrid({ buttons }: { buttons: BotMenuButton[] }) {
@@ -201,7 +203,17 @@ export default function MenusEditorPage() {
     }
   };
 
-  if (loading) return <div className="animate-pulse space-y-4"><div className="h-8 w-48 bg-muted rounded" /><div className="h-64 bg-muted rounded-xl" /></div>;
+  if (loading) return (
+    <div className="space-y-4">
+      <div className="flex items-center gap-4">
+        <Skeleton className="h-8 w-8" />
+        <Skeleton className="h-8 w-48" />
+      </div>
+      {Array.from({ length: 2 }).map((_, i) => (
+        <SkeletonCard key={i} />
+      ))}
+    </div>
+  );
 
   return (
     <div className="space-y-6">
@@ -241,11 +253,11 @@ export default function MenusEditorPage() {
       )}
 
       {menus.length === 0 && !showAddMenu && (
-        <div className="flex flex-col items-center py-12 text-center">
-          <LayoutGrid className="h-12 w-12 text-muted-foreground mb-4" />
-          <h3 className="text-lg font-semibold">No menus configured</h3>
-          <p className="text-sm text-muted-foreground mt-1">Create your first menu to get started</p>
-        </div>
+        <EmptyState
+          icon={LayoutGrid}
+          title="No menus configured"
+          description="Create your first menu to get started"
+        />
       )}
 
       {menus.map((menu) => (

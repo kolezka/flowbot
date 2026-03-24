@@ -141,6 +141,8 @@ export default function BroadcastPage() {
 
   return (
     <div className="space-y-6">
+      <h1 className="text-2xl font-bold">Broadcast</h1>
+
       {actionFeedback && (
         <div className="rounded-lg bg-green-50 border border-green-200 p-4 text-green-800 dark:bg-green-950 dark:border-green-800 dark:text-green-200">
           {actionFeedback}

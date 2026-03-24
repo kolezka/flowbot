@@ -95,10 +95,10 @@ export default function AutomationHealthPage() {
   }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-6">
       {/* Header with auto-refresh */}
       <div className="flex items-center justify-between">
-        <h2 className="text-2xl font-bold">TG Client Health</h2>
+        <h1 className="text-2xl font-bold">Automation Health</h1>
         <div className="flex items-center gap-2">
           <Checkbox
             id="auto-refresh"

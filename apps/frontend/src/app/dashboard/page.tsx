@@ -35,6 +35,7 @@ import {
   Pause,
   Play,
 } from "lucide-react";
+import { Skeleton, SkeletonCard, SkeletonChart } from "@/components/ui/skeleton";
 import {
   LineChart,
   Line,
@@ -528,28 +529,32 @@ function DashboardSkeleton() {
     <div className="space-y-6">
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
         {Array.from({ length: 5 }).map((_, i) => (
-          <div key={i} className="animate-pulse rounded-xl border bg-card p-6 shadow border-l-4">
-            <div className="h-3 w-2/3 bg-muted rounded mb-4" />
-            <div className="flex items-end justify-between">
-              <div>
-                <div className="h-7 w-16 bg-muted rounded mb-2" />
-                <div className="h-3 w-12 bg-muted rounded" />
-              </div>
-              <div className="h-8 w-16 bg-muted rounded" />
-            </div>
-          </div>
+          <SkeletonCard key={i} className="border-l-4" />
         ))}
       </div>
       <div className="grid gap-6 lg:grid-cols-3">
-        <div className="lg:col-span-2 animate-pulse rounded-xl border bg-card p-6 shadow h-80" />
+        <div className="lg:col-span-2 rounded-xl border bg-card p-6 shadow">
+          <Skeleton className="mb-4 h-5 w-32" />
+          <div className="space-y-3">
+            {Array.from({ length: 5 }).map((_, i) => (
+              <div key={i} className="flex items-center gap-3">
+                <Skeleton className="h-8 w-8 rounded-full" />
+                <div className="flex-1 space-y-1">
+                  <Skeleton className="h-3 w-3/4" />
+                  <Skeleton className="h-3 w-1/2" />
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
         <div className="space-y-6">
-          <div className="animate-pulse rounded-xl border bg-card p-6 shadow h-48" />
-          <div className="animate-pulse rounded-xl border bg-card p-6 shadow h-36" />
+          <SkeletonCard />
+          <SkeletonCard />
         </div>
       </div>
       <div className="grid gap-6 md:grid-cols-3">
         {Array.from({ length: 3 }).map((_, i) => (
-          <div key={i} className="animate-pulse rounded-xl border bg-card p-6 shadow h-48" />
+          <SkeletonChart key={i} />
         ))}
       </div>
     </div>
@@ -666,7 +671,9 @@ export default function DashboardPage() {
   }
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-6">
+      <h1 className="text-2xl font-bold">Dashboard</h1>
+
       {/* Section 1: Enhanced Stat Cards */}
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
         <EnhancedStatCard

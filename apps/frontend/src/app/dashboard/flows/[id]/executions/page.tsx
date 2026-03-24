@@ -5,6 +5,7 @@ import { useParams } from "next/navigation";
 import type { FlowExecution } from "@/lib/api";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Skeleton, SkeletonCard } from "@/components/ui/skeleton";
 
 export default function ExecutionsPage() {
   const params = useParams();
@@ -20,7 +21,16 @@ export default function ExecutionsPage() {
       .finally(() => setLoading(false));
   }, [flowId]);
 
-  if (loading) return <div className="animate-pulse h-64 bg-muted rounded-xl" />;
+  if (loading) return (
+    <div className="space-y-6">
+      <Skeleton className="h-8 w-48" />
+      <div className="space-y-3">
+        {Array.from({ length: 4 }).map((_, i) => (
+          <SkeletonCard key={i} />
+        ))}
+      </div>
+    </div>
+  );
 
   return (
     <div className="space-y-6">

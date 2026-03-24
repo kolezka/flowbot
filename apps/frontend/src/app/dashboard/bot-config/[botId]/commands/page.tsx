@@ -14,6 +14,7 @@ import { Badge } from "@/components/ui/badge";
 import { ConfirmDialog } from "@/components/confirm-dialog";
 import { ArrowLeft, ArrowUp, ArrowDown, Plus, Pencil, Trash2, X, Check } from "lucide-react";
 import { toast } from "sonner";
+import { Skeleton, SkeletonTable } from "@/components/ui/skeleton";
 
 export default function CommandsEditorPage() {
   const params = useParams();
@@ -139,7 +140,15 @@ export default function CommandsEditorPage() {
     }
   };
 
-  if (loading) return <div className="animate-pulse space-y-4"><div className="h-8 w-48 bg-muted rounded" /><div className="h-64 bg-muted rounded-xl" /></div>;
+  if (loading) return (
+    <div className="space-y-4">
+      <div className="flex items-center gap-4">
+        <Skeleton className="h-8 w-8" />
+        <Skeleton className="h-8 w-48" />
+      </div>
+      <SkeletonTable rows={5} cols={3} />
+    </div>
+  );
 
   return (
     <div className="space-y-6">

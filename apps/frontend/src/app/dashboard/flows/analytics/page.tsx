@@ -27,6 +27,7 @@ import {
   ResponsiveContainer,
   Legend,
 } from "recharts";
+import { Skeleton, SkeletonCard, SkeletonChart, SkeletonTable } from "@/components/ui/skeleton";
 
 type DateRange = 7 | 30 | 90;
 
@@ -43,18 +44,18 @@ function formatDate(dateStr: string): string {
 
 function LoadingSkeleton() {
   return (
-    <div className="space-y-6 animate-pulse">
-      <div className="h-8 w-48 bg-muted rounded" />
+    <div className="space-y-6">
+      <Skeleton className="h-8 w-48" />
       <div className="grid gap-4 md:grid-cols-4">
-        {[1, 2, 3, 4].map((i) => (
-          <div key={i} className="h-28 bg-muted rounded-xl" />
+        {Array.from({ length: 4 }).map((_, i) => (
+          <SkeletonCard key={i} />
         ))}
       </div>
       <div className="grid gap-6 lg:grid-cols-2">
-        <div className="h-80 bg-muted rounded-xl" />
-        <div className="h-80 bg-muted rounded-xl" />
+        <SkeletonChart />
+        <SkeletonChart />
       </div>
-      <div className="h-64 bg-muted rounded-xl" />
+      <SkeletonTable rows={5} cols={5} />
     </div>
   );
 }

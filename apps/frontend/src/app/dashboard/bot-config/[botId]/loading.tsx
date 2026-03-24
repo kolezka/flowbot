@@ -1,10 +1,18 @@
+import { Skeleton, SkeletonCard } from "@/components/ui/skeleton";
+
 export default function BotDetailLoading() {
   return (
-    <div className="animate-pulse space-y-4">
-      <div className="h-8 w-64 bg-muted rounded" />
-      <div className="h-4 w-48 bg-muted rounded" />
-      <div className="h-64 bg-muted rounded-xl" />
-      <div className="h-48 bg-muted rounded-xl" />
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <div className="space-y-2">
+          <Skeleton className="h-8 w-48" />
+          <Skeleton className="h-4 w-32" />
+        </div>
+        <Skeleton className="h-9 w-32" />
+      </div>
+      {Array.from({ length: 3 }).map((_, i) => (
+        <SkeletonCard key={i} />
+      ))}
     </div>
   );
 }
