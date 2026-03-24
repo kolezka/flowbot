@@ -35,7 +35,6 @@ import type { LucideIcon } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
-import { ThemeToggle } from "@/components/theme-toggle";
 
 // ---------------------------------------------------------------------------
 // Types
@@ -483,9 +482,6 @@ export function Sidebar() {
         <div className="flex-1 overflow-y-auto">
           <SidebarContent />
         </div>
-        <div className="border-t border-border px-4 py-3">
-          <ThemeToggle />
-        </div>
         <LogoutButton />
       </aside>
 
@@ -526,9 +522,6 @@ export function Sidebar() {
             </div>
             <div className="flex-1 overflow-y-auto">
               <SidebarContent onNavigate={() => setOpen(false)} />
-            </div>
-            <div className="border-t border-border px-4 py-3">
-              <ThemeToggle />
             </div>
             <LogoutButton />
           </aside>
