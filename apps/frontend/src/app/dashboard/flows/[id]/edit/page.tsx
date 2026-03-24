@@ -1,12 +1,10 @@
 "use client";
 
-import { useState, useEffect, useCallback, useMemo } from "react";
+import { useState, useEffect, useCallback, useMemo, useRef } from "react";
 import { useParams, useRouter } from "next/navigation";
 import {
   ReactFlowProvider,
-  addEdge,
-  useNodesState,
-  useEdgesState,
+  useReactFlow,
   type Connection,
   type Node,
   type Edge,
@@ -18,7 +16,6 @@ import {
   type PlatformConnectionType,
   getConnections,
 } from "@/lib/api";
-import { NODE_TYPES } from "@flowbot/flow-shared";
 import {
   ExecutionToolbar,
   ExecutionPanel,
@@ -29,6 +26,7 @@ import {
 // New extracted components
 import { NodePalette } from "@/components/flow-editor/NodePalette";
 import { FlowCanvas } from "@/components/flow-editor/FlowCanvas";
+import { FlowContextMenu } from "@/components/flow-editor/FlowContextMenu";
 import { PropertyPanel } from "@/components/flow-editor/PropertyPanel";
 import { CanvasToolbar } from "@/components/flow-editor/CanvasToolbar";
 import { CommandPalette } from "@/components/flow-editor/CommandPalette";
@@ -39,6 +37,7 @@ import { ExecutionDebugger } from "@/components/flow-editor/ExecutionDebugger";
 import { useAutoSave } from "@/lib/flow-editor/use-auto-save";
 import { useCommandPalette } from "@/lib/flow-editor/use-command-palette";
 import { getAvailableVariables } from "@/lib/flow-editor/variable-registry";
+import { createFlowStore } from "@/lib/flow-editor/flow-store";
 import { Skeleton } from "@/components/ui/skeleton";
 
 // ---------------------------------------------------------------------------
@@ -50,16 +49,34 @@ function FlowEditorInner() {
   const router = useRouter();
   const flowId = params.id as string;
 
+  // ── Zustand store scoped to this component instance ─────────────────────
+  const storeRef = useRef<ReturnType<typeof createFlowStore>>(undefined);
+  if (!storeRef.current) {
+    storeRef.current = createFlowStore();
+  }
+  const useFlowStore = storeRef.current;
+
+  // ── ReactFlow instance ───────────────────────────────────────────────────
+  const reactFlowInstance = useReactFlow();
+
   // ── Core flow state ─────────────────────────────────────────────────────
   const [flowName, setFlowName] = useState("");
   const [flowStatus, setFlowStatus] = useState("draft");
   const [flowVersion, setFlowVersion] = useState(1);
-  const [nodes, setNodes, onNodesChange] = useNodesState([] as Node[]);
-  const [edges, setEdges, onEdgesChange] = useEdgesState([] as Edge[]);
   const [loaded, setLoaded] = useState(false);
 
-  // ── Selection state ─────────────────────────────────────────────────────
-  const [selectedNode, setSelectedNode] = useState<Node | null>(null);
+  // ── Store-backed state ───────────────────────────────────────────────────
+  const nodes = useFlowStore((s) => s.nodes);
+  const edges = useFlowStore((s) => s.edges);
+  const setNodes = useFlowStore((s) => s.setNodes);
+  const setEdges = useFlowStore((s) => s.setEdges);
+  const onNodesChange = useFlowStore((s) => s.applyNodeChanges);
+  const onEdgesChange = useFlowStore((s) => s.applyEdgeChanges);
+  const selectedNode = useFlowStore((s) => s.selectedNode);
+  const setSelectedNode = useFlowStore((s) => s.setSelectedNode);
+  const addEdgeAction = useFlowStore((s) => s.addEdge);
+  const addNode = useFlowStore((s) => s.addNode);
+  const updateNodeData = useFlowStore((s) => s.updateNodeData);
 
   // ── Panel visibility ────────────────────────────────────────────────────
   const [showHistory, setShowHistory] = useState(false);
@@ -208,88 +225,38 @@ function FlowEditorInner() {
 
   // ── Edge connection handler ─────────────────────────────────────────────
   const onConnect = useCallback(
-    (connection: Connection) => setEdges((eds) => addEdge(connection, eds)),
-    [setEdges],
+    (connection: Connection) => addEdgeAction(connection),
+    [addEdgeAction],
   );
 
   // ── Node selection ──────────────────────────────────────────────────────
   const handleNodeSelect = useCallback(
-    (node: Node | null) => {
-      setSelectedNode(node);
-    },
-    [],
+    (node: Node | null) => setSelectedNode(node),
+    [setSelectedNode],
   );
 
   // ── Node data change (from PropertyPanel) ───────────────────────────────
   const handleNodeDataChange = useCallback(
     (nodeId: string, key: string, value: unknown) => {
-      setNodes((nds) =>
-        nds.map((n) =>
-          n.id === nodeId
-            ? {
-                ...n,
-                data: {
-                  ...n.data,
-                  config: {
-                    ...((n.data.config as Record<string, unknown>) ?? {}),
-                    [key]: value,
-                  },
-                },
-              }
-            : n,
-        ),
-      );
-      // Keep selectedNode in sync
-      setSelectedNode((prev) => {
-        if (!prev || prev.id !== nodeId) return prev;
-        return {
-          ...prev,
-          data: {
-            ...prev.data,
-            config: {
-              ...((prev.data.config as Record<string, unknown>) ?? {}),
-              [key]: value,
-            },
-          },
-        };
-      });
+      updateNodeData(nodeId, key, value);
     },
-    [setNodes],
+    [updateNodeData],
   );
 
   // ── Drop handler (add node from palette or command palette) ─────────────
   const handleDrop = useCallback(
     (type: string, position: { x: number; y: number }) => {
-      const nodeDef = NODE_TYPES.find((n) => n.type === type);
-      const newNode: Node = {
-        id: `${type}-${Date.now()}`,
-        type: "default",
-        position,
-        data: {
-          label: nodeDef?.label ?? type,
-          nodeType: type,
-          category: nodeDef?.category ?? "action",
-          requiresConnection: nodeDef?.requiresConnection ?? false,
-          config: {},
-        },
-        style: {
-          border: `2px solid ${nodeDef?.color ?? "#888"}`,
-          borderRadius: 8,
-          padding: 8,
-          minWidth: 150,
-        },
-      };
-      setNodes((nds) => [...nds, newNode]);
+      addNode(type, position);
     },
-    [setNodes],
+    [addNode],
   );
 
   // ── Add node from command palette (center of viewport) ──────────────────
   const handleAddNode = useCallback(
     (type: string) => {
-      handleDrop(type, { x: 250, y: 250 });
+      addNode(type, { x: 250, y: 250 });
     },
-    [handleDrop],
+    [addNode],
   );
 
   // ── Save handler ────────────────────────────────────────────────────────
@@ -386,6 +353,22 @@ function FlowEditorInner() {
     return { styledNodes: nodes, styledEdges: edges };
   }, [nodes, edges, executionState]);
 
+  // ── Apply disabled node visual treatment ────────────────────────────────
+  const disabledStyledNodes = useMemo(() => {
+    return styledNodes.map((node) =>
+      node.data?.disabled
+        ? {
+            ...node,
+            style: {
+              ...node.style,
+              opacity: 0.4,
+              borderStyle: "dashed" as const,
+            },
+          }
+        : node,
+    );
+  }, [styledNodes]);
+
   // ── Loading state ───────────────────────────────────────────────────────
   if (!loaded) return (
     <div className="flex h-screen items-center justify-center bg-muted/30">
@@ -421,16 +404,40 @@ function FlowEditorInner() {
         {/* Left: Node Palette */}
         <NodePalette onDragStart={() => {}} />
 
-        {/* Center: Flow Canvas */}
-        <FlowCanvas
-          nodes={styledNodes}
-          edges={styledEdges}
-          onNodesChange={onNodesChange}
-          onEdgesChange={onEdgesChange}
-          onConnect={onConnect}
-          onNodeSelect={handleNodeSelect}
-          onDrop={handleDrop}
-        />
+        {/* Center: Flow Canvas with Context Menu */}
+        <FlowContextMenu
+          useStore={useFlowStore}
+          onFitView={() => reactFlowInstance?.fitView()}
+          onEditNode={(nodeId) => {
+            const node = useFlowStore.getState().nodes.find((n: Node) => n.id === nodeId);
+            if (node) setSelectedNode(node);
+          }}
+          screenToFlowPosition={(pos) =>
+            reactFlowInstance?.screenToFlowPosition(pos) ?? pos
+          }
+        >
+          <FlowCanvas
+            nodes={disabledStyledNodes}
+            edges={styledEdges}
+            onNodesChange={onNodesChange}
+            onEdgesChange={onEdgesChange}
+            onConnect={onConnect}
+            onNodeSelect={handleNodeSelect}
+            onDrop={handleDrop}
+            onNodeContextMenu={(e, node) => {
+              e.preventDefault();
+              useFlowStore.getState().openNodeMenu(node, { x: e.clientX, y: e.clientY });
+            }}
+            onEdgeContextMenu={(e, edge) => {
+              e.preventDefault();
+              useFlowStore.getState().openEdgeMenu(edge, { x: e.clientX, y: e.clientY });
+            }}
+            onPaneContextMenu={(e) => {
+              e.preventDefault();
+              useFlowStore.getState().openCanvasMenu({ x: (e as MouseEvent).clientX, y: (e as MouseEvent).clientY });
+            }}
+          />
+        </FlowContextMenu>
 
         {/* Right: Property Panel or Version History */}
         {showHistory ? (
