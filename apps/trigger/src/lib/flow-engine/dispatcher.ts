@@ -30,43 +30,6 @@ export async function dispatchAction(
   return response.json() as Promise<{ success: boolean; data?: unknown; error?: string }>
 }
 
-/**
- * Data-driven dispatch: resolve the bot instance from a community ID,
- * then dispatch the action via that bot's HTTP /execute endpoint.
- */
-export async function dispatchActionToCommunity(
-  action: string,
-  params: Record<string, unknown>,
-  communityId: string,
-): Promise<{ success: boolean; data?: unknown; error?: string }> {
-  const { getPrisma } = await import('../prisma.js');
-  const prisma = getPrisma();
-
-  const community = await prisma.community.findUnique({
-    where: { id: communityId },
-    include: { botInstance: { select: { id: true, apiUrl: true, isActive: true, platform: true } } },
-  });
-
-  if (!community) {
-    return { success: false, error: `Community ${communityId} not found` };
-  }
-
-  if (!community.botInstance) {
-    return { success: false, error: `Community ${communityId} has no bot instance assigned` };
-  }
-
-  if (!community.botInstance.apiUrl || !community.botInstance.isActive) {
-    return { success: false, error: `Bot instance ${community.botInstance.id} is not available` };
-  }
-
-  try {
-    return await dispatchAction(action, params, community.botInstance.apiUrl, community.botInstance.id);
-  } catch (error) {
-    const msg = error instanceof Error ? error.message : String(error);
-    return { success: false, error: msg };
-  }
-}
-
 export interface DispatchResult {
   nodeId: string;
   dispatched: boolean;

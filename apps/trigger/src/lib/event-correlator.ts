@@ -34,12 +34,7 @@ export async function correlateEvents(
     where: { telegramId },
   });
 
-  // 2. Get reputation score
-  const reputation = await prisma.reputationScore.findUnique({
-    where: { telegramId },
-  });
-
-  // 3. Get recent moderation events across all groups/bots for this user
+  // 2. Get recent moderation events across all groups/bots for this user
   const recentModerationLogs = await prisma.moderationLog.findMany({
     where: { targetId: telegramId },
     orderBy: { createdAt: 'desc' },
@@ -74,7 +69,7 @@ export async function correlateEvents(
   return {
     userId: identity?.userId ?? undefined,
     telegramId,
-    reputationScore: reputation?.totalScore ?? 0,
+    reputationScore: identity?.reputationScore ?? 0,
     recentEvents,
     warningCount,
   };

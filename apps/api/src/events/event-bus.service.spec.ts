@@ -52,27 +52,6 @@ describe('EventBusService', () => {
     });
   });
 
-  describe('emitAutomation', () => {
-    it('should emit on both "automation" and "automation.<type>" channels', () => {
-      const spy = jest.fn();
-      const typeSpy = jest.fn();
-      eventEmitter.on('automation', spy);
-      eventEmitter.on('automation.broadcast.created', typeSpy);
-
-      const event = {
-        type: 'broadcast.created' as const,
-        jobId: 'j1',
-        data: {},
-        timestamp: new Date(),
-      };
-
-      service.emitAutomation(event);
-
-      expect(spy).toHaveBeenCalledWith(event);
-      expect(typeSpy).toHaveBeenCalledWith(event);
-    });
-  });
-
   describe('emitSystem', () => {
     it('should emit on "system" channel', () => {
       const spy = jest.fn();
@@ -102,23 +81,6 @@ describe('EventBusService', () => {
         timestamp: new Date(),
       };
       service.emitModeration(event);
-
-      expect(handler).toHaveBeenCalledWith(event);
-    });
-  });
-
-  describe('onAutomation', () => {
-    it('should register handler that receives automation events', () => {
-      const handler = jest.fn();
-      service.onAutomation(handler);
-
-      const event = {
-        type: 'job.started' as const,
-        jobId: 'j1',
-        data: {},
-        timestamp: new Date(),
-      };
-      service.emitAutomation(event);
 
       expect(handler).toHaveBeenCalledWith(event);
     });

@@ -2,7 +2,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { SseController } from './sse.controller';
 import { EventBusService } from './event-bus.service';
 import { EventEmitter2 } from '@nestjs/event-emitter';
-import type { ModerationEvent, AutomationEvent, SystemEvent } from './event-types';
+import type { ModerationEvent, SystemEvent } from './event-types';
 import { firstValueFrom, take, toArray } from 'rxjs';
 
 describe('SseController', () => {
@@ -13,13 +13,6 @@ describe('SseController', () => {
     type: 'warning.created',
     groupId: 'g1',
     data: { userId: 'u1' },
-    timestamp: new Date('2026-03-10'),
-  };
-
-  const automationEvent: AutomationEvent = {
-    type: 'broadcast.created',
-    jobId: 'j1',
-    data: { messageCount: 10 },
     timestamp: new Date('2026-03-10'),
   };
 
@@ -61,17 +54,6 @@ describe('SseController', () => {
       expect(msg.type).toBe('warning.created');
     });
 
-    it('should emit automation events when subscribed to all rooms', async () => {
-      const stream$ = controller.stream();
-      const eventPromise = firstValueFrom(stream$.pipe(take(1)));
-
-      eventBus.emitAutomation(automationEvent);
-
-      const msg = await eventPromise;
-      expect(msg.data).toBe(JSON.stringify(automationEvent));
-      expect(msg.type).toBe('broadcast.created');
-    });
-
     it('should emit system events when subscribed to all rooms', async () => {
       const stream$ = controller.stream();
       const eventPromise = firstValueFrom(stream$.pipe(take(1)));
@@ -88,7 +70,6 @@ describe('SseController', () => {
       const eventPromise = firstValueFrom(stream$.pipe(take(1)));
 
       // These should be filtered out
-      eventBus.emitAutomation(automationEvent);
       eventBus.emitSystem(systemEvent);
       // This should pass through
       eventBus.emitModeration(moderationEvent);
@@ -97,24 +78,11 @@ describe('SseController', () => {
       expect(msg.data).toBe(JSON.stringify(moderationEvent));
     });
 
-    it('should filter to only automation room', async () => {
-      const stream$ = controller.stream('automation');
-      const eventPromise = firstValueFrom(stream$.pipe(take(1)));
-
-      eventBus.emitModeration(moderationEvent);
-      eventBus.emitSystem(systemEvent);
-      eventBus.emitAutomation(automationEvent);
-
-      const msg = await eventPromise;
-      expect(msg.data).toBe(JSON.stringify(automationEvent));
-    });
-
     it('should filter to only system room', async () => {
       const stream$ = controller.stream('system');
       const eventPromise = firstValueFrom(stream$.pipe(take(1)));
 
       eventBus.emitModeration(moderationEvent);
-      eventBus.emitAutomation(automationEvent);
       eventBus.emitSystem(systemEvent);
 
       const msg = await eventPromise;
@@ -125,7 +93,6 @@ describe('SseController', () => {
       const stream$ = controller.stream('moderation,system');
       const eventPromise = firstValueFrom(stream$.pipe(take(2), toArray()));
 
-      eventBus.emitAutomation(automationEvent); // filtered out
       eventBus.emitModeration(moderationEvent);
       eventBus.emitSystem(systemEvent);
 
@@ -166,14 +133,13 @@ describe('SseController', () => {
 
     it('should default to all rooms when rooms parameter is undefined', async () => {
       const stream$ = controller.stream(undefined);
-      const eventPromise = firstValueFrom(stream$.pipe(take(3), toArray()));
+      const eventPromise = firstValueFrom(stream$.pipe(take(2), toArray()));
 
       eventBus.emitModeration(moderationEvent);
-      eventBus.emitAutomation(automationEvent);
       eventBus.emitSystem(systemEvent);
 
       const msgs = await eventPromise;
-      expect(msgs).toHaveLength(3);
+      expect(msgs).toHaveLength(2);
     });
   });
 });

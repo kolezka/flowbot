@@ -358,22 +358,11 @@ describe('getTemplate', () => {
     expect(template!.edges).toHaveLength(2)
   })
 
-  it('should return the broadcast-flow template', () => {
-    const template = getTemplate('broadcast-flow')
-    expect(template).toBeDefined()
-    expect(template!.category).toBe('automation')
-  })
-
-  it('should return the cross-post-flow template', () => {
-    const template = getTemplate('cross-post-flow')
-    expect(template).toBeDefined()
-    expect(template!.nodes.some((n) => n.type === 'user_role')).toBe(true)
-  })
 })
 
 describe('FLOW_TEMPLATES', () => {
-  it('should contain 4 templates', () => {
-    expect(FLOW_TEMPLATES).toHaveLength(4)
+  it('should contain 2 templates', () => {
+    expect(FLOW_TEMPLATES).toHaveLength(2)
   })
 
   it('should have unique IDs', () => {

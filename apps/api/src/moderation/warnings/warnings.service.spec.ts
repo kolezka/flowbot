@@ -6,7 +6,6 @@ import { EventBusService } from '../../events/event-bus.service';
 
 const mockEventBus = {
   emitModeration: jest.fn(),
-  emitAutomation: jest.fn(),
   emitSystem: jest.fn(),
 };
 
@@ -152,7 +151,7 @@ describe('WarningsService', () => {
     it('should return correct warning statistics', async () => {
       const now = new Date();
       const futureDate = new Date(now.getTime() + 86400000); // tomorrow
-      const pastDate = new Date(now.getTime() - 86400000);   // yesterday
+      const pastDate = new Date(now.getTime() - 86400000); // yesterday
 
       prisma.warning.findMany.mockResolvedValue([
         // Active warning (not expired)
@@ -177,12 +176,16 @@ describe('WarningsService', () => {
       expect(result.totalExpired).toBe(1);
       expect(result.countsByGroup).toHaveLength(2);
 
-      const group1Stats = result.countsByGroup.find((g) => g.groupId === 'group-1');
+      const group1Stats = result.countsByGroup.find(
+        (g) => g.groupId === 'group-1',
+      );
       expect(group1Stats.activeCount).toBe(2);
       expect(group1Stats.totalCount).toBe(3);
       expect(group1Stats.groupTitle).toBe('Group One');
 
-      const group2Stats = result.countsByGroup.find((g) => g.groupId === 'group-2');
+      const group2Stats = result.countsByGroup.find(
+        (g) => g.groupId === 'group-2',
+      );
       expect(group2Stats.activeCount).toBe(0);
       expect(group2Stats.totalCount).toBe(1);
     });

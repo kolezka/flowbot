@@ -5,11 +5,10 @@ import { EventBusService } from './event-bus.service';
 import type {
   AppEvent,
   ModerationEvent,
-  AutomationEvent,
   SystemEvent,
 } from './event-types';
 
-type RoomEvent = ModerationEvent | AutomationEvent | SystemEvent;
+type RoomEvent = ModerationEvent | SystemEvent;
 
 interface MessageEvent {
   data: string;
@@ -25,7 +24,6 @@ export class SseController {
 
   constructor(private eventBus: EventBusService) {
     this.eventBus.onModeration((event) => this.eventSubject.next(event));
-    this.eventBus.onAutomation((event) => this.eventSubject.next(event));
     this.eventBus.onSystem((event) => this.eventSubject.next(event));
   }
 
@@ -35,13 +33,12 @@ export class SseController {
     name: 'rooms',
     required: false,
     type: String,
-    description: 'Comma-separated room names (moderation, automation, system)',
+    description: 'Comma-separated room names (moderation, system)',
   })
   @ApiResponse({ status: 200, description: 'SSE stream of events' })
   stream(@Query('rooms') rooms?: string): Observable<MessageEvent> {
     const roomList = rooms?.split(',') ?? [
       'moderation',
-      'automation',
       'system',
     ];
 
@@ -50,7 +47,6 @@ export class SseController {
     return this.eventSubject.pipe(
       filter((event) => {
         if ('groupId' in event) return roomList.includes('moderation');
-        if ('jobId' in event) return roomList.includes('automation');
         return roomList.includes('system');
       }),
       map((event) => ({

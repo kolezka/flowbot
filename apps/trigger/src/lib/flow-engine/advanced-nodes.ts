@@ -106,7 +106,6 @@ const DB_QUERY_ALLOWLIST = new Set([
   'user.findMany',
   'product.count',
   'product.findMany',
-  'broadcastMessage.count',
 ]);
 
 export async function executeDbQuery(

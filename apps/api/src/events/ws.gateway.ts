@@ -32,10 +32,6 @@ export class WsGateway implements OnGatewayConnection, OnGatewayDisconnect {
       this.server.to('moderation').emit('moderation', event);
     });
 
-    this.eventBus.onAutomation((event) => {
-      this.server.to('automation').emit('automation', event);
-    });
-
     this.eventBus.onSystem((event) => {
       this.server.to('system').emit('system', event);
     });
@@ -63,7 +59,7 @@ export class WsGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
   @SubscribeMessage('join')
   handleJoin(client: Socket, room: string) {
-    const validRooms = ['moderation', 'automation', 'system'];
+    const validRooms = ['moderation', 'system'];
     if (
       validRooms.includes(room) ||
       room.startsWith('qr-auth:') ||
