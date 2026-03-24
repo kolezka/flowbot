@@ -66,6 +66,36 @@ export class SystemService {
     }
   }
 
+  async getWorkers() {
+    const baseUrl = (
+      process.env.CONNECTOR_POOL_HEALTH_URL || 'http://localhost:3010/health'
+    ).replace(/\/health$/, '');
+    try {
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 5000);
+      const response = await fetch(`${baseUrl}/instances`, {
+        signal: controller.signal,
+      });
+      clearTimeout(timeout);
+      const data = (await response.json()) as {
+        instances: Array<{
+          instanceId: string;
+          pool: string;
+          status: string;
+          health: {
+            connected: boolean;
+            uptime: number;
+            actionCount: number;
+            errorCount: number;
+          } | null;
+        }>;
+      };
+      return { instances: data.instances };
+    } catch {
+      return { instances: [] };
+    }
+  }
+
   private async checkService(url: string, name: string) {
     try {
       const controller = new AbortController();

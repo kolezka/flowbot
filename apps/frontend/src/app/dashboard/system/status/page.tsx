@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState, useCallback, useRef } from "react";
-import { api, SystemStatus, SystemComponent } from "@/lib/api";
+import { api, SystemStatus, SystemComponent, WorkerInstance } from "@/lib/api";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -80,8 +80,55 @@ function ComponentCard({ component }: { component: SystemComponent }) {
   );
 }
 
+const POOL_LABELS: Record<string, string> = {
+  "telegram:bot": "Telegram Bot",
+  "telegram:user": "Telegram User",
+  "whatsapp:user": "WhatsApp User",
+  "discord:bot": "Discord Bot",
+};
+
+function WorkerRow({ worker }: { worker: WorkerInstance }) {
+  const connected = worker.health?.connected ?? false;
+  const status = connected ? "up" : "down";
+
+  return (
+    <tr className="border-b border-border/50 last:border-0">
+      <td className="py-3 px-4">
+        <div className="flex items-center gap-2">
+          <StatusDot status={status} />
+          <span className="font-mono text-xs truncate max-w-[180px]" title={worker.instanceId}>
+            {worker.instanceId}
+          </span>
+        </div>
+      </td>
+      <td className="py-3 px-4">
+        <Badge variant="outline">
+          {POOL_LABELS[worker.pool] || worker.pool}
+        </Badge>
+      </td>
+      <td className="py-3 px-4">
+        <Badge variant={connected ? "secondary" : "destructive"}>
+          {connected ? "Connected" : "Disconnected"}
+        </Badge>
+      </td>
+      <td className="py-3 px-4 text-sm text-muted-foreground">
+        {worker.health ? formatUptime(worker.health.uptime) : "—"}
+      </td>
+      <td className="py-3 px-4 text-sm text-muted-foreground text-right">
+        {worker.health?.actionCount ?? 0}
+      </td>
+      <td className="py-3 px-4 text-sm text-right">
+        <span className={worker.health?.errorCount ? "text-red-500" : "text-muted-foreground"}>
+          {worker.health?.errorCount ?? 0}
+        </span>
+      </td>
+    </tr>
+  );
+}
+
 export default function SystemStatusPage() {
   const [status, setStatus] = useState<SystemStatus | null>(null);
+  const [workers, setWorkers] = useState<WorkerInstance[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [autoRefresh, setAutoRefresh] = useState(true);
@@ -89,8 +136,12 @@ export default function SystemStatusPage() {
 
   const loadStatus = useCallback(async () => {
     try {
-      const data = await api.getSystemStatus();
-      setStatus(data);
+      const [statusData, workersData] = await Promise.all([
+        api.getSystemStatus(),
+        api.getSystemWorkers(),
+      ]);
+      setStatus(statusData);
+      setWorkers(workersData.instances);
       setError(null);
     } catch (err: unknown) {
       const message =
@@ -188,6 +239,45 @@ export default function SystemStatusPage() {
           ))}
         </div>
       )}
+
+      {/* Workers Table */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center justify-between">
+            <span>Workers</span>
+            <span className="text-sm font-normal text-muted-foreground">
+              {workers.length} instance{workers.length !== 1 ? "s" : ""}
+            </span>
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          {workers.length === 0 ? (
+            <p className="text-sm text-muted-foreground py-4 text-center">
+              No workers running
+            </p>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead>
+                  <tr className="border-b text-left text-xs text-muted-foreground uppercase tracking-wider">
+                    <th className="py-2 px-4 font-medium">Instance</th>
+                    <th className="py-2 px-4 font-medium">Pool</th>
+                    <th className="py-2 px-4 font-medium">Status</th>
+                    <th className="py-2 px-4 font-medium">Uptime</th>
+                    <th className="py-2 px-4 font-medium text-right">Actions</th>
+                    <th className="py-2 px-4 font-medium text-right">Errors</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {workers.map((worker) => (
+                    <WorkerRow key={worker.instanceId} worker={worker} />
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </CardContent>
+      </Card>
 
       {error && (
         <div className="rounded-lg bg-destructive/10 p-4 text-destructive text-sm">

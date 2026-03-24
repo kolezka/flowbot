@@ -16,4 +16,14 @@ export class SystemController {
   async getStatus() {
     return this.systemService.getStatus();
   }
+
+  @Get('workers')
+  @ApiOperation({ summary: 'Get all connector pool worker instances' })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'Returns all running worker instances with health data',
+  })
+  async getWorkers() {
+    return this.systemService.getWorkers();
+  }
 }

@@ -363,6 +363,22 @@ export interface SystemStatus {
   lastChecked: string;
 }
 
+export interface WorkerInstance {
+  instanceId: string;
+  pool: string;
+  status: string;
+  health: {
+    connected: boolean;
+    uptime: number;
+    actionCount: number;
+    errorCount: number;
+  } | null;
+}
+
+export interface SystemWorkers {
+  instances: WorkerInstance[];
+}
+
 // Bot Config interfaces
 export interface BotInstance {
   id: string;
@@ -974,6 +990,10 @@ class ApiClient {
   // System Status
   async getSystemStatus(): Promise<SystemStatus> {
     return this.request<SystemStatus>('/api/system/status');
+  }
+
+  async getSystemWorkers(): Promise<SystemWorkers> {
+    return this.request<SystemWorkers>('/api/system/workers');
   }
 
   // Bot Config
