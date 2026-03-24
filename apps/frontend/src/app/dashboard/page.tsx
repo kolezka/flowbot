@@ -524,7 +524,7 @@ function DashboardSkeleton() {
         ))}
       </div>
       <div className="grid gap-6 lg:grid-cols-3">
-        <div className="lg:col-span-2 rounded-xl border bg-card p-6 shadow">
+        <div className="lg:col-span-2 rounded-xl border bg-card p-6 shadow-sm">
           <Skeleton className="mb-4 h-5 w-32" />
           <div className="space-y-3">
             {Array.from({ length: 5 }).map((_, i) => (

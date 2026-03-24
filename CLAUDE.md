@@ -109,7 +109,16 @@ Schema at `packages/db/prisma/schema.prisma`. After changes: `pnpm db generate &
 - **Unchanged:** auth, system, flows, webhooks, events (EventBus, WsGateway, SSE)
 - All endpoints under `/api/`.
 
-**Frontend (`apps/frontend/src/`):** Next.js App Router. Dashboard pages under `app/dashboard/`. API client in `lib/api.ts`. Radix UI components in `components/ui/`. WebSocket in `lib/websocket.tsx`. Multi-platform components: `PlatformBadge`, `PlatformFilter`, `PlatformProvider` context. New pages: `identity/accounts`, `identity/linked`, `connections/`.
+**Frontend (`apps/frontend/src/`):** Next.js App Router. Dashboard pages under `app/dashboard/`. API client in `lib/api.ts`. shadcn/ui components in `components/ui/`. WebSocket in `lib/websocket.tsx`. Multi-platform components: `PlatformBadge`, `PlatformFilter`, `PlatformProvider` context. New pages: `identity/accounts`, `identity/linked`, `connections/`.
+
+### Frontend UI Stack
+
+- **Component library:** [shadcn/ui](https://ui.shadcn.com) — copy-paste Radix UI primitives styled with Tailwind CSS. Config at `apps/frontend/components.json`.
+- **Styling:** Tailwind CSS v4 with CSS variables (`cssVariables: true`), base color `slate`. Global styles in `app/globals.css`.
+- **Icons:** Lucide React (`iconLibrary: "lucide"` in components.json).
+- **Adding components:** Run `npx shadcn@latest add <component>` from `apps/frontend/`. Components land in `src/components/ui/`.
+- **Path aliases:** `@/components`, `@/lib`, `@/hooks` (configured in `components.json` and `tsconfig.json`).
+- **Utility function:** `cn()` from `@/lib/utils` for merging Tailwind classes (uses `clsx` + `tailwind-merge`).
 
 ## Environment Variables
 

@@ -1,6 +1,7 @@
 // packages/platform-kit/src/pool/reconciler.ts
 import type { PoolConfig, InstanceRecord } from './types.js'
 import type { Logger } from 'pino'
+import { WorkerWrapper as RealWorkerWrapper } from './worker-wrapper.js'
 
 // --- Minimal WorkerWrapper interface (Task 2 may not be implemented yet) ---
 
@@ -63,16 +64,7 @@ export class Reconciler {
     if (config.createWorker != null) {
       this.createWorkerFn = config.createWorker
     } else {
-      // Lazily require real WorkerWrapper to avoid breaking tests that don't
-      // have worker_threads available. The real implementation lives in
-      // worker-wrapper.ts (Task 2).
-      this.createWorkerFn = (wc) => {
-        // eslint-disable-next-line @typescript-eslint/no-require-imports
-        const { WorkerWrapper: RealWorkerWrapper } = require('./worker-wrapper.js') as {
-          WorkerWrapper: new (c: WorkerWrapperConfig) => WorkerWrapper
-        }
-        return new RealWorkerWrapper(wc)
-      }
+      this.createWorkerFn = (wc) => new RealWorkerWrapper(wc)
     }
   }
 

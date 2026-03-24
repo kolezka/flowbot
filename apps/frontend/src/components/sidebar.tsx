@@ -439,9 +439,9 @@ export function Sidebar() {
     <>
       {/* Desktop sidebar */}
       <aside className="hidden md:flex md:w-64 md:shrink-0 md:flex-col border-r border-border bg-card">
-        <div className="flex h-16 items-center justify-between border-b border-border px-6">
-          <Link href="/dashboard" className="text-lg font-bold">
-            Flowbot Dashboard
+        <div className="flex h-16 items-center gap-2 border-b border-border px-6">
+          <Link href="/dashboard" className="min-w-0 truncate text-lg font-bold">
+            Flowbot
           </Link>
           <ConnectionStatus />
         </div>
@@ -469,13 +469,13 @@ export function Sidebar() {
             aria-label="Navigation menu"
             className="absolute inset-y-0 left-0 flex w-64 flex-col bg-card shadow-lg"
           >
-            <div className="flex h-16 items-center justify-between border-b border-border px-6">
+            <div className="flex h-16 items-center gap-2 border-b border-border px-6">
               <Link
                 href="/dashboard"
-                className="text-lg font-bold"
+                className="min-w-0 flex-1 truncate text-lg font-bold"
                 onClick={() => setOpen(false)}
               >
-                Flowbot Dashboard
+                Flowbot
               </Link>
               <Button
                 variant="ghost"
