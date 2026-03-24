@@ -36,7 +36,6 @@ import type { LucideIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/theme-toggle";
-import { PlatformFilter } from "@/components/platform-filter";
 
 // ---------------------------------------------------------------------------
 // Types
@@ -319,9 +318,6 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
 
   return (
     <nav role="navigation" aria-label="Dashboard navigation" className="flex flex-col gap-1 px-3 py-4">
-      <div className="mb-2 px-1">
-        <PlatformFilter />
-      </div>
       {navigation.map((section) => {
         // Standalone link (no children)
         if (section.href) {

@@ -9,7 +9,6 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ResponsiveTable, Column } from "@/components/responsive-table";
 import { PlatformBadge } from "@/components/platform-badge";
-import { usePlatform } from "@/lib/platform-context";
 import { Search, Globe, Users, Activity } from "lucide-react";
 
 const communityColumns: Column<Community>[] = [
@@ -68,7 +67,6 @@ const communityColumns: Column<Community>[] = [
 ];
 
 export default function CommunitiesPage() {
-  const { queryParam } = usePlatform();
   const [communities, setCommunities] = useState<Community[]>([]);
   const [total, setTotal] = useState(0);
   const [page, setPage] = useState(1);
@@ -80,7 +78,7 @@ export default function CommunitiesPage() {
 
   useEffect(() => {
     loadCommunities();
-  }, [page, search, activeFilter, queryParam]);
+  }, [page, search, activeFilter]);
 
   const loadCommunities = async () => {
     setLoading(true);
@@ -90,7 +88,6 @@ export default function CommunitiesPage() {
         page,
         limit: pageSize,
         search: search || undefined,
-        platform: queryParam,
         isActive: activeFilter !== null ? activeFilter : undefined,
       });
       setCommunities(data.data);

@@ -3,16 +3,21 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { api, BotInstance } from "@/lib/api";
-import { usePlatform } from "@/lib/platform-context";
-import { PlatformBadge } from "@/components/platform-badge";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 
+const PLATFORMS = [
+  { value: "telegram", label: "Telegram" },
+  { value: "discord", label: "Discord" },
+  { value: "whatsapp", label: "WhatsApp" },
+  { value: "slack", label: "Slack" },
+] as const;
+
 export default function CreateCommunityPage() {
   const router = useRouter();
-  const { platform, queryParam } = usePlatform();
+  const [platform, setPlatform] = useState("");
   const [name, setName] = useState("");
   const [platformId, setPlatformId] = useState("");
   const [selectedBot, setSelectedBot] = useState("");
@@ -21,21 +26,24 @@ export default function CreateCommunityPage() {
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    if (queryParam) {
-      api.getBotInstances({ platform: queryParam }).then(setBots).catch(() => {});
+    if (platform) {
+      api.getBotInstances({ platform }).then(setBots).catch(() => {});
+    } else {
+      setBots([]);
     }
-  }, [queryParam]);
+    setSelectedBot("");
+  }, [platform]);
 
   const handleSubmit = async () => {
-    if (!queryParam || platform === "all") {
-      setError("Please select a specific platform from the nav filter first.");
+    if (!platform) {
+      setError("Please select a platform.");
       return;
     }
     setLoading(true);
     setError("");
     try {
       await api.createCommunity({
-        platform: queryParam,
+        platform,
         platformCommunityId: platformId,
         name,
         botInstanceId: selectedBot || undefined,
@@ -56,19 +64,25 @@ export default function CreateCommunityPage() {
         <CardHeader>
           <CardTitle>Community Details</CardTitle>
           <CardDescription>
-            Add a group or community manually. Platform is set from the nav filter.
+            Add a group or community from any connected platform.
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div>
-            <Label>Platform</Label>
-            <div className="mt-1">
-              {queryParam ? (
-                <PlatformBadge platform={queryParam} />
-              ) : (
-                <p className="text-sm text-destructive">Select a platform from the nav filter</p>
-              )}
-            </div>
+            <Label htmlFor="platform">Platform</Label>
+            <select
+              id="platform"
+              value={platform}
+              onChange={(e) => setPlatform(e.target.value)}
+              className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+            >
+              <option value="">Select a platform...</option>
+              {PLATFORMS.map((p) => (
+                <option key={p.value} value={p.value}>
+                  {p.label}
+                </option>
+              ))}
+            </select>
           </div>
           <div>
             <Label htmlFor="name">Name</Label>
@@ -107,7 +121,7 @@ export default function CreateCommunityPage() {
           {error && <p className="text-sm text-destructive">{error}</p>}
           <Button
             onClick={handleSubmit}
-            disabled={!name || !platformId || !queryParam || platform === "all" || loading}
+            disabled={!name || !platformId || !platform || loading}
           >
             {loading ? "Creating..." : "Create Community"}
           </Button>

@@ -9,7 +9,6 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ResponsiveTable, Column } from "@/components/responsive-table";
 import { PlatformBadge } from "@/components/platform-badge";
-import { usePlatform } from "@/lib/platform-context";
 import { Search, Users, ShieldAlert, ShieldCheck, UserPlus } from "lucide-react";
 
 const accountColumns: Column<PlatformAccount>[] = [
@@ -79,7 +78,6 @@ interface AccountStats {
 }
 
 export default function AccountsPage() {
-  const { queryParam } = usePlatform();
   const [stats, setStats] = useState<AccountStats | null>(null);
   const [accounts, setAccounts] = useState<PlatformAccount[]>([]);
   const [total, setTotal] = useState(0);
@@ -96,7 +94,7 @@ export default function AccountsPage() {
 
   useEffect(() => {
     loadAccounts();
-  }, [page, search, bannedFilter, queryParam]);
+  }, [page, search, bannedFilter]);
 
   const loadStats = async () => {
     try {
@@ -116,7 +114,6 @@ export default function AccountsPage() {
         page,
         limit: pageSize,
         search: search || undefined,
-        platform: queryParam,
         isBanned: bannedFilter !== null ? bannedFilter : undefined,
       });
       setAccounts(data.data);

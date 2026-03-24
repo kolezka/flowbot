@@ -1,7 +1,6 @@
 import { Sidebar, MobileSidebarTrigger, MobileSidebarProvider } from "@/components/sidebar";
 import { AuthGuard } from "@/components/auth-guard";
 import { WebSocketProvider } from "@/lib/websocket";
-import { PlatformProvider } from "@/lib/platform-context";
 
 export default function DashboardLayout({
   children,
@@ -11,7 +10,6 @@ export default function DashboardLayout({
   return (
     <AuthGuard>
       <WebSocketProvider>
-        <PlatformProvider>
         <MobileSidebarProvider>
           <div className="flex min-h-screen bg-background">
             <a
@@ -33,7 +31,6 @@ export default function DashboardLayout({
             </div>
           </div>
         </MobileSidebarProvider>
-        </PlatformProvider>
       </WebSocketProvider>
     </AuthGuard>
   );
