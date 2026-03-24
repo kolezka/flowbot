@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useCallback, useMemo } from "react";
+import { useRef, useCallback, useMemo, useState } from "react";
 import {
   ReactFlow,
   Background,
@@ -43,6 +43,7 @@ export function FlowCanvas({
   nodeTypes: extraNodeTypes,
 }: FlowCanvasProps) {
   const wrapperRef = useRef<HTMLDivElement>(null);
+  const [isDragOver, setIsDragOver] = useState(false);
 
   const mergedNodeTypes = useMemo(
     () => ({ ...DEFAULT_NODE_TYPES, ...extraNodeTypes }),
@@ -52,11 +53,20 @@ export function FlowCanvas({
   const handleDragOver = useCallback((e: React.DragEvent) => {
     e.preventDefault();
     e.dataTransfer.dropEffect = "move";
+    setIsDragOver(true);
+  }, []);
+
+  const handleDragLeave = useCallback((e: React.DragEvent) => {
+    // Only reset when leaving the wrapper itself, not child elements
+    if (e.currentTarget === e.target || !e.currentTarget.contains(e.relatedTarget as globalThis.Node)) {
+      setIsDragOver(false);
+    }
   }, []);
 
   const handleDrop = useCallback(
     (e: React.DragEvent) => {
       e.preventDefault();
+      setIsDragOver(false);
       const type = e.dataTransfer.getData("application/reactflow-type");
       if (!type) return;
 
@@ -87,8 +97,9 @@ export function FlowCanvas({
   return (
     <div
       ref={wrapperRef}
-      className="flex-1"
+      className={`flex-1 transition-colors ${isDragOver ? "bg-primary/5 border-2 border-dashed border-primary/20" : ""}`}
       onDragOver={handleDragOver}
+      onDragLeave={handleDragLeave}
       onDrop={handleDrop}
     >
       <ReactFlow

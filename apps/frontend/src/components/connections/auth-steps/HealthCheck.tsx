@@ -189,6 +189,11 @@ export function HealthCheck({ connectionId, onComplete }: HealthCheckProps) {
 
   return (
     <div className="space-y-5">
+      <p className="text-sm font-medium text-muted-foreground">
+        {allDone && !hasFailed
+          ? "Connection verified successfully"
+          : "Verifying your connection\u2026"}
+      </p>
       <div className="space-y-3">
         {checks.map((check, i) => (
           <div key={i} className="flex items-start gap-3">

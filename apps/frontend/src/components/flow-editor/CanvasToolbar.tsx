@@ -282,6 +282,9 @@ export function CanvasToolbar({
         {/* Command palette trigger */}
         <CommandPaletteButton onClick={onOpenCommandPalette} />
 
+        {/* Divider */}
+        <div className="h-5 w-px bg-border" role="separator" />
+
         {/* Validate */}
         <Button
           variant="ghost"

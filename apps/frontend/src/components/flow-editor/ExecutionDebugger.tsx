@@ -149,9 +149,16 @@ export function ExecutionDebugger({
   const [outputLog, setOutputLog] = useState<unknown[]>([]);
 
   const { connected, joinRoom, leaveRoom } = useWebSocket();
+  const activeStepRef = useRef<HTMLButtonElement>(null);
 
   const isRunning = debugStatus === "running";
   const elapsedTime = useElapsedTimer(isRunning);
+
+  // Auto-scroll to the active (running) step when steps update
+  const activeStepIndex = steps.findIndex((s) => s.status === "running");
+  useEffect(() => {
+    activeStepRef.current?.scrollIntoView({ behavior: "smooth", block: "nearest" });
+  }, [activeStepIndex]);
 
   // ── Merge an execution update into the step list ──────────────────────────
   const applyUpdate = useCallback((update: ExecutionUpdate) => {
@@ -420,9 +427,10 @@ export function ExecutionDebugger({
                 </p>
               ) : (
                 <div className="divide-y divide-border/50">
-                  {steps.map((step) => (
+                  {steps.map((step, idx) => (
                     <button
                       key={step.nodeId}
+                      ref={idx === activeStepIndex ? activeStepRef : undefined}
                       onClick={() => {
                         setSelectedStepId(step.nodeId);
                         onNodeHighlight?.(step.nodeId);

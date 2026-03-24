@@ -24,7 +24,7 @@ import {
   DialogDescription,
 } from "@/components/ui/dialog";
 import { EmptyState } from "@/components/empty-state";
-import { Bot, Plus } from "lucide-react";
+import { Bot, Plus, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { Skeleton } from "@/components/ui/skeleton";
 import { validateBotToken } from "@/lib/token-validation";
@@ -197,7 +197,11 @@ export default function BotConfigPage() {
         <DialogFooter>
           <Button variant="outline" onClick={handleClose}>Cancel</Button>
           <Button onClick={handleCreate} disabled={!name.trim() || creating}>
-            {creating ? "Creating..." : "Create Bot"}
+            {creating ? (
+              <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Creating...</>
+            ) : (
+              <><Plus className="mr-2 h-4 w-4" />Create Bot</>
+            )}
           </Button>
         </DialogFooter>
       </DialogContent>

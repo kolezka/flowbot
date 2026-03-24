@@ -74,9 +74,9 @@ export function ConnectionCard({
 
   return (
     <div
-      className={`flex items-center gap-3.5 rounded-lg border px-4 py-3.5 transition-colors ${
+      className={`flex items-center gap-3.5 rounded-lg border px-4 py-3.5 transition-colors cursor-pointer ${
         isError
-          ? "border-red-500/20 bg-red-500/[0.03]"
+          ? "border-red-500/20 bg-red-500/[0.03] hover:border-red-500/40 hover:bg-red-500/[0.06]"
           : "border-white/[0.06] hover:border-white/[0.1]"
       }`}
     >

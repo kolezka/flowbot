@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { ConnectionHub } from "@/components/connections/ConnectionHub";
 import { AuthSheet } from "@/components/connections/AuthSheet";
@@ -9,6 +9,7 @@ import { ReauthSheet } from "@/components/connections/ReauthSheet";
 export default function ConnectionsPage() {
   const router = useRouter();
   const [authSheetOpen, setAuthSheetOpen] = useState(false);
+  const [refreshKey, setRefreshKey] = useState(0);
   const [reauthConnection, setReauthConnection] = useState<{
     id: string;
     name: string;
@@ -16,9 +17,14 @@ export default function ConnectionsPage() {
     connectionType: string;
   } | null>(null);
 
+  const triggerRefresh = useCallback(() => {
+    setRefreshKey((k) => k + 1);
+  }, []);
+
   return (
     <>
       <ConnectionHub
+        key={refreshKey}
         onNewConnection={() => setAuthSheetOpen(true)}
         onReauth={(id) => {
           fetch(`/api/connections/${id}`)
@@ -32,12 +38,12 @@ export default function ConnectionsPage() {
         onDelete={async (id) => {
           if (confirm("Delete this connection?")) {
             await fetch(`/api/connections/${id}`, { method: "DELETE" });
-            window.location.reload();
+            triggerRefresh();
           }
         }}
         onRestart={async (id) => {
           await fetch(`/api/connections/${id}/restart`, { method: "POST" });
-          window.location.reload();
+          triggerRefresh();
         }}
         onEditName={(id) => {
           router.push(`/dashboard/connections/${id}`);
@@ -50,7 +56,7 @@ export default function ConnectionsPage() {
         onOpenChange={setAuthSheetOpen}
         onComplete={() => {
           setAuthSheetOpen(false);
-          window.location.reload();
+          triggerRefresh();
         }}
       />
 
@@ -62,7 +68,7 @@ export default function ConnectionsPage() {
           }}
           onComplete={() => {
             setReauthConnection(null);
-            window.location.reload();
+            triggerRefresh();
           }}
           connection={reauthConnection}
         />

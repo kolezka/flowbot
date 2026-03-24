@@ -107,6 +107,7 @@ export function PlatformSelect({ onSelect }: PlatformSelectProps) {
         <button
           key={platform.id}
           onClick={() => handlePlatformClick(platform)}
+          autoFocus={platform.id === "telegram"}
           className="w-full rounded-lg border border-border bg-card p-4 text-left transition-colors hover:bg-muted/50 focus:outline-none focus-visible:ring-2 focus-visible:ring-ring"
           style={
             {

@@ -42,6 +42,9 @@ export function AuthSheet({ open, onOpenChange, onComplete }: AuthSheetProps) {
   const currentIndex = steps.indexOf(step);
 
   function handleClose(isOpen: boolean) {
+    if (!isOpen && Object.keys(state).length > 0 && step !== "platform") {
+      if (!confirm("Discard this connection setup? Your progress will be lost.")) return;
+    }
     if (!isOpen) {
       setStep("platform");
       setState({});

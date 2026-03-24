@@ -194,8 +194,20 @@ export function NodeConfigForm({
   const handleChange = useCallback(
     (key: string, value: unknown) => {
       onChange(key, value);
+      // Live-validate required fields on change
+      const field = fields.find((f) => f.key === key);
+      if (field?.required) {
+        const error = validateField(field, value);
+        setErrors((prev) => {
+          if (error === null) {
+            const { [key]: _removed, ...rest } = prev;
+            return rest;
+          }
+          return { ...prev, [key]: error };
+        });
+      }
     },
-    [onChange],
+    [onChange, fields],
   );
 
   /** True when all required fields have no validation error */

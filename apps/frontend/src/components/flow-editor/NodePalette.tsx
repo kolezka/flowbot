@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useMemo, useEffect } from "react";
-import { User } from "lucide-react";
+import { User, ChevronRight, ChevronDown } from "lucide-react";
 import { toast } from "sonner";
 import { NODE_TYPES, type NodeTypeDefinition } from "@flowbot/flow-shared";
 
@@ -59,9 +59,13 @@ export function NodePalette({ onDragStart, onAddTemplate }: NodePaletteProps) {
     let nodes = NODE_TYPES as NodeTypeDefinition[];
 
     // Platform filter
-    if (platformFilter !== "all") {
+    if (platformFilter === "general") {
       nodes = nodes.filter(
-        (n) => n.platform === platformFilter || n.platform === "general",
+        (n) => !n.platform || n.platform === "general",
+      );
+    } else if (platformFilter !== "all") {
+      nodes = nodes.filter(
+        (n) => n.platform === platformFilter || !n.platform || n.platform === "general",
       );
     }
 
@@ -244,12 +248,12 @@ export function NodePalette({ onDragStart, onAddTemplate }: NodePaletteProps) {
           <div key={cat} className="mb-4">
             <button
               onClick={() => toggleCategory(cat)}
-              className="mb-1 flex w-full items-center justify-between text-xs font-medium uppercase text-muted-foreground hover:text-foreground"
+              className="mb-1 flex w-full items-center justify-between text-xs font-medium uppercase text-muted-foreground hover:text-foreground hover:bg-white/[0.04] rounded cursor-pointer px-1 py-0.5 transition-colors"
             >
               <span>
                 {cat === "advanced" ? "Advanced" : `${cat}s`} ({catNodes.length})
               </span>
-              <span className="text-[10px]">{isCollapsed ? "+" : "-"}</span>
+              {isCollapsed ? <ChevronRight className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
             </button>
             {!isCollapsed && (
               isTelegramActionCategory ? (

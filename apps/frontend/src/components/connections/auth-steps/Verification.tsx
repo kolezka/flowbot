@@ -235,7 +235,8 @@ function MTProtoVerification({
               onPaste={handleDigitPaste}
               disabled={submitting}
               autoFocus={index === 0}
-              className="h-[52px] w-[44px] rounded-lg border border-border bg-background text-center text-lg font-semibold focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 disabled:opacity-50"
+              aria-label={`Verification code digit ${index + 1}`}
+              className="h-[52px] w-[44px] rounded-lg border border-border bg-background text-center text-lg font-semibold focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/50 disabled:opacity-50"
             />
           ))}
         </div>

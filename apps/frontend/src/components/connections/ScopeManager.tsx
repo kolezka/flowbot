@@ -130,7 +130,6 @@ function ManualFallback({ onComplete }: ManualInputProps) {
         <Button
           onClick={handleSave}
           disabled={saving}
-          className="bg-white text-zinc-900 border border-zinc-200 hover:bg-zinc-50"
           variant="outline"
         >
           {saving ? "Saving..." : "Save & Finish"}
@@ -344,7 +343,6 @@ export function ScopeManager({ connectionId, onComplete }: ScopeManagerProps) {
         <Button
           onClick={handleSave}
           disabled={saving}
-          className="bg-white text-zinc-900 border border-zinc-200 hover:bg-zinc-50"
           variant="outline"
         >
           {saving ? "Saving..." : "Save & Finish"}

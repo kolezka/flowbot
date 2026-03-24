@@ -164,7 +164,7 @@ function CredentialsStep({ connection, onSubmit }: CredentialsStepProps) {
 
       {isWhatsApp && (
         <p className="rounded-md border border-border bg-muted/40 px-3 py-2.5 text-xs text-muted-foreground">
-          You'll scan a QR code to re-link your WhatsApp account in the next step.
+          You&apos;ll scan a QR code to re-link your WhatsApp account in the next step.
         </p>
       )}
 

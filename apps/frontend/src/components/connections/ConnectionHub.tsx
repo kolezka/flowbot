@@ -161,7 +161,7 @@ export function ConnectionHub({
             <button
               key={p}
               onClick={() => setPlatform(p)}
-              className={`rounded px-2.5 py-1 text-xs capitalize transition-colors ${
+              className={`rounded px-2.5 py-1 text-xs capitalize transition-colors focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 ${
                 platform === p
                   ? "bg-white/10 font-medium text-foreground"
                   : "text-muted-foreground hover:text-foreground"
