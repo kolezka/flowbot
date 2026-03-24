@@ -5,6 +5,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { api } from "@/lib/api";
+import { getErrorMessage } from "@/lib/get-error-message";
+import { validateCredential } from "@/lib/token-validation";
 
 interface NameAndCredentialsProps {
   platform: string;
@@ -60,6 +62,7 @@ export function NameAndCredentials({
   const [credential, setCredential] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [validationHint, setValidationHint] = useState<string | null>(null);
 
   const credentialConfig = getCredentialConfig(platform, connectionType);
   const platformLabel = getPlatformLabel(platform, connectionType);
@@ -100,9 +103,8 @@ export function NameAndCredentials({
       const phoneNumber =
         connectionType === "mtproto" ? credential.trim() : undefined;
       onSubmit({ name: name.trim(), connectionId, sessionId, phoneNumber });
-    } catch (e: unknown) {
-      const msg = e instanceof Error ? e.message : "Something went wrong";
-      setError(msg);
+    } catch (err: unknown) {
+      setError(getErrorMessage(err, "Failed to start authentication"));
     } finally {
       setLoading(false);
     }
@@ -133,22 +135,37 @@ export function NameAndCredentials({
             type={credentialConfig.type}
             placeholder={credentialConfig.placeholder}
             value={credential}
-            onChange={(e) => setCredential(e.target.value)}
+            onChange={(e) => {
+              setCredential(e.target.value);
+              setValidationHint(
+                validateCredential(platform, connectionType, e.target.value),
+              );
+            }}
             disabled={loading}
           />
+          {validationHint && credential.trim() && (
+            <p className="text-xs text-amber-600">{validationHint}</p>
+          )}
         </div>
       )}
 
       {isWhatsApp && (
         <p className="rounded-md border border-border bg-muted/40 px-3 py-2.5 text-xs text-muted-foreground">
-          You'll scan a QR code to link your WhatsApp account in the next step.
+          You&apos;ll scan a QR code to link your WhatsApp account in the next step.
         </p>
       )}
 
       {error && (
-        <p className="rounded-md border border-destructive/30 bg-destructive/10 px-3 py-2 text-sm text-destructive">
-          {error}
-        </p>
+        <div className="flex items-center justify-between rounded-md border border-destructive/30 bg-destructive/10 px-3 py-2 text-sm text-destructive">
+          <span>{error}</span>
+          <button
+            type="button"
+            onClick={() => setError("")}
+            className="ml-2 text-xs underline hover:no-underline"
+          >
+            Dismiss
+          </button>
+        </div>
       )}
 
       <div className="flex gap-2 pt-1">

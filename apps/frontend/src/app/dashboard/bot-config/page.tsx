@@ -25,6 +25,8 @@ import {
 } from "@/components/ui/dialog";
 import { Bot, Plus } from "lucide-react";
 import { toast } from "sonner";
+import { Skeleton } from "@/components/ui/skeleton";
+import { validateBotToken } from "@/lib/token-validation";
 
 export default function BotConfigPage() {
   const [bots, setBots] = useState<BotInstance[]>([]);
@@ -34,6 +36,7 @@ export default function BotConfigPage() {
   const [name, setName] = useState("");
   const [platform, setPlatform] = useState("telegram");
   const [botToken, setBotToken] = useState("");
+  const [tokenHint, setTokenHint] = useState<string | null>(null);
 
   const loadBots = useCallback(async () => {
     try {
@@ -41,6 +44,7 @@ export default function BotConfigPage() {
       setBots(data);
     } catch (err) {
       console.error(err);
+      toast.error("Failed to load bots");
     } finally {
       setLoading(false);
     }
@@ -54,6 +58,7 @@ export default function BotConfigPage() {
     setName("");
     setPlatform("telegram");
     setBotToken("");
+    setTokenHint(null);
   };
 
   const handleClose = () => {
@@ -81,7 +86,25 @@ export default function BotConfigPage() {
     }
   };
 
-  if (loading) return <div className="animate-pulse space-y-4"><div className="h-8 w-48 bg-muted rounded" /><div className="h-64 bg-muted rounded-xl" /></div>;
+  if (loading) {
+    return (
+      <div className="space-y-6">
+        <div className="flex items-center justify-between">
+          <Skeleton className="h-8 w-48" />
+          <Skeleton className="h-9 w-24" />
+        </div>
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {Array.from({ length: 3 }).map((_, i) => (
+            <div key={i} className="rounded-xl border bg-card p-6 shadow">
+              <Skeleton className="mb-3 h-5 w-32" />
+              <Skeleton className="mb-2 h-4 w-24" />
+              <Skeleton className="h-3 w-40" />
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -146,7 +169,7 @@ export default function BotConfigPage() {
           </div>
           <div className="space-y-2">
             <Label htmlFor="bot-platform">Platform</Label>
-            <Select value={platform} onValueChange={setPlatform}>
+            <Select value={platform} onValueChange={(v) => { setPlatform(v); setTokenHint(validateBotToken(v, botToken)); }}>
               <SelectTrigger id="bot-platform">
                 <SelectValue placeholder="Select platform" />
               </SelectTrigger>
@@ -160,10 +183,16 @@ export default function BotConfigPage() {
             <Label htmlFor="bot-token">Bot Token</Label>
             <Input
               id="bot-token"
-              placeholder={platform === "telegram" ? "123456:ABC-DEF..." : "Discord bot token"}
+              placeholder={platform === "telegram" ? "123456789:AABBccDDee..." : "Discord bot token"}
               value={botToken}
-              onChange={(e) => setBotToken(e.target.value)}
+              onChange={(e) => {
+                setBotToken(e.target.value);
+                setTokenHint(validateBotToken(platform, e.target.value));
+              }}
             />
+            {tokenHint && botToken.trim() && (
+              <p className="text-xs text-amber-600">{tokenHint}</p>
+            )}
           </div>
         </div>
         <DialogFooter>

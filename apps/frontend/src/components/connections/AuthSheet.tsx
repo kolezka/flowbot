@@ -59,17 +59,31 @@ export function AuthSheet({ open, onOpenChange, onComplete }: AuthSheetProps) {
           </SheetDescription>
         </SheetHeader>
 
-        {/* Breadcrumb */}
-        <nav className="mb-6 flex gap-1.5 text-xs text-muted-foreground">
-          {steps.map((s, i) => (
-            <span key={s} className="flex items-center gap-1.5">
-              {i > 0 && <span>›</span>}
-              <span className={i === currentIndex ? "text-foreground" : ""}>
-                {STEP_LABELS[s]}
+        {/* Breadcrumb + Start over */}
+        <div className="mb-6 flex items-center justify-between">
+          <nav className="flex gap-1.5 text-xs text-muted-foreground">
+            {steps.map((s, i) => (
+              <span key={s} className="flex items-center gap-1.5">
+                {i > 0 && <span>›</span>}
+                <span className={i === currentIndex ? "text-foreground" : ""}>
+                  {STEP_LABELS[s]}
+                </span>
               </span>
-            </span>
-          ))}
-        </nav>
+            ))}
+          </nav>
+          {currentIndex > 0 && (
+            <button
+              type="button"
+              onClick={() => {
+                setStep("platform");
+                setState({});
+              }}
+              className="text-xs text-muted-foreground underline hover:text-foreground"
+            >
+              Start over
+            </button>
+          )}
+        </div>
 
         {step === "platform" && (
           <PlatformSelect

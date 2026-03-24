@@ -30,6 +30,7 @@ export default function VersionsPage() {
       setVersions(versionData);
     } catch (err) {
       console.error(err);
+      toast.error("Failed to load version history");
     } finally {
       setLoading(false);
     }

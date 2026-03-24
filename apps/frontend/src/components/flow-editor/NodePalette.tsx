@@ -2,6 +2,7 @@
 
 import { useState, useMemo, useEffect } from "react";
 import { User } from "lucide-react";
+import { toast } from "sonner";
 import { NODE_TYPES, type NodeTypeDefinition } from "@flowbot/flow-shared";
 
 type PlatformFilter = "all" | "telegram" | "discord" | "general";
@@ -117,6 +118,7 @@ export function NodePalette({ onDragStart, onAddTemplate }: NodePaletteProps) {
       onAddTemplate(data);
     } catch (err) {
       console.error("Failed to load template", templateName, err);
+      toast.error("Failed to load template");
     }
   };
 

@@ -34,6 +34,7 @@ export default function CommandsEditorPage() {
       setCommands(data.sort((a, b) => a.sortOrder - b.sortOrder));
     } catch (err) {
       console.error(err);
+      toast.error("Failed to load commands");
     } finally {
       setLoading(false);
     }

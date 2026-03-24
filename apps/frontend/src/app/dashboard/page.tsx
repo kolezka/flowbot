@@ -1,7 +1,8 @@
 "use client";
 
-import { useEffect, useState, useRef, useCallback } from "react";
+import { useEffect, useMemo, useState, useRef, useCallback } from "react";
 import Link from "next/link";
+import { toast } from "sonner";
 import {
   api,
   StatsResponse,
@@ -22,9 +23,8 @@ import {
   Activity,
   ArrowRight,
   Layers,
-  Package,
-  Plus,
-  Send,
+  Link2,
+  Bot,
   GitBranch,
   MessageSquare,
   CheckCircle,
@@ -97,17 +97,26 @@ function actionBadgeVariant(action: string): "secondary" | "outline" | "destruct
   }
 }
 
+/** Deterministic PRNG seeded from an integer (Lehmer / Park-Miller). */
+function seededRandom(seed: number): () => number {
+  let s = Math.max(1, Math.abs(Math.round(seed)));
+  return () => {
+    s = (s * 16807) % 2147483647;
+    return (s - 1) / 2147483646;
+  };
+}
+
 /** Build sparkline data (7 points) approaching the given current value. */
 function generateSparkline(current: number, trend: number): { value: number }[] {
+  const rng = seededRandom(Math.round(current * 100 + trend * 10) + 1);
   const points: { value: number }[] = [];
   const base = Math.max(0, current - Math.abs(trend) * 7);
   for (let i = 0; i < 7; i++) {
     const progress = i / 6;
-    const noise = (Math.random() - 0.5) * current * 0.1;
+    const noise = (rng() - 0.5) * current * 0.1;
     const value = base + (current - base) * progress + noise;
     points.push({ value: Math.max(0, Math.round(value)) });
   }
-  // Ensure the last point matches the actual value
   points[6] = { value: current };
   return points;
 }
@@ -180,7 +189,7 @@ function EnhancedStatCard({ title, value, icon, trend, sparklineData }: Enhanced
           </div>
           {sparklineData && sparklineData.length > 0 && (
             <div className="h-8 w-16">
-              <ResponsiveContainer width="100%" height={300} minWidth={0} minHeight={0}>
+              <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
                 <LineChart data={sparklineData}>
                   <Line
                     type="monotone"
@@ -317,7 +326,7 @@ function MiniChartCard({ title, data, type, color }: MiniChartCardProps) {
       </CardHeader>
       <CardContent className="pb-3">
         <div className="h-32">
-          <ResponsiveContainer width="100%" height={300} minWidth={0} minHeight={0}>
+          <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
             {type === "area" ? (
               <AreaChart data={data}>
                 <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
@@ -387,17 +396,17 @@ function MiniChartCard({ title, data, type, color }: MiniChartCardProps) {
 
 const quickActions = [
   {
-    title: "Create Product",
-    description: "Add a new product",
-    icon: <Plus className="h-5 w-5" />,
-    href: "/dashboard/products",
+    title: "Add Bot",
+    description: "Configure a new bot",
+    icon: <Bot className="h-5 w-5" />,
+    href: "/dashboard/bot-config",
     color: "text-blue-500",
   },
   {
-    title: "Send Broadcast",
-    description: "Message your users",
-    icon: <Send className="h-5 w-5" />,
-    href: "/dashboard/broadcast",
+    title: "Connections",
+    description: "Manage platform links",
+    icon: <Link2 className="h-5 w-5" />,
+    href: "/dashboard/connections",
     color: "text-green-500",
   },
   {
@@ -408,10 +417,10 @@ const quickActions = [
     color: "text-purple-500",
   },
   {
-    title: "Manage Groups",
-    description: "Group settings",
-    icon: <Layers className="h-5 w-5" />,
-    href: "/dashboard/moderation/groups",
+    title: "Communities",
+    description: "Manage communities",
+    icon: <Users className="h-5 w-5" />,
+    href: "/dashboard/communities",
     color: "text-orange-500",
   },
 ];
@@ -590,15 +599,18 @@ export default function DashboardPage() {
       if (results[4]?.status === "fulfilled") setRecentLogs(results[4].value.data);
       if (results[5]?.status === "fulfilled") setSystemStatus(results[5].value);
 
+      const failedCount = results.filter((r) => r.status === "rejected").length;
+      if (failedCount > 0) {
+        toast.error(
+          `Failed to load ${failedCount} dashboard section${failedCount > 1 ? "s" : ""}`,
+        );
+      }
+
       setLoading(false);
     }
 
     fetchAll();
   }, []);
-
-  if (loading) {
-    return <DashboardSkeleton />;
-  }
 
   // Derive trend percentages from available data
   const totalUsers = stats?.totalUsers ?? 0;
@@ -623,26 +635,35 @@ export default function DashboardPage() {
   const warningSparkline = generateSparkline(activeWarnings, -2);
   const jobSparkline = generateSparkline(pendingJobs, 0);
 
-  // Mini chart data derived from overview
-  const dayLabels = last7DaysLabels();
-  const groups = overview?.groups ?? [];
+  // Mini chart data — seeded random so charts are deterministic across re-renders
+  const { messagesPerDay, moderationPerDay, activeUsersPerDay } = useMemo(() => {
+    const dayLabels = last7DaysLabels();
+    const groups = overview?.groups ?? [];
+    const rng = seededRandom(messagesToday * 31 + (stats?.activeUsers ?? 0) * 17 + 42);
 
-  const messagesPerDay = dayLabels.map((name, i) => ({
-    name,
-    value: Math.round(messagesToday * (0.7 + Math.random() * 0.6) * ((i + 1) / 7)),
-  }));
+    return {
+      messagesPerDay: dayLabels.map((name, i) => ({
+        name,
+        value: Math.round(messagesToday * (0.7 + rng() * 0.6) * ((i + 1) / 7)),
+      })),
+      moderationPerDay: dayLabels.map((name) => ({
+        name,
+        value: Math.round(
+          groups.reduce((sum, g) => sum + g.moderationToday, 0) * (0.5 + rng() * 1),
+        ),
+      })),
+      activeUsersPerDay: dayLabels.map((name, i) => ({
+        name,
+        value: Math.round(
+          (stats?.activeUsers ?? 0) * (0.8 + rng() * 0.4) * ((i + 3) / 10),
+        ),
+      })),
+    };
+  }, [messagesToday, overview, stats?.activeUsers]);
 
-  const moderationPerDay = dayLabels.map((name) => ({
-    name,
-    value: Math.round(
-      groups.reduce((sum, g) => sum + g.moderationToday, 0) * (0.5 + Math.random() * 1),
-    ),
-  }));
-
-  const activeUsersPerDay = dayLabels.map((name, i) => ({
-    name,
-    value: Math.round((stats?.activeUsers ?? 0) * (0.8 + Math.random() * 0.4) * ((i + 3) / 10)),
-  }));
+  if (loading) {
+    return <DashboardSkeleton />;
+  }
 
   return (
     <div className="space-y-8">

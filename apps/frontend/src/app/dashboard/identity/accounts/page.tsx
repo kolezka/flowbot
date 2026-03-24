@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { toast } from "sonner";
 import { api, PlatformAccount } from "@/lib/api";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -103,6 +104,7 @@ export default function AccountsPage() {
       setStats(data);
     } catch (err) {
       console.error("Failed to load account stats:", err);
+      toast.error("Failed to load account stats");
     }
   };
 

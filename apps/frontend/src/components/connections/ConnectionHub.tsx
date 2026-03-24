@@ -1,11 +1,13 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ConnectionCard } from "./ConnectionCard";
 import { api } from "@/lib/api";
+import { getErrorMessage } from "@/lib/get-error-message";
 
 interface Connection {
   id: string;
@@ -50,15 +52,17 @@ export function ConnectionHub({
 }: ConnectionHubProps) {
   const [connections, setConnections] = useState<Connection[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [platform, setPlatform] = useState<Platform>("all");
   const [search, setSearch] = useState("");
 
   const fetchConnections = useCallback(async () => {
     try {
+      setError(null);
       const { data } = await api.getConnections({ limit: 100 });
       setConnections(data ?? []);
-    } catch {
-      // silently fail, connections remain empty
+    } catch (err: unknown) {
+      setError(getErrorMessage(err, "Failed to load connections"));
     } finally {
       setLoading(false);
     }
@@ -94,6 +98,28 @@ export function ConnectionHub({
         <Skeleton className="h-16 w-full" />
         <Skeleton className="h-16 w-full" />
         <Skeleton className="h-16 w-full" />
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex flex-col items-center justify-center py-16 text-center">
+        <div className="mb-4 rounded-full bg-destructive/10 p-4">
+          <AlertCircle className="h-8 w-8 text-destructive" />
+        </div>
+        <h3 className="text-lg font-semibold">Failed to load connections</h3>
+        <p className="mt-1 max-w-sm text-sm text-muted-foreground">{error}</p>
+        <Button
+          size="sm"
+          className="mt-4"
+          onClick={() => {
+            setLoading(true);
+            fetchConnections();
+          }}
+        >
+          Retry
+        </Button>
       </div>
     );
   }

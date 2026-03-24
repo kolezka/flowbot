@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { toast } from "sonner";
 import {
   api,
   AnalyticsOverview,
@@ -106,6 +107,7 @@ export default function AnalyticsPage() {
       setSummary(data);
     } catch (err: unknown) {
       console.error("Failed to load group summary:", err);
+      toast.error("Failed to load group summary");
     } finally {
       setSummaryLoading(false);
     }
