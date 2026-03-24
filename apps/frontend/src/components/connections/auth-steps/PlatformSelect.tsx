@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { Button } from "@/components/ui/button";
 
 interface PlatformSelectProps {
   onSelect: (platform: string, connectionType: string) => void;
@@ -46,11 +45,13 @@ const TELEGRAM_SUBTYPES = [
   {
     connectionType: "bot_token",
     label: "Bot Token",
+    icon: "🤖",
     description: "Receive updates via @BotFather token",
   },
   {
     connectionType: "mtproto",
     label: "User Account (MTProto)",
+    icon: "👤",
     description: "Full account access via phone number",
   },
 ];
@@ -71,28 +72,37 @@ export function PlatformSelect({ onSelect }: PlatformSelectProps) {
       <div className="space-y-3">
         <button
           onClick={() => setShowTelegramSub(false)}
-          className="mb-1 flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors"
+          className="group mb-1 flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors"
         >
-          ← Back
+          <span className="transition-transform group-hover:-translate-x-0.5">
+            ←
+          </span>{" "}
+          Back to platforms
         </button>
-        <p className="text-sm font-medium">Choose Telegram connection type</p>
+        <p className="text-sm font-medium text-foreground">
+          Choose Telegram connection type
+        </p>
         {TELEGRAM_SUBTYPES.map((sub) => (
           <button
             key={sub.connectionType}
             onClick={() => onSelect("telegram", sub.connectionType)}
-            className="w-full rounded-lg border border-border bg-card p-4 text-left transition-colors hover:border-[#2AABEE]/60 hover:bg-[#2AABEE]/5 focus:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            className="group w-full rounded-xl border border-border/60 bg-card p-4 text-left transition-all duration-150 hover:border-[#2AABEE]/40 hover:bg-[#2AABEE]/[0.04] hover:shadow-[0_0_0_1px_rgba(42,171,238,0.1)] focus:outline-none focus-visible:ring-2 focus-visible:ring-ring"
           >
-            <div className="flex items-center gap-3">
-              <div
-                className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-white text-base"
-                style={{ backgroundColor: "#2AABEE" }}
-              >
-                ✈
+            <div className="flex items-center gap-3.5">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#2AABEE]/10 text-base transition-colors group-hover:bg-[#2AABEE]/20">
+                {sub.icon}
               </div>
-              <div>
-                <p className="text-sm font-medium">{sub.label}</p>
-                <p className="text-xs text-muted-foreground">{sub.description}</p>
+              <div className="min-w-0 flex-1">
+                <p className="text-sm font-medium text-foreground">
+                  {sub.label}
+                </p>
+                <p className="text-xs text-muted-foreground">
+                  {sub.description}
+                </p>
               </div>
+              <span className="text-muted-foreground/50 transition-transform group-hover:translate-x-0.5 group-hover:text-muted-foreground">
+                ›
+              </span>
             </div>
           </button>
         ))}
@@ -102,31 +112,45 @@ export function PlatformSelect({ onSelect }: PlatformSelectProps) {
 
   return (
     <div className="space-y-3">
-      <p className="text-sm font-medium">Choose a platform</p>
+      <p className="text-sm font-medium text-foreground">Choose a platform</p>
       {PLATFORMS.map((platform) => (
         <button
           key={platform.id}
           onClick={() => handlePlatformClick(platform)}
           autoFocus={platform.id === "telegram"}
-          className="w-full rounded-lg border border-border bg-card p-4 text-left transition-colors hover:bg-muted/50 focus:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          className="group w-full rounded-xl border border-border/60 bg-card p-4 text-left transition-all duration-150 hover:shadow-[0_0_0_1px_rgba(255,255,255,0.06)] focus:outline-none focus-visible:ring-2 focus-visible:ring-ring"
           style={
             {
-              "--hover-border": platform.bg,
+              "--platform-color": platform.bg,
             } as React.CSSProperties
           }
+          onMouseEnter={(e) => {
+            e.currentTarget.style.borderColor = `${platform.bg}33`;
+            e.currentTarget.style.backgroundColor = `${platform.bg}08`;
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.borderColor = "";
+            e.currentTarget.style.backgroundColor = "";
+          }}
         >
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-3.5">
             <div
-              className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-white text-base"
+              className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl text-white text-base shadow-sm"
               style={{ backgroundColor: platform.bg }}
             >
               {platform.icon}
             </div>
-            <div>
-              <p className="text-sm font-medium">{platform.label}</p>
-              <p className="text-xs text-muted-foreground">{platform.description}</p>
+            <div className="min-w-0 flex-1">
+              <p className="text-sm font-medium text-foreground">
+                {platform.label}
+              </p>
+              <p className="text-xs text-muted-foreground">
+                {platform.description}
+              </p>
             </div>
-            <span className="ml-auto text-muted-foreground">›</span>
+            <span className="text-muted-foreground/50 transition-transform group-hover:translate-x-0.5 group-hover:text-muted-foreground">
+              ›
+            </span>
           </div>
         </button>
       ))}
