@@ -223,6 +223,59 @@ function FlowEditorInner() {
     return () => window.removeEventListener("beforeunload", handler);
   }, [saveState]);
 
+  // ── Keyboard shortcuts ──────────────────────────────────────────────────
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      const target = e.target as HTMLElement
+      if (
+        target.tagName === "INPUT" ||
+        target.tagName === "TEXTAREA" ||
+        target.isContentEditable
+      ) return
+
+      const state = useFlowStore.getState()
+      const { selectedNode, copiedNode } = state
+      const meta = e.metaKey || e.ctrlKey
+
+      if ((e.key === "Backspace" || e.key === "Delete") && selectedNode) {
+        state.deleteNode(selectedNode.id)
+        return
+      }
+      if (meta && e.key === "d" && selectedNode) {
+        e.preventDefault()
+        state.duplicateNode(selectedNode.id)
+        return
+      }
+      if (meta && e.key === "c" && selectedNode) {
+        e.preventDefault()
+        state.copyNode(selectedNode.id)
+        return
+      }
+      if (meta && e.key === "v" && copiedNode) {
+        e.preventDefault()
+        const center = reactFlowInstance?.screenToFlowPosition({
+          x: window.innerWidth / 2,
+          y: window.innerHeight / 2,
+        }) ?? { x: 250, y: 250 }
+        state.pasteNode(center)
+        return
+      }
+      if (meta && e.key === "/" && selectedNode) {
+        e.preventDefault()
+        state.toggleNode(selectedNode.id)
+        return
+      }
+      if (meta && e.key === "a") {
+        e.preventDefault()
+        state.selectAll()
+        return
+      }
+    }
+
+    window.addEventListener("keydown", handler)
+    return () => window.removeEventListener("keydown", handler)
+  }, [useFlowStore, reactFlowInstance])
+
   // ── Edge connection handler ─────────────────────────────────────────────
   const onConnect = useCallback(
     (connection: Connection) => addEdgeAction(connection),
