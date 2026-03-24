@@ -12,9 +12,7 @@ describe('HealthPollerService', () => {
     eventBus = {
       emitSystem: jest.fn(),
       emitModeration: jest.fn(),
-      emitAutomation: jest.fn(),
       onModeration: jest.fn(),
-      onAutomation: jest.fn(),
       onSystem: jest.fn(),
     } as unknown as EventBusService;
 

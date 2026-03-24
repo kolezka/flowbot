@@ -10,9 +10,6 @@ const { mockPrisma, mockDispatchUserAction, mockFetch } = vi.hoisted(() => {
     botInstance: {
       findUnique: vi.fn(),
     },
-    community: {
-      findUnique: vi.fn(),
-    },
   }
 
   const mockDispatchUserAction = vi.fn().mockResolvedValue({
@@ -42,7 +39,7 @@ vi.mock('../lib/flow-engine/user-actions.js', () => ({
   dispatchUserAction: mockDispatchUserAction,
 }))
 
-import { dispatchAction, dispatchActions, dispatchActionToCommunity } from '../lib/flow-engine/dispatcher.js'
+import { dispatchAction, dispatchActions } from '../lib/flow-engine/dispatcher.js'
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -599,124 +596,3 @@ describe('dispatchActions', () => {
   })
 })
 
-// ---------------------------------------------------------------------------
-// dispatchActionToCommunity — community-to-bot resolution
-// ---------------------------------------------------------------------------
-
-describe('dispatchActionToCommunity', () => {
-  let originalFetch: typeof globalThis.fetch
-
-  beforeEach(() => {
-    vi.clearAllMocks()
-    originalFetch = globalThis.fetch
-    globalThis.fetch = mockFetch
-
-    mockFetch.mockResolvedValue(makeFetchResponse({ success: true, data: {} }))
-  })
-
-  afterEach(() => {
-    globalThis.fetch = originalFetch
-  })
-
-  it('resolves the bot instance URL from the community and dispatches via POST /execute', async () => {
-    mockPrisma.community.findUnique.mockResolvedValueOnce({
-      id: 'comm-1',
-      botInstance: { id: 'bot-1', apiUrl: 'http://tg-bot:3001', isActive: true, platform: 'telegram' },
-    })
-
-    const result = await dispatchActionToCommunity(
-      'send_message',
-      { chatId: '123', text: 'Hello from community' },
-      'comm-1',
-    )
-
-    expect(result.success).toBe(true)
-
-    const [url, init] = mockFetch.mock.calls[0] as [string, RequestInit]
-    expect(url).toBe('http://tg-bot:3001/execute')
-    const body = JSON.parse(init.body as string)
-    expect(body.action).toBe('send_message')
-    expect(body.params).toMatchObject({ chatId: '123', text: 'Hello from community' })
-    expect(body.instanceId).toBe('bot-1')
-  })
-
-  it('returns error when community is not found', async () => {
-    mockPrisma.community.findUnique.mockResolvedValueOnce(null)
-
-    const result = await dispatchActionToCommunity('send_message', { chatId: '123' }, 'missing-comm')
-
-    expect(result.success).toBe(false)
-    expect(result.error).toContain('missing-comm')
-    expect(result.error).toContain('not found')
-    expect(mockFetch).not.toHaveBeenCalled()
-  })
-
-  it('returns error when community has no bot instance assigned', async () => {
-    mockPrisma.community.findUnique.mockResolvedValueOnce({
-      id: 'comm-1',
-      botInstance: null,
-    })
-
-    const result = await dispatchActionToCommunity('send_message', { chatId: '123' }, 'comm-1')
-
-    expect(result.success).toBe(false)
-    expect(result.error).toContain('no bot instance')
-    expect(mockFetch).not.toHaveBeenCalled()
-  })
-
-  it('returns error when bot instance is inactive', async () => {
-    mockPrisma.community.findUnique.mockResolvedValueOnce({
-      id: 'comm-1',
-      botInstance: { id: 'bot-off', apiUrl: 'http://tg-bot:3001', isActive: false, platform: 'telegram' },
-    })
-
-    const result = await dispatchActionToCommunity('send_message', { chatId: '123' }, 'comm-1')
-
-    expect(result.success).toBe(false)
-    expect(result.error).toContain('bot-off')
-    expect(result.error).toContain('not available')
-    expect(mockFetch).not.toHaveBeenCalled()
-  })
-
-  it('returns error when bot instance has no apiUrl', async () => {
-    mockPrisma.community.findUnique.mockResolvedValueOnce({
-      id: 'comm-1',
-      botInstance: { id: 'bot-no-url', apiUrl: null, isActive: true, platform: 'telegram' },
-    })
-
-    const result = await dispatchActionToCommunity('send_message', { chatId: '123' }, 'comm-1')
-
-    expect(result.success).toBe(false)
-    expect(result.error).toContain('not available')
-    expect(mockFetch).not.toHaveBeenCalled()
-  })
-
-  it('returns error when fetch throws a network error', async () => {
-    mockPrisma.community.findUnique.mockResolvedValueOnce({
-      id: 'comm-1',
-      botInstance: { id: 'bot-1', apiUrl: BOT_API_URL, isActive: true, platform: 'telegram' },
-    })
-    mockFetch.mockRejectedValueOnce(new Error('ETIMEDOUT'))
-
-    const result = await dispatchActionToCommunity('ban_user', { chatId: '-100123', userId: '789' }, 'comm-1')
-
-    expect(result.success).toBe(false)
-    expect(result.error).toContain('ETIMEDOUT')
-  })
-
-  it('queries the community with botInstance included', async () => {
-    mockPrisma.community.findUnique.mockResolvedValueOnce({
-      id: 'comm-1',
-      botInstance: { id: 'bot-1', apiUrl: BOT_API_URL, isActive: true, platform: 'telegram' },
-    })
-
-    await dispatchActionToCommunity('send_message', { chatId: '123' }, 'comm-1')
-
-    expect(mockPrisma.community.findUnique).toHaveBeenCalledWith({
-      where: { id: 'comm-1' },
-      include: {
-        botInstance: { select: { id: true, apiUrl: true, isActive: true, platform: true } },
-      },
-    })
-  })
-})

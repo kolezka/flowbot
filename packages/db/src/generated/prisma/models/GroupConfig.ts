@@ -888,6 +888,14 @@ export type GroupConfigNullableScalarRelationFilter = {
   isNot?: Prisma.GroupConfigWhereInput | null
 }
 
+export type StringNullableListFilter<$PrismaModel = never> = {
+  equals?: string[] | Prisma.ListStringFieldRefInput<$PrismaModel> | null
+  has?: string | Prisma.StringFieldRefInput<$PrismaModel> | null
+  hasEvery?: string[] | Prisma.ListStringFieldRefInput<$PrismaModel>
+  hasSome?: string[] | Prisma.ListStringFieldRefInput<$PrismaModel>
+  isEmpty?: boolean
+}
+
 export type GroupConfigCountOrderByAggregateInput = {
   id?: Prisma.SortOrder
   groupId?: Prisma.SortOrder
@@ -1072,6 +1080,14 @@ export type GroupConfigUpdateantiLinkWhitelistInput = {
 export type GroupConfigUpdatekeywordFiltersInput = {
   set?: string[]
   push?: string | string[]
+}
+
+export type FloatFieldUpdateOperationsInput = {
+  set?: number
+  increment?: number
+  decrement?: number
+  multiply?: number
+  divide?: number
 }
 
 export type GroupConfigUpdatenotificationEventsInput = {

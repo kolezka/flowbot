@@ -42,49 +42,6 @@ export interface StatsResponse {
   totalCommands: number;
 }
 
-// Broadcast interfaces
-export interface Broadcast {
-  id: string;
-  status: string;
-  text: string;
-  targetChatIds: string[];
-  results?: any;
-  createdAt: string;
-  updatedAt: string;
-}
-
-export interface MultiPlatformBroadcast {
-  id: string;
-  status: string;
-  content: { text: string; media?: unknown; embed?: unknown };
-  platforms: string[];
-  targetCommunities: string[];
-  results?: any;
-  createdAt: string;
-  updatedAt: string;
-}
-
-export interface MultiPlatformBroadcastsResponse {
-  data: MultiPlatformBroadcast[];
-  total: number;
-  page: number;
-  limit: number;
-  totalPages: number;
-}
-
-export interface BroadcastsResponse {
-  data: Broadcast[];
-  total: number;
-  page: number;
-  limit: number;
-  totalPages: number;
-}
-
-export interface CreateBroadcastDto {
-  text: string;
-  targetChatIds: string[];
-}
-
 // Unified profile interfaces
 export interface UnifiedProfile {
   telegramId: string;
@@ -390,102 +347,6 @@ export interface CrossPostTemplateListResponse {
   totalPages: number;
 }
 
-// Automation interfaces
-export interface AutomationJob {
-  id: string;
-  status: string;
-  text: string;
-  targetChatIds: string[];
-  results?: any;
-  createdAt: string;
-  updatedAt: string;
-}
-
-export interface AutomationJobListResponse {
-  data: AutomationJob[];
-  total: number;
-  page: number;
-  limit: number;
-  totalPages: number;
-}
-
-export interface AutomationStats {
-  total: number;
-  pending: number;
-  completed: number;
-  failed: number;
-}
-
-export interface ClientLog {
-  id: string;
-  level: string;
-  message: string;
-  details?: any;
-  createdAt: string;
-}
-
-export interface ClientLogListResponse {
-  data: ClientLog[];
-  total: number;
-  page: number;
-  limit: number;
-  totalPages: number;
-}
-
-// Reputation Leaderboard interfaces
-export interface LeaderboardEntry {
-  rank: number;
-  telegramId: string;
-  username?: string;
-  firstName?: string;
-  totalScore: number;
-  messageFactor: number;
-  tenureFactor: number;
-  warningPenalty: number;
-  moderationBonus: number;
-}
-
-export interface LeaderboardStats {
-  averageScore: number;
-  medianScore: number;
-}
-
-export interface LeaderboardResponse {
-  entries: LeaderboardEntry[];
-  total: number;
-  stats: LeaderboardStats;
-}
-
-// Health Dashboard interfaces
-export interface TgClientHealth {
-  reachable: boolean;
-  status?: string;
-  transport?: string;
-  sessionValid?: boolean;
-  uptime?: number;
-  lastAction?: string;
-  memoryUsage?: any;
-}
-
-export interface JobMetrics {
-  last1h: { completed: number; failed: number; total: number };
-  last24h: { completed: number; failed: number; total: number };
-  successRate1h: number;
-  successRate24h: number;
-}
-
-export interface HealthResponse {
-  status: 'healthy' | 'degraded' | 'unreachable';
-  tgClient: TgClientHealth;
-  jobMetrics: JobMetrics;
-  session: {
-    exists: boolean;
-    updatedAt?: string;
-    isActive?: boolean;
-    lastUsedAt?: string;
-  } | null;
-  lastChecked: string;
-}
 
 // System Status interfaces
 export interface SystemComponent {
@@ -609,7 +470,7 @@ export interface TransportHealth {
   activeSessions: number;
   errorSessions: number;
   healthySessions: number;
-  recentLogs: ClientLog[];
+  recentLogs: Array<{ id: string; level: string; message: string; details?: any; createdAt: string }>;
   lastChecked: string;
 }
 
@@ -753,83 +614,6 @@ export interface ConnectionLogsResponse {
   totalPages: number;
 }
 
-// Community types
-export interface Community {
-  id: string;
-  platform: string;
-  platformCommunityId: string;
-  name?: string;
-  type?: string;
-  memberCount: number;
-  isActive: boolean;
-  metadata?: Record<string, unknown>;
-  botInstanceId?: string;
-  joinedAt: string;
-  leftAt?: string;
-  createdAt: string;
-  updatedAt: string;
-}
-
-export interface CommunityConfig {
-  id: string;
-  communityId: string;
-  welcomeEnabled: boolean;
-  welcomeMessage?: string;
-  rulesText?: string;
-  antiSpamEnabled: boolean;
-  antiSpamAction: string;
-  antiSpamMaxMessages: number;
-  antiSpamWindowSeconds: number;
-  antiLinkEnabled: boolean;
-  antiLinkAction: string;
-  antiLinkWhitelist: string[];
-  warnThresholdMute: number;
-  warnThresholdBan: number;
-  warnDecayDays: number;
-  defaultMuteDurationS: number;
-  logChannelId?: string;
-  autoDeleteCommandsS: number;
-  silentMode: boolean;
-  keywordFiltersEnabled: boolean;
-  keywordFilters: string[];
-  aiModerationEnabled: boolean;
-  aiModerationAction: string;
-  aiModThreshold: number;
-  notificationEvents: string[];
-  pipelineEnabled: boolean;
-  pipelineDmTemplate?: string;
-  pipelineDeeplink?: string;
-}
-
-export interface CommunityTelegramConfig {
-  id: string;
-  communityId: string;
-  captchaEnabled: boolean;
-  captchaMode: string;
-  captchaTimeoutS: number;
-  quarantineEnabled: boolean;
-  quarantineDurationS: number;
-  slowModeDelay: number;
-}
-
-export interface CommunityMember {
-  id: string;
-  communityId: string;
-  platformAccountId: string;
-  platform: string;
-  username?: string;
-  role: string;
-  messageCount: number;
-  joinedAt: string;
-  warningCount: number;
-  isMuted: boolean;
-  muteExpiresAt?: string;
-  isQuarantined: boolean;
-  quarantineExpiresAt?: string;
-  lastSeenAt: string;
-  createdAt: string;
-}
-
 // Platform Account types
 export interface PlatformAccount {
   id: string;
@@ -965,71 +749,6 @@ class ApiClient {
       method: 'PUT',
       body: JSON.stringify({ isBanned, banReason }),
     });
-  }
-
-  // Broadcasts
-  async getBroadcasts(page?: number, limit?: number): Promise<BroadcastsResponse> {
-    const params = new URLSearchParams();
-    if (page !== undefined) params.append('page', page.toString());
-    if (limit !== undefined) params.append('limit', limit.toString());
-
-    const queryString = params.toString();
-    return this.request<BroadcastsResponse>(`/api/broadcast${queryString ? `?${queryString}` : ''}`);
-  }
-
-  async getBroadcast(id: string): Promise<Broadcast> {
-    return this.request<Broadcast>(`/api/broadcast/${id}`);
-  }
-
-  async createBroadcast(data: CreateBroadcastDto): Promise<Broadcast> {
-    return this.request<Broadcast>('/api/broadcast', {
-      method: 'POST',
-      body: JSON.stringify(data),
-    });
-  }
-
-  async updateBroadcast(id: string, data: { text?: string; targetChatIds?: string[] }): Promise<Broadcast> {
-    return this.request<Broadcast>(`/api/broadcast/${id}`, {
-      method: 'PATCH',
-      body: JSON.stringify(data),
-    });
-  }
-
-  async deleteBroadcast(id: string): Promise<void> {
-    await this.request<void>(`/api/broadcast/${id}`, {
-      method: 'DELETE',
-    });
-  }
-
-  async retryBroadcast(id: string): Promise<Broadcast> {
-    return this.request<Broadcast>(`/api/broadcast/${id}/retry`, {
-      method: 'POST',
-    });
-  }
-
-  async createMultiPlatformBroadcast(data: {
-    content: { text: string };
-    platforms: string[];
-    targetCommunities: string[];
-  }): Promise<MultiPlatformBroadcast> {
-    return this.request<MultiPlatformBroadcast>('/api/broadcast/multi-platform', {
-      method: 'POST',
-      body: JSON.stringify(data),
-    });
-  }
-
-  async getMultiPlatformBroadcasts(params?: {
-    page?: number;
-    limit?: number;
-    platform?: string;
-  }): Promise<MultiPlatformBroadcastsResponse> {
-    const searchParams = new URLSearchParams();
-    if (params?.page) searchParams.set('page', String(params.page));
-    if (params?.limit) searchParams.set('limit', String(params.limit));
-    if (params?.platform) searchParams.set('platform', params.platform);
-    return this.request<MultiPlatformBroadcastsResponse>(
-      `/api/broadcast/multi-platform?${searchParams}`,
-    );
   }
 
   // Moderation - Groups
@@ -1252,56 +971,9 @@ class ApiClient {
     });
   }
 
-  // Automation
-  async getAutomationJobs(params?: {
-    page?: number; limit?: number; status?: string;
-  }): Promise<AutomationJobListResponse> {
-    const searchParams = new URLSearchParams();
-    if (params?.page !== undefined) searchParams.append('page', params.page.toString());
-    if (params?.limit !== undefined) searchParams.append('limit', params.limit.toString());
-    if (params?.status) searchParams.append('status', params.status);
-    const qs = searchParams.toString();
-    return this.request<AutomationJobListResponse>(`/api/automation/jobs${qs ? `?${qs}` : ''}`);
-  }
-
-  async getAutomationJob(id: string): Promise<AutomationJob> {
-    return this.request<AutomationJob>(`/api/automation/jobs/${id}`);
-  }
-
-  async getAutomationStats(): Promise<AutomationStats> {
-    return this.request<AutomationStats>('/api/automation/jobs/stats');
-  }
-
-  async getAutomationLogs(params?: {
-    page?: number; limit?: number; level?: string;
-  }): Promise<ClientLogListResponse> {
-    const searchParams = new URLSearchParams();
-    if (params?.page !== undefined) searchParams.append('page', params.page.toString());
-    if (params?.limit !== undefined) searchParams.append('limit', params.limit.toString());
-    if (params?.level) searchParams.append('level', params.level);
-    const qs = searchParams.toString();
-    return this.request<ClientLogListResponse>(`/api/automation/logs${qs ? `?${qs}` : ''}`);
-  }
-
-  // Automation Health
-  async getAutomationHealth(): Promise<HealthResponse> {
-    return this.request<HealthResponse>('/api/automation/health');
-  }
-
   // System Status
   async getSystemStatus(): Promise<SystemStatus> {
     return this.request<SystemStatus>('/api/system/status');
-  }
-
-  // Reputation Leaderboard
-  async getReputationLeaderboard(params?: {
-    limit?: number; groupId?: string;
-  }): Promise<LeaderboardResponse> {
-    const searchParams = new URLSearchParams();
-    if (params?.limit !== undefined) searchParams.append('limit', params.limit.toString());
-    if (params?.groupId) searchParams.append('groupId', params.groupId);
-    const qs = searchParams.toString();
-    return this.request<LeaderboardResponse>(`/api/reputation/leaderboard${qs ? `?${qs}` : ''}`);
   }
 
   // Bot Config
@@ -1655,108 +1327,6 @@ class ApiClient {
     });
   }
 
-  // Communities
-  async getCommunities(params?: {
-    page?: number;
-    limit?: number;
-    platform?: string;
-    search?: string;
-    isActive?: boolean;
-  }): Promise<{ data: Community[]; total: number; page: number; limit: number; totalPages: number }> {
-    const searchParams = new URLSearchParams();
-    if (params?.page) searchParams.set("page", String(params.page));
-    if (params?.limit) searchParams.set("limit", String(params.limit));
-    if (params?.platform) searchParams.set("platform", params.platform);
-    if (params?.search) searchParams.set("search", params.search);
-    if (params?.isActive !== undefined) searchParams.set("isActive", String(params.isActive));
-    return this.request<{ data: Community[]; total: number; page: number; limit: number; totalPages: number }>(`/api/communities?${searchParams}`);
-  }
-
-  async getCommunity(id: string): Promise<Community> {
-    return this.request<Community>(`/api/communities/${id}`);
-  }
-
-  async getCommunityConfig(id: string): Promise<CommunityConfig> {
-    return this.request<CommunityConfig>(`/api/communities/${id}/config`);
-  }
-
-  async updateCommunityConfig(id: string, config: Partial<CommunityConfig>): Promise<CommunityConfig> {
-    return this.request<CommunityConfig>(`/api/communities/${id}/config`, {
-      method: "PATCH",
-      body: JSON.stringify(config),
-    });
-  }
-
-  async getCommunityTelegramConfig(id: string): Promise<CommunityTelegramConfig> {
-    return this.request<CommunityTelegramConfig>(`/api/communities/${id}/telegram-config`);
-  }
-
-  async updateCommunityTelegramConfig(id: string, config: Partial<CommunityTelegramConfig>): Promise<CommunityTelegramConfig> {
-    return this.request<CommunityTelegramConfig>(`/api/communities/${id}/telegram-config`, {
-      method: "PATCH",
-      body: JSON.stringify(config),
-    });
-  }
-
-  async getCommunityMembers(communityId: string, params?: {
-    page?: number;
-    limit?: number;
-    search?: string;
-    role?: string;
-  }): Promise<{ data: CommunityMember[]; total: number; page: number; limit: number; totalPages: number }> {
-    const searchParams = new URLSearchParams();
-    if (params?.page) searchParams.set("page", String(params.page));
-    if (params?.limit) searchParams.set("limit", String(params.limit));
-    if (params?.search) searchParams.set("search", params.search);
-    if (params?.role) searchParams.set("role", params.role);
-    return this.request<{ data: CommunityMember[]; total: number; page: number; limit: number; totalPages: number }>(`/api/communities/${communityId}/members?${searchParams}`);
-  }
-
-  async getCommunityWarnings(communityId: string, params?: {
-    page?: number;
-    limit?: number;
-    isActive?: boolean;
-  }): Promise<{ data: any[]; total: number; page: number; limit: number; totalPages: number }> {
-    const searchParams = new URLSearchParams();
-    if (params?.page) searchParams.set("page", String(params.page));
-    if (params?.limit) searchParams.set("limit", String(params.limit));
-    if (params?.isActive !== undefined) searchParams.set("isActive", String(params.isActive));
-    return this.request<{ data: any[]; total: number; page: number; limit: number; totalPages: number }>(`/api/communities/${communityId}/warnings?${searchParams}`);
-  }
-
-  async getCommunityLogs(communityId: string, params?: {
-    page?: number;
-    limit?: number;
-  }): Promise<{ data: any[]; total: number; page: number; limit: number; totalPages: number }> {
-    const searchParams = new URLSearchParams();
-    if (params?.page) searchParams.set("page", String(params.page));
-    if (params?.limit) searchParams.set("limit", String(params.limit));
-    return this.request<{ data: any[]; total: number; page: number; limit: number; totalPages: number }>(`/api/communities/${communityId}/logs?${searchParams}`);
-  }
-
-  async createCommunity(data: {
-    platform: string;
-    platformCommunityId: string;
-    name: string;
-    type?: string;
-    botInstanceId?: string;
-  }): Promise<Community> {
-    return this.request<Community>('/api/communities', {
-      method: 'POST',
-      body: JSON.stringify(data),
-    });
-  }
-
-  async deleteCommunity(id: string): Promise<void> {
-    return this.request<void>(`/api/communities/${id}`, { method: 'DELETE' });
-  }
-
-  async updateCommunity(id: string, data: { name?: string; isActive?: boolean; botInstanceId?: string }): Promise<Community> {
-    return this.request<Community>(`/api/communities/${id}`, {
-      method: 'PATCH',
-      body: JSON.stringify(data),
-    });
-  }
 
   async updateBotScope(botInstanceId: string, scope: { groupIds?: string[]; userIds?: string[] }): Promise<unknown> {
     return this.request<unknown>(`/api/bot-config/${botInstanceId}/scope`, {
@@ -1879,51 +1449,6 @@ export async function unlinkAccount(identityId: string, accountId: string): Prom
   return api.unlinkAccount(identityId, accountId);
 }
 
-export async function getCommunities(params?: {
-  page?: number;
-  limit?: number;
-  platform?: string;
-  search?: string;
-  isActive?: boolean;
-}): Promise<{ data: Community[]; total: number; page: number; limit: number; totalPages: number }> {
-  return api.getCommunities(params);
-}
-
-export async function getCommunity(id: string): Promise<Community> {
-  return api.getCommunity(id);
-}
-
-export async function getCommunityConfig(id: string): Promise<CommunityConfig> {
-  return api.getCommunityConfig(id);
-}
-
-export async function updateCommunityConfig(id: string, config: Partial<CommunityConfig>): Promise<CommunityConfig> {
-  return api.updateCommunityConfig(id, config);
-}
-
-export async function getCommunityMembers(communityId: string, params?: {
-  page?: number;
-  limit?: number;
-  search?: string;
-  role?: string;
-}): Promise<{ data: CommunityMember[]; total: number; page: number; limit: number; totalPages: number }> {
-  return api.getCommunityMembers(communityId, params);
-}
-
-export async function getCommunityWarnings(communityId: string, params?: {
-  page?: number;
-  limit?: number;
-  isActive?: boolean;
-}): Promise<{ data: any[]; total: number; page: number; limit: number; totalPages: number }> {
-  return api.getCommunityWarnings(communityId, params);
-}
-
-export async function getCommunityLogs(communityId: string, params?: {
-  page?: number;
-  limit?: number;
-}): Promise<{ data: any[]; total: number; page: number; limit: number; totalPages: number }> {
-  return api.getCommunityLogs(communityId, params);
-}
 
 export async function getConnections(params?: {
   page?: number;
@@ -1967,18 +1492,3 @@ export async function getAvailableGroups(connectionId: string): Promise<{ groups
   return api.getAvailableGroups(connectionId);
 }
 
-export async function createMultiPlatformBroadcast(data: {
-  content: { text: string };
-  platforms: string[];
-  targetCommunities: string[];
-}): Promise<MultiPlatformBroadcast> {
-  return api.createMultiPlatformBroadcast(data);
-}
-
-export async function getMultiPlatformBroadcasts(params?: {
-  page?: number;
-  limit?: number;
-  platform?: string;
-}): Promise<MultiPlatformBroadcastsResponse> {
-  return api.getMultiPlatformBroadcasts(params);
-}

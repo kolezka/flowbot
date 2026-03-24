@@ -7,7 +7,6 @@ import {
   api,
   StatsResponse,
   AnalyticsOverview,
-  AutomationStats,
   WarningStats,
   ModerationLog,
   SystemStatus,
@@ -18,7 +17,6 @@ import { Button } from "@/components/ui/button";
 import {
   Users,
   Shield,
-  Zap,
   AlertTriangle,
   Activity,
   ArrowRight,
@@ -417,13 +415,6 @@ const quickActions = [
     href: "/dashboard/flows",
     color: "text-purple-500",
   },
-  {
-    title: "Communities",
-    description: "Manage communities",
-    icon: <Users className="h-5 w-5" />,
-    href: "/dashboard/communities",
-    color: "text-orange-500",
-  },
 ];
 
 function QuickActions() {
@@ -527,8 +518,8 @@ function SystemHealthWidget({ status }: { status: SystemStatus | null }) {
 function DashboardSkeleton() {
   return (
     <div className="space-y-6">
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
-        {Array.from({ length: 5 }).map((_, i) => (
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        {Array.from({ length: 4 }).map((_, i) => (
           <SkeletonCard key={i} className="border-l-4" />
         ))}
       </div>
@@ -568,7 +559,6 @@ function DashboardSkeleton() {
 export default function DashboardPage() {
   const [stats, setStats] = useState<StatsResponse | null>(null);
   const [overview, setOverview] = useState<AnalyticsOverview | null>(null);
-  const [automationStats, setAutomationStats] = useState<AutomationStats | null>(null);
   const [warningStats, setWarningStats] = useState<WarningStats | null>(null);
   const [recentLogs, setRecentLogs] = useState<ModerationLog[]>([]);
   const [systemStatus, setSystemStatus] = useState<SystemStatus | null>(null);
@@ -591,7 +581,6 @@ export default function DashboardPage() {
       const results = await Promise.allSettled([
         api.getStats(),
         api.getAnalyticsOverview(),
-        api.getAutomationStats(),
         api.getWarningStats(),
         api.getModerationLogs({ limit: 20 }),
         api.getSystemStatus(),
@@ -599,10 +588,9 @@ export default function DashboardPage() {
 
       if (results[0]?.status === "fulfilled") setStats(results[0].value);
       if (results[1]?.status === "fulfilled") setOverview(results[1].value);
-      if (results[2]?.status === "fulfilled") setAutomationStats(results[2].value);
-      if (results[3]?.status === "fulfilled") setWarningStats(results[3].value);
-      if (results[4]?.status === "fulfilled") setRecentLogs(results[4].value.data);
-      if (results[5]?.status === "fulfilled") setSystemStatus(results[5].value);
+      if (results[2]?.status === "fulfilled") setWarningStats(results[2].value);
+      if (results[3]?.status === "fulfilled") setRecentLogs(results[3].value.data);
+      if (results[4]?.status === "fulfilled") setSystemStatus(results[4].value);
 
       const failedCount = results.filter((r) => r.status === "rejected").length;
       if (failedCount > 0) {
@@ -631,14 +619,12 @@ export default function DashboardPage() {
 
   const activeGroups = overview?.totalGroups ?? 0;
   const activeWarnings = warningStats?.activeWarnings ?? 0;
-  const pendingJobs = automationStats?.pending ?? 0;
 
   // Sparkline data for each stat card
   const userSparkline = generateSparkline(totalUsers, userTrend);
   const msgSparkline = generateSparkline(messagesToday, msgTrend);
   const groupSparkline = generateSparkline(activeGroups, 0);
   const warningSparkline = generateSparkline(activeWarnings, -2);
-  const jobSparkline = generateSparkline(pendingJobs, 0);
 
   // Mini chart data — seeded random so charts are deterministic across re-renders
   const { messagesPerDay, moderationPerDay, activeUsersPerDay } = useMemo(() => {
@@ -675,7 +661,7 @@ export default function DashboardPage() {
       <h1 className="text-2xl font-bold">Dashboard</h1>
 
       {/* Section 1: Enhanced Stat Cards */}
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <EnhancedStatCard
           title="Total Users"
           value={totalUsers}
@@ -703,13 +689,6 @@ export default function DashboardPage() {
           icon={<AlertTriangle className="h-4 w-4" />}
           trend={activeWarnings > 0 ? -5.2 : 0}
           sparklineData={warningSparkline}
-        />
-        <EnhancedStatCard
-          title="Pending Jobs"
-          value={pendingJobs}
-          icon={<Zap className="h-4 w-4" />}
-          trend={0}
-          sparklineData={jobSparkline}
         />
       </div>
 

@@ -275,7 +275,6 @@ export type BotInstanceWhereInput = {
   commands?: Prisma.BotCommandListRelationFilter
   responses?: Prisma.BotResponseListRelationFilter
   menus?: Prisma.BotMenuListRelationFilter
-  communities?: Prisma.CommunityListRelationFilter
   connections?: Prisma.PlatformConnectionListRelationFilter
 }
 
@@ -296,7 +295,6 @@ export type BotInstanceOrderByWithRelationInput = {
   commands?: Prisma.BotCommandOrderByRelationAggregateInput
   responses?: Prisma.BotResponseOrderByRelationAggregateInput
   menus?: Prisma.BotMenuOrderByRelationAggregateInput
-  communities?: Prisma.CommunityOrderByRelationAggregateInput
   connections?: Prisma.PlatformConnectionOrderByRelationAggregateInput
 }
 
@@ -320,7 +318,6 @@ export type BotInstanceWhereUniqueInput = Prisma.AtLeast<{
   commands?: Prisma.BotCommandListRelationFilter
   responses?: Prisma.BotResponseListRelationFilter
   menus?: Prisma.BotMenuListRelationFilter
-  communities?: Prisma.CommunityListRelationFilter
   connections?: Prisma.PlatformConnectionListRelationFilter
 }, "id" | "botUsername">
 
@@ -381,7 +378,6 @@ export type BotInstanceCreateInput = {
   commands?: Prisma.BotCommandCreateNestedManyWithoutBotInput
   responses?: Prisma.BotResponseCreateNestedManyWithoutBotInput
   menus?: Prisma.BotMenuCreateNestedManyWithoutBotInput
-  communities?: Prisma.CommunityCreateNestedManyWithoutBotInstanceInput
   connections?: Prisma.PlatformConnectionCreateNestedManyWithoutBotInstanceInput
 }
 
@@ -402,7 +398,6 @@ export type BotInstanceUncheckedCreateInput = {
   commands?: Prisma.BotCommandUncheckedCreateNestedManyWithoutBotInput
   responses?: Prisma.BotResponseUncheckedCreateNestedManyWithoutBotInput
   menus?: Prisma.BotMenuUncheckedCreateNestedManyWithoutBotInput
-  communities?: Prisma.CommunityUncheckedCreateNestedManyWithoutBotInstanceInput
   connections?: Prisma.PlatformConnectionUncheckedCreateNestedManyWithoutBotInstanceInput
 }
 
@@ -423,7 +418,6 @@ export type BotInstanceUpdateInput = {
   commands?: Prisma.BotCommandUpdateManyWithoutBotNestedInput
   responses?: Prisma.BotResponseUpdateManyWithoutBotNestedInput
   menus?: Prisma.BotMenuUpdateManyWithoutBotNestedInput
-  communities?: Prisma.CommunityUpdateManyWithoutBotInstanceNestedInput
   connections?: Prisma.PlatformConnectionUpdateManyWithoutBotInstanceNestedInput
 }
 
@@ -444,7 +438,6 @@ export type BotInstanceUncheckedUpdateInput = {
   commands?: Prisma.BotCommandUncheckedUpdateManyWithoutBotNestedInput
   responses?: Prisma.BotResponseUncheckedUpdateManyWithoutBotNestedInput
   menus?: Prisma.BotMenuUncheckedUpdateManyWithoutBotNestedInput
-  communities?: Prisma.CommunityUncheckedUpdateManyWithoutBotInstanceNestedInput
   connections?: Prisma.PlatformConnectionUncheckedUpdateManyWithoutBotInstanceNestedInput
 }
 
@@ -558,22 +551,6 @@ export type BotInstanceScalarRelationFilter = {
   isNot?: Prisma.BotInstanceWhereInput
 }
 
-export type BotInstanceCreateNestedOneWithoutCommunitiesInput = {
-  create?: Prisma.XOR<Prisma.BotInstanceCreateWithoutCommunitiesInput, Prisma.BotInstanceUncheckedCreateWithoutCommunitiesInput>
-  connectOrCreate?: Prisma.BotInstanceCreateOrConnectWithoutCommunitiesInput
-  connect?: Prisma.BotInstanceWhereUniqueInput
-}
-
-export type BotInstanceUpdateOneWithoutCommunitiesNestedInput = {
-  create?: Prisma.XOR<Prisma.BotInstanceCreateWithoutCommunitiesInput, Prisma.BotInstanceUncheckedCreateWithoutCommunitiesInput>
-  connectOrCreate?: Prisma.BotInstanceCreateOrConnectWithoutCommunitiesInput
-  upsert?: Prisma.BotInstanceUpsertWithoutCommunitiesInput
-  disconnect?: Prisma.BotInstanceWhereInput | boolean
-  delete?: Prisma.BotInstanceWhereInput | boolean
-  connect?: Prisma.BotInstanceWhereUniqueInput
-  update?: Prisma.XOR<Prisma.XOR<Prisma.BotInstanceUpdateToOneWithWhereWithoutCommunitiesInput, Prisma.BotInstanceUpdateWithoutCommunitiesInput>, Prisma.BotInstanceUncheckedUpdateWithoutCommunitiesInput>
-}
-
 export type BotInstanceCreateNestedOneWithoutConnectionsInput = {
   create?: Prisma.XOR<Prisma.BotInstanceCreateWithoutConnectionsInput, Prisma.BotInstanceUncheckedCreateWithoutConnectionsInput>
   connectOrCreate?: Prisma.BotInstanceCreateOrConnectWithoutConnectionsInput
@@ -632,102 +609,6 @@ export type BotInstanceUpdateOneRequiredWithoutMenusNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.BotInstanceUpdateToOneWithWhereWithoutMenusInput, Prisma.BotInstanceUpdateWithoutMenusInput>, Prisma.BotInstanceUncheckedUpdateWithoutMenusInput>
 }
 
-export type BotInstanceCreateWithoutCommunitiesInput = {
-  id?: string
-  name: string
-  botToken?: string | null
-  botUsername?: string | null
-  platform?: string
-  type?: string
-  apiUrl?: string | null
-  metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
-  isActive?: boolean
-  configVersion?: number
-  configHistory?: Prisma.JsonNullValueInput | runtime.InputJsonValue
-  createdAt?: Date | string
-  updatedAt?: Date | string
-  commands?: Prisma.BotCommandCreateNestedManyWithoutBotInput
-  responses?: Prisma.BotResponseCreateNestedManyWithoutBotInput
-  menus?: Prisma.BotMenuCreateNestedManyWithoutBotInput
-  connections?: Prisma.PlatformConnectionCreateNestedManyWithoutBotInstanceInput
-}
-
-export type BotInstanceUncheckedCreateWithoutCommunitiesInput = {
-  id?: string
-  name: string
-  botToken?: string | null
-  botUsername?: string | null
-  platform?: string
-  type?: string
-  apiUrl?: string | null
-  metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
-  isActive?: boolean
-  configVersion?: number
-  configHistory?: Prisma.JsonNullValueInput | runtime.InputJsonValue
-  createdAt?: Date | string
-  updatedAt?: Date | string
-  commands?: Prisma.BotCommandUncheckedCreateNestedManyWithoutBotInput
-  responses?: Prisma.BotResponseUncheckedCreateNestedManyWithoutBotInput
-  menus?: Prisma.BotMenuUncheckedCreateNestedManyWithoutBotInput
-  connections?: Prisma.PlatformConnectionUncheckedCreateNestedManyWithoutBotInstanceInput
-}
-
-export type BotInstanceCreateOrConnectWithoutCommunitiesInput = {
-  where: Prisma.BotInstanceWhereUniqueInput
-  create: Prisma.XOR<Prisma.BotInstanceCreateWithoutCommunitiesInput, Prisma.BotInstanceUncheckedCreateWithoutCommunitiesInput>
-}
-
-export type BotInstanceUpsertWithoutCommunitiesInput = {
-  update: Prisma.XOR<Prisma.BotInstanceUpdateWithoutCommunitiesInput, Prisma.BotInstanceUncheckedUpdateWithoutCommunitiesInput>
-  create: Prisma.XOR<Prisma.BotInstanceCreateWithoutCommunitiesInput, Prisma.BotInstanceUncheckedCreateWithoutCommunitiesInput>
-  where?: Prisma.BotInstanceWhereInput
-}
-
-export type BotInstanceUpdateToOneWithWhereWithoutCommunitiesInput = {
-  where?: Prisma.BotInstanceWhereInput
-  data: Prisma.XOR<Prisma.BotInstanceUpdateWithoutCommunitiesInput, Prisma.BotInstanceUncheckedUpdateWithoutCommunitiesInput>
-}
-
-export type BotInstanceUpdateWithoutCommunitiesInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
-  name?: Prisma.StringFieldUpdateOperationsInput | string
-  botToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  botUsername?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  platform?: Prisma.StringFieldUpdateOperationsInput | string
-  type?: Prisma.StringFieldUpdateOperationsInput | string
-  apiUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
-  isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  configVersion?: Prisma.IntFieldUpdateOperationsInput | number
-  configHistory?: Prisma.JsonNullValueInput | runtime.InputJsonValue
-  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  commands?: Prisma.BotCommandUpdateManyWithoutBotNestedInput
-  responses?: Prisma.BotResponseUpdateManyWithoutBotNestedInput
-  menus?: Prisma.BotMenuUpdateManyWithoutBotNestedInput
-  connections?: Prisma.PlatformConnectionUpdateManyWithoutBotInstanceNestedInput
-}
-
-export type BotInstanceUncheckedUpdateWithoutCommunitiesInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
-  name?: Prisma.StringFieldUpdateOperationsInput | string
-  botToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  botUsername?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  platform?: Prisma.StringFieldUpdateOperationsInput | string
-  type?: Prisma.StringFieldUpdateOperationsInput | string
-  apiUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
-  isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  configVersion?: Prisma.IntFieldUpdateOperationsInput | number
-  configHistory?: Prisma.JsonNullValueInput | runtime.InputJsonValue
-  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  commands?: Prisma.BotCommandUncheckedUpdateManyWithoutBotNestedInput
-  responses?: Prisma.BotResponseUncheckedUpdateManyWithoutBotNestedInput
-  menus?: Prisma.BotMenuUncheckedUpdateManyWithoutBotNestedInput
-  connections?: Prisma.PlatformConnectionUncheckedUpdateManyWithoutBotInstanceNestedInput
-}
-
 export type BotInstanceCreateWithoutConnectionsInput = {
   id?: string
   name: string
@@ -745,7 +626,6 @@ export type BotInstanceCreateWithoutConnectionsInput = {
   commands?: Prisma.BotCommandCreateNestedManyWithoutBotInput
   responses?: Prisma.BotResponseCreateNestedManyWithoutBotInput
   menus?: Prisma.BotMenuCreateNestedManyWithoutBotInput
-  communities?: Prisma.CommunityCreateNestedManyWithoutBotInstanceInput
 }
 
 export type BotInstanceUncheckedCreateWithoutConnectionsInput = {
@@ -765,7 +645,6 @@ export type BotInstanceUncheckedCreateWithoutConnectionsInput = {
   commands?: Prisma.BotCommandUncheckedCreateNestedManyWithoutBotInput
   responses?: Prisma.BotResponseUncheckedCreateNestedManyWithoutBotInput
   menus?: Prisma.BotMenuUncheckedCreateNestedManyWithoutBotInput
-  communities?: Prisma.CommunityUncheckedCreateNestedManyWithoutBotInstanceInput
 }
 
 export type BotInstanceCreateOrConnectWithoutConnectionsInput = {
@@ -801,7 +680,6 @@ export type BotInstanceUpdateWithoutConnectionsInput = {
   commands?: Prisma.BotCommandUpdateManyWithoutBotNestedInput
   responses?: Prisma.BotResponseUpdateManyWithoutBotNestedInput
   menus?: Prisma.BotMenuUpdateManyWithoutBotNestedInput
-  communities?: Prisma.CommunityUpdateManyWithoutBotInstanceNestedInput
 }
 
 export type BotInstanceUncheckedUpdateWithoutConnectionsInput = {
@@ -821,7 +699,6 @@ export type BotInstanceUncheckedUpdateWithoutConnectionsInput = {
   commands?: Prisma.BotCommandUncheckedUpdateManyWithoutBotNestedInput
   responses?: Prisma.BotResponseUncheckedUpdateManyWithoutBotNestedInput
   menus?: Prisma.BotMenuUncheckedUpdateManyWithoutBotNestedInput
-  communities?: Prisma.CommunityUncheckedUpdateManyWithoutBotInstanceNestedInput
 }
 
 export type BotInstanceCreateWithoutCommandsInput = {
@@ -840,7 +717,6 @@ export type BotInstanceCreateWithoutCommandsInput = {
   updatedAt?: Date | string
   responses?: Prisma.BotResponseCreateNestedManyWithoutBotInput
   menus?: Prisma.BotMenuCreateNestedManyWithoutBotInput
-  communities?: Prisma.CommunityCreateNestedManyWithoutBotInstanceInput
   connections?: Prisma.PlatformConnectionCreateNestedManyWithoutBotInstanceInput
 }
 
@@ -860,7 +736,6 @@ export type BotInstanceUncheckedCreateWithoutCommandsInput = {
   updatedAt?: Date | string
   responses?: Prisma.BotResponseUncheckedCreateNestedManyWithoutBotInput
   menus?: Prisma.BotMenuUncheckedCreateNestedManyWithoutBotInput
-  communities?: Prisma.CommunityUncheckedCreateNestedManyWithoutBotInstanceInput
   connections?: Prisma.PlatformConnectionUncheckedCreateNestedManyWithoutBotInstanceInput
 }
 
@@ -896,7 +771,6 @@ export type BotInstanceUpdateWithoutCommandsInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   responses?: Prisma.BotResponseUpdateManyWithoutBotNestedInput
   menus?: Prisma.BotMenuUpdateManyWithoutBotNestedInput
-  communities?: Prisma.CommunityUpdateManyWithoutBotInstanceNestedInput
   connections?: Prisma.PlatformConnectionUpdateManyWithoutBotInstanceNestedInput
 }
 
@@ -916,7 +790,6 @@ export type BotInstanceUncheckedUpdateWithoutCommandsInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   responses?: Prisma.BotResponseUncheckedUpdateManyWithoutBotNestedInput
   menus?: Prisma.BotMenuUncheckedUpdateManyWithoutBotNestedInput
-  communities?: Prisma.CommunityUncheckedUpdateManyWithoutBotInstanceNestedInput
   connections?: Prisma.PlatformConnectionUncheckedUpdateManyWithoutBotInstanceNestedInput
 }
 
@@ -936,7 +809,6 @@ export type BotInstanceCreateWithoutResponsesInput = {
   updatedAt?: Date | string
   commands?: Prisma.BotCommandCreateNestedManyWithoutBotInput
   menus?: Prisma.BotMenuCreateNestedManyWithoutBotInput
-  communities?: Prisma.CommunityCreateNestedManyWithoutBotInstanceInput
   connections?: Prisma.PlatformConnectionCreateNestedManyWithoutBotInstanceInput
 }
 
@@ -956,7 +828,6 @@ export type BotInstanceUncheckedCreateWithoutResponsesInput = {
   updatedAt?: Date | string
   commands?: Prisma.BotCommandUncheckedCreateNestedManyWithoutBotInput
   menus?: Prisma.BotMenuUncheckedCreateNestedManyWithoutBotInput
-  communities?: Prisma.CommunityUncheckedCreateNestedManyWithoutBotInstanceInput
   connections?: Prisma.PlatformConnectionUncheckedCreateNestedManyWithoutBotInstanceInput
 }
 
@@ -992,7 +863,6 @@ export type BotInstanceUpdateWithoutResponsesInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   commands?: Prisma.BotCommandUpdateManyWithoutBotNestedInput
   menus?: Prisma.BotMenuUpdateManyWithoutBotNestedInput
-  communities?: Prisma.CommunityUpdateManyWithoutBotInstanceNestedInput
   connections?: Prisma.PlatformConnectionUpdateManyWithoutBotInstanceNestedInput
 }
 
@@ -1012,7 +882,6 @@ export type BotInstanceUncheckedUpdateWithoutResponsesInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   commands?: Prisma.BotCommandUncheckedUpdateManyWithoutBotNestedInput
   menus?: Prisma.BotMenuUncheckedUpdateManyWithoutBotNestedInput
-  communities?: Prisma.CommunityUncheckedUpdateManyWithoutBotInstanceNestedInput
   connections?: Prisma.PlatformConnectionUncheckedUpdateManyWithoutBotInstanceNestedInput
 }
 
@@ -1032,7 +901,6 @@ export type BotInstanceCreateWithoutMenusInput = {
   updatedAt?: Date | string
   commands?: Prisma.BotCommandCreateNestedManyWithoutBotInput
   responses?: Prisma.BotResponseCreateNestedManyWithoutBotInput
-  communities?: Prisma.CommunityCreateNestedManyWithoutBotInstanceInput
   connections?: Prisma.PlatformConnectionCreateNestedManyWithoutBotInstanceInput
 }
 
@@ -1052,7 +920,6 @@ export type BotInstanceUncheckedCreateWithoutMenusInput = {
   updatedAt?: Date | string
   commands?: Prisma.BotCommandUncheckedCreateNestedManyWithoutBotInput
   responses?: Prisma.BotResponseUncheckedCreateNestedManyWithoutBotInput
-  communities?: Prisma.CommunityUncheckedCreateNestedManyWithoutBotInstanceInput
   connections?: Prisma.PlatformConnectionUncheckedCreateNestedManyWithoutBotInstanceInput
 }
 
@@ -1088,7 +955,6 @@ export type BotInstanceUpdateWithoutMenusInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   commands?: Prisma.BotCommandUpdateManyWithoutBotNestedInput
   responses?: Prisma.BotResponseUpdateManyWithoutBotNestedInput
-  communities?: Prisma.CommunityUpdateManyWithoutBotInstanceNestedInput
   connections?: Prisma.PlatformConnectionUpdateManyWithoutBotInstanceNestedInput
 }
 
@@ -1108,7 +974,6 @@ export type BotInstanceUncheckedUpdateWithoutMenusInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   commands?: Prisma.BotCommandUncheckedUpdateManyWithoutBotNestedInput
   responses?: Prisma.BotResponseUncheckedUpdateManyWithoutBotNestedInput
-  communities?: Prisma.CommunityUncheckedUpdateManyWithoutBotInstanceNestedInput
   connections?: Prisma.PlatformConnectionUncheckedUpdateManyWithoutBotInstanceNestedInput
 }
 
@@ -1121,7 +986,6 @@ export type BotInstanceCountOutputType = {
   commands: number
   responses: number
   menus: number
-  communities: number
   connections: number
 }
 
@@ -1129,7 +993,6 @@ export type BotInstanceCountOutputTypeSelect<ExtArgs extends runtime.Types.Exten
   commands?: boolean | BotInstanceCountOutputTypeCountCommandsArgs
   responses?: boolean | BotInstanceCountOutputTypeCountResponsesArgs
   menus?: boolean | BotInstanceCountOutputTypeCountMenusArgs
-  communities?: boolean | BotInstanceCountOutputTypeCountCommunitiesArgs
   connections?: boolean | BotInstanceCountOutputTypeCountConnectionsArgs
 }
 
@@ -1167,13 +1030,6 @@ export type BotInstanceCountOutputTypeCountMenusArgs<ExtArgs extends runtime.Typ
 /**
  * BotInstanceCountOutputType without action
  */
-export type BotInstanceCountOutputTypeCountCommunitiesArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  where?: Prisma.CommunityWhereInput
-}
-
-/**
- * BotInstanceCountOutputType without action
- */
 export type BotInstanceCountOutputTypeCountConnectionsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   where?: Prisma.PlatformConnectionWhereInput
 }
@@ -1196,7 +1052,6 @@ export type BotInstanceSelect<ExtArgs extends runtime.Types.Extensions.InternalA
   commands?: boolean | Prisma.BotInstance$commandsArgs<ExtArgs>
   responses?: boolean | Prisma.BotInstance$responsesArgs<ExtArgs>
   menus?: boolean | Prisma.BotInstance$menusArgs<ExtArgs>
-  communities?: boolean | Prisma.BotInstance$communitiesArgs<ExtArgs>
   connections?: boolean | Prisma.BotInstance$connectionsArgs<ExtArgs>
   _count?: boolean | Prisma.BotInstanceCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["botInstance"]>
@@ -1254,7 +1109,6 @@ export type BotInstanceInclude<ExtArgs extends runtime.Types.Extensions.Internal
   commands?: boolean | Prisma.BotInstance$commandsArgs<ExtArgs>
   responses?: boolean | Prisma.BotInstance$responsesArgs<ExtArgs>
   menus?: boolean | Prisma.BotInstance$menusArgs<ExtArgs>
-  communities?: boolean | Prisma.BotInstance$communitiesArgs<ExtArgs>
   connections?: boolean | Prisma.BotInstance$connectionsArgs<ExtArgs>
   _count?: boolean | Prisma.BotInstanceCountOutputTypeDefaultArgs<ExtArgs>
 }
@@ -1267,7 +1121,6 @@ export type $BotInstancePayload<ExtArgs extends runtime.Types.Extensions.Interna
     commands: Prisma.$BotCommandPayload<ExtArgs>[]
     responses: Prisma.$BotResponsePayload<ExtArgs>[]
     menus: Prisma.$BotMenuPayload<ExtArgs>[]
-    communities: Prisma.$CommunityPayload<ExtArgs>[]
     connections: Prisma.$PlatformConnectionPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
@@ -1681,7 +1534,6 @@ export interface Prisma__BotInstanceClient<T, Null = never, ExtArgs extends runt
   commands<T extends Prisma.BotInstance$commandsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.BotInstance$commandsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$BotCommandPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   responses<T extends Prisma.BotInstance$responsesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.BotInstance$responsesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$BotResponsePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   menus<T extends Prisma.BotInstance$menusArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.BotInstance$menusArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$BotMenuPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
-  communities<T extends Prisma.BotInstance$communitiesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.BotInstance$communitiesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$CommunityPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   connections<T extends Prisma.BotInstance$connectionsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.BotInstance$connectionsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$PlatformConnectionPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
@@ -2182,30 +2034,6 @@ export type BotInstance$menusArgs<ExtArgs extends runtime.Types.Extensions.Inter
   take?: number
   skip?: number
   distinct?: Prisma.BotMenuScalarFieldEnum | Prisma.BotMenuScalarFieldEnum[]
-}
-
-/**
- * BotInstance.communities
- */
-export type BotInstance$communitiesArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  /**
-   * Select specific fields to fetch from the Community
-   */
-  select?: Prisma.CommunitySelect<ExtArgs> | null
-  /**
-   * Omit specific fields from the Community
-   */
-  omit?: Prisma.CommunityOmit<ExtArgs> | null
-  /**
-   * Choose, which related nodes to fetch as well
-   */
-  include?: Prisma.CommunityInclude<ExtArgs> | null
-  where?: Prisma.CommunityWhereInput
-  orderBy?: Prisma.CommunityOrderByWithRelationInput | Prisma.CommunityOrderByWithRelationInput[]
-  cursor?: Prisma.CommunityWhereUniqueInput
-  take?: number
-  skip?: number
-  distinct?: Prisma.CommunityScalarFieldEnum | Prisma.CommunityScalarFieldEnum[]
 }
 
 /**

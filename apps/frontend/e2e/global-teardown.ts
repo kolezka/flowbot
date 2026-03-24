@@ -38,14 +38,6 @@ async function globalTeardown(_config: FullConfig) {
       }
     }
 
-    // Clean up test broadcasts (E2E test messages)
-    const broadcasts = await apiGet<{ data: { id: string; text: string }[] }>(token, '/api/broadcast?limit=100');
-    for (const b of broadcasts.data ?? []) {
-      if (b.text?.includes('E2E test') || b.text?.includes('E2E smoke test')) {
-        await apiDelete(token, `/api/broadcast/${b.id}`);
-      }
-    }
-
     // Clean up test webhooks
     const webhooksRes = await apiGet<any>(token, '/api/webhooks');
     const webhooks = Array.isArray(webhooksRes) ? webhooksRes : (webhooksRes?.data ?? []);

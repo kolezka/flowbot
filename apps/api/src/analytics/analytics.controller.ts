@@ -1,11 +1,4 @@
-import {
-  Controller,
-  Get,
-  Param,
-  Query,
-  Res,
-  HttpStatus,
-} from '@nestjs/common';
+import { Controller, Get, Param, Query, Res, HttpStatus } from '@nestjs/common';
 import {
   ApiTags,
   ApiOperation,
@@ -37,22 +30,6 @@ export class AnalyticsController {
   })
   async getOverview(): Promise<AnalyticsOverviewDto> {
     return this.analyticsService.getOverview();
-  }
-
-  @Get('communities/:communityId')
-  @ApiOperation({ summary: 'Get analytics time series for a community' })
-  async getCommunityTimeSeries(
-    @Param('communityId') communityId: string,
-    @Query('from') from?: string,
-    @Query('to') to?: string,
-    @Query('granularity') granularity?: string,
-  ) {
-    return this.analyticsService.getCommunityTimeSeries(
-      communityId,
-      from,
-      to,
-      granularity,
-    );
   }
 
   @Get('groups/:id')
@@ -166,9 +143,7 @@ export class AnalyticsController {
   })
   @ApiResponse({ status: HttpStatus.NOT_FOUND, description: 'Group not found' })
   @ApiParam({ name: 'id', description: 'Group ID' })
-  async getSummary(
-    @Param('id') id: string,
-  ): Promise<AnalyticsSummaryDto> {
+  async getSummary(@Param('id') id: string): Promise<AnalyticsSummaryDto> {
     return this.analyticsService.getSummary(id);
   }
 }

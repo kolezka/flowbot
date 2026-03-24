@@ -13,7 +13,6 @@ describe('WsGateway', () => {
 
   const mockEventBus = {
     onModeration: jest.fn(),
-    onAutomation: jest.fn(),
     onSystem: jest.fn(),
     onQrAuth: jest.fn(),
     onFlowExecution: jest.fn(),
@@ -41,13 +40,6 @@ describe('WsGateway', () => {
       );
     });
 
-    it('should register automation event handler', () => {
-      gateway.afterInit();
-      expect(mockEventBus.onAutomation).toHaveBeenCalledWith(
-        expect.any(Function),
-      );
-    });
-
     it('should register system event handler', () => {
       gateway.afterInit();
       expect(mockEventBus.onSystem).toHaveBeenCalledWith(expect.any(Function));
@@ -67,22 +59,6 @@ describe('WsGateway', () => {
 
       expect(mockServer.to).toHaveBeenCalledWith('moderation');
       expect(mockServer.emit).toHaveBeenCalledWith('moderation', event);
-    });
-
-    it('should emit automation events to the automation room', () => {
-      gateway.afterInit();
-      const handler = mockEventBus.onAutomation.mock.calls[0][0];
-      const event = {
-        type: 'broadcast.created',
-        jobId: 'j1',
-        data: {},
-        timestamp: new Date(),
-      };
-
-      handler(event);
-
-      expect(mockServer.to).toHaveBeenCalledWith('automation');
-      expect(mockServer.emit).toHaveBeenCalledWith('automation', event);
     });
 
     it('should emit system events to the system room', () => {
@@ -144,15 +120,6 @@ describe('WsGateway', () => {
 
       expect(client.join).toHaveBeenCalledWith('moderation');
       expect(result).toEqual({ status: 'ok', room: 'moderation' });
-    });
-
-    it('should allow joining automation room', () => {
-      const client = { id: 'c1', join: jest.fn() };
-
-      const result = gateway.handleJoin(client as any, 'automation');
-
-      expect(client.join).toHaveBeenCalledWith('automation');
-      expect(result).toEqual({ status: 'ok', room: 'automation' });
     });
 
     it('should allow joining system room', () => {

@@ -75,68 +75,6 @@ export const FLOW_TEMPLATES: FlowTemplate[] = [
       { id: 'e2', source: 'condition-1', target: 'action-1' },
     ],
   },
-  {
-    id: 'broadcast-flow',
-    name: 'Scheduled Broadcast',
-    description: 'Send a message on a schedule to multiple groups',
-    category: 'automation',
-    nodes: [
-      {
-        id: 'trigger-1',
-        type: 'schedule',
-        category: 'trigger',
-        label: 'Schedule',
-        config: { cron: '0 9 * * 1' },
-      },
-      {
-        id: 'action-1',
-        type: 'send_message',
-        category: 'action',
-        label: 'Send Broadcast',
-        config: { chatId: '', text: 'Weekly update: ...' },
-      },
-    ],
-    edges: [
-      { id: 'e1', source: 'trigger-1', target: 'action-1' },
-    ],
-  },
-  {
-    id: 'cross-post-flow',
-    name: 'Cross-Post Messages',
-    description: 'Forward messages between groups',
-    category: 'automation',
-    nodes: [
-      {
-        id: 'trigger-1',
-        type: 'message_received',
-        category: 'trigger',
-        label: 'Message in Source',
-        config: {},
-      },
-      {
-        id: 'condition-1',
-        type: 'user_role',
-        category: 'condition',
-        label: 'Is Admin',
-        config: { roles: ['admin', 'moderator'] },
-      },
-      {
-        id: 'action-1',
-        type: 'forward_message',
-        category: 'action',
-        label: 'Forward to Target',
-        config: {
-          fromChatId: '{{trigger.chatId}}',
-          toChatId: '',
-          messageId: '{{trigger.messageId}}',
-        },
-      },
-    ],
-    edges: [
-      { id: 'e1', source: 'trigger-1', target: 'condition-1' },
-      { id: 'e2', source: 'condition-1', target: 'action-1' },
-    ],
-  },
 ];
 
 export function getTemplate(id: string): FlowTemplate | undefined {

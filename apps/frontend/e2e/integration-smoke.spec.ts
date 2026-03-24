@@ -71,35 +71,6 @@ test.describe('Integration Smoke Test', () => {
     await api.delete(`/api/flows/${flow.id}`);
   });
 
-  test('broadcast lifecycle: create → verify status → cleanup', async ({ page, api }) => {
-    const timestamp = Date.now();
-    const broadcastMsg = `E2E smoke test ${timestamp}`;
-
-    // 1. Navigate to broadcast page
-    await page.goto('/dashboard/broadcast');
-    await page.waitForLoadState('networkidle');
-
-    // 2. Create a broadcast
-    await page.getByPlaceholder(/enter broadcast message/i).fill(broadcastMsg);
-    await page.getByPlaceholder(/-100/).fill('-1001234567890');
-    await page.getByRole('button', { name: /create broadcast/i }).click();
-    await page.waitForLoadState('networkidle');
-
-    // 3. Verify broadcast appears in table
-    await expect(page.getByText(broadcastMsg).first()).toBeVisible({ timeout: 10_000 });
-
-    // 4. Verify table has status column
-    await expect(page.getByText('Status').first()).toBeVisible();
-
-    // 5. Cleanup via API
-    const broadcasts = await api.get<{ data: { id: string; text: string }[] }>('/api/broadcast?limit=100');
-    for (const b of broadcasts.data ?? []) {
-      if (b.text?.includes(broadcastMsg)) {
-        await api.delete(`/api/broadcast/${b.id}`);
-      }
-    }
-  });
-
   test('moderation pages load correctly', async ({ page }) => {
     const pages = [
       '/dashboard/moderation',
@@ -176,9 +147,7 @@ test.describe('Integration Smoke Test', () => {
       { url: '/dashboard', text: 'Dashboard' },
       { url: '/dashboard/identity/accounts', text: 'Accounts' },
       { url: '/dashboard/flows', text: 'Flows' },
-      { url: '/dashboard/broadcast', text: 'Broadcast' },
       { url: '/dashboard/webhooks', text: 'Webhooks' },
-      { url: '/dashboard/automation', text: 'Automation' },
     ];
 
     for (const { url, text } of dashboardPages) {

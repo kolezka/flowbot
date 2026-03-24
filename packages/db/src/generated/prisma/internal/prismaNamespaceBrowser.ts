@@ -54,11 +54,6 @@ export const ModelName = {
   User: 'User',
   UserIdentity: 'UserIdentity',
   PlatformAccount: 'PlatformAccount',
-  Community: 'Community',
-  CommunityConfig: 'CommunityConfig',
-  CommunityTelegramConfig: 'CommunityTelegramConfig',
-  CommunityDiscordConfig: 'CommunityDiscordConfig',
-  CommunityMember: 'CommunityMember',
   PlatformConnection: 'PlatformConnection',
   PlatformConnectionLog: 'PlatformConnectionLog',
   ManagedGroup: 'ManagedGroup',
@@ -68,12 +63,6 @@ export const ModelName = {
   ModerationLog: 'ModerationLog',
   ScheduledMessage: 'ScheduledMessage',
   GroupAnalyticsSnapshot: 'GroupAnalyticsSnapshot',
-  CommunityAnalyticsSnapshot: 'CommunityAnalyticsSnapshot',
-  ReputationScore: 'ReputationScore',
-  CrossPostTemplate: 'CrossPostTemplate',
-  BroadcastMessage: 'BroadcastMessage',
-  ClientLog: 'ClientLog',
-  ClientSession: 'ClientSession',
   FlowDefinition: 'FlowDefinition',
   FlowFolder: 'FlowFolder',
   FlowExecution: 'FlowExecution',
@@ -161,7 +150,6 @@ export const PlatformAccountScalarFieldEnum = {
   verifiedAt: 'verifiedAt',
   lastSeenAt: 'lastSeenAt',
   lastMessageAt: 'lastMessageAt',
-  lastCommunityId: 'lastCommunityId',
   referralCode: 'referralCode',
   referredByAccountId: 'referredByAccountId',
   createdAt: 'createdAt',
@@ -169,116 +157,6 @@ export const PlatformAccountScalarFieldEnum = {
 } as const
 
 export type PlatformAccountScalarFieldEnum = (typeof PlatformAccountScalarFieldEnum)[keyof typeof PlatformAccountScalarFieldEnum]
-
-
-export const CommunityScalarFieldEnum = {
-  id: 'id',
-  platform: 'platform',
-  platformCommunityId: 'platformCommunityId',
-  name: 'name',
-  type: 'type',
-  memberCount: 'memberCount',
-  isActive: 'isActive',
-  metadata: 'metadata',
-  botInstanceId: 'botInstanceId',
-  joinedAt: 'joinedAt',
-  leftAt: 'leftAt',
-  createdAt: 'createdAt',
-  updatedAt: 'updatedAt'
-} as const
-
-export type CommunityScalarFieldEnum = (typeof CommunityScalarFieldEnum)[keyof typeof CommunityScalarFieldEnum]
-
-
-export const CommunityConfigScalarFieldEnum = {
-  id: 'id',
-  communityId: 'communityId',
-  welcomeEnabled: 'welcomeEnabled',
-  welcomeMessage: 'welcomeMessage',
-  rulesText: 'rulesText',
-  antiSpamEnabled: 'antiSpamEnabled',
-  antiSpamAction: 'antiSpamAction',
-  antiSpamMaxMessages: 'antiSpamMaxMessages',
-  antiSpamWindowSeconds: 'antiSpamWindowSeconds',
-  antiLinkEnabled: 'antiLinkEnabled',
-  antiLinkAction: 'antiLinkAction',
-  antiLinkWhitelist: 'antiLinkWhitelist',
-  warnThresholdMute: 'warnThresholdMute',
-  warnThresholdBan: 'warnThresholdBan',
-  warnDecayDays: 'warnDecayDays',
-  defaultMuteDurationS: 'defaultMuteDurationS',
-  logChannelId: 'logChannelId',
-  autoDeleteCommandsS: 'autoDeleteCommandsS',
-  silentMode: 'silentMode',
-  keywordFiltersEnabled: 'keywordFiltersEnabled',
-  keywordFilters: 'keywordFilters',
-  aiModerationEnabled: 'aiModerationEnabled',
-  aiModerationAction: 'aiModerationAction',
-  aiModThreshold: 'aiModThreshold',
-  notificationEvents: 'notificationEvents',
-  pipelineEnabled: 'pipelineEnabled',
-  pipelineDmTemplate: 'pipelineDmTemplate',
-  pipelineDeeplink: 'pipelineDeeplink',
-  metadata: 'metadata',
-  createdAt: 'createdAt',
-  updatedAt: 'updatedAt'
-} as const
-
-export type CommunityConfigScalarFieldEnum = (typeof CommunityConfigScalarFieldEnum)[keyof typeof CommunityConfigScalarFieldEnum]
-
-
-export const CommunityTelegramConfigScalarFieldEnum = {
-  id: 'id',
-  communityId: 'communityId',
-  captchaEnabled: 'captchaEnabled',
-  captchaMode: 'captchaMode',
-  captchaTimeoutS: 'captchaTimeoutS',
-  quarantineEnabled: 'quarantineEnabled',
-  quarantineDurationS: 'quarantineDurationS',
-  slowModeDelay: 'slowModeDelay',
-  forumTopicMgmt: 'forumTopicMgmt',
-  createdAt: 'createdAt',
-  updatedAt: 'updatedAt'
-} as const
-
-export type CommunityTelegramConfigScalarFieldEnum = (typeof CommunityTelegramConfigScalarFieldEnum)[keyof typeof CommunityTelegramConfigScalarFieldEnum]
-
-
-export const CommunityDiscordConfigScalarFieldEnum = {
-  id: 'id',
-  communityId: 'communityId',
-  autoModRules: 'autoModRules',
-  verificationLevel: 'verificationLevel',
-  defaultChannelId: 'defaultChannelId',
-  modLogChannelId: 'modLogChannelId',
-  welcomeChannelId: 'welcomeChannelId',
-  roleOnJoin: 'roleOnJoin',
-  createdAt: 'createdAt',
-  updatedAt: 'updatedAt'
-} as const
-
-export type CommunityDiscordConfigScalarFieldEnum = (typeof CommunityDiscordConfigScalarFieldEnum)[keyof typeof CommunityDiscordConfigScalarFieldEnum]
-
-
-export const CommunityMemberScalarFieldEnum = {
-  id: 'id',
-  communityId: 'communityId',
-  platformAccountId: 'platformAccountId',
-  role: 'role',
-  messageCount: 'messageCount',
-  joinedAt: 'joinedAt',
-  warningCount: 'warningCount',
-  isMuted: 'isMuted',
-  muteExpiresAt: 'muteExpiresAt',
-  isQuarantined: 'isQuarantined',
-  quarantineExpiresAt: 'quarantineExpiresAt',
-  lastSeenAt: 'lastSeenAt',
-  metadata: 'metadata',
-  createdAt: 'createdAt',
-  updatedAt: 'updatedAt'
-} as const
-
-export type CommunityMemberScalarFieldEnum = (typeof CommunityMemberScalarFieldEnum)[keyof typeof CommunityMemberScalarFieldEnum]
 
 
 export const PlatformConnectionScalarFieldEnum = {
@@ -445,99 +323,6 @@ export const GroupAnalyticsSnapshotScalarFieldEnum = {
 } as const
 
 export type GroupAnalyticsSnapshotScalarFieldEnum = (typeof GroupAnalyticsSnapshotScalarFieldEnum)[keyof typeof GroupAnalyticsSnapshotScalarFieldEnum]
-
-
-export const CommunityAnalyticsSnapshotScalarFieldEnum = {
-  id: 'id',
-  communityId: 'communityId',
-  date: 'date',
-  granularity: 'granularity',
-  memberCount: 'memberCount',
-  newMembers: 'newMembers',
-  leftMembers: 'leftMembers',
-  messageCount: 'messageCount',
-  spamDetected: 'spamDetected',
-  warningsIssued: 'warningsIssued',
-  moderationActions: 'moderationActions',
-  metadata: 'metadata',
-  createdAt: 'createdAt',
-  updatedAt: 'updatedAt'
-} as const
-
-export type CommunityAnalyticsSnapshotScalarFieldEnum = (typeof CommunityAnalyticsSnapshotScalarFieldEnum)[keyof typeof CommunityAnalyticsSnapshotScalarFieldEnum]
-
-
-export const ReputationScoreScalarFieldEnum = {
-  id: 'id',
-  telegramId: 'telegramId',
-  totalScore: 'totalScore',
-  messageFactor: 'messageFactor',
-  tenureFactor: 'tenureFactor',
-  warningPenalty: 'warningPenalty',
-  moderationBonus: 'moderationBonus',
-  lastCalculated: 'lastCalculated',
-  createdAt: 'createdAt',
-  updatedAt: 'updatedAt'
-} as const
-
-export type ReputationScoreScalarFieldEnum = (typeof ReputationScoreScalarFieldEnum)[keyof typeof ReputationScoreScalarFieldEnum]
-
-
-export const CrossPostTemplateScalarFieldEnum = {
-  id: 'id',
-  name: 'name',
-  messageText: 'messageText',
-  targetChatIds: 'targetChatIds',
-  isActive: 'isActive',
-  createdBy: 'createdBy',
-  createdAt: 'createdAt',
-  updatedAt: 'updatedAt'
-} as const
-
-export type CrossPostTemplateScalarFieldEnum = (typeof CrossPostTemplateScalarFieldEnum)[keyof typeof CrossPostTemplateScalarFieldEnum]
-
-
-export const BroadcastMessageScalarFieldEnum = {
-  id: 'id',
-  status: 'status',
-  text: 'text',
-  targetChatIds: 'targetChatIds',
-  results: 'results',
-  createdAt: 'createdAt',
-  updatedAt: 'updatedAt'
-} as const
-
-export type BroadcastMessageScalarFieldEnum = (typeof BroadcastMessageScalarFieldEnum)[keyof typeof BroadcastMessageScalarFieldEnum]
-
-
-export const ClientLogScalarFieldEnum = {
-  id: 'id',
-  level: 'level',
-  message: 'message',
-  details: 'details',
-  createdAt: 'createdAt'
-} as const
-
-export type ClientLogScalarFieldEnum = (typeof ClientLogScalarFieldEnum)[keyof typeof ClientLogScalarFieldEnum]
-
-
-export const ClientSessionScalarFieldEnum = {
-  id: 'id',
-  sessionString: 'sessionString',
-  isActive: 'isActive',
-  lastUsedAt: 'lastUsedAt',
-  phoneNumber: 'phoneNumber',
-  displayName: 'displayName',
-  dcId: 'dcId',
-  sessionType: 'sessionType',
-  errorCount: 'errorCount',
-  lastError: 'lastError',
-  lastErrorAt: 'lastErrorAt',
-  createdAt: 'createdAt',
-  updatedAt: 'updatedAt'
-} as const
-
-export type ClientSessionScalarFieldEnum = (typeof ClientSessionScalarFieldEnum)[keyof typeof ClientSessionScalarFieldEnum]
 
 
 export const FlowDefinitionScalarFieldEnum = {
