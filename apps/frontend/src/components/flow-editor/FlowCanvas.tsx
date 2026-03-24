@@ -30,6 +30,9 @@ export interface FlowCanvasProps {
   onNodeSelect: (node: Node | null) => void;
   onDrop: (type: string, position: { x: number; y: number }) => void;
   nodeTypes?: Record<string, React.ComponentType<any>>;
+  onNodeContextMenu?: (event: React.MouseEvent, node: Node) => void;
+  onEdgeContextMenu?: (event: React.MouseEvent, edge: Edge) => void;
+  onPaneContextMenu?: (event: React.MouseEvent | MouseEvent) => void;
 }
 
 export function FlowCanvas({
@@ -41,6 +44,9 @@ export function FlowCanvas({
   onNodeSelect,
   onDrop,
   nodeTypes: extraNodeTypes,
+  onNodeContextMenu,
+  onEdgeContextMenu,
+  onPaneContextMenu,
 }: FlowCanvasProps) {
   const wrapperRef = useRef<HTMLDivElement>(null);
   const [isDragOver, setIsDragOver] = useState(false);
@@ -111,6 +117,9 @@ export function FlowCanvas({
         onNodeClick={handleNodeClick}
         onPaneClick={handlePaneClick}
         nodeTypes={mergedNodeTypes}
+        onNodeContextMenu={onNodeContextMenu}
+        onEdgeContextMenu={onEdgeContextMenu}
+        onPaneContextMenu={onPaneContextMenu}
         fitView
       >
         <Background />
