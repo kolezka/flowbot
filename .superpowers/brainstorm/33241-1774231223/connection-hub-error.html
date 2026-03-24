@@ -1,0 +1,79 @@
+<h2>ConnectionHub: Error State Design</h2>
+<p class="subtitle">When the connections API fails, which error treatment works best?</p>
+
+<div class="options">
+  <div class="option" data-choice="a" onclick="toggleSelect(this)">
+    <div class="letter">A</div>
+    <div class="content">
+      <h3>Centered Error Card</h3>
+      <p>Full-page error state replacing the connection list</p>
+      <div class="mockup" style="margin-top: 12px;">
+        <div class="mockup-header">Connections — Error State</div>
+        <div class="mockup-body" style="padding: 0;">
+          <!-- Header -->
+          <div style="display: flex; justify-content: space-between; align-items: center; padding: 16px 20px; border-bottom: 1px solid rgba(255,255,255,0.06);">
+            <div>
+              <div style="font-weight: 600; font-size: 16px;">Connections</div>
+              <div style="font-size: 11px; color: #888;">— · — · — total</div>
+            </div>
+            <button class="mock-button" style="font-size: 12px; padding: 6px 14px;">+ New Connection</button>
+          </div>
+          <!-- Error State -->
+          <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 60px 20px; text-align: center;">
+            <div style="width: 56px; height: 56px; border-radius: 50%; background: rgba(239,68,68,0.1); display: flex; align-items: center; justify-content: center; margin-bottom: 16px;">
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+            </div>
+            <div style="font-weight: 600; font-size: 15px; margin-bottom: 6px;">Failed to load connections</div>
+            <div style="font-size: 12px; color: #888; max-width: 280px; margin-bottom: 16px;">Could not reach the API. Check your network connection and try again.</div>
+            <button class="mock-button" style="font-size: 12px; padding: 6px 16px; background: #3b82f6; color: white; border: none; border-radius: 6px;">Retry</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="option" data-choice="b" onclick="toggleSelect(this)">
+    <div class="letter">B</div>
+    <div class="content">
+      <h3>Top Banner + Empty List</h3>
+      <p>Error banner above the connection list area, keeps page structure visible</p>
+      <div class="mockup" style="margin-top: 12px;">
+        <div class="mockup-header">Connections — Error Banner</div>
+        <div class="mockup-body" style="padding: 0;">
+          <!-- Header -->
+          <div style="display: flex; justify-content: space-between; align-items: center; padding: 16px 20px; border-bottom: 1px solid rgba(255,255,255,0.06);">
+            <div>
+              <div style="font-weight: 600; font-size: 16px;">Connections</div>
+              <div style="font-size: 11px; color: #888;">— · — · — total</div>
+            </div>
+            <button class="mock-button" style="font-size: 12px; padding: 6px 14px;">+ New Connection</button>
+          </div>
+          <!-- Health strip (grayed out) -->
+          <div style="display: flex; border-bottom: 1px solid rgba(255,255,255,0.06);">
+            <div style="flex: 1; padding: 12px 16px; background: rgba(107,114,128,0.04);">
+              <div style="font-size: 18px; font-weight: 600; color: #6b7280;">—</div>
+              <div style="font-size: 10px; color: #888; text-transform: uppercase; letter-spacing: 0.05em;">Active</div>
+            </div>
+            <div style="flex: 1; padding: 12px 16px; background: rgba(107,114,128,0.04);">
+              <div style="font-size: 18px; font-weight: 600; color: #6b7280;">—</div>
+              <div style="font-size: 10px; color: #888; text-transform: uppercase; letter-spacing: 0.05em;">Error</div>
+            </div>
+            <div style="flex: 1; padding: 12px 16px;">
+              <div style="font-size: 18px; font-weight: 600; color: #6b7280;">—</div>
+              <div style="font-size: 10px; color: #888; text-transform: uppercase; letter-spacing: 0.05em;">Inactive</div>
+            </div>
+          </div>
+          <!-- Error Banner -->
+          <div style="margin: 16px 20px; padding: 12px 16px; border-radius: 8px; border: 1px solid rgba(239,68,68,0.2); background: rgba(239,68,68,0.06); display: flex; align-items: center; gap: 12px;">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+            <div style="flex: 1; font-size: 13px; color: #fca5a5;">Failed to load connections. <span style="text-decoration: underline; cursor: pointer;">Retry</span></div>
+          </div>
+          <!-- Empty list area -->
+          <div style="padding: 40px 20px; text-align: center; color: #555; font-size: 13px;">
+            Unable to show connections.
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

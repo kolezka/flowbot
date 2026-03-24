@@ -1,0 +1,191 @@
+<h2>Final Architecture — Flow Context Menu</h2>
+<p class="subtitle">Zustand store + factory pattern with @radix-ui/react-context-menu</p>
+
+<div class="section">
+  <div class="mockup">
+    <div class="mockup-header">System Overview</div>
+    <div class="mockup-body" style="font-family: monospace; font-size: 12px; line-height: 1.6; padding: 20px; background: #0a0a0a; color: #e4e4e7;">
+<pre style="margin:0; white-space: pre; color: #e4e4e7;">
+┌─────────────────────────────────────────────────────────────────┐
+│  <span style="color:#67e8f9;">createFlowContextMenu()</span>                                       │
+│  Returns: <span style="color:#c084fc;">[useFlowStore, FlowContextMenu]</span>                       │
+│                                                                 │
+│  ┌─────────────────────────────────────────────────────────┐    │
+│  │  <span style="color:#fbbf24;">Zustand Store</span> (single source of truth)                  │    │
+│  │                                                         │    │
+│  │  <span style="color:#71717a;">── Flow State ──</span>                                       │    │
+│  │  nodes: Node[]                                          │    │
+│  │  edges: Edge[]                                          │    │
+│  │  selectedNode: Node | null                              │    │
+│  │  copiedNode: Node | null                                │    │
+│  │                                                         │    │
+│  │  <span style="color:#71717a;">── Menu State ──</span>                                       │    │
+│  │  menu: { isOpen, position, context } | null             │    │
+│  │                                                         │    │
+│  │  <span style="color:#71717a;">── Flow Actions ──</span>                                     │    │
+│  │  applyNodeChanges(changes)                              │    │
+│  │  applyEdgeChanges(changes)                              │    │
+│  │  addEdge(connection)                                    │    │
+│  │  addNode(type, position)                                │    │
+│  │                                                         │    │
+│  │  <span style="color:#71717a;">── Context Menu Actions ──</span>                             │    │
+│  │  deleteNode(id)    duplicateNode(id)                    │    │
+│  │  copyNode(id)      pasteNode(position)                  │    │
+│  │  toggleNode(id)    addStickyNote(position)              │    │
+│  │  deleteEdge(id)    insertNodeOnEdge(edgeId, type)       │    │
+│  │  selectAll()       fitView(fitViewFn)                   │    │
+│  │                                                         │    │
+│  │  <span style="color:#71717a;">── Menu Openers ──</span>                                     │    │
+│  │  openNodeMenu(node, pos)                                │    │
+│  │  openEdgeMenu(edge, pos)                                │    │
+│  │  openCanvasMenu(pos)                                    │    │
+│  │  closeMenu()                                            │    │
+│  └─────────────────────────────────────────────────────────┘    │
+└─────────────────────────────────────────────────────────────────┘
+
+         │ useFlowStore()                    │ &lt;FlowContextMenu /&gt;
+         ▼                                   ▼
+
+┌─────────────────────────┐    ┌──────────────────────────────────┐
+│  <span style="color:#67e8f9;">FlowEditorInner</span>          │    │  <span style="color:#67e8f9;">FlowContextMenu</span> (component)       │
+│                         │    │                                  │
+│  • reads nodes/edges    │    │  • reads menu state from store   │
+│  • passes to ReactFlow  │    │  • renders ContextMenu.Root      │
+│  • calls store actions  │    │  • switches on context.type:     │
+│  • NO local useState    │    │    ├─ 'node' → node menu items   │
+│    for flow data        │    │    ├─ 'edge' → edge menu items   │
+│                         │    │    └─ 'canvas' → canvas menu     │
+│                         │    │  • calls store actions on click  │
+│  ┌───────────────────┐  │    │  • zero props needed             │
+│  │ <span style="color:#67e8f9;">FlowCanvas</span>        │  │    │                                  │
+│  │                   │  │    │  Nested submenu for "Add node":  │
+│  │ ReactFlow         │  │    │  ├─ 🟢 Triggers ▸               │
+│  │  onNodeCtxMenu ───┼──┼───▶│  ├─ 🟡 Conditions ▸             │
+│  │  onEdgeCtxMenu ───┼──┼───▶│  ├─ 🔵 Actions ▸                │
+│  │  onPaneCtxMenu ───┼──┼───▶│  ├─ 🟣 Advanced ▸               │
+│  │                   │  │    │  └─ 📎 Annotation ▸              │
+│  └───────────────────┘  │    │                                  │
+└─────────────────────────┘    └──────────────────────────────────┘
+</pre>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <div class="mockup">
+    <div class="mockup-header">File Structure</div>
+    <div class="mockup-body" style="font-family: monospace; font-size: 13px; line-height: 1.8; padding: 20px; background: #0a0a0a; color: #e4e4e7;">
+<pre style="margin:0; white-space: pre; color: #e4e4e7;">
+<span style="color:#71717a;">── New files ──────────────────────────────────────────</span>
+<span style="color:#a3e635;">+</span> components/ui/context-menu.tsx          <span style="color:#71717a;">shadcn wrapper</span>
+<span style="color:#a3e635;">+</span> lib/flow-editor/flow-store.ts           <span style="color:#71717a;">Zustand store factory</span>
+<span style="color:#a3e635;">+</span> components/flow-editor/FlowContextMenu.tsx  <span style="color:#71717a;">menu UI</span>
+
+<span style="color:#71717a;">── Modified files ─────────────────────────────────────</span>
+<span style="color:#fbbf24;">~</span> app/dashboard/flows/[id]/edit/page.tsx  <span style="color:#71717a;">use store instead of useState</span>
+<span style="color:#fbbf24;">~</span> components/flow-editor/FlowCanvas.tsx   <span style="color:#71717a;">add context menu event handlers</span>
+
+<span style="color:#71717a;">── Dependency ─────────────────────────────────────────</span>
+<span style="color:#a3e635;">+</span> @radix-ui/react-context-menu            <span style="color:#71717a;">npm install</span>
+<span style="color:#a3e635;">+</span> zustand                                 <span style="color:#71717a;">npm install</span>
+</pre>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <div class="mockup">
+    <div class="mockup-header">Keyboard Shortcuts</div>
+    <div class="mockup-body" style="padding: 20px; background: #0a0a0a; color: #e4e4e7; font-family: system-ui; font-size: 14px;">
+      <table style="width: 100%; border-collapse: collapse;">
+        <tr style="border-bottom: 1px solid #27272a;">
+          <td style="padding: 8px; color: #a1a1aa;">Action</td>
+          <td style="padding: 8px; color: #a1a1aa;">Shortcut</td>
+          <td style="padding: 8px; color: #a1a1aa;">Scope</td>
+        </tr>
+        <tr style="border-bottom: 1px solid #18181b;">
+          <td style="padding: 8px;">Delete</td>
+          <td style="padding: 8px; font-family: monospace;">⌫ / Del</td>
+          <td style="padding: 8px; color: #71717a;">Selected node/edge</td>
+        </tr>
+        <tr style="border-bottom: 1px solid #18181b;">
+          <td style="padding: 8px;">Duplicate</td>
+          <td style="padding: 8px; font-family: monospace;">⌘D</td>
+          <td style="padding: 8px; color: #71717a;">Selected node</td>
+        </tr>
+        <tr style="border-bottom: 1px solid #18181b;">
+          <td style="padding: 8px;">Copy</td>
+          <td style="padding: 8px; font-family: monospace;">⌘C</td>
+          <td style="padding: 8px; color: #71717a;">Selected node</td>
+        </tr>
+        <tr style="border-bottom: 1px solid #18181b;">
+          <td style="padding: 8px;">Paste</td>
+          <td style="padding: 8px; font-family: monospace;">⌘V</td>
+          <td style="padding: 8px; color: #71717a;">Canvas (at center)</td>
+        </tr>
+        <tr style="border-bottom: 1px solid #18181b;">
+          <td style="padding: 8px;">Toggle disable</td>
+          <td style="padding: 8px; font-family: monospace;">⌘/</td>
+          <td style="padding: 8px; color: #71717a;">Selected node</td>
+        </tr>
+        <tr style="border-bottom: 1px solid #18181b;">
+          <td style="padding: 8px;">Select all</td>
+          <td style="padding: 8px; font-family: monospace;">⌘A</td>
+          <td style="padding: 8px; color: #71717a;">Canvas</td>
+        </tr>
+        <tr>
+          <td style="padding: 8px;">Edit node</td>
+          <td style="padding: 8px; font-family: monospace;">Enter</td>
+          <td style="padding: 8px; color: #71717a;">Selected node</td>
+        </tr>
+      </table>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <div class="mockup">
+    <div class="mockup-header">Menu Items by Context</div>
+    <div class="mockup-body" style="padding: 20px; background: #0a0a0a; color: #e4e4e7; font-family: system-ui; font-size: 13px;">
+      <div style="display: flex; gap: 24px; flex-wrap: wrap;">
+
+        <div style="flex: 1; min-width: 200px;">
+          <div style="color: #67e8f9; font-weight: 600; margin-bottom: 12px;">Node Menu</div>
+          <div style="background: #18181b; border: 1px solid #27272a; border-radius: 8px; padding: 4px;">
+            <div style="padding: 6px 8px; border-radius: 4px;">✏️ Edit Node <span style="float:right; color:#52525b; font-size:11px;">Enter</span></div>
+            <div style="padding: 6px 8px;">📋 Duplicate <span style="float:right; color:#52525b; font-size:11px;">⌘D</span></div>
+            <div style="padding: 6px 8px;">📄 Copy <span style="float:right; color:#52525b; font-size:11px;">⌘C</span></div>
+            <div style="height:1px; background:#27272a; margin:4px 0;"></div>
+            <div style="padding: 6px 8px;">🚫 Disable <span style="float:right; color:#52525b; font-size:11px;">⌘/</span></div>
+            <div style="padding: 6px 8px;">📝 Add Note</div>
+            <div style="height:1px; background:#27272a; margin:4px 0;"></div>
+            <div style="padding: 6px 8px; color:#ef4444;">🗑️ Delete <span style="float:right; color:#52525b; font-size:11px;">⌫</span></div>
+          </div>
+        </div>
+
+        <div style="flex: 1; min-width: 200px;">
+          <div style="color: #a3e635; font-weight: 600; margin-bottom: 12px;">Canvas Menu</div>
+          <div style="background: #18181b; border: 1px solid #27272a; border-radius: 8px; padding: 4px;">
+            <div style="padding: 6px 8px;">📦 Add Node ▸</div>
+            <div style="padding: 6px 8px;">📝 Add Sticky Note</div>
+            <div style="height:1px; background:#27272a; margin:4px 0;"></div>
+            <div style="padding: 6px 8px; opacity: 0.4;">📋 Paste <span style="float:right; color:#52525b; font-size:11px;">⌘V</span></div>
+            <div style="height:1px; background:#27272a; margin:4px 0;"></div>
+            <div style="padding: 6px 8px;">🔲 Select All <span style="float:right; color:#52525b; font-size:11px;">⌘A</span></div>
+            <div style="padding: 6px 8px;">🔍 Fit View</div>
+          </div>
+        </div>
+
+        <div style="flex: 1; min-width: 200px;">
+          <div style="color: #fbbf24; font-weight: 600; margin-bottom: 12px;">Edge Menu</div>
+          <div style="background: #18181b; border: 1px solid #27272a; border-radius: 8px; padding: 4px;">
+            <div style="padding: 6px 8px;">📦 Insert Node ▸</div>
+            <div style="height:1px; background:#27272a; margin:4px 0;"></div>
+            <div style="padding: 6px 8px; color:#ef4444;">🗑️ Delete Edge <span style="float:right; color:#52525b; font-size:11px;">⌫</span></div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>

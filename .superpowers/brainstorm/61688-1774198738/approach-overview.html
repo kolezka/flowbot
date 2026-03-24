@@ -1,0 +1,91 @@
+<h2>UX Improvement Approaches</h2>
+<p class="subtitle">Two areas, three strategies — pick the approach that fits your priorities</p>
+
+<div class="section">
+  <h3>Connections Auth Wizard</h3>
+</div>
+
+<div class="options">
+  <div class="option" data-choice="a" onclick="toggleSelect(this)">
+    <div class="letter">A</div>
+    <div class="content">
+      <h3>Incremental Fix</h3>
+      <p>Keep the current step wizard but add: retry on each step, inline health check after auth completes, and a bulk scope importer (paste comma-separated IDs). Smallest change, fastest to ship.</p>
+      <div class="pros-cons" style="margin-top: 12px;">
+        <div class="pros"><h4>Pros</h4><ul><li>Minimal code change</li><li>Ships in days</li><li>Low regression risk</li></ul></div>
+        <div class="cons"><h4>Cons</h4><ul><li>Still feels like a basic wizard</li><li>No error recovery for expired sessions</li><li>Scope editor still separate page</li></ul></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="option" data-choice="b" onclick="toggleSelect(this)">
+    <div class="letter">B</div>
+    <div class="content">
+      <h3>Unified Connection Sheet</h3>
+      <p>Replace the multi-page wizard with a single sliding sheet (panel from right). Platform selection → auth → health check → scope config all in one flow. Each step animates in-place. Error? Retry inline without losing context. Scope editor gets a searchable group/user picker that pulls from the connected platform.</p>
+      <div class="pros-cons" style="margin-top: 12px;">
+        <div class="pros"><h4>Pros</h4><ul><li>Feels modern (Linear/Vercel vibe)</li><li>No page navigation during auth</li><li>Integrated health + scope in same flow</li><li>Retry without restart</li></ul></div>
+        <div class="cons"><h4>Cons</h4><ul><li>Medium effort (~3-5 days)</li><li>Needs new scope search API</li><li>Sheet layout needs responsive handling</li></ul></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="option" data-choice="c" onclick="toggleSelect(this)">
+    <div class="letter">C</div>
+    <div class="content">
+      <h3>Connection Hub</h3>
+      <p>Full redesign — a dedicated "Connections" hub page with real-time status cards, inline auth modals, health monitoring dashboard, and a visual scope manager showing actual group names/avatars. Think Vercel's integrations page.</p>
+      <div class="pros-cons" style="margin-top: 12px;">
+        <div class="pros"><h4>Pros</h4><ul><li>Best possible UX</li><li>Real-time health visibility</li><li>Visual scope management</li><li>Professional feel</li></ul></div>
+        <div class="cons"><h4>Cons</h4><ul><li>Large effort (~1-2 weeks)</li><li>Needs new APIs (group name resolution, avatars)</li><li>Risk of scope creep</li></ul></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="section" style="margin-top: 40px;">
+  <h3>Flow Builder</h3>
+</div>
+
+<div class="options">
+  <div class="option" data-choice="d" onclick="toggleSelect(this)">
+    <div class="letter">D</div>
+    <div class="content">
+      <h3>Refactor & Fix</h3>
+      <p>Break the 1400-line editor into composable components. Add variable autocomplete (<code>{{trigger.*}}</code>), unsaved-changes indicator, and field-level validation. Keep the same layout. Fix the debugger to use WebSocket instead of polling.</p>
+      <div class="pros-cons" style="margin-top: 12px;">
+        <div class="pros"><h4>Pros</h4><ul><li>Addresses core pain points</li><li>Maintainable codebase after</li><li>No visual redesign needed</li></ul></div>
+        <div class="cons"><h4>Cons</h4><ul><li>Autocomplete needs variable schema work</li><li>Still same basic node palette UX</li><li>Debugger still overlay, not integrated</li></ul></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="option" data-choice="e" onclick="toggleSelect(this)">
+    <div class="letter">E</div>
+    <div class="content">
+      <h3>Smart Editor</h3>
+      <p>Refactor into components PLUS: intelligent node palette with fuzzy search + suggested nodes based on context, rich variable autocomplete with type hints in a dropdown, inline validation with fix suggestions, and a docked execution panel (not overlay) with real-time WebSocket updates. Unsaved changes tracked with auto-save draft.</p>
+      <div class="pros-cons" style="margin-top: 12px;">
+        <div class="pros"><h4>Pros</h4><ul><li>Major productivity boost</li><li>Feels like a real IDE</li><li>Context-aware suggestions</li><li>Auto-save prevents data loss</li></ul></div>
+        <div class="cons"><h4>Cons</h4><ul><li>Medium-large effort (~1 week)</li><li>Variable type system needs design</li><li>Auto-save needs conflict resolution</li></ul></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="option" data-choice="f" onclick="toggleSelect(this)">
+    <div class="letter">F</div>
+    <div class="content">
+      <h3>Flow Builder 2.0</h3>
+      <p>Complete rebuild with: command palette (⌘K) for all actions, node templates/snippets, multi-tab editing, split-pane debugger with variable inspection, flow diff/versioning UI, collaborative indicators. Think VS Code for flows.</p>
+      <div class="pros-cons" style="margin-top: 12px;">
+        <div class="pros"><h4>Pros</h4><ul><li>Best-in-class flow editing</li><li>Scales to complex flows</li><li>Power-user features</li></ul></div>
+        <div class="cons"><h4>Cons</h4><ul><li>Large effort (~2-3 weeks)</li><li>Complex state management</li><li>Risk of over-engineering</li></ul></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div style="margin-top: 32px; padding: 16px; border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; background: rgba(255,255,255,0.03);">
+  <p class="label">MY RECOMMENDATION</p>
+  <p style="margin-top: 8px;"><strong>B + E</strong> — Unified Connection Sheet + Smart Editor. Best balance of impact vs effort. Delivers a noticeably better experience without over-engineering. The refactor work in E also makes future improvements (F-level features) much easier to add later.</p>
+</div>

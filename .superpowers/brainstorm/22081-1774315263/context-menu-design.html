@@ -1,0 +1,133 @@
+<h2>Context Menu Visual Style</h2>
+<p class="subtitle">Which design direction fits your flow builder? Click to select.</p>
+
+<div class="cards">
+  <!-- Option A: Minimal / shadcn-like -->
+  <div class="card" data-choice="a-minimal" onclick="toggleSelect(this)">
+    <div class="card-image" style="padding: 24px; background: #0a0a0a; display: flex; justify-content: center;">
+      <div style="width: 220px; background: #18181b; border: 1px solid #27272a; border-radius: 8px; padding: 4px; font-family: system-ui; font-size: 13px; color: #fafafa; box-shadow: 0 8px 30px rgba(0,0,0,0.4);">
+        <div style="padding: 6px 8px; border-radius: 4px; display: flex; justify-content: space-between; align-items: center; cursor: pointer; background: #27272a;">
+          <span>✏️ Edit Node</span>
+          <span style="font-size: 11px; color: #71717a;">Enter</span>
+        </div>
+        <div style="padding: 6px 8px; border-radius: 4px; display: flex; justify-content: space-between; align-items: center;">
+          <span>📋 Duplicate</span>
+          <span style="font-size: 11px; color: #71717a;">⌘D</span>
+        </div>
+        <div style="padding: 6px 8px; border-radius: 4px; display: flex; justify-content: space-between; align-items: center;">
+          <span>📄 Copy</span>
+          <span style="font-size: 11px; color: #71717a;">⌘C</span>
+        </div>
+        <div style="height: 1px; background: #27272a; margin: 4px 0;"></div>
+        <div style="padding: 6px 8px; border-radius: 4px; display: flex; justify-content: space-between; align-items: center;">
+          <span>🚫 Disable</span>
+          <span style="font-size: 11px; color: #71717a;">⌘/</span>
+        </div>
+        <div style="padding: 6px 8px; border-radius: 4px; display: flex; justify-content: space-between; align-items: center;">
+          <span>📝 Add Note</span>
+        </div>
+        <div style="height: 1px; background: #27272a; margin: 4px 0;"></div>
+        <div style="padding: 6px 8px; border-radius: 4px; display: flex; justify-content: space-between; align-items: center; color: #ef4444;">
+          <span>🗑️ Delete</span>
+          <span style="font-size: 11px; color: #71717a;">⌫</span>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>A — Minimal (shadcn/Radix)</h3>
+      <p>Clean, dark-mode native. Uses your existing Radix DropdownMenu primitives. Keyboard shortcuts shown right-aligned. Emoji icons for quick scanning. Separators between logical groups.</p>
+    </div>
+  </div>
+
+  <!-- Option B: Lucide icons -->
+  <div class="card" data-choice="b-lucide" onclick="toggleSelect(this)">
+    <div class="card-image" style="padding: 24px; background: #0a0a0a; display: flex; justify-content: center;">
+      <div style="width: 220px; background: #18181b; border: 1px solid #27272a; border-radius: 8px; padding: 4px; font-family: system-ui; font-size: 13px; color: #fafafa; box-shadow: 0 8px 30px rgba(0,0,0,0.4);">
+        <div style="padding: 6px 8px; border-radius: 4px; display: flex; justify-content: space-between; align-items: center; cursor: pointer; background: #27272a;">
+          <span style="display:flex; align-items:center; gap:8px;">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#a1a1aa" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/></svg>
+            Edit Node
+          </span>
+          <span style="font-size: 11px; color: #52525b;">Enter</span>
+        </div>
+        <div style="padding: 6px 8px; border-radius: 4px; display: flex; justify-content: space-between; align-items: center;">
+          <span style="display:flex; align-items:center; gap:8px;">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#a1a1aa" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="8" y="2" width="13" height="13" rx="2"/><path d="M4 15.5V19a2 2 0 0 0 2 2h3.5"/><path d="M4 8.5V6a2 2 0 0 1 2-2h1.5"/></svg>
+            Duplicate
+          </span>
+          <span style="font-size: 11px; color: #52525b;">⌘D</span>
+        </div>
+        <div style="padding: 6px 8px; border-radius: 4px; display: flex; justify-content: space-between; align-items: center;">
+          <span style="display:flex; align-items:center; gap:8px;">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#a1a1aa" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+            Copy
+          </span>
+          <span style="font-size: 11px; color: #52525b;">⌘C</span>
+        </div>
+        <div style="height: 1px; background: #27272a; margin: 4px 0;"></div>
+        <div style="padding: 6px 8px; border-radius: 4px; display: flex; justify-content: space-between; align-items: center;">
+          <span style="display:flex; align-items:center; gap:8px;">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#a1a1aa" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="4" y1="4" x2="20" y2="20"/></svg>
+            Disable
+          </span>
+          <span style="font-size: 11px; color: #52525b;">⌘/</span>
+        </div>
+        <div style="padding: 6px 8px; border-radius: 4px; display: flex; justify-content: space-between; align-items: center;">
+          <span style="display:flex; align-items:center; gap:8px;">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#a1a1aa" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V8Z"/><path d="M15 3v4a2 2 0 0 0 2 2h4"/></svg>
+            Add Note
+          </span>
+        </div>
+        <div style="height: 1px; background: #27272a; margin: 4px 0;"></div>
+        <div style="padding: 6px 8px; border-radius: 4px; display: flex; justify-content: space-between; align-items: center; color: #ef4444;">
+          <span style="display:flex; align-items:center; gap:8px;">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>
+            Delete
+          </span>
+          <span style="font-size: 11px; color: #52525b;">⌫</span>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>B — Lucide Icons (consistent with toolbar)</h3>
+      <p>Uses Lucide icons matching your CanvasToolbar. More professional, cohesive with the rest of your UI. Icons are muted gray, text is white, delete is red. Same Radix primitives underneath.</p>
+    </div>
+  </div>
+
+  <!-- Option C: No icons -->
+  <div class="card" data-choice="c-text-only" onclick="toggleSelect(this)">
+    <div class="card-image" style="padding: 24px; background: #0a0a0a; display: flex; justify-content: center;">
+      <div style="width: 200px; background: #18181b; border: 1px solid #27272a; border-radius: 8px; padding: 4px; font-family: system-ui; font-size: 13px; color: #fafafa; box-shadow: 0 8px 30px rgba(0,0,0,0.4);">
+        <div style="padding: 6px 12px; border-radius: 4px; display: flex; justify-content: space-between; align-items: center; cursor: pointer; background: #27272a;">
+          <span>Edit Node</span>
+          <span style="font-size: 11px; color: #52525b;">Enter</span>
+        </div>
+        <div style="padding: 6px 12px; border-radius: 4px; display: flex; justify-content: space-between; align-items: center;">
+          <span>Duplicate</span>
+          <span style="font-size: 11px; color: #52525b;">⌘D</span>
+        </div>
+        <div style="padding: 6px 12px; border-radius: 4px; display: flex; justify-content: space-between; align-items: center;">
+          <span>Copy</span>
+          <span style="font-size: 11px; color: #52525b;">⌘C</span>
+        </div>
+        <div style="height: 1px; background: #27272a; margin: 4px 0;"></div>
+        <div style="padding: 6px 12px; border-radius: 4px; display: flex; justify-content: space-between; align-items: center;">
+          <span>Disable</span>
+          <span style="font-size: 11px; color: #52525b;">⌘/</span>
+        </div>
+        <div style="padding: 6px 12px; border-radius: 4px; display: flex; justify-content: space-between; align-items: center;">
+          <span>Add Note</span>
+        </div>
+        <div style="height: 1px; background: #27272a; margin: 4px 0;"></div>
+        <div style="padding: 6px 12px; border-radius: 4px; display: flex; justify-content: space-between; align-items: center; color: #ef4444;">
+          <span>Delete</span>
+          <span style="font-size: 11px; color: #52525b;">⌫</span>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>C — Text Only (VS Code style)</h3>
+      <p>No icons at all — clean text with keyboard shortcuts. Fastest to scan for power users. Lightest implementation. Similar to VS Code's context menus.</p>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,116 @@
+<h2>Context Menu Controller Architecture</h2>
+<p class="subtitle">Zustand controller + factory pattern — how the pieces connect</p>
+
+<div class="section">
+  <div class="mockup">
+    <div class="mockup-header">createFlowContextMenu() — Factory Output</div>
+    <div class="mockup-body" style="font-family: monospace; font-size: 13px; line-height: 1.7; padding: 20px; background: #0a0a0a; color: #e4e4e7;">
+      <div style="color: #71717a;">// Factory returns a tuple: [controller, Component]</div>
+      <br>
+      <div><span style="color:#c084fc;">const</span> [contextMenu, FlowContextMenu] = <span style="color:#67e8f9;">createFlowContextMenu</span>()</div>
+      <br>
+      <div style="color: #71717a;">// ─── Controller (imperative API) ───────────────</div>
+      <div style="margin-left: 0;">
+        <div><span style="color:#c084fc;">contextMenu</span>.openForNode(node, position)</div>
+        <div><span style="color:#c084fc;">contextMenu</span>.openForEdge(edge, position)</div>
+        <div><span style="color:#c084fc;">contextMenu</span>.openForCanvas(position)</div>
+        <div><span style="color:#c084fc;">contextMenu</span>.close()</div>
+        <div><span style="color:#c084fc;">contextMenu</span>.setCopiedNode(node)</div>
+        <div><span style="color:#c084fc;">contextMenu</span>.getCopiedNode()</div>
+        <div><span style="color:#c084fc;">contextMenu</span>.registerActions({ onDelete, onDuplicate, ... })</div>
+      </div>
+      <br>
+      <div style="color: #71717a;">// ─── Component (declarative, self-wired) ──────</div>
+      <div style="margin-left: 0;">
+        <div>&lt;<span style="color:#67e8f9;">FlowContextMenu</span> /&gt; <span style="color:#71717a;">← reads from same Zustand store</span></div>
+        <div style="color:#71717a;">  renders ContextMenu.Root + Content</div>
+        <div style="color:#71717a;">  picks node/edge/canvas variant automatically</div>
+        <div style="color:#71717a;">  calls registered actions on click</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <div class="mockup">
+    <div class="mockup-header">Usage in FlowEditorInner (edit page)</div>
+    <div class="mockup-body" style="font-family: monospace; font-size: 13px; line-height: 1.7; padding: 20px; background: #0a0a0a; color: #e4e4e7;">
+      <div style="color: #71717a;">// Create once at module level</div>
+      <div><span style="color:#c084fc;">const</span> [contextMenu, FlowContextMenu] = <span style="color:#67e8f9;">createFlowContextMenu</span>()</div>
+      <br>
+      <div><span style="color:#c084fc;">function</span> <span style="color:#67e8f9;">FlowEditorInner</span>() {</div>
+      <div style="margin-left: 16px;">
+        <div style="color: #71717a;">// Register actions once (they close over component state)</div>
+        <div><span style="color:#c084fc;">useEffect</span>(() =&gt; {</div>
+        <div style="margin-left: 16px;">contextMenu.<span style="color:#67e8f9;">registerActions</span>({</div>
+        <div style="margin-left: 32px;">
+          <div>onDeleteNode: (id) =&gt; setNodes(ns =&gt; ns.filter(…)),</div>
+          <div>onDuplicateNode: (id) =&gt; { … },</div>
+          <div>onToggleNode: (id) =&gt; { … },</div>
+          <div>onDeleteEdge: (id) =&gt; setEdges(…),</div>
+          <div>onPasteNode: (pos) =&gt; { … },</div>
+          <div>onAddStickyNote: (pos) =&gt; { … },</div>
+          <div>onAddNode: (type, pos) =&gt; handleDrop(type, pos),</div>
+          <div>onSelectAll, onFitView, onInsertNodeOnEdge,</div>
+        </div>
+        <div style="margin-left: 16px;">})</div>
+        <div>}, [nodes, edges, …])</div>
+        <br>
+        <div style="color: #71717a;">// Pass controller to FlowCanvas for event wiring</div>
+        <div>&lt;<span style="color:#67e8f9;">FlowCanvas</span> contextMenu={contextMenu} … /&gt;</div>
+        <br>
+        <div style="color: #71717a;">// Drop the component anywhere — it reads its own store</div>
+        <div>&lt;<span style="color:#67e8f9;">FlowContextMenu</span> /&gt;</div>
+      </div>
+      <div>}</div>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <div class="mockup">
+    <div class="mockup-header">Inside FlowCanvas — event wiring</div>
+    <div class="mockup-body" style="font-family: monospace; font-size: 13px; line-height: 1.7; padding: 20px; background: #0a0a0a; color: #e4e4e7;">
+      <div>&lt;<span style="color:#67e8f9;">ReactFlow</span></div>
+      <div style="margin-left: 16px;">
+        <div>onNodeContextMenu={(e, node) =&gt; {</div>
+        <div style="margin-left: 16px;">e.preventDefault()</div>
+        <div style="margin-left: 16px;">contextMenu.<span style="color:#67e8f9;">openForNode</span>(node, { x: e.clientX, y: e.clientY })</div>
+        <div>}}</div>
+        <div>onEdgeContextMenu={(e, edge) =&gt; {</div>
+        <div style="margin-left: 16px;">e.preventDefault()</div>
+        <div style="margin-left: 16px;">contextMenu.<span style="color:#67e8f9;">openForEdge</span>(edge, { x: e.clientX, y: e.clientY })</div>
+        <div>}}</div>
+        <div>onPaneContextMenu={(e) =&gt; {</div>
+        <div style="margin-left: 16px;">e.preventDefault()</div>
+        <div style="margin-left: 16px;">contextMenu.<span style="color:#67e8f9;">openForCanvas</span>({ x: e.clientX, y: e.clientY })</div>
+        <div>}}</div>
+      </div>
+      <div>/&gt;</div>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <div class="mockup">
+    <div class="mockup-header">Zustand Store Shape</div>
+    <div class="mockup-body" style="font-family: monospace; font-size: 13px; line-height: 1.7; padding: 20px; background: #0a0a0a; color: #e4e4e7;">
+      <div>{</div>
+      <div style="margin-left: 16px; color: #71717a;">// Menu state</div>
+      <div style="margin-left: 16px;">isOpen: <span style="color:#fbbf24;">boolean</span></div>
+      <div style="margin-left: 16px;">position: { x: <span style="color:#fbbf24;">number</span>, y: <span style="color:#fbbf24;">number</span> } | <span style="color:#fbbf24;">null</span></div>
+      <div style="margin-left: 16px;">context:</div>
+      <div style="margin-left: 32px;">| { type: <span style="color:#a3e635;">'node'</span>, node: Node }</div>
+      <div style="margin-left: 32px;">| { type: <span style="color:#a3e635;">'edge'</span>, edge: Edge }</div>
+      <div style="margin-left: 32px;">| { type: <span style="color:#a3e635;">'canvas'</span> }</div>
+      <div style="margin-left: 32px;">| <span style="color:#fbbf24;">null</span></div>
+      <br>
+      <div style="margin-left: 16px; color: #71717a;">// Clipboard</div>
+      <div style="margin-left: 16px;">copiedNode: Node | <span style="color:#fbbf24;">null</span></div>
+      <br>
+      <div style="margin-left: 16px; color: #71717a;">// Registered action handlers</div>
+      <div style="margin-left: 16px;">actions: FlowContextMenuActions | <span style="color:#fbbf24;">null</span></div>
+      <div>}</div>
+    </div>
+  </div>
+</div>
