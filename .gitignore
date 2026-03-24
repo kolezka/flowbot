@@ -4,6 +4,9 @@ dist
 *.session
 .trigger-secret-key
 
+# Worktrees
+.worktrees/
+
 # Temporary/generated files
 .playwright-mcp/
 dashboard-overview.png
