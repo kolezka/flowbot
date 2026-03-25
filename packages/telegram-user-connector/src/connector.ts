@@ -31,9 +31,9 @@ export class TelegramUserConnector {
       // Injected transport (e.g. FakeTelegramUserTransport in tests)
       this.transport = this.config.transport
     } else {
-      // Dynamic import keeps GramJS out of the require graph in test environments
-      const { GramJsClient } = await import('./sdk/gramjs-client.js')
-      this.transport = new GramJsClient({
+      // Dynamic import keeps mtcute out of the require graph in test environments
+      const { MtcuteClient } = await import('./sdk/mtcute-client.js')
+      this.transport = new MtcuteClient({
         sessionString: this.config.sessionString,
         apiId: this.config.apiId,
         apiHash: this.config.apiHash,
