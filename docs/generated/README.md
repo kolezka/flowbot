@@ -98,7 +98,7 @@ pnpm trigger dev
 | Frontend | Next.js 16, React 19, Tailwind CSS 4, Radix UI |
 | Connector Pool | Hono, worker threads, platform-kit Reconciler |
 | Telegram Bot | grammY 1.36, platform-kit ActionRegistry |
-| Telegram User | GramJS (MTProto), platform-kit ActionRegistry |
+| Telegram User | mtcute (MTProto), platform-kit ActionRegistry |
 | WhatsApp User | Baileys 6.7, platform-kit ActionRegistry |
 | Discord Bot | discord.js 14, platform-kit ActionRegistry |
 | Background Jobs | Trigger.dev v3 (self-hosted) |

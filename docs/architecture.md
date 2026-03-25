@@ -15,7 +15,7 @@ flowbot/
 │   └── tg-client/        # DEPRECATED - MTProto auth script only
 ├── packages/
 │   ├── db/               # Prisma 7 schema + client (PostgreSQL)
-│   ├── telegram-transport/ # GramJS client with CircuitBreaker
+│   ├── telegram-transport/ # mtcute client with CircuitBreaker
 │   └── discord-transport/  # discord.js transport with CircuitBreaker
 ├── docker-compose.yml    # PostgreSQL
 └── tsconfig.base.json    # Shared TypeScript config + path aliases
@@ -34,7 +34,7 @@ graph TD
     Trigger[Trigger.dev<br/>Worker] -->|Prisma| DB
     Trigger -->|HTTP| TelegramBot
     Trigger -->|HTTP| DiscordBot
-    Trigger -->|GramJS| TgTransport[telegram-transport]
+    Trigger -->|mtcute| TgTransport[telegram-transport]
     Trigger -->|discord.js| DcTransport[discord-transport]
     TgTransport -->|MTProto| Telegram[Telegram API]
     DcTransport -->|Gateway/REST| Discord[Discord API]
@@ -242,7 +242,7 @@ The Discord bot built with discord.js and Hono.
 
 ### telegram-transport (`packages/telegram-transport`)
 
-GramJS-based Telegram MTProto client with reliability features.
+mtcute-based Telegram MTProto client with reliability features.
 
 - **CircuitBreaker:** Prevents cascading failures when Telegram API is down.
 - **ActionRunner:** Queues and executes Telegram operations with rate limiting.

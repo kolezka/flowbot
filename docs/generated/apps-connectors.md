@@ -34,7 +34,7 @@ connector-pool (main thread, port 3010)
 ├── Reconciler: telegram:bot  → BotInstance (platform=telegram)
 │   └── Worker: TelegramBotConnector (grammY)
 ├── Reconciler: telegram:user → PlatformConnection (connectionType=mtproto)
-│   └── Worker: TelegramUserConnector (GramJS)
+│   └── Worker: TelegramUserConnector (mtcute)
 ├── Reconciler: whatsapp:user → PlatformConnection (platform=whatsapp)
 │   └── Worker: WhatsAppUserConnector (Baileys)
 └── Reconciler: discord:bot   → BotInstance (platform=discord)
@@ -279,9 +279,9 @@ Telegram Bot API connector using **grammY**.
 
 Package: `@flowbot/telegram-user-connector` (ESM, private)
 
-Telegram MTProto user account connector using **GramJS**.
+Telegram MTProto user account connector using **mtcute**.
 
-**Key dependencies:** `@flowbot/platform-kit`, `telegram` (GramJS) 2.26, `pino`, `valibot`
+**Key dependencies:** `@flowbot/platform-kit`, `@mtcute/node` 0.29, `pino`, `valibot`
 
 **Connector class:** `TelegramUserConnector`
 
@@ -298,7 +298,7 @@ Telegram MTProto user account connector using **GramJS**.
 |----------|---------|
 | Messaging | send_message, send_photo, send_video, send_document, send_audio, send_voice, send_sticker, send_animation, send_location, send_contact, send_venue, send_dice, forward_message, edit_message, delete_message, pin_message, unpin_message, copy_message |
 | User API | ban_user, restrict_user, promote_user, set_chat_title, set_chat_description, export_invite_link, get_chat_member, leave_chat, create_poll, send_media_group, create_forum_topic, resolve_username |
-| Flow Actions (18 user_*) | user_get_chat_history, user_search_messages, user_get_all_members, user_get_chat_info, and 14+ more GramJS operations |
+| Flow Actions (18 user_*) | user_get_chat_history, user_search_messages, user_get_all_members, user_get_chat_info, and 14+ more mtcute operations |
 
 **Tests:** 3 files (actions, connector, schemas) — 95 tests
 
@@ -379,6 +379,6 @@ Discord bot connector using **discord.js 14**.
 | connector-pool | Hono (HTTP) | 7 endpoints | — | — |
 | platform-kit | Worker threads | Registry + infra | 11 | 104 |
 | telegram-bot-connector | grammY | 25+ | 5 | 106 |
-| telegram-user-connector | GramJS (MTProto) | 35+ | 3 | 95 |
+| telegram-user-connector | mtcute (MTProto) | 35+ | 3 | 95 |
 | whatsapp-user-connector | Baileys | 20+ | 5 | 105 |
 | discord-bot-connector | discord.js | 25+ | 5 | 143 |

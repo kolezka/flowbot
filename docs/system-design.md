@@ -19,7 +19,7 @@ graph TB
     subgraph "Connector Pool :3010"
         CP[Unified Pool Service<br/>4 Reconcilers]
         TBW[Telegram Bot Workers<br/>grammY]
-        TUW[Telegram User Workers<br/>GramJS / MTProto]
+        TUW[Telegram User Workers<br/>mtcute / MTProto]
         WAW[WhatsApp User Workers<br/>Baileys]
         DCW[Discord Bot Workers<br/>discord.js]
         CP --> TBW & TUW & WAW & DCW
@@ -74,7 +74,7 @@ graph LR
     end
 
     subgraph "packages/*-connector"
-        CON[Platform Connector<br/>grammY / GramJS / Baileys / discord.js]
+        CON[Platform Connector<br/>grammY / mtcute / Baileys / discord.js]
         WRK[worker.ts<br/>Worker thread entry point]
         MAP[Event Mapper<br/>platform → FlowTriggerEvent]
         ACT[Action Handlers<br/>send_message, ban_user, etc.]
@@ -173,7 +173,7 @@ sequenceDiagram
     API->>DB: Store session in credentials<br/>Set status → active
     API-->>U: Connection active
 
-    Note over U,DB: Connector loads session from credentials and auto-reconnects via GramJS
+    Note over U,DB: Connector loads session from credentials and auto-reconnects via mtcute
 ```
 
 ### 3c. Message Routing
@@ -381,7 +381,7 @@ erDiagram
 | `apps/connector-pool` | Unified connector pool | Manages all platform connectors as worker threads, polls DB for instances |
 | `packages/platform-kit` | Shared connector infra | ActionRegistry, EventForwarder, CircuitBreaker, Reconciler, pool server |
 | `packages/telegram-bot-connector` | Telegram Bot API lib | grammY-based connector with typed actions and event mapping |
-| `packages/telegram-user-connector` | Telegram MTProto lib | GramJS-based connector for user account automation |
+| `packages/telegram-user-connector` | Telegram MTProto lib | mtcute-based connector for user account automation |
 | `packages/whatsapp-user-connector` | WhatsApp lib | Baileys-based connector for WhatsApp multi-device |
 | `packages/discord-bot-connector` | Discord lib | Discord.js-based connector with typed actions and event mapping |
 | `packages/db` | Database layer | Prisma schema, client, migrations (35+ models) |

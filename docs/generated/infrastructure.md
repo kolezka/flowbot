@@ -29,7 +29,7 @@
 - A **Next.js admin dashboard** with 44 pages covering moderation, analytics, bot configuration, communities, connections, identity management, and the flow builder UI.
 - **Background job processing** via Trigger.dev for broadcasts, cross-posts, scheduled messages, flow execution, analytics snapshots, and event cleanup.
 - **Platform-kit** shared library providing ActionRegistry, CircuitBreaker, EventForwarder, Reconciler, and worker thread management.
-- **Connector packages** for each platform (grammY, GramJS, Baileys, discord.js) with Valibot-validated action schemas.
+- **Connector packages** for each platform (grammY, mtcute, Baileys, discord.js) with Valibot-validated action schemas.
 
 The platform is built as a **pnpm monorepo** with 11 workspaces across 2 directories: `apps/` and `packages/`.
 
@@ -50,7 +50,7 @@ flowbot/
 |   +-- db/                         # Prisma 7 schema + generated client (PostgreSQL)
 |   +-- platform-kit/               # ActionRegistry, CircuitBreaker, EventForwarder, Reconciler
 |   +-- telegram-bot-connector/     # Telegram Bot connector (grammY)
-|   +-- telegram-user-connector/    # Telegram User connector (GramJS MTProto)
+|   +-- telegram-user-connector/    # Telegram User connector (mtcute MTProto)
 |   +-- whatsapp-user-connector/    # WhatsApp User connector (Baileys)
 |   +-- discord-bot-connector/      # Discord Bot connector (discord.js)
 |   +-- flow-shared/                # Shared flow node type definitions
@@ -73,7 +73,7 @@ flowbot/
 | `packages/db` | `@flowbot/db` | ESM | tsc | Prisma Client 7, @prisma/adapter-pg |
 | `packages/platform-kit` | `@flowbot/platform-kit` | ESM | tsc | Hono, Pino, Valibot |
 | `packages/telegram-bot-connector` | `@flowbot/telegram-bot-connector` | ESM | tsc | platform-kit, grammY 1.36, Pino, Valibot |
-| `packages/telegram-user-connector` | `@flowbot/telegram-user-connector` | ESM | tsc | platform-kit, GramJS 2.26, Pino, Valibot |
+| `packages/telegram-user-connector` | `@flowbot/telegram-user-connector` | ESM | tsc | platform-kit, mtcute 0.29, Pino, Valibot |
 | `packages/whatsapp-user-connector` | `@flowbot/whatsapp-user-connector` | ESM | tsc | platform-kit, Baileys 6.7, Pino, Valibot |
 | `packages/discord-bot-connector` | `@flowbot/discord-bot-connector` | ESM | tsc | platform-kit, discord.js 14, Pino, Valibot |
 | `packages/flow-shared` | `@flowbot/flow-shared` | ESM | tsc | (no runtime deps) |
@@ -120,7 +120,7 @@ All workspaces reference `@flowbot/db` via the TypeScript path alias (`tsconfig.
 | Connector Pool | Hono + worker threads | 4.x |
 | Platform Kit | Hono, Valibot | 4.x |
 | Telegram Bot Connector | grammY | 1.36.x |
-| Telegram User Connector | GramJS (MTProto) | 2.26.x |
+| Telegram User Connector | mtcute (MTProto) | 0.29.x |
 | WhatsApp User Connector | Baileys | 6.7.x |
 | Discord Bot Connector | discord.js | 14.x |
 | Background jobs | Trigger.dev | 3.x (self-hosted) |
@@ -391,7 +391,7 @@ Variables are stored in `.env` files per workspace (gitignored).
 | `ENABLE_DISCORD_BOT` | connector-pool | Enable discord:bot pool (default: true) |
 | `TG_CLIENT_API_ID` | trigger | Telegram MTProto API ID |
 | `TG_CLIENT_API_HASH` | trigger | Telegram MTProto API hash |
-| `TG_CLIENT_SESSION` | trigger | Stored GramJS session string |
+| `TG_CLIENT_SESSION` | trigger | Stored mtcute session string |
 | `CONNECTOR_POOL_URL` | trigger | Pool HTTP endpoint (default: `http://localhost:3010`) |
 
 ### Sensitive Files (Gitignored)

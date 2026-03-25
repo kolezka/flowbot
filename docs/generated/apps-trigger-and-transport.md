@@ -74,7 +74,7 @@ All task files in `apps/trigger/src/trigger/`.
 |----------|-------|
 | Queue | `telegram` (concurrency: 1) |
 | Input | `{ broadcastId: string }` |
-| Behavior | Loads broadcast, sends to each target with 200ms stagger via GramJS |
+| Behavior | Loads broadcast, sends to each target with 200ms stagger via mtcute |
 | Output | `{ broadcastId, status, results[] }` |
 
 #### 3. `cross-post` (On-demand)
@@ -83,7 +83,7 @@ All task files in `apps/trigger/src/trigger/`.
 |----------|-------|
 | Queue | `telegram` (concurrency: 1) |
 | Input | `{ templateId?, messageText, targetChatIds[] }` |
-| Behavior | Sends to targets with 100ms stagger via GramJS |
+| Behavior | Sends to targets with 100ms stagger via mtcute |
 | Output | `{ results[] }` |
 
 #### 4. `scheduled-message` (Scheduled)
@@ -136,7 +136,7 @@ Singleton Prisma client factory using `@flowbot/db`.
 
 #### `src/lib/telegram.ts`
 
-Legacy singleton factory for direct GramJS transport (used by broadcast/cross-post tasks that predate pool dispatch).
+Legacy singleton factory for direct mtcute transport (used by broadcast/cross-post tasks that predate pool dispatch).
 
 #### `src/lib/manager-bot.ts`
 
@@ -301,7 +301,7 @@ Exports `NODE_TYPES` -- an array of 172 `NodeTypeDefinition` objects, each with 
 | `DATABASE_URL` | Yes | `apps/trigger` | PostgreSQL connection string |
 | `TG_CLIENT_API_ID` | Yes | `apps/trigger` | Telegram API ID (numeric) |
 | `TG_CLIENT_API_HASH` | Yes | `apps/trigger` | Telegram API hash |
-| `TG_CLIENT_SESSION` | No | `apps/trigger` | GramJS StringSession |
+| `TG_CLIENT_SESSION` | No | `apps/trigger` | mtcute session string |
 | `TELEGRAM_BOT_API_URL` | No | `apps/trigger` | Telegram bot API URL |
 | `CONNECTOR_POOL_URL` | No | `apps/trigger` | Pool HTTP endpoint (default: `http://localhost:3010`) |
 | `LOG_LEVEL` | No | `apps/trigger` | Pino log level (default: `info`) |
