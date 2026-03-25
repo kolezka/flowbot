@@ -1,14 +1,14 @@
 import { pino } from 'pino'
-import { GramJsClient } from '@flowbot/telegram-user-connector'
+import { MtcuteClient } from '@flowbot/telegram-user-connector'
 
-let transport: GramJsClient | null = null
+let transport: MtcuteClient | null = null
 
 const logger = pino({
   level: process.env.LOG_LEVEL || 'info',
   redact: ['*.session', '*.sessionString', 'session'],
 })
 
-export async function getTelegramTransport(): Promise<GramJsClient> {
+export async function getTelegramTransport(): Promise<MtcuteClient> {
   if (transport && transport.isConnected()) {
     return transport
   }
@@ -21,11 +21,11 @@ export async function getTelegramTransport(): Promise<GramJsClient> {
     throw new Error('TG_CLIENT_API_ID and TG_CLIENT_API_HASH are required')
   }
 
-  transport = new GramJsClient({
+  transport = new MtcuteClient({
     apiId,
     apiHash,
     sessionString: session,
-    logger: logger.child({ component: 'gramjs' }),
+    logger: logger.child({ component: 'mtcute' }),
   })
 
   await transport.connect()
