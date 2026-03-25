@@ -151,7 +151,7 @@ Each platform is split by **identity** (bot vs user account):
 
 |  | Bot Account | User Account |
 |---|---|---|
-| **Telegram** | `telegram-bot-connector` (grammY) | `telegram-user-connector` (GramJS) |
+| **Telegram** | `telegram-bot-connector` (grammY) | `telegram-user-connector` (mtcute) |
 | **Discord** | `discord-bot-connector` (discord.js) | _(future)_ |
 | **WhatsApp** | _(n/a)_ | `whatsapp-user-connector` (Baileys) |
 
@@ -296,7 +296,7 @@ graph TB
 | `apps/trigger` | Trigger.dev v3 | 294 | Flow engine + 7 background tasks |
 | `packages/platform-kit` | Hono, Valibot | 104 | ActionRegistry, CircuitBreaker, EventForwarder, Reconciler |
 | `packages/telegram-bot-connector` | grammY, Valibot | 106 | Bot API actions, events, features |
-| `packages/telegram-user-connector` | GramJS, Valibot | 95 | MTProto user-account actions |
+| `packages/telegram-user-connector` | mtcute, Valibot | 95 | MTProto user-account actions |
 | `packages/discord-bot-connector` | discord.js, Valibot | 143 | Gateway actions, events, features |
 | `packages/whatsapp-user-connector` | Baileys, Valibot | 105 | Multi-device actions, events, QR auth |
 | `packages/db` | Prisma 7 | — | Schema + client (35 models) |
@@ -515,7 +515,7 @@ graph LR
 | Frontend | Next.js 16 + React 19 + Radix UI + Tailwind 4 |
 | Flow Editor | React Flow (@xyflow/react) |
 | Connectors | platform-kit + Hono + Valibot |
-| Telegram | grammY (bot) + GramJS (user) |
+| Telegram | grammY (bot) + mtcute (user) |
 | Discord | discord.js |
 | WhatsApp | Baileys |
 | Background Jobs | Trigger.dev v3 |

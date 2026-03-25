@@ -15,9 +15,9 @@ The platform uses a **Platform Discriminator** pattern: each entity (account, co
 | `apps/connector-pool` | Unified pool service, Hono, Reconciler, worker threads | ESM (tsx) | — |
 | `apps/api` | NestJS 11, Swagger 11, class-validator, Socket.IO 4.8, Trigger SDK 3.3 | CJS | Jest |
 | `apps/frontend` | Next.js 16.1, React 19.2, @xyflow/react 12.6, Recharts 3.8, Radix UI, Tailwind 4 | ESM | Playwright |
-| `apps/trigger` | Trigger.dev SDK 3.x, GramJS (telegram), Pino 9.9 | ESM | Vitest |
+| `apps/trigger` | Trigger.dev SDK 3.x, mtcute (telegram), Pino 9.9 | ESM | Vitest |
 | `packages/db` | Prisma 7, @prisma/adapter-pg 7 | ESM | None |
-| `packages/telegram-user-connector` | GramJS (MTProto), platform-kit, Valibot 0.42 | ESM | Vitest |
+| `packages/telegram-user-connector` | mtcute (MTProto), platform-kit, Valibot 0.42 | ESM | Vitest |
 | `packages/telegram-bot-connector` | grammY, platform-kit, Valibot 0.42 | ESM | Vitest |
 | `packages/whatsapp-user-connector` | Baileys 6.7, platform-kit, Valibot 0.42 | ESM | Vitest |
 | `packages/discord-bot-connector` | Discord.js 14, platform-kit, Valibot 0.42 | ESM | Vitest |
