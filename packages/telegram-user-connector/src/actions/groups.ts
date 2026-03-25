@@ -1,4 +1,5 @@
 import * as v from 'valibot'
+import type { TelegramClient, Chat } from '@mtcute/node'
 import type { ActionRegistry } from '@flowbot/platform-kit'
 import type { ITelegramUserTransport } from '../sdk/types.js'
 
@@ -12,33 +13,30 @@ export interface ListGroupsResult {
   groups: GroupInfo[]
 }
 
+function isChat(peer: unknown): peer is Chat {
+  return peer !== null && typeof peer === 'object' && 'chatType' in peer
+}
+
 export function registerGroupsActions(registry: ActionRegistry, transport: ITelegramUserTransport): void {
   registry.register('user_list_groups', {
     schema: v.object({
       limit: v.optional(v.number(), 200),
     }),
     handler: async (params): Promise<ListGroupsResult> => {
-      const client = transport.getClient() as import('telegram').TelegramClient
-      const dialogs = await client.getDialogs({ limit: params.limit })
-
+      const client = transport.getClient() as TelegramClient
       const groups: GroupInfo[] = []
-      for (const dialog of dialogs) {
-        const entity = dialog.entity
-        if (entity === undefined || entity === null) continue
+
+      for await (const dialog of client.iterDialogs({ limit: params.limit })) {
+        const peer = dialog.peer
+        if (!isChat(peer)) continue
 
         // Include basic groups, supergroups, and channels
-        const isChat = 'className' in entity && entity.className === 'Chat'
-        const isChannel = 'className' in entity && entity.className === 'Channel'
-        if (!isChat && !isChannel) continue
+        const chatType = peer.chatType
+        if (chatType !== 'group' && chatType !== 'supergroup' && chatType !== 'channel') continue
 
-        const id = String('id' in entity ? entity.id : '')
-        const name = 'title' in entity ? String(entity.title ?? '') : ''
-        const memberCount =
-          'participantsCount' in entity
-            ? Number(entity.participantsCount ?? 0)
-            : 'migratedTo' in entity
-              ? 0
-              : 0
+        const id = String(peer.id)
+        const name = peer.title
+        const memberCount = peer.membersCount ?? 0
 
         groups.push({ id, name, memberCount })
       }

@@ -105,6 +105,7 @@ export class MtcuteClient implements ITelegramUserTransport {
   private readonly client: TelegramClient
   private readonly sessionString: string
   private readonly logger: Logger
+  private _connected = false
 
   constructor({ sessionString, apiId, apiHash, logger }: MtcuteClientConfig) {
     this.logger = logger.child({ component: 'MtcuteClient' })
@@ -125,6 +126,7 @@ export class MtcuteClient implements ITelegramUserTransport {
       this.logger.info('Connecting to Telegram...')
       await this.client.importSession(this.sessionString)
       await this.client.connect()
+      this._connected = true
       this.logger.info('Connected to Telegram')
     } catch (error) {
       this.logger.error({ err: error }, 'Failed to connect to Telegram')
@@ -136,6 +138,7 @@ export class MtcuteClient implements ITelegramUserTransport {
     try {
       this.logger.info('Disconnecting from Telegram...')
       await this.client.disconnect()
+      this._connected = false
       this.logger.info('Disconnected from Telegram')
     } catch (error) {
       this.logger.error({ err: error }, 'Failed to disconnect from Telegram')
@@ -144,7 +147,7 @@ export class MtcuteClient implements ITelegramUserTransport {
   }
 
   isConnected(): boolean {
-    return this.client.isConnected
+    return this._connected
   }
 
   getClient(): TelegramClient {

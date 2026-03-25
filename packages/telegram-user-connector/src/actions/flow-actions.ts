@@ -4,15 +4,20 @@
  * These are registered with the `user_` prefix so the flow engine's dispatcher
  * can route them through the pool's POST /execute endpoint.
  * Actions that map directly to transport methods delegate to them.
- * Actions that need raw GramJS access use transport.getClient().
+ * Actions that need raw mtcute access use transport.getClient().
  */
 
 import * as v from 'valibot'
+import type { TelegramClient } from '@mtcute/node'
 import type { ActionRegistry } from '@flowbot/platform-kit'
 import type { ITelegramUserTransport } from '../sdk/types.js'
 
+function getMtcuteClient(transport: ITelegramUserTransport): TelegramClient {
+  return transport.getClient() as TelegramClient
+}
+
 export function registerFlowActions(registry: ActionRegistry, transport: ITelegramUserTransport): void {
-  // --- Read Operations (raw GramJS) ---
+  // --- Read Operations (raw mtcute) ---
 
   registry.register('user_get_chat_history', {
     schema: v.object({
@@ -20,9 +25,8 @@ export function registerFlowActions(registry: ActionRegistry, transport: ITelegr
       limit: v.optional(v.number(), 50),
     }),
     handler: async (params) => {
-      const client = transport.getClient() as import('telegram').TelegramClient
-      const entity = await client.getEntity(params.chatId)
-      return client.getMessages(entity, { limit: params.limit })
+      const client = getMtcuteClient(transport)
+      return client.getHistory(params.chatId, { limit: params.limit })
     },
   })
 
@@ -33,9 +37,12 @@ export function registerFlowActions(registry: ActionRegistry, transport: ITelegr
       limit: v.optional(v.number(), 50),
     }),
     handler: async (params) => {
-      const client = transport.getClient() as import('telegram').TelegramClient
-      const entity = await client.getEntity(params.chatId)
-      return client.getMessages(entity, { search: params.query, limit: params.limit })
+      const client = getMtcuteClient(transport)
+      return client.searchMessages({
+        chatId: params.chatId,
+        query: params.query,
+        limit: params.limit,
+      })
     },
   })
 
@@ -45,9 +52,8 @@ export function registerFlowActions(registry: ActionRegistry, transport: ITelegr
       limit: v.optional(v.number(), 200),
     }),
     handler: async (params) => {
-      const client = transport.getClient() as import('telegram').TelegramClient
-      const entity = await client.getEntity(params.chatId)
-      return client.getParticipants(entity, { limit: params.limit })
+      const client = getMtcuteClient(transport)
+      return client.getChatMembers(params.chatId, { limit: params.limit })
     },
   })
 
@@ -56,17 +62,16 @@ export function registerFlowActions(registry: ActionRegistry, transport: ITelegr
       chatId: v.string(),
     }),
     handler: async (params) => {
-      const client = transport.getClient() as import('telegram').TelegramClient
-      return client.getEntity(params.chatId)
+      const client = getMtcuteClient(transport)
+      return client.getChat(params.chatId)
     },
   })
 
   registry.register('user_get_contacts', {
     schema: v.object({}),
     handler: async () => {
-      const client = transport.getClient() as import('telegram').TelegramClient
-      const { Api } = await import('telegram')
-      return client.invoke(new Api.contacts.GetContacts({ hash: BigInt(0) }))
+      const client = getMtcuteClient(transport)
+      return client.getContacts()
     },
   })
 
@@ -75,8 +80,12 @@ export function registerFlowActions(registry: ActionRegistry, transport: ITelegr
       limit: v.optional(v.number(), 100),
     }),
     handler: async (params) => {
-      const client = transport.getClient() as import('telegram').TelegramClient
-      return client.getDialogs({ limit: params.limit })
+      const client = getMtcuteClient(transport)
+      const dialogs = []
+      for await (const dialog of client.iterDialogs({ limit: params.limit })) {
+        dialogs.push(dialog)
+      }
+      return dialogs
     },
   })
 
@@ -145,7 +154,7 @@ export function registerFlowActions(registry: ActionRegistry, transport: ITelegr
     },
   })
 
-  // --- Chat Operations (raw GramJS) ---
+  // --- Chat Operations (raw mtcute) ---
 
   registry.register('user_join_chat', {
     schema: v.object({
@@ -153,15 +162,9 @@ export function registerFlowActions(registry: ActionRegistry, transport: ITelegr
       username: v.optional(v.string()),
     }),
     handler: async (params) => {
-      const client = transport.getClient() as import('telegram').TelegramClient
-      const { Api } = await import('telegram')
+      const client = getMtcuteClient(transport)
       const link = params.invite ?? params.username ?? ''
-      if (link.includes('+') || link.includes('joinchat')) {
-        const hash = link.split('+').pop() || link.split('joinchat/').pop() || ''
-        return client.invoke(new Api.messages.ImportChatInvite({ hash }))
-      }
-      const entity = await client.getEntity(link)
-      return client.invoke(new Api.channels.JoinChannel({ channel: entity }))
+      return client.joinChat(link)
     },
   })
 
@@ -180,13 +183,11 @@ export function registerFlowActions(registry: ActionRegistry, transport: ITelegr
       users: v.optional(v.array(v.string()), []),
     }),
     handler: async (params) => {
-      const client = transport.getClient() as import('telegram').TelegramClient
-      const { Api } = await import('telegram')
-      const entities = await Promise.all(params.users.map((u) => client.getEntity(u)))
-      return client.invoke(new Api.messages.CreateChat({
+      const client = getMtcuteClient(transport)
+      return client.createGroup({
         title: params.title,
-        users: entities,
-      }))
+        users: params.users,
+      })
     },
   })
 
@@ -198,14 +199,17 @@ export function registerFlowActions(registry: ActionRegistry, transport: ITelegr
       megagroup: v.optional(v.boolean(), false),
     }),
     handler: async (params) => {
-      const client = transport.getClient() as import('telegram').TelegramClient
-      const { Api } = await import('telegram')
-      return client.invoke(new Api.channels.CreateChannel({
+      const client = getMtcuteClient(transport)
+      if (params.megagroup) {
+        return client.createSupergroup({
+          title: params.title,
+          description: params.about,
+        })
+      }
+      return client.createChannel({
         title: params.title,
-        about: params.about,
-        broadcast: params.broadcast,
-        megagroup: params.megagroup,
-      }))
+        description: params.about,
+      })
     },
   })
 
@@ -215,18 +219,12 @@ export function registerFlowActions(registry: ActionRegistry, transport: ITelegr
       users: v.optional(v.array(v.string()), []),
     }),
     handler: async (params) => {
-      const client = transport.getClient() as import('telegram').TelegramClient
-      const { Api } = await import('telegram')
-      const entity = await client.getEntity(params.chatId)
-      const userEntities = await Promise.all(params.users.map((u) => client.getEntity(u)))
-      return client.invoke(new Api.channels.InviteToChannel({
-        channel: entity,
-        users: userEntities,
-      }))
+      const client = getMtcuteClient(transport)
+      return client.addChatMembers(params.chatId, params.users, {})
     },
   })
 
-  // --- Account Operations (raw GramJS) ---
+  // --- Account Operations (raw mtcute) ---
 
   registry.register('user_update_profile', {
     schema: v.object({
@@ -235,13 +233,12 @@ export function registerFlowActions(registry: ActionRegistry, transport: ITelegr
       bio: v.optional(v.string()),
     }),
     handler: async (params) => {
-      const client = transport.getClient() as import('telegram').TelegramClient
-      const { Api } = await import('telegram')
-      return client.invoke(new Api.account.UpdateProfile({
+      const client = getMtcuteClient(transport)
+      return client.updateProfile({
         firstName: params.firstName,
         lastName: params.lastName,
-        about: params.bio,
-      }))
+        bio: params.bio,
+      })
     },
   })
 
@@ -250,9 +247,9 @@ export function registerFlowActions(registry: ActionRegistry, transport: ITelegr
       offline: v.optional(v.boolean(), false),
     }),
     handler: async (params) => {
-      const client = transport.getClient() as import('telegram').TelegramClient
-      const { Api } = await import('telegram')
-      return client.invoke(new Api.account.UpdateStatus({ offline: params.offline }))
+      const client = getMtcuteClient(transport)
+      // mtcute uses sendOnline(bool) where true = online, false = offline
+      return client.sendOnline(!params.offline)
     },
   })
 
@@ -263,15 +260,9 @@ export function registerFlowActions(registry: ActionRegistry, transport: ITelegr
       limit: v.optional(v.number(), 10),
     }),
     handler: async (params) => {
-      const client = transport.getClient() as import('telegram').TelegramClient
-      const { Api } = await import('telegram')
-      const entity = await client.getEntity(params.userId ?? params.chatId ?? '')
-      return client.invoke(new Api.photos.GetUserPhotos({
-        userId: entity,
-        offset: 0,
-        maxId: BigInt(0),
-        limit: params.limit,
-      }))
+      const client = getMtcuteClient(transport)
+      const target = params.userId ?? params.chatId ?? ''
+      return client.getProfilePhotos(target, { limit: params.limit })
     },
   })
 }
