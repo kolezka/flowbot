@@ -13,6 +13,8 @@
  */
 
 import { TelegramClient } from '@mtcute/node'
+import { tl } from '@mtcute/node'
+import { SentCode } from '@mtcute/node'
 import * as readline from 'node:readline/promises'
 import { stdin, stdout } from 'node:process'
 
@@ -36,14 +38,29 @@ async function main(): Promise<void> {
   try {
     const phone = await rl.question('Phone number (international format, e.g. +1234567890): ')
 
-    const sentCode = await client.sendCode({ phone })
+    const sentCodeResult = await client.sendCode({ phone })
+
+    // sendCode can return a User (already authorized) or SentCode
+    if (!(sentCodeResult instanceof SentCode)) {
+      console.log('Already authorized!')
+      const session = await client.exportSession()
+      console.log('\n--- Session string (set as TG_CLIENT_SESSION) ---')
+      console.log(session)
+      console.log('--- End of session string ---\n')
+      await client.disconnect()
+      return
+    }
 
     const code = await rl.question('Enter the code you received: ')
 
     try {
-      await client.signIn({ phone, code, phoneCodeHash: sentCode.phoneCodeHash })
+      await client.signIn({
+        phone,
+        phoneCodeHash: sentCodeResult.phoneCodeHash,
+        phoneCode: code,
+      })
     } catch (error: unknown) {
-      if (error !== null && typeof error === 'object' && 'text' in error && (error as { text: string }).text === 'SESSION_PASSWORD_NEEDED') {
+      if (tl.RpcError.is(error, 'SESSION_PASSWORD_NEEDED')) {
         const password = await rl.question('2FA password: ')
         await client.checkPassword(password)
       } else {
