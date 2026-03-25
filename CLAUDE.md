@@ -6,7 +6,7 @@ Multi-platform bot management platform ("Flowbot") with admin dashboard, group m
 
 ### Multi-Platform Architecture
 
-The platform uses a **Platform Discriminator** pattern: each entity (account, connection) has a `platform` string field. Platform-specific logic lives in strategy classes registered at runtime via `PlatformStrategyRegistry`. Design spec at `docs/superpowers/specs/2026-03-19-multi-platform-architecture-design.md`.
+The platform uses a **Platform Discriminator** pattern: each entity (account, connection) has a `platform` string field. Platform-specific logic lives in strategy classes registered at runtime via `PlatformStrategyRegistry`.
 
 ### Workspaces
 
