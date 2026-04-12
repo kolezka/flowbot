@@ -1,6 +1,8 @@
 import { NestFactory } from '@nestjs/core';
+import { ValidationPipe } from '@nestjs/common';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { configure } from '@trigger.dev/sdk/v3';
+import helmet from 'helmet';
 import { AppModule } from './app.module';
 
 // Configure Trigger.dev SDK for self-hosted instance
@@ -13,6 +15,18 @@ if (process.env.TRIGGER_SECRET_KEY) {
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
+
+  // Security headers
+  app.use(helmet());
+
+  // Request validation
+  app.useGlobalPipes(
+    new ValidationPipe({
+      whitelist: true,
+      forbidNonWhitelisted: true,
+      transform: true,
+    }),
+  );
 
   // Enable CORS for frontend
   app.enableCors({

@@ -1,5 +1,6 @@
 import { Controller, Post, Body, Logger } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
+import { Throttle } from '@nestjs/throttler';
 import { Public } from '../auth/public.decorator';
 import { FlowsService } from './flows.service';
 import type { FlowTriggerEvent } from './flow-trigger-event';
@@ -21,6 +22,7 @@ export class FlowWebhookController {
   constructor(private readonly service: FlowsService) {}
 
   @Public()
+  @Throttle({ default: { ttl: 60_000, limit: 30 } })
   @Post('webhook')
   @ApiOperation({
     summary: 'Receive platform events and match to active flows',

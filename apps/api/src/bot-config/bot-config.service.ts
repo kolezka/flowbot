@@ -34,6 +34,7 @@ export class BotConfigService {
   async findBot(id: string) {
     const bot = await this.prisma.botInstance.findUnique({
       where: { id },
+      omit: { botToken: true },
       include: {
         commands: { orderBy: { sortOrder: 'asc' } },
         responses: true,
@@ -45,7 +46,10 @@ export class BotConfigService {
   }
 
   async createBot(dto: CreateBotInstanceDto) {
-    const bot = await this.prisma.botInstance.create({ data: dto });
+    const bot = await this.prisma.botInstance.create({
+      data: dto,
+      omit: { botToken: true },
+    });
 
     if (dto.platform !== 'discord' && dto.botToken) {
       try {
@@ -60,6 +64,7 @@ export class BotConfigService {
           return this.prisma.botInstance.update({
             where: { id: bot.id },
             data: { botUsername: json.result.username },
+            omit: { botToken: true },
           });
         }
       } catch (err) {
@@ -74,7 +79,11 @@ export class BotConfigService {
 
   async updateBot(id: string, dto: UpdateBotInstanceDto) {
     await this.findBot(id);
-    return this.prisma.botInstance.update({ where: { id }, data: dto });
+    return this.prisma.botInstance.update({
+      where: { id },
+      data: dto,
+      omit: { botToken: true },
+    });
   }
 
   async updateScope(
