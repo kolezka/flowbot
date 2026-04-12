@@ -40,8 +40,14 @@ export class GrammyBot implements ITelegramBotTransport {
 
   async start(): Promise<void> {
     try {
-      await this.bot.start()
+      await this.bot.init()
       this.running = true
+      // bot.start() runs the long-polling loop and never resolves,
+      // so we fire-and-forget and let it run in the background.
+      this.bot.start().catch((err) => {
+        this.running = false
+        this.logger.error({ err }, 'Telegram bot polling stopped unexpectedly')
+      })
       this.logger.info('Telegram bot started')
     } catch (err) {
       throw new ConnectorError('Failed to start Telegram bot', 'TRANSPORT_ERROR', err)
