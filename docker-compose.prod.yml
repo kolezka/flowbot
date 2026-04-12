@@ -4,7 +4,7 @@ services:
     restart: unless-stopped
     environment:
       POSTGRES_USER: ${DB_USER:-postgres}
-      POSTGRES_PASSWORD: ${DB_PASSWORD:?Set DB_PASSWORD in .env}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:?DB_PASSWORD is required}
       POSTGRES_DB: ${DB_NAME:-flowbot_db}
       POSTGRES_HOST_AUTH_METHOD: md5
       POSTGRES_INITDB_ARGS: --auth-host=md5
@@ -30,7 +30,7 @@ services:
       DATABASE_URL: postgresql://${DB_USER:-postgres}:${DB_PASSWORD}@postgres:5432/${DB_NAME:-flowbot_db}
       PORT: '3000'
       FRONTEND_URL: ${FRONTEND_URL:-http://localhost:3001}
-      DASHBOARD_SECRET: ${DASHBOARD_SECRET:?Set DASHBOARD_SECRET in .env}
+      DASHBOARD_SECRET: ${DASHBOARD_SECRET:?DASHBOARD_SECRET is required}
       TRIGGER_SECRET_KEY: ${TRIGGER_SECRET_KEY:-}
       TRIGGER_API_URL: ${TRIGGER_API_URL:-}
       NODE_ENV: production
