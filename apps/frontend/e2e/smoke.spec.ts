@@ -25,13 +25,17 @@ test.describe('Dashboard home', () => {
 
   test('quick links navigate correctly', async ({ page }) => {
     await page.goto('/dashboard');
+    await page.waitForLoadState('networkidle');
 
-    // Scroll to quick links and click "All groups" button
-    const allGroupsBtn = page.getByRole('button', { name: /all groups/i });
-    await allGroupsBtn.scrollIntoViewIfNeeded();
-    await allGroupsBtn.click();
+    // Wait for dashboard content to load past the loading skeleton
+    await expect(page.getByText('Quick Actions')).toBeVisible({ timeout: 15_000 });
 
-    await expect(page).toHaveURL(/\/dashboard\/moderation\/groups/);
+    // Click "View Flows" quick action link to navigate
+    const viewFlowsLink = page.getByText('View Flows').first();
+    await viewFlowsLink.scrollIntoViewIfNeeded();
+    await viewFlowsLink.click();
+
+    await expect(page).toHaveURL(/\/dashboard\/flows/);
   });
 });
 

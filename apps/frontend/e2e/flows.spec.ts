@@ -79,7 +79,7 @@ test.describe('Flow Editor', () => {
 
     // Some node types should be listed
     await expect(page.getByText('Message Received')).toBeVisible();
-    await expect(page.getByText('Send Message')).toBeVisible();
+    await expect(page.getByText('Send Message', { exact: true })).toBeVisible();
     await expect(page.getByText('Keyword Match')).toBeVisible();
 
     await api.delete(`/api/flows/${flow.id}`);
@@ -98,18 +98,20 @@ test.describe('Flow Editor', () => {
     // Flow name should appear in toolbar
     await expect(page.getByText(flowName)).toBeVisible({ timeout: 10_000 });
 
-    // Status badge (draft by default) should be visible
-    await expect(page.getByText('draft')).toBeVisible();
+    // Version badge should be visible (e.g. "v1")
+    await expect(page.getByText(/^v\d+$/)).toBeVisible();
 
-    // Save button should be present
-    await expect(page.getByRole('button', { name: /save/i })).toBeVisible();
+    // Save Draft button should be present
+    await expect(page.getByRole('button', { name: /save draft/i })).toBeVisible();
 
-    // Activate button should be present (since flow is draft)
-    await expect(page.getByRole('button', { name: /activate/i })).toBeVisible();
+    // Validate button should be present
+    await expect(page.getByRole('button', { name: /validate/i })).toBeVisible();
 
-    // Analytics and Versions links should be present
-    await expect(page.getByRole('link', { name: /analytics/i })).toBeVisible();
-    await expect(page.getByRole('link', { name: /versions/i })).toBeVisible();
+    // History button should be present
+    await expect(page.getByRole('button', { name: /history/i })).toBeVisible();
+
+    // Test Run button should be present
+    await expect(page.getByRole('button', { name: /test run/i })).toBeVisible();
 
     await api.delete(`/api/flows/${flow.id}`);
   });
@@ -125,13 +127,12 @@ test.describe('Flow Editor', () => {
 
     await expect(page.locator('.react-flow')).toBeVisible({ timeout: 10_000 });
 
-    // Click save button
-    const saveBtn = page.getByRole('button', { name: /save/i });
+    // Click save draft button
+    const saveBtn = page.getByRole('button', { name: /save draft/i });
     await saveBtn.click();
 
-    // Button should show "Saving..." state briefly
-    // After saving, the button text should return to "Save"
-    await expect(saveBtn).toContainText(/save/i, { timeout: 10_000 });
+    // After saving, the button text should return to "Save Draft"
+    await expect(saveBtn).toContainText(/save draft/i, { timeout: 10_000 });
 
     await api.delete(`/api/flows/${flow.id}`);
   });
@@ -181,16 +182,20 @@ test.describe('Flow Templates', () => {
     await expect(page.getByText('Start with a pre-built template')).toBeVisible();
 
     // Check some templates are listed
-    await expect(page.getByText('Welcome New Members')).toBeVisible();
-    await expect(page.getByText('Spam Escalation')).toBeVisible();
-    await expect(page.getByText('Scheduled Broadcast')).toBeVisible();
+    await expect(page.getByText('Command Reply')).toBeVisible();
+    await expect(page.getByText('Spam Filter')).toBeVisible();
+    await expect(page.getByText('Auto-Reply by Keyword')).toBeVisible();
   });
 
   test('template cards show use template button', async ({ page }) => {
     await page.goto('/dashboard/flows/templates');
     await page.waitForLoadState('networkidle');
 
+    // Wait for template content to load (past the loading spinner)
+    await expect(page.getByText('Flow Templates')).toBeVisible({ timeout: 10_000 });
+
     const useButtons = page.getByRole('button', { name: /use template/i });
+    await expect(useButtons.first()).toBeVisible({ timeout: 10_000 });
     const count = await useButtons.count();
     expect(count).toBeGreaterThanOrEqual(1);
   });

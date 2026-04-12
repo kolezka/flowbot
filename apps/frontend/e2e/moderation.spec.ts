@@ -13,12 +13,12 @@ test.describe('Moderation', () => {
     await page.goto('/dashboard/moderation');
     await page.waitForLoadState('networkidle');
 
+    // Wait for the page to finish loading (past the "Loading moderation overview..." spinner)
     // Either stat cards load or error message appears
-    const hasStats = await page.getByText('Managed Groups').first().isVisible().catch(() => false);
-    const hasError = await page.getByText(/failed to load/i).isVisible().catch(() => false);
-
-    // One of these should be true
-    expect(hasStats || hasError).toBeTruthy();
+    await expect(
+      page.getByText('Managed Groups').first()
+        .or(page.getByText(/failed to load/i).first())
+    ).toBeVisible({ timeout: 15_000 });
   });
 
   test('groups page loads with search', async ({ page }) => {

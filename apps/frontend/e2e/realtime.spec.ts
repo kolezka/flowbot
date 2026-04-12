@@ -5,12 +5,15 @@ test.describe('Real-Time Features', () => {
     await page.goto('/dashboard');
     await page.waitForLoadState('networkidle');
 
-    // ConnectionStatus component renders "Live" or "Offline" text
-    const hasLive = await page.getByText('Live', { exact: true }).isVisible().catch(() => false);
-    const hasOffline = await page.getByText('Offline', { exact: true }).isVisible().catch(() => false);
+    // Wait for AuthGuard to finish and sidebar to render
+    const sidebar = page.locator('aside').first();
+    await expect(sidebar).toBeVisible({ timeout: 10_000 });
 
-    // One of the connection states should be displayed
-    expect(hasLive || hasOffline).toBeTruthy();
+    // ConnectionStatus component renders "Live" or "Offline" text
+    // Wait for either state to appear (WebSocket may take a moment to connect)
+    await expect(
+      page.getByText('Live', { exact: true }).or(page.getByText('Offline', { exact: true }))
+    ).toBeVisible({ timeout: 10_000 });
   });
 
   test('connection status shows colored indicator dot', async ({ page }) => {

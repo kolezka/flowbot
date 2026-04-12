@@ -154,7 +154,10 @@ test.describe('Integration Smoke Test', () => {
       const response = await page.goto(url);
       expect(response?.status()).toBeLessThan(400);
       await page.waitForLoadState('networkidle');
-      await expect(page.getByText(text).first()).toBeVisible({ timeout: 10_000 });
+      // Look for the text inside main content to avoid matching hidden mobile header
+      await expect(
+        page.locator('main').getByText(text).first()
+      ).toBeVisible({ timeout: 10_000 });
     }
   });
 });
