@@ -143,8 +143,10 @@ export class FlowsService {
       errors.push('Flow must have at least one node');
     }
 
-    // Check for trigger node
-    const triggers = nodes.filter((n: any) => n.category === 'trigger');
+    // Check for trigger node (category may be at top level or inside data)
+    const triggers = nodes.filter(
+      (n: any) => n.category === 'trigger' || n.data?.category === 'trigger',
+    );
     if (triggers.length === 0) {
       errors.push('Flow must have at least one trigger node');
     }

@@ -37,9 +37,7 @@ export class QrAuthController {
 
     if (body.type === 'connected') {
       try {
-        await this.connectionsService.update(connectionId, {
-          status: 'active',
-        });
+        await this.connectionsService.updateStatus(connectionId, 'active');
         this.logger.log(`Connection ${connectionId} marked as active`);
       } catch (err) {
         this.logger.error(
