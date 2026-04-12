@@ -1,0 +1,38 @@
+node_modules
+**/node_modules
+.git
+.github
+.vscode
+.claude
+.superpowers
+.worktrees
+.playwright
+.playwright-mcp
+
+# Build outputs (rebuilt in Docker)
+**/dist
+**/.next
+**/build
+**/.trigger
+
+# Dev/test artifacts
+test-results
+playwright-report
+coverage
+*.log
+qa-*.png
+
+# Environment (injected at runtime)
+.env
+.env.*
+!.env.example
+.trigger-secret-key
+
+# Documentation
+docs
+README.md
+CLAUDE.md
+
+# OS files
+.DS_Store
+Thumbs.db

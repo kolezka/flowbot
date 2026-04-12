@@ -1,0 +1,111 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${DB_USER:-postgres}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:?Set DB_PASSWORD in .env}
+      POSTGRES_DB: ${DB_NAME:-flowbot_db}
+      POSTGRES_HOST_AUTH_METHOD: md5
+      POSTGRES_INITDB_ARGS: --auth-host=md5
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - backend
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U ${DB_USER:-postgres}']
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  api:
+    build:
+      context: .
+      dockerfile: apps/api/Dockerfile
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgresql://${DB_USER:-postgres}:${DB_PASSWORD}@postgres:5432/${DB_NAME:-flowbot_db}
+      PORT: '3000'
+      FRONTEND_URL: ${FRONTEND_URL:-http://localhost:3001}
+      DASHBOARD_SECRET: ${DASHBOARD_SECRET:?Set DASHBOARD_SECRET in .env}
+      TRIGGER_SECRET_KEY: ${TRIGGER_SECRET_KEY:-}
+      TRIGGER_API_URL: ${TRIGGER_API_URL:-}
+      NODE_ENV: production
+    ports:
+      - '${API_PORT:-3000}:3000'
+    networks:
+      - backend
+      - frontend
+    healthcheck:
+      test: ['CMD-SHELL', 'wget -qO- http://localhost:3000/api/docs || exit 1']
+      interval: 30s
+      timeout: 5s
+      start_period: 15s
+      retries: 3
+
+  frontend:
+    build:
+      context: .
+      dockerfile: apps/frontend/Dockerfile
+      args:
+        NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://localhost:3000}
+    restart: unless-stopped
+    depends_on:
+      api:
+        condition: service_healthy
+    environment:
+      NODE_ENV: production
+    ports:
+      - '${FRONTEND_PORT:-3001}:3001'
+    networks:
+      - frontend
+    healthcheck:
+      test: ['CMD-SHELL', 'wget -qO- http://localhost:3001/ || exit 1']
+      interval: 30s
+      timeout: 5s
+      start_period: 10s
+      retries: 3
+
+  connector-pool:
+    build:
+      context: .
+      dockerfile: apps/connector-pool/Dockerfile
+    restart: unless-stopped
+    depends_on:
+      api:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgresql://${DB_USER:-postgres}:${DB_PASSWORD}@postgres:5432/${DB_NAME:-flowbot_db}
+      API_URL: http://api:3000
+      POOL_HOST: '0.0.0.0'
+      POOL_PORT: '3010'
+      LOG_LEVEL: ${LOG_LEVEL:-info}
+      ENABLE_TELEGRAM_BOT: ${ENABLE_TELEGRAM_BOT:-true}
+      ENABLE_TELEGRAM_USER: ${ENABLE_TELEGRAM_USER:-false}
+      ENABLE_WHATSAPP_USER: ${ENABLE_WHATSAPP_USER:-false}
+      ENABLE_DISCORD_BOT: ${ENABLE_DISCORD_BOT:-false}
+      TG_API_ID: ${TG_API_ID:-}
+      TG_API_HASH: ${TG_API_HASH:-}
+      NODE_ENV: production
+    ports:
+      - '${POOL_PORT:-3010}:3010'
+    networks:
+      - backend
+      - frontend
+    healthcheck:
+      test: ['CMD-SHELL', 'wget -qO- http://localhost:3010/health || exit 1']
+      interval: 30s
+      timeout: 5s
+      start_period: 30s
+      retries: 3
+
+volumes:
+  postgres_data:
+
+networks:
+  backend:
+    internal: true
+  frontend:
