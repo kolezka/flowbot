@@ -4,6 +4,9 @@ dist
 *.session
 .trigger-secret-key
 
+# Superpowers (skill plugin artifacts)
+.superpowers/
+
 # Worktrees
 .worktrees/
 

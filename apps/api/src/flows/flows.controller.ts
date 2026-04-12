@@ -10,6 +10,7 @@ import {
   Query,
   BadRequestException,
   NotFoundException,
+  Logger,
 } from '@nestjs/common';
 import {
   ApiTags,
@@ -22,10 +23,14 @@ import { FlowsService } from './flows.service';
 import { CorrelationService } from './correlation.service';
 import { CreateFlowDto, UpdateFlowDto } from './dto';
 import { FLOW_TEMPLATES, getFlowTemplate } from './flow-templates';
+import { Public } from '../auth/public.decorator';
+import type { FlowTriggerEvent } from './flow-trigger-event';
 
 @ApiTags('Flows')
 @Controller('api/flows')
 export class FlowsController {
+  private readonly logger = new Logger(FlowsController.name);
+
   constructor(
     private readonly service: FlowsService,
     private readonly correlationService: CorrelationService,

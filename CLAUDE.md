@@ -98,7 +98,7 @@ Schema at `packages/db/prisma/schema.prisma`. After changes: `pnpm db generate &
 
 ## App Structure
 
-**Connector Pool (`apps/connector-pool/src/`):** Unified pool service managing all platform connectors. Pools config in `pools/` (telegram-bot, telegram-user, whatsapp-user, discord-bot). Multiplexed Hono HTTP server in `server.ts`. Each pool runs a `Reconciler` from platform-kit that polls DB and spawns worker threads running connector instances.
+**Connector Pool (`apps/connector-pool/src/`):** Unified pool service managing all platform connectors. Pools config in `pools/` (telegram-bot, telegram-user, whatsapp-user, discord-bot). Multiplexed Hono HTTP server in `server.ts`. Each pool runs a `Reconciler` from platform-kit that polls DB and spawns worker threads running connector instances. Workers forward events via `EventForwarder` to `POST /api/flow/webhook`.
 
 **Trigger (`apps/trigger/src/`):** Tasks in `trigger/` (flow-event-cleanup, flow-execution, health-check, scheduled-message). Libs in `lib/` (prisma, telegram, telegram-bot, flow-engine/).
 
@@ -107,6 +107,7 @@ Schema at `packages/db/prisma/schema.prisma`. After changes: `pnpm db generate &
 - **Updated:** analytics (time series), bot-config (heartbeat endpoint)
 - **Legacy (kept):** users, moderation (groups, members, warnings, logs, scheduled-messages)
 - **Unchanged:** auth, system, flows, webhooks, events (EventBus, WsGateway, SSE)
+- **Flow webhook:** `FlowWebhookController` at `/api/flow/webhook` receives events from connectors, matches against active flow triggers, creates `FlowExecution` records
 - All endpoints under `/api/`.
 
 **Frontend (`apps/frontend/src/`):** Next.js App Router. Dashboard pages under `app/dashboard/`. API client in `lib/api.ts`. shadcn/ui components in `components/ui/`. WebSocket in `lib/websocket.tsx`. Multi-platform components: `PlatformBadge`, `PlatformFilter`, `PlatformProvider` context. New pages: `identity/accounts`, `identity/linked`, `connections/`.
@@ -130,7 +131,13 @@ Schema at `packages/db/prisma/schema.prisma`. After changes: `pnpm db generate &
 | API | `DATABASE_URL`, `PORT`, `FRONTEND_URL` |
 | Frontend | `NEXT_PUBLIC_API_URL` |
 
-Docker Compose: PostgreSQL on port 5432 (postgres/postgres/flowbot_db).
+Docker Compose: PostgreSQL on `127.0.0.1:5432` (postgres/postgres/flowbot_db).
+
+### Local Dev Quick Reference
+
+- **Dashboard password:** `change-me-in-production` (set via `DASHBOARD_SECRET` env var)
+- **Default ports:** API `:3000` (or set `PORT`), Frontend `:3001`, Connector Pool `:3010`
+- **Flow node format:** Nodes store `category` inside `data.category` (React Flow format), not at top level. Match with `n.data?.category ?? n.category`.
 
 ## TypeScript
 

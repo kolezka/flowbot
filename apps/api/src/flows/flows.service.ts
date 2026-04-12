@@ -1061,11 +1061,14 @@ export class FlowsService {
       if (!Array.isArray(nodes)) continue;
 
       for (const node of nodes) {
-        if (node.category === 'trigger') {
+        const category = node.category || (node as any).data?.category;
+        if (category === 'trigger') {
+          const nodeType = node.type === 'default' ? (node as any).data?.nodeType : node.type;
+          const config = (node as any).data?.config ?? node.config ?? {};
           triggers.push({
             flowId: flow.id,
-            nodeType: node.type,
-            config: node.config,
+            nodeType,
+            config,
             platform: flow.platform,
           });
         }
@@ -1075,6 +1078,81 @@ export class FlowsService {
     this.triggerRegistryCache = triggers;
     this.triggerRegistryVersion++;
     return { triggers, version: this.triggerRegistryVersion };
+  }
+
+  // =========================================================================
+  // Generic Event Matching & Execution
+  // =========================================================================
+
+  /**
+   * Match an incoming platform event against active flow triggers and create
+   * FlowExecution records for each match.
+   */
+  async matchAndExecute(
+    event: {
+      platform: string;
+      eventType: string;
+      data?: Record<string, unknown>;
+      botInstanceId?: string;
+      communityId?: string | null;
+      accountId?: string;
+      timestamp?: string;
+    },
+  ): Promise<Array<{ flowId: string; executionId: string }>> {
+    const { triggers } = await this.getTriggerRegistry();
+    const matched: Array<{ flowId: string; executionId: string }> = [];
+
+    for (const trigger of triggers) {
+      if (!this.triggerMatches(trigger, event)) continue;
+
+      const execution = await this.prisma.flowExecution.create({
+        data: {
+          flowId: trigger.flowId,
+          status: 'pending',
+          triggerData: event as any,
+        },
+      });
+
+      matched.push({ flowId: trigger.flowId, executionId: execution.id });
+    }
+
+    return matched;
+  }
+
+  private triggerMatches(
+    trigger: { nodeType: string; config: Record<string, unknown>; platform: string },
+    event: { platform: string; eventType: string; data?: Record<string, unknown> },
+  ): boolean {
+    // Platform must match
+    if (trigger.platform && trigger.platform !== event.platform) return false;
+
+    // Map event types to trigger node types
+    const eventToTrigger: Record<string, string[]> = {
+      message_received: ['message_received', 'command_received', 'keyword_match'],
+      member_join: ['user_joins', 'member_join'],
+      member_leave: ['user_leaves', 'member_leave'],
+      callback_query: ['callback_query', 'button_click'],
+    };
+
+    const matchingTypes = eventToTrigger[event.eventType] ?? [event.eventType];
+    if (!matchingTypes.includes(trigger.nodeType)) return false;
+
+    // Additional config-based matching
+    if (trigger.nodeType === 'command_received' && trigger.config?.['command']) {
+      const cmd = event.data?.['command'] as string | null;
+      if (!cmd) return false;
+      const expected = `/${trigger.config['command']}`;
+      if (cmd !== expected && cmd !== (trigger.config['command'] as string)) return false;
+    }
+
+    if (trigger.nodeType === 'keyword_match' && trigger.config?.['keywords']) {
+      const text = (event.data?.['text'] as string | null)?.toLowerCase();
+      if (!text) return false;
+      const keywords = trigger.config['keywords'] as string[];
+      if (!keywords.some((kw) => text.includes(kw.toLowerCase()))) return false;
+    }
+
+    return true;
   }
 
   // =========================================================================

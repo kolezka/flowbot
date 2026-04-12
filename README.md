@@ -81,7 +81,7 @@ graph TB
     WAW <-->|"Baileys"| WA
 
     TR <-->|"POST /execute"| CP
-    TBW & TUW & DCW & WAW -->|"POST /api/flows/webhook"| NEST
+    TBW & TUW & DCW & WAW -->|"POST /api/flow/webhook"| NEST
 
     style Platforms fill:#f9f,stroke:#333
     style Dashboard fill:#e1f5fe,stroke:#333
@@ -172,7 +172,7 @@ sequenceDiagram
     U->>P: Send message
     P->>C: Platform event
     C->>C: Event mapper
-    C->>API: POST /api/flows/webhook
+    C->>API: POST /api/flow/webhook
     API->>T: Trigger flow-execution
     T->>DB: Load flow definition
     T->>T: BFS graph traversal
