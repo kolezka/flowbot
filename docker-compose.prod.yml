@@ -87,8 +87,6 @@ services:
       ENABLE_TELEGRAM_USER: ${ENABLE_TELEGRAM_USER:-false}
       ENABLE_WHATSAPP_USER: ${ENABLE_WHATSAPP_USER:-false}
       ENABLE_DISCORD_BOT: ${ENABLE_DISCORD_BOT:-false}
-      TG_API_ID: ${TG_API_ID:-}
-      TG_API_HASH: ${TG_API_HASH:-}
       NODE_ENV: production
     ports:
       - '${POOL_PORT:-3010}:3010'
