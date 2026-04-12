@@ -40,7 +40,7 @@ services:
       - backend
       - frontend
     healthcheck:
-      test: ['CMD-SHELL', 'wget -qO- http://localhost:3000/api/docs || exit 1']
+      test: ['CMD-SHELL', 'wget -qO- http://localhost:3000/api/system/status || exit 1']
       interval: 30s
       timeout: 5s
       start_period: 15s
@@ -88,8 +88,6 @@ services:
       ENABLE_WHATSAPP_USER: ${ENABLE_WHATSAPP_USER:-false}
       ENABLE_DISCORD_BOT: ${ENABLE_DISCORD_BOT:-false}
       NODE_ENV: production
-    ports:
-      - '${POOL_PORT:-3010}:3010'
     networks:
       - backend
       - frontend

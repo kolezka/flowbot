@@ -39,6 +39,9 @@ COPY --from=build /app/tsconfig.base.json /app/tsconfig.json ./
 COPY --from=build /app/apps/connector-pool apps/connector-pool
 COPY --from=build /app/packages packages
 
+RUN addgroup -S appgroup && adduser -S appuser -G appgroup
+USER appuser
+
 ENV NODE_ENV=production
 ENV POOL_HOST=0.0.0.0
 ENV POOL_PORT=3010

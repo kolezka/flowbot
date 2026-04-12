@@ -26,6 +26,9 @@ RUN pnpm --filter @flowbot/frontend build
 FROM node:20-alpine AS runtime
 WORKDIR /app
 
+RUN addgroup -S appgroup && adduser -S appuser -G appgroup
+USER appuser
+
 ENV NODE_ENV=production
 ENV NEXT_TELEMETRY_DISABLED=1
 ENV PORT=3001

@@ -40,11 +40,14 @@ COPY --from=build /app/apps/api/dist apps/api/dist
 COPY --from=build /app/packages/db/src/generated packages/db/src/generated
 COPY --from=build /app/packages/db/prisma packages/db/prisma
 
+RUN addgroup -S appgroup && adduser -S appuser -G appgroup
+USER appuser
+
 ENV NODE_ENV=production
 ENV PORT=3000
 EXPOSE 3000
 
 HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
-  CMD wget -qO- http://localhost:3000/api/docs || exit 1
+  CMD wget -qO- http://localhost:3000/api/system/status || exit 1
 
 CMD ["node", "apps/api/dist/main"]

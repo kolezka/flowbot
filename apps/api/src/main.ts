@@ -20,21 +20,25 @@ async function bootstrap() {
     credentials: true,
   });
 
-  // Configure Swagger API documentation
-  const config = new DocumentBuilder()
-    .setTitle('User Dashboard API')
-    .setDescription('API for managing Telegram bot users')
-    .setVersion('1.0')
-    .addBearerAuth()
-    .build();
+  // Configure Swagger API documentation (disabled in production)
+  if (process.env.NODE_ENV !== 'production') {
+    const config = new DocumentBuilder()
+      .setTitle('User Dashboard API')
+      .setDescription('API for managing Telegram bot users')
+      .setVersion('1.0')
+      .addBearerAuth()
+      .build();
 
-  const document = SwaggerModule.createDocument(app, config);
-  SwaggerModule.setup('api/docs', app, document);
+    const document = SwaggerModule.createDocument(app, config);
+    SwaggerModule.setup('api/docs', app, document);
+  }
 
   const port = process.env.PORT ?? 3000;
   await app.listen(port);
 
   console.log(`Application is running on: http://localhost:${port}`);
-  console.log(`API documentation available at: http://localhost:${port}/api/docs`);
+  if (process.env.NODE_ENV !== 'production') {
+    console.log(`API documentation available at: http://localhost:${port}/api/docs`);
+  }
 }
 bootstrap();
