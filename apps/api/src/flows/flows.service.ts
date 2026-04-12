@@ -7,6 +7,7 @@ import {
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateFlowDto, UpdateFlowDto } from './dto';
 import type { FlowTemplate } from './flow-templates';
+import { tasks } from '@trigger.dev/sdk/v3';
 
 const USER_ACCOUNT_ACTIONS = new Set([
   'user_get_chat_history',
@@ -1105,15 +1106,30 @@ export class FlowsService {
     for (const trigger of triggers) {
       if (!this.triggerMatches(trigger, event)) continue;
 
-      const execution = await this.prisma.flowExecution.create({
-        data: {
+      try {
+        // Dispatch to Trigger.dev flow-execution task
+        const handle = await tasks.trigger('flow-execution', {
           flowId: trigger.flowId,
-          status: 'pending',
-          triggerData: event as any,
-        },
-      });
-
-      matched.push({ flowId: trigger.flowId, executionId: execution.id });
+          triggerData: event as Record<string, unknown>,
+        });
+        matched.push({
+          flowId: trigger.flowId,
+          executionId: handle.id,
+        });
+      } catch (err) {
+        // Fallback: create a pending execution record if Trigger.dev is unavailable
+        this.logger.warn(
+          `Trigger.dev dispatch failed for flow ${trigger.flowId}, creating pending record: ${err}`,
+        );
+        const execution = await this.prisma.flowExecution.create({
+          data: {
+            flowId: trigger.flowId,
+            status: 'pending',
+            triggerData: event as any,
+          },
+        });
+        matched.push({ flowId: trigger.flowId, executionId: execution.id });
+      }
     }
 
     return matched;
