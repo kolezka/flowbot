@@ -34,11 +34,10 @@ services:
       TRIGGER_SECRET_KEY: ${TRIGGER_SECRET_KEY:-}
       TRIGGER_API_URL: ${TRIGGER_API_URL:-}
       NODE_ENV: production
-    ports:
-      - '${API_PORT:-3000}:3000'
     networks:
       - backend
       - frontend
+      - coolify
     healthcheck:
       test: ['CMD-SHELL', 'wget -qO- http://localhost:3000/api/system/status || exit 1']
       interval: 30s
@@ -58,10 +57,9 @@ services:
         condition: service_healthy
     environment:
       NODE_ENV: production
-    ports:
-      - '${FRONTEND_PORT:-3001}:3001'
     networks:
       - frontend
+      - coolify
     healthcheck:
       test: ['CMD-SHELL', 'wget -qO- http://localhost:3001/ || exit 1']
       interval: 30s
@@ -105,3 +103,5 @@ networks:
   backend:
     internal: true
   frontend:
+  coolify:
+    external: true
