@@ -39,15 +39,22 @@ RUN pnpm install --frozen-lockfile --prod
 COPY --from=build /app/apps/api/dist apps/api/dist
 COPY --from=build /app/packages/db/src/generated packages/db/src/generated
 COPY --from=build /app/packages/db/prisma packages/db/prisma
+COPY --from=build /app/packages/db/prisma.config.ts packages/db/prisma.config.ts
+COPY --from=build /app/packages/db/tsconfig.json packages/db/tsconfig.json
+COPY apps/api/docker-entrypoint.sh /app/docker-entrypoint.sh
 
-RUN addgroup -S appgroup && adduser -S appuser -G appgroup
+# Prisma CLI needed at runtime for db push on startup
+RUN npx prisma --version > /dev/null 2>&1 || true
+
+RUN addgroup -S appgroup && adduser -S appuser -G appgroup \
+    && chown -R appuser:appgroup /app
 USER appuser
 
 ENV NODE_ENV=production
 ENV PORT=3000
 EXPOSE 3000
 
-HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
+HEALTHCHECK --interval=30s --timeout=10s --start-period=30s --retries=5 \
   CMD wget -qO- http://localhost:3000/api/system/status || exit 1
 
-CMD ["node", "apps/api/dist/main"]
+CMD ["sh", "/app/docker-entrypoint.sh"]
