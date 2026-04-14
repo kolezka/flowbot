@@ -13,6 +13,21 @@ if (process.env.TRIGGER_SECRET_KEY) {
   });
 }
 
+async function pushSchema() {
+  const { execFileSync } = await import('child_process');
+  const schemaPath = require('path').resolve(__dirname, '../../packages/db/prisma/schema.prisma');
+  try {
+    console.log(`Pushing database schema from ${schemaPath}...`);
+    const output = execFileSync('prisma', [
+      'db', 'push', '--skip-generate', '--accept-data-loss', '--schema', schemaPath,
+    ], { encoding: 'utf8', timeout: 30_000 });
+    console.log(output);
+    console.log('Schema push completed');
+  } catch (err) {
+    console.warn('WARNING: Schema push failed:', (err as Error).message?.slice(0, 500));
+  }
+}
+
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
@@ -55,4 +70,4 @@ async function bootstrap() {
     console.log(`API documentation available at: http://localhost:${port}/api/docs`);
   }
 }
-bootstrap();
+pushSchema().then(() => bootstrap());
