@@ -16,13 +16,14 @@ if (process.env.TRIGGER_SECRET_KEY) {
 async function pushSchema() {
   const { execFileSync } = await import('child_process');
   const path = require('path');
-  // In Docker: __dirname = /app/apps/api/dist → config at /app/packages/db/prisma.config.ts
-  const configPath = path.resolve(__dirname, '../../../packages/db/prisma.config.ts');
+  const dbDir = path.resolve(__dirname, '../../../packages/db');
   try {
-    console.log(`Pushing database schema (config: ${configPath})...`);
-    const output = execFileSync('prisma', [
-      'db', 'push', '--accept-data-loss', '--config', configPath,
-    ], { encoding: 'utf8', timeout: 30_000 });
+    console.log(`Pushing database schema (cwd: ${dbDir})...`);
+    const output = execFileSync('npx', ['prisma', 'db', 'push', '--accept-data-loss'], {
+      encoding: 'utf8',
+      timeout: 30_000,
+      cwd: dbDir,
+    });
     console.log(output);
     console.log('Schema push completed');
   } catch (err) {
