@@ -33,6 +33,7 @@ services:
       DASHBOARD_SECRET: ${DASHBOARD_SECRET:?DASHBOARD_SECRET is required}
       TRIGGER_SECRET_KEY: ${TRIGGER_SECRET_KEY:-}
       TRIGGER_API_URL: ${TRIGGER_API_URL:-}
+      CONNECTOR_POOL_HEALTH_URL: http://connector-pool:3010/health
       NODE_ENV: production
     networks:
       - backend
