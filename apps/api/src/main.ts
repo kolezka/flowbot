@@ -21,7 +21,7 @@ async function pushSchema() {
   try {
     console.log(`Pushing database schema from ${schemaPath}...`);
     const output = execFileSync('prisma', [
-      'db', 'push', '--skip-generate', '--accept-data-loss', '--schema', schemaPath,
+      'db', 'push', '--accept-data-loss', '--schema', schemaPath,
     ], { encoding: 'utf8', timeout: 30_000 });
     console.log(output);
     console.log('Schema push completed');
