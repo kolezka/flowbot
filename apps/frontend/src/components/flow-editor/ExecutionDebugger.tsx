@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { useWebSocket, useSocketEvent } from "@/lib/websocket";
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000";
+const API_URL = "";
 
 const DEFAULT_HEIGHT = 280;
 const MIN_HEIGHT = 160;

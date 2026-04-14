@@ -25,8 +25,7 @@ export function ExportButton({ endpoint, filename, filters }: ExportButtonProps)
           }
         }
       }
-      const baseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000";
-      const url = `${baseUrl}${endpoint}?${params.toString()}`;
+      const url = `${endpoint}?${params.toString()}`;
       const response = await fetch(url);
       if (!response.ok) throw new Error("Export failed");
       const blob = await response.blob();

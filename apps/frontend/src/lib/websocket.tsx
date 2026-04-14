@@ -3,7 +3,8 @@
 import { createContext, useContext, useEffect, useRef, useState, useCallback } from "react";
 import { io, Socket } from "socket.io-client";
 
-const WS_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000";
+// WebSocket connects directly to the API (can't be proxied through Next.js rewrites)
+const WS_URL = process.env.NEXT_PUBLIC_WS_URL || "";
 
 interface WebSocketContextValue {
   socket: Socket | null;

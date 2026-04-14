@@ -36,7 +36,7 @@ export default function WebhooksPage() {
   };
 
   const copyUrl = (token: string) => {
-    const url = `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000'}/api/webhooks/incoming/${token}`;
+    const url = `${typeof window !== 'undefined' ? window.location.origin : ''}/api/webhooks/incoming/${token}`;
     navigator.clipboard.writeText(url);
   };
 

@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import type { PanelProps } from "./registry";
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000";
+const API_URL = "";
 
 interface FlowSummary {
   id: string;

@@ -1,6 +1,7 @@
 import { getToken, clearToken } from './auth';
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
+// API calls go through Next.js rewrites (same origin → proxied to backend)
+const API_BASE_URL = '';
 
 export interface User {
   id: string;

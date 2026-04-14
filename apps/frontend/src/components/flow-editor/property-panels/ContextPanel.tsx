@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { VariableAutocomplete, buildVariableList } from "../VariableAutocomplete";
 import type { PanelProps } from "./registry";
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000";
+const API_URL = "";
 
 export function ContextPanel({
   nodeType,

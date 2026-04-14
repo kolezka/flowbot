@@ -129,7 +129,7 @@ Schema at `packages/db/prisma/schema.prisma`. After changes: `pnpm db generate &
 | Connector Pool | `DATABASE_URL`, `API_URL`, `POOL_HOST`, `POOL_PORT` (default 3010), `TG_API_ID`, `TG_API_HASH` (for telegram-user), `LOG_LEVEL`, `ENABLE_TELEGRAM_BOT`, `ENABLE_TELEGRAM_USER`, `ENABLE_WHATSAPP_USER`, `ENABLE_DISCORD_BOT` (all default true) |
 | Trigger | `DATABASE_URL`, `TG_CLIENT_API_ID`, `TG_CLIENT_API_HASH`, `TG_CLIENT_SESSION`, `TELEGRAM_BOT_API_URL`, `CONNECTOR_POOL_URL` (default `http://localhost:3010`) |
 | API | `DATABASE_URL`, `PORT`, `FRONTEND_URL` |
-| Frontend | `NEXT_PUBLIC_API_URL` |
+| Frontend | `API_INTERNAL_URL` (server-side proxy to API, default `http://localhost:3000`) |
 
 Docker Compose: PostgreSQL on `127.0.0.1:5432` (postgres/postgres/flowbot_db).
 

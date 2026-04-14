@@ -14,7 +14,7 @@ export default function ExecutionsPage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000'}/api/flows/${flowId}/executions`)
+    fetch(`/api/flows/${flowId}/executions`)
       .then(r => r.json())
       .then(data => setExecutions(data.data || []))
       .catch(console.error)
