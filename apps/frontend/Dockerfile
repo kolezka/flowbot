@@ -31,6 +31,7 @@ USER appuser
 
 ENV NODE_ENV=production
 ENV NEXT_TELEMETRY_DISABLED=1
+ENV HOSTNAME=0.0.0.0
 ENV PORT=3001
 
 # Copy standalone output
