@@ -43,8 +43,9 @@ COPY --from=build /app/packages/db/prisma.config.ts packages/db/prisma.config.ts
 COPY --from=build /app/packages/db/tsconfig.json packages/db/tsconfig.json
 COPY apps/api/docker-entrypoint.sh /app/docker-entrypoint.sh
 
-# Ensure prisma CLI works and create non-root user
-RUN cd /app/packages/db && npx prisma --version
+# Install prisma CLI for schema push on startup
+RUN npm install -g prisma@7
+
 RUN addgroup -S appgroup && adduser -S appuser -G appgroup \
     && chown -R appuser:appgroup /app
 USER appuser

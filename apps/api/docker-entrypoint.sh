@@ -8,12 +8,7 @@ echo "NODE_ENV: ${NODE_ENV:-not set}"
 # Push database schema (idempotent — safe to run on every start)
 echo "Pushing database schema..."
 cd /app/packages/db
-npx prisma db push --skip-generate --accept-data-loss 2>&1 || {
-  echo "ERROR: prisma db push failed. Trying without config file..."
-  npx prisma db push --skip-generate --accept-data-loss --schema prisma/schema.prisma 2>&1 || {
-    echo "ERROR: Schema push failed completely. Starting API anyway..."
-  }
-}
+prisma db push --skip-generate --accept-data-loss 2>&1 || echo "WARNING: prisma db push failed"
 cd /app
 
 echo "Starting API server..."
