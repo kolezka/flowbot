@@ -81,7 +81,7 @@ function NodeCategorySubmenu({
               <CategoryDot color={color} />
               {label}
             </DropdownMenuSubTrigger>
-            <DropdownMenuSubContent className="max-h-72 overflow-y-auto shadow-lg" style={{ backgroundColor: "white" }} sideOffset={4}>
+            <DropdownMenuSubContent className="max-h-72 overflow-y-auto shadow-lg bg-popover" sideOffset={4}>
               {nodes.map((n) => (
                 <DropdownMenuItem
                   key={n.type}
@@ -100,7 +100,7 @@ function NodeCategorySubmenu({
           <CategoryDot color="#6b7280" />
           Annotation
         </DropdownMenuSubTrigger>
-        <DropdownMenuSubContent className="shadow-lg" style={{ backgroundColor: "white" }} sideOffset={4}>
+        <DropdownMenuSubContent className="shadow-lg bg-popover" sideOffset={4}>
           <DropdownMenuItem
             onSelect={() => onSelect("sticky_note")}
             className="text-xs"
@@ -177,7 +177,7 @@ export function FlowContextMenu({
         />
       </DropdownMenuTrigger>
 
-      <DropdownMenuContent className="w-48" style={{ backgroundColor: "white" }} side="bottom" align="start" sideOffset={2}>
+      <DropdownMenuContent className="w-48 bg-popover" side="bottom" align="start" sideOffset={2}>
         {/* ── Node menu ──────────────────────────────────────── */}
         {menu?.context.type === "node" && (() => {
           const node = menu.context.node
@@ -245,7 +245,7 @@ export function FlowContextMenu({
                   <MenuIcon><Plus className="h-3.5 w-3.5" /></MenuIcon>
                   Add Node
                 </DropdownMenuSubTrigger>
-                <DropdownMenuSubContent className="shadow-lg" style={{ backgroundColor: "white" }} sideOffset={4}>
+                <DropdownMenuSubContent className="shadow-lg bg-popover" sideOffset={4}>
                   <NodeCategorySubmenu
                     onSelect={(nodeType) => addNode(nodeType, flowPos)}
                   />
@@ -289,7 +289,7 @@ export function FlowContextMenu({
                   <MenuIcon><SplitSquareHorizontal className="h-3.5 w-3.5" /></MenuIcon>
                   Insert Node
                 </DropdownMenuSubTrigger>
-                <DropdownMenuSubContent className="shadow-lg" style={{ backgroundColor: "white" }} sideOffset={4}>
+                <DropdownMenuSubContent className="shadow-lg bg-popover" sideOffset={4}>
                   <NodeCategorySubmenu
                     onSelect={(nodeType) =>
                       insertNodeOnEdge(edge.id, nodeType)

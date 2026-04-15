@@ -27,10 +27,10 @@ export const SubflowNode = memo(
     }
 
     return (
-      <div className="rounded-lg border-2 border-purple-400 bg-purple-50 px-4 py-3 shadow-sm min-w-[150px]">
+      <div className="rounded-lg border-2 border-purple-400 bg-purple-50 dark:bg-purple-950 px-4 py-3 shadow-sm min-w-[150px]">
         <Handle type="target" position={Position.Top} />
         <div className="flex items-center gap-2">
-          <span className="rounded bg-purple-200 px-1 text-[10px] font-bold text-purple-700">
+          <span className="rounded bg-purple-200 dark:bg-purple-800 px-1 text-[10px] font-bold text-purple-700 dark:text-purple-200">
             SUB
           </span>
           <span className="text-sm font-medium">

@@ -248,7 +248,7 @@ export function NodePalette({ onDragStart, onAddTemplate }: NodePaletteProps) {
           <div key={cat} className="mb-4">
             <button
               onClick={() => toggleCategory(cat)}
-              className="mb-1 flex w-full items-center justify-between text-xs font-medium uppercase text-muted-foreground hover:text-foreground hover:bg-white/[0.04] rounded cursor-pointer px-1 py-0.5 transition-colors"
+              className="mb-1 flex w-full items-center justify-between text-xs font-medium uppercase text-muted-foreground hover:text-foreground hover:bg-accent rounded cursor-pointer px-1 py-0.5 transition-colors"
             >
               <span>
                 {cat === "advanced" ? "Advanced" : `${cat}s`} ({catNodes.length})

@@ -58,3 +58,37 @@
     --color-ring: hsl(225 8% 70%);
   }
 }
+
+/* React Flow dark mode overrides */
+.dark .react-flow {
+  --xy-background-color: hsl(225 12% 8%);
+  --xy-node-background-color: hsl(225 12% 14%);
+  --xy-node-color: hsl(0 0% 93%);
+  --xy-node-border-color: hsl(225 8% 25%);
+  --xy-edge-stroke: hsl(225 8% 40%);
+  --xy-minimap-background: hsl(225 12% 10%);
+  --xy-minimap-mask-background: hsl(225 12% 6% / 0.7);
+  --xy-controls-background: hsl(225 12% 14%);
+  --xy-controls-foreground: hsl(0 0% 93%);
+}
+
+.dark .react-flow__node-default,
+.dark .react-flow__node {
+  background: hsl(225 12% 14%);
+  color: hsl(0 0% 93%);
+  border-color: hsl(225 8% 25%);
+}
+
+.dark .react-flow__controls button {
+  background: hsl(225 12% 17%);
+  color: hsl(0 0% 90%);
+  border-color: hsl(225 8% 25%);
+}
+
+.dark .react-flow__controls button:hover {
+  background: hsl(225 12% 22%);
+}
+
+.dark .react-flow__panel {
+  color: hsl(0 0% 90%);
+}
